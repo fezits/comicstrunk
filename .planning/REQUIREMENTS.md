@@ -325,13 +325,174 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (Populated during roadmap creation) | | |
+| INFRA-01 | Phase 1 | Pending |
+| INFRA-02 | Phase 1 | Pending |
+| INFRA-03 | Phase 1 | Pending |
+| INFRA-04 | Phase 1 | Pending |
+| INFRA-05 | Phase 1 | Pending |
+| INFRA-06 | Phase 1 | Pending |
+| INFRA-07 | Phase 1 | Pending |
+| INFRA-08 | Phase 1 | Pending |
+| INFRA-09 | Phase 1 | Pending |
+| INFRA-10 | Phase 1 | Pending |
+| AUTH-01 | Phase 1 | Pending |
+| AUTH-02 | Phase 1 | Pending |
+| AUTH-03 | Phase 1 | Pending |
+| AUTH-04 | Phase 1 | Pending |
+| AUTH-05 | Phase 1 | Pending |
+| AUTH-06 | Phase 1 | Pending |
+| AUTH-07 | Phase 1 | Pending |
+| CATL-01 | Phase 2 | Pending |
+| CATL-02 | Phase 2 | Pending |
+| CATL-03 | Phase 2 | Pending |
+| CATL-04 | Phase 2 | Pending |
+| CATL-05 | Phase 2 | Pending |
+| CATL-06 | Phase 2 | Pending |
+| CATL-07 | Phase 2 | Pending |
+| CATL-08 | Phase 2 | Pending |
+| CATL-09 | Phase 2 | Pending |
+| CATL-10 | Phase 2 | Pending |
+| CATL-11 | Phase 2 | Pending |
+| CATL-12 | Phase 2 | Pending |
+| CATL-13 | Phase 2 | Pending |
+| SERI-01 | Phase 2 | Pending |
+| SERI-02 | Phase 2 | Pending |
+| SERI-03 | Phase 2 | Pending |
+| SERI-04 | Phase 2 | Pending |
+| SERI-05 | Phase 3 | Pending |
+| SERI-06 | Phase 3 | Pending |
+| SERI-07 | Phase 3 | Pending |
+| COLL-01 | Phase 3 | Pending |
+| COLL-02 | Phase 3 | Pending |
+| COLL-03 | Phase 3 | Pending |
+| COLL-04 | Phase 3 | Pending |
+| COLL-05 | Phase 3 | Pending |
+| COLL-06 | Phase 3 | Pending |
+| COLL-07 | Phase 3 | Pending |
+| COLL-08 | Phase 3 | Pending |
+| COLL-09 | Phase 3 | Pending |
+| CART-01 | Phase 4 | Pending |
+| CART-02 | Phase 4 | Pending |
+| CART-03 | Phase 4 | Pending |
+| CART-04 | Phase 4 | Pending |
+| CART-05 | Phase 4 | Pending |
+| CART-06 | Phase 4 | Pending |
+| CART-07 | Phase 4 | Pending |
+| CART-08 | Phase 4 | Pending |
+| ORDR-01 | Phase 4 | Pending |
+| ORDR-02 | Phase 4 | Pending |
+| ORDR-03 | Phase 4 | Pending |
+| ORDR-04 | Phase 4 | Pending |
+| ORDR-05 | Phase 4 | Pending |
+| ORDR-06 | Phase 4 | Pending |
+| ORDR-07 | Phase 4 | Pending |
+| ORDR-08 | Phase 4 | Pending |
+| SHIP-01 | Phase 4 | Pending |
+| SHIP-02 | Phase 4 | Pending |
+| SHIP-03 | Phase 4 | Pending |
+| SHIP-04 | Phase 4 | Pending |
+| SHIP-05 | Phase 4 | Pending |
+| COMM-01 | Phase 4 | Pending |
+| COMM-02 | Phase 4 | Pending |
+| COMM-03 | Phase 4 | Pending |
+| COMM-04 | Phase 4 | Pending |
+| COMM-05 | Phase 4 | Pending |
+| PYMT-01 | Phase 5 | Pending |
+| PYMT-02 | Phase 5 | Pending |
+| PYMT-03 | Phase 5 | Pending |
+| PYMT-04 | Phase 5 | Pending |
+| PYMT-05 | Phase 5 | Pending |
+| PYMT-06 | Phase 5 | Pending |
+| PYMT-07 | Phase 5 | Pending |
+| PYMT-08 | Phase 5 | Pending |
+| COMM-06 | Phase 5 | Pending |
+| BANK-01 | Phase 5 | Pending |
+| BANK-02 | Phase 5 | Pending |
+| BANK-03 | Phase 5 | Pending |
+| SUBS-01 | Phase 6 | Pending |
+| SUBS-02 | Phase 6 | Pending |
+| SUBS-03 | Phase 6 | Pending |
+| SUBS-04 | Phase 6 | Pending |
+| SUBS-05 | Phase 6 | Pending |
+| SUBS-06 | Phase 6 | Pending |
+| SUBS-07 | Phase 6 | Pending |
+| SUBS-08 | Phase 6 | Pending |
+| SUBS-09 | Phase 6 | Pending |
+| SOCL-01 | Phase 7 | Pending |
+| SOCL-02 | Phase 7 | Pending |
+| SOCL-03 | Phase 7 | Pending |
+| SOCL-04 | Phase 7 | Pending |
+| SOCL-05 | Phase 7 | Pending |
+| SOCL-06 | Phase 7 | Pending |
+| SOCL-07 | Phase 7 | Pending |
+| NOTF-01 | Phase 7 | Pending |
+| NOTF-02 | Phase 7 | Pending |
+| NOTF-03 | Phase 7 | Pending |
+| NOTF-04 | Phase 7 | Pending |
+| NOTF-05 | Phase 7 | Pending |
+| NOTF-06 | Phase 7 | Pending |
+| NOTF-07 | Phase 7 | Pending |
+| NOTF-08 | Phase 7 | Pending |
+| NOTF-09 | Phase 7 | Pending |
+| DISP-01 | Phase 8 | Pending |
+| DISP-02 | Phase 8 | Pending |
+| DISP-03 | Phase 8 | Pending |
+| DISP-04 | Phase 8 | Pending |
+| DISP-05 | Phase 8 | Pending |
+| DISP-06 | Phase 8 | Pending |
+| DISP-07 | Phase 8 | Pending |
+| DISP-08 | Phase 8 | Pending |
+| DISP-09 | Phase 8 | Pending |
+| DISP-10 | Phase 8 | Pending |
+| DISP-11 | Phase 8 | Pending |
+| DEAL-01 | Phase 9 | Pending |
+| DEAL-02 | Phase 9 | Pending |
+| DEAL-03 | Phase 9 | Pending |
+| DEAL-04 | Phase 9 | Pending |
+| DEAL-05 | Phase 9 | Pending |
+| DEAL-06 | Phase 9 | Pending |
+| DEAL-07 | Phase 9 | Pending |
+| DEAL-08 | Phase 9 | Pending |
+| DEAL-09 | Phase 9 | Pending |
+| DEAL-10 | Phase 9 | Pending |
+| HOME-01 | Phase 9 | Pending |
+| HOME-02 | Phase 9 | Pending |
+| ADMN-01 | Phase 10 | Pending |
+| ADMN-02 | Phase 10 | Pending |
+| ADMN-03 | Phase 10 | Pending |
+| ADMN-04 | Phase 10 | Pending |
+| ADMN-05 | Phase 10 | Pending |
+| ADMN-06 | Phase 10 | Pending |
+| ADMN-07 | Phase 10 | Pending |
+| ADMN-08 | Phase 10 | Pending |
+| ADMN-09 | Phase 10 | Pending |
+| ADMN-10 | Phase 10 | Pending |
+| LEGL-01 | Phase 10 | Pending |
+| LEGL-02 | Phase 10 | Pending |
+| LEGL-03 | Phase 10 | Pending |
+| LEGL-04 | Phase 10 | Pending |
+| LEGL-05 | Phase 10 | Pending |
+| LEGL-06 | Phase 10 | Pending |
+| LEGL-07 | Phase 10 | Pending |
+| LEGL-08 | Phase 10 | Pending |
+| LEGL-09 | Phase 10 | Pending |
+| LGPD-01 | Phase 10 | Pending |
+| LGPD-02 | Phase 10 | Pending |
+| LGPD-03 | Phase 10 | Pending |
+| LGPD-04 | Phase 10 | Pending |
+| LGPD-05 | Phase 10 | Pending |
+| LGPD-06 | Phase 10 | Pending |
+| CONT-01 | Phase 10 | Pending |
+| CONT-02 | Phase 10 | Pending |
+| CONT-03 | Phase 10 | Pending |
 
 **Coverage:**
-- v1 requirements: 113 total
-- Mapped to phases: 0
-- Unmapped: 113 (pending roadmap)
+- v1 requirements: 162 total (10 INFRA + 7 AUTH + 13 CATL + 7 SERI + 9 COLL + 8 CART + 8 ORDR + 8 PYMT + 6 COMM + 9 SUBS + 5 SHIP + 7 SOCL + 9 NOTF + 10 ADMN + 10 DEAL + 2 HOME + 9 LEGL + 11 DISP + 6 LGPD + 3 BANK + 3 CONT)
+- Mapped to phases: 162
+- Unmapped: 0
+
+Note: The original count of "113" in the template was a placeholder. The actual count from the defined requirements is 162 v1 requirements across 21 categories, all mapped.
 
 ---
 *Requirements defined: 2026-02-21*
-*Last updated: 2026-02-21 after initial definition*
+*Last updated: 2026-02-21 after roadmap creation — traceability table fully populated*
