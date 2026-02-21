@@ -35,15 +35,16 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. The API is reachable at its production cPanel URL with HTTPS and returns a healthy status from the /health endpoint
   4. The Next.js frontend loads in production on cPanel with dark mode active by default, a theme toggle that persists across sessions, and text rendered in PT-BR
   5. A developer can run `pnpm migrate` to apply all database migrations to the production MySQL instance without errors
-**Plans**: 7 plans
+**Plans**: 8 plans
 
 Plans:
 - [ ] 01-01-PLAN.md — Monorepo scaffold: pnpm workspaces, Turborepo, TypeScript/ESLint/Prettier, apps/api + apps/web + packages/contracts (Wave 1)
 - [ ] 01-02-PLAN.md — Full Prisma schema: all tables for all 10 phases, initial migration, seed script (Wave 2)
 - [ ] 01-03-PLAN.md — cPanel deployment validation: Passenger config, health check, HTTPS, backups, deployment scripts (Wave 2)
-- [ ] 01-04-PLAN.md — Authentication API: signup, login, refresh, logout, password reset, profile, rate limiting (Wave 3)
+- [ ] 01-04-PLAN.md — Authentication API: signup, login, refresh, logout, password reset, profile with social links, rate limiting (Wave 3)
 - [ ] 01-05-PLAN.md — Shared contracts: Zod schemas + TypeScript types for auth, users, common (Wave 2)
-- [ ] 01-06-PLAN.md — Frontend foundation: Next.js + next-intl + next-themes + shadcn/ui + responsive sidebar layout (Wave 3)
+- [ ] 01-06-PLAN.md — Frontend config: Next.js + next-intl + next-themes + Tailwind + shadcn/ui initialization (Wave 3)
+- [ ] 01-06b-PLAN.md — Frontend layout: responsive sidebar, header, route groups, theme toggle, API client (Wave 3)
 - [ ] 01-07-PLAN.md — Auth UI: signup, login, forgot-password, reset-password forms + auth context (Wave 4)
 
 ### Phase 2: Catalog and Taxonomy
@@ -241,7 +242,7 @@ Note: Phase 7 (Community) and Phase 8 (Disputes) both depend on Phase 5 (Payment
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation and Infrastructure | 0/7 | Not started | - |
+| 1. Foundation and Infrastructure | 0/8 | Not started | - |
 | 2. Catalog and Taxonomy | 0/7 | Not started | - |
 | 3. Collection Management | 0/6 | Not started | - |
 | 4. Marketplace and Orders | 0/7 | Not started | - |
