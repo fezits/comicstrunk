@@ -35,16 +35,16 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. The API is reachable at its production cPanel URL with HTTPS and returns a healthy status from the /health endpoint
   4. The Next.js frontend loads in production on cPanel with dark mode active by default, a theme toggle that persists across sessions, and text rendered in PT-BR
   5. A developer can run `pnpm migrate` to apply all database migrations to the production MySQL instance without errors
-**Plans**: TBD
+**Plans**: 7 plans
 
 Plans:
-- [ ] 01-01: Monorepo scaffold — pnpm workspaces, Turborepo, TypeScript/ESLint/Prettier config, apps/api + apps/web + packages/contracts structure
-- [ ] 01-02: Full Prisma schema — all tables defined upfront (auth, catalog, collection, cart, orders, payments, subscriptions, notifications, deals, admin), migrations pipeline
-- [ ] 01-03: cPanel deployment validation — Passenger/PM2 decision, environment variable loading, HTTPS enforcement, health check endpoint, automated backups, `touch tmp/restart.txt` restart mechanics
-- [ ] 01-04: Authentication API — signup, login, refresh token, logout, password reset endpoints with rate limiting and JWT handling
-- [ ] 01-05: Shared contracts package — TypeScript types and Zod schemas for all API request/response shapes consumed by both apps
-- [ ] 01-06: Frontend foundation — Next.js App Router setup, i18n architecture (next-intl, PT-BR), responsive layout system, dark/light theme toggle with session persistence, route group structure: (public), (auth), (collector), (seller), (orders), (admin)
-- [ ] 01-07: Auth UI — signup form, login form, password reset request form, password reset confirmation form; typed API client wired to auth endpoints
+- [ ] 01-01-PLAN.md — Monorepo scaffold: pnpm workspaces, Turborepo, TypeScript/ESLint/Prettier, apps/api + apps/web + packages/contracts (Wave 1)
+- [ ] 01-02-PLAN.md — Full Prisma schema: all tables for all 10 phases, initial migration, seed script (Wave 2)
+- [ ] 01-03-PLAN.md — cPanel deployment validation: Passenger config, health check, HTTPS, backups, deployment scripts (Wave 2)
+- [ ] 01-04-PLAN.md — Authentication API: signup, login, refresh, logout, password reset, profile, rate limiting (Wave 3)
+- [ ] 01-05-PLAN.md — Shared contracts: Zod schemas + TypeScript types for auth, users, common (Wave 2)
+- [ ] 01-06-PLAN.md — Frontend foundation: Next.js + next-intl + next-themes + shadcn/ui + responsive sidebar layout (Wave 3)
+- [ ] 01-07-PLAN.md — Auth UI: signup, login, forgot-password, reset-password forms + auth context (Wave 4)
 
 ### Phase 2: Catalog and Taxonomy
 **Goal**: A curated, searchable public catalog of comic books exists, seeded with Brazilian publishers, with an admin approval workflow ensuring editorial quality before any entry goes live
