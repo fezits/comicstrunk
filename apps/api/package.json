@@ -6,11 +6,20 @@
     "dev": "tsx watch src/app.ts",
     "build": "tsc",
     "type-check": "tsc --noEmit",
-    "start": "node dist/app.js"
+    "start": "node dist/app.js",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:seed": "prisma db seed",
+    "db:studio": "prisma studio",
+    "db:generate": "prisma generate"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@comicstrunk/contracts": "workspace:*",
     "@prisma/client": "^5.22.0",
+    "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.0",
@@ -20,6 +29,7 @@
     "zod": "^3.23.0"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
     "@types/cookie-parser": "^1.4.7",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
