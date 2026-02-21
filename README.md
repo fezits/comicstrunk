@@ -1,0 +1,2 @@
+# comicstrunk
+Comics collection manager - 
