@@ -11,7 +11,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [ ] **INFRA-01**: cPanel deployment validated with Node.js backend + Next.js frontend running (go/no-go gate)
 - [x] **INFRA-02**: Monorepo structure initialized (apps/api, apps/web, packages/contracts) with pnpm workspaces
-- [ ] **INFRA-03**: MySQL database provisioned with Prisma ORM and migration pipeline
+- [x] **INFRA-03**: MySQL database provisioned with Prisma ORM and migration pipeline
 - [ ] **INFRA-04**: HTTPS enforced in production
 - [ ] **INFRA-05**: Automated daily database backups
 - [ ] **INFRA-06**: Health check endpoints with basic monitoring
@@ -327,7 +327,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | INFRA-01 | Phase 1 | Pending |
 | INFRA-02 | Phase 1 | Complete |
-| INFRA-03 | Phase 1 | Pending |
+| INFRA-03 | Phase 1 | Complete |
 | INFRA-04 | Phase 1 | Pending |
 | INFRA-05 | Phase 1 | Pending |
 | INFRA-06 | Phase 1 | Pending |

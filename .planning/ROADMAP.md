@@ -242,7 +242,7 @@ Note: Phase 7 (Community) and Phase 8 (Disputes) both depend on Phase 5 (Payment
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation and Infrastructure | 1/8 | In Progress | - |
+| 1. Foundation and Infrastructure | 2/8 | In Progress | - |
 | 2. Catalog and Taxonomy | 0/7 | Not started | - |
 | 3. Collection Management | 0/6 | Not started | - |
 | 4. Marketplace and Orders | 0/7 | Not started | - |

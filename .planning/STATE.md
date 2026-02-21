@@ -10,31 +10,32 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 1 of 10 (Foundation and Infrastructure)
-Plan: 1 of 8 in current phase
+Plan: 2 of 8 in current phase
 Status: Executing
-Last activity: 2026-02-21 — Completed 01-01-PLAN.md (Monorepo scaffold)
+Last activity: 2026-02-21 — Completed 01-02-PLAN.md (Prisma schema)
 
-Progress: [█░░░░░░░░░] 1%
+Progress: [██░░░░░░░░] 3%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 16 min
-- Total execution time: 0.27 hours
+- Total plans completed: 2
+- Average duration: 14 min
+- Total execution time: 0.47 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Foundation | 1/8 | 16 min | 16 min |
+| 1. Foundation | 2/8 | 28 min | 14 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (16 min)
+- Last 5 plans: 01-01 (16 min), 01-02 (12 min)
 - Trend: Starting
 
 *Updated after each plan completion*
 | Phase 01 P01 | 16min | 2 tasks | 22 files |
+| Phase 01 P02 | 12min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -51,6 +52,10 @@ Recent decisions affecting current work:
 - [01-01]: Next.js standalone output disabled on Windows dev; will be enabled in cPanel plan (01-03)
 - [01-01]: Turborepo v2 uses 'tasks' field not 'pipeline' (research doc had outdated example)
 - [01-01]: Contracts package points main/types to dist/ (built CJS), not src/ (raw TS)
+- [01-02]: Prisma 5.22.0 pinned (not latest) for Node.js 20.9.0 compatibility
+- [01-02]: Migration generated offline via prisma migrate diff (no live DB required)
+- [01-02]: All 40 models defined upfront so no destructive migrations in future phases
+- [01-02]: Seed uses deterministic IDs and upsert for idempotent reruns
 
 ### Pending Todos
 
@@ -65,5 +70,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-21
-Stopped at: Completed 01-01-PLAN.md (Monorepo scaffold)
-Resume file: .planning/phases/01-foundation-and-infrastructure/01-01-SUMMARY.md
+Stopped at: Completed 01-02-PLAN.md (Prisma schema)
+Resume file: .planning/phases/01-foundation-and-infrastructure/01-02-SUMMARY.md
