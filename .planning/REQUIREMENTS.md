@@ -9,12 +9,12 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Foundation & Infrastructure
 
-- [ ] **INFRA-01**: cPanel deployment validated with Node.js backend + Next.js frontend running (go/no-go gate)
+- [x] **INFRA-01**: cPanel deployment validated with Node.js backend + Next.js frontend running (go/no-go gate)
 - [x] **INFRA-02**: Monorepo structure initialized (apps/api, apps/web, packages/contracts) with pnpm workspaces
 - [x] **INFRA-03**: MySQL database provisioned with Prisma ORM and migration pipeline
-- [ ] **INFRA-04**: HTTPS enforced in production
-- [ ] **INFRA-05**: Automated daily database backups
-- [ ] **INFRA-06**: Health check endpoints with basic monitoring
+- [x] **INFRA-04**: HTTPS enforced in production
+- [x] **INFRA-05**: Automated daily database backups
+- [x] **INFRA-06**: Health check endpoints with basic monitoring
 - [ ] **INFRA-07**: i18n architecture in place (PT-BR at launch, extensible for new languages without code changes)
 - [ ] **INFRA-08**: Responsive layout system (mobile < 768px, tablet 768-1023px, desktop 1024px+)
 - [ ] **INFRA-09**: Dark/light theme with toggle, dark as default, persisted across sessions
@@ -325,12 +325,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | Phase 1 | Pending |
+| INFRA-01 | Phase 1 | Complete |
 | INFRA-02 | Phase 1 | Complete |
 | INFRA-03 | Phase 1 | Complete |
-| INFRA-04 | Phase 1 | Pending |
-| INFRA-05 | Phase 1 | Pending |
-| INFRA-06 | Phase 1 | Pending |
+| INFRA-04 | Phase 1 | Complete |
+| INFRA-05 | Phase 1 | Complete |
+| INFRA-06 | Phase 1 | Complete |
 | INFRA-07 | Phase 1 | Pending |
 | INFRA-08 | Phase 1 | Pending |
 | INFRA-09 | Phase 1 | Pending |

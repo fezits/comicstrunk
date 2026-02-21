@@ -39,8 +39,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 Plans:
 - [x] 01-01-PLAN.md — Monorepo scaffold: pnpm workspaces, Turborepo, TypeScript/ESLint/Prettier, apps/api + apps/web + packages/contracts (Wave 1)
-- [ ] 01-02-PLAN.md — Full Prisma schema: all tables for all 10 phases, initial migration, seed script (Wave 2)
-- [ ] 01-03-PLAN.md — cPanel deployment validation: Passenger config, health check, HTTPS, backups, deployment scripts (Wave 2)
+- [x] 01-02-PLAN.md — Full Prisma schema: all tables for all 10 phases, initial migration, seed script (Wave 2)
+- [x] 01-03-PLAN.md — cPanel deployment validation: Passenger config, health check, HTTPS, backups, deployment scripts (Wave 2)
 - [ ] 01-04-PLAN.md — Authentication API: signup, login, refresh, logout, password reset, profile with social links, rate limiting (Wave 3)
 - [ ] 01-05-PLAN.md — Shared contracts: Zod schemas + TypeScript types for auth, users, common (Wave 2)
 - [ ] 01-06-PLAN.md — Frontend config: Next.js + next-intl + next-themes + Tailwind + shadcn/ui initialization (Wave 3)
@@ -242,7 +242,7 @@ Note: Phase 7 (Community) and Phase 8 (Disputes) both depend on Phase 5 (Payment
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation and Infrastructure | 2/8 | In Progress | - |
+| 1. Foundation and Infrastructure | 3/8 | In Progress | - |
 | 2. Catalog and Taxonomy | 0/7 | Not started | - |
 | 3. Collection Management | 0/6 | Not started | - |
 | 4. Marketplace and Orders | 0/7 | Not started | - |
