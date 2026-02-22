@@ -8,6 +8,10 @@ import { CONTRACT_VERSION } from '@comicstrunk/contracts';
 import { prisma } from './shared/lib/prisma';
 import { authRoutes } from './modules/auth/auth.routes';
 import { usersRoutes } from './modules/users/users.routes';
+import { seriesRoutes } from './modules/series/series.routes';
+import { categoriesRoutes } from './modules/categories/categories.routes';
+import { tagsRoutes } from './modules/tags/tags.routes';
+import { charactersRoutes } from './modules/characters/characters.routes';
 import { errorHandler } from './shared/middleware/error-handler';
 
 export function createApp(): Express {
@@ -56,6 +60,10 @@ export function createApp(): Express {
   // API v1 routes
   app.use('/api/v1/auth', authRoutes);
   app.use('/api/v1/users', usersRoutes);
+  app.use('/api/v1/series', seriesRoutes);
+  app.use('/api/v1/categories', categoriesRoutes);
+  app.use('/api/v1/tags', tagsRoutes);
+  app.use('/api/v1/characters', charactersRoutes);
 
   // Error handler (must be registered LAST)
   app.use(errorHandler);
