@@ -57,16 +57,16 @@ Plans:
   3. An admin can submit a new catalog entry that appears in the approval queue, then approve or reject it with a reason — approved entries appear publicly, rejected entries do not
   4. An admin can bulk-import catalog entries from a CSV file and export the catalog as CSV
   5. A visitor can browse a series detail page listing all editions with their volume and edition numbers
-**Plans**: TBD
+**Plans**: 7 plans
 
 Plans:
-- [ ] 02-01: Taxonomy API — CRUD endpoints for series, categories, tags, characters/heroes (admin-only create/edit/delete; public read)
-- [ ] 02-02: Catalog API — catalog entry CRUD with editorial approval state machine (DRAFT → PENDING → APPROVED/REJECTED), barcode/ISBN fields, Cloudinary cover image upload, average rating aggregation
-- [ ] 02-03: Catalog search API — combined filter query (publisher, character, series, category, price range, condition, year), multi-field sort, cursor/offset pagination
-- [ ] 02-04: Catalog CSV import/export API — admin bulk import with validation and error report, export endpoint
-- [ ] 02-05: Series and taxonomy UI — series listing page with search, series detail page showing all editions, taxonomy browse pages (categories, characters)
-- [ ] 02-06: Catalog browse UI — catalog listing page with filter sidebar, sort controls, pagination, catalog entry detail page with cover, metadata, rating display
-- [ ] 02-07: Admin catalog management UI — approval queue (pending list, approve/reject with reason), catalog entry create/edit form, CSV import/export interface
+- [ ] 02-01-PLAN.md — Contracts schemas + shared API utilities (Cloudinary, multer, CSV, slug) (Wave 1)
+- [ ] 02-02-PLAN.md — Taxonomy API: series, categories, tags, characters CRUD (Wave 2)
+- [ ] 02-03-PLAN.md — Catalog API: CRUD, approval state machine, cover image upload (Wave 2)
+- [ ] 02-04-PLAN.md — Catalog search with combined filters + CSV import/export (Wave 3)
+- [ ] 02-05-PLAN.md — Series browse UI: listing with search, detail with editions (Wave 3)
+- [ ] 02-06-PLAN.md — Catalog browse UI: filter sidebar, sort, pagination, detail page (Wave 3)
+- [ ] 02-07-PLAN.md — Admin catalog management UI: approval queue, forms, CSV, taxonomy CRUD (Wave 4)
 
 ### Phase 3: Collection Management
 **Goal**: Authenticated users can build and manage their personal comic book collection, track reading progress, monitor series completion, and import/export data — making the platform worth returning to before the marketplace exists
@@ -243,7 +243,7 @@ Note: Phase 7 (Community) and Phase 8 (Disputes) both depend on Phase 5 (Payment
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation and Infrastructure | 7/8 | In Progress | - |
-| 2. Catalog and Taxonomy | 0/7 | Not started | - |
+| 2. Catalog and Taxonomy | 0/7 | Planned | - |
 | 3. Collection Management | 0/6 | Not started | - |
 | 4. Marketplace and Orders | 0/7 | Not started | - |
 | 5. Payments and Commissions | 0/9 | Not started | - |
