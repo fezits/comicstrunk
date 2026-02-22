@@ -24,7 +24,25 @@
     "login": "Entrar",
     "signup": "Cadastrar",
     "logout": "Sair",
-    "profile": "Perfil"
+    "profile": "Perfil",
+    "seriesProgress": "Progresso de Series",
+    "favorites": "Favoritos",
+    "cart": "Carrinho",
+    "myOrders": "Meus Pedidos",
+    "notifications": "Notificacoes",
+    "adminDashboard": "Painel Admin",
+    "adminCatalog": "Catalogo",
+    "adminUsers": "Usuarios",
+    "adminContent": "Conteudo",
+    "groups": {
+      "public": "Explorar",
+      "collection": "Minha Colecao",
+      "orders": "Pedidos",
+      "account": "Conta",
+      "admin": "Administracao"
+    },
+    "openMenu": "Abrir menu",
+    "closeMenu": "Fechar menu"
   },
   "auth": {
     "login": "Entrar",
@@ -64,7 +82,13 @@
   "home": {
     "title": "Comics Trunk",
     "subtitle": "Sua colecao de quadrinhos em um so lugar",
-    "description": "Catalogue, organize e descubra quadrinhos. Conecte-se com outros colecionadores."
+    "description": "Catalogue, organize e descubra quadrinhos. Conecte-se com outros colecionadores.",
+    "featureCatalog": "Catalogue",
+    "featureCatalogDesc": "Registre cada edicao da sua colecao com detalhes completos.",
+    "featureTrack": "Acompanhe",
+    "featureTrackDesc": "Veja o progresso das suas series e saiba o que falta.",
+    "featureConnect": "Conecte-se",
+    "featureConnectDesc": "Encontre outros colecionadores e descubra novas edicoes."
   },
   "notFound": {
     "title": "Pagina nao encontrada",
