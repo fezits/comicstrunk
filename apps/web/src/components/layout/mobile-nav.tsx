@@ -4,9 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, LogIn, UserPlus, LogOut } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/lib/auth/use-auth';
+import { Button } from '@/components/ui/button';
 import {
   Sheet,
   SheetContent,
@@ -82,9 +84,15 @@ interface MobileNavProps {
 
 export function MobileNav({ open, onOpenChange }: MobileNavProps) {
   const t = useTranslations();
+  const locale = useLocale();
+  const { user, isAuthenticated, logout } = useAuth();
 
-  // Filter out admin-only groups for now (role check will be added in Phase 10)
-  const visibleGroups = navGroups.filter((group) => !group.adminOnly);
+  // Filter groups based on auth state and role
+  const visibleGroups = navGroups.filter((group) => {
+    if (group.adminOnly && user?.role !== 'ADMIN') return false;
+    if (group.requiresAuth && !isAuthenticated) return false;
+    return true;
+  });
 
   const handleNavigate = () => {
     onOpenChange(false);
@@ -108,6 +116,59 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
               <MobileNavGroup group={group} onNavigate={handleNavigate} />
             </div>
           ))}
+
+          {/* Auth section */}
+          <Separator className="my-3" />
+
+          {isAuthenticated ? (
+            <div className="space-y-2 px-3">
+              <div className="flex items-center gap-2 py-1">
+                <div className="h-7 w-7 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
+                  {user?.name?.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{user?.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start text-muted-foreground hover:text-destructive"
+                onClick={() => {
+                  logout();
+                  handleNavigate();
+                }}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                {t('nav.logout')}
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-2 px-3">
+              <Button
+                asChild
+                className="w-full gradient-primary text-white"
+                size="sm"
+              >
+                <Link href={`/${locale}/login`} onClick={handleNavigate}>
+                  <LogIn className="h-4 w-4 mr-2" />
+                  {t('nav.login')}
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="w-full"
+              >
+                <Link href={`/${locale}/signup`} onClick={handleNavigate}>
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  {t('nav.signup')}
+                </Link>
+              </Button>
+            </div>
+          )}
         </nav>
       </SheetContent>
     </Sheet>

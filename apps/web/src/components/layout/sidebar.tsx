@@ -4,10 +4,13 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, LogIn, UserPlus, LogOut } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/lib/auth/use-auth';
+import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
 import { navGroups, type NavGroup } from './nav-config';
 
 function NavGroupSection({ group }: { group: NavGroup }) {
@@ -63,9 +66,15 @@ function NavGroupSection({ group }: { group: NavGroup }) {
 
 export function Sidebar() {
   const t = useTranslations();
+  const locale = useLocale();
+  const { user, isLoading, isAuthenticated, logout } = useAuth();
 
-  // Filter out admin-only groups for now (role check will be added in Phase 10)
-  const visibleGroups = navGroups.filter((group) => !group.adminOnly);
+  // Filter groups based on auth state and role
+  const visibleGroups = navGroups.filter((group) => {
+    if (group.adminOnly && user?.role !== 'ADMIN') return false;
+    if (group.requiresAuth && !isAuthenticated) return false;
+    return true;
+  });
 
   return (
     <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:top-16 lg:left-0 lg:z-30 border-r border-border bg-card">
@@ -79,9 +88,62 @@ export function Sidebar() {
           ))}
         </nav>
 
+        {/* Auth section at bottom of sidebar */}
         <div className="mt-auto pt-4">
           <Separator className="mb-4" />
-          <p className="px-3 text-xs text-muted-foreground">
+
+          {isLoading ? (
+            <div className="space-y-2 px-3">
+              <Skeleton className="h-9 w-full" />
+            </div>
+          ) : isAuthenticated ? (
+            <div className="space-y-2 px-3">
+              <div className="flex items-center gap-2 px-0 py-1">
+                <div className="h-7 w-7 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
+                  {user?.name?.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{user?.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start text-muted-foreground hover:text-destructive"
+                onClick={() => logout()}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                {t('nav.logout')}
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-2 px-3">
+              <Button
+                asChild
+                className="w-full gradient-primary text-white"
+                size="sm"
+              >
+                <Link href={`/${locale}/login`}>
+                  <LogIn className="h-4 w-4 mr-2" />
+                  {t('nav.login')}
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="w-full"
+              >
+                <Link href={`/${locale}/signup`}>
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  {t('nav.signup')}
+                </Link>
+              </Button>
+            </div>
+          )}
+
+          <p className="px-3 mt-4 text-xs text-muted-foreground">
             {t('common.appName')} &copy; {new Date().getFullYear()}
           </p>
         </div>

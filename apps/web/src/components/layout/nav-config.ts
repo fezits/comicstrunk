@@ -9,7 +9,6 @@ import {
   Package,
   User,
   Settings,
-  Bell,
   LayoutDashboard,
   Library,
   Users,
@@ -26,7 +25,10 @@ export type NavItem = {
 export type NavGroup = {
   labelKey: string;
   items: NavItem[];
+  /** Only visible to admin users */
   adminOnly?: boolean;
+  /** Requires authentication to be visible */
+  requiresAuth?: boolean;
 };
 
 export const navGroups: NavGroup[] = [
@@ -40,6 +42,7 @@ export const navGroups: NavGroup[] = [
   },
   {
     labelKey: 'nav.groups.collection',
+    requiresAuth: true,
     items: [
       { titleKey: 'nav.collection', href: '/collection', icon: BookOpen },
       { titleKey: 'nav.seriesProgress', href: '/series-progress', icon: BarChart3 },
@@ -48,6 +51,7 @@ export const navGroups: NavGroup[] = [
   },
   {
     labelKey: 'nav.groups.orders',
+    requiresAuth: true,
     items: [
       { titleKey: 'nav.cart', href: '/cart', icon: ShoppingCart },
       { titleKey: 'nav.myOrders', href: '/orders', icon: Package },
@@ -55,15 +59,16 @@ export const navGroups: NavGroup[] = [
   },
   {
     labelKey: 'nav.groups.account',
+    requiresAuth: true,
     items: [
       { titleKey: 'nav.profile', href: '/profile', icon: User },
       { titleKey: 'nav.settings', href: '/settings', icon: Settings },
-      { titleKey: 'nav.notifications', href: '/notifications', icon: Bell },
     ],
   },
   {
     labelKey: 'nav.groups.admin',
     adminOnly: true,
+    requiresAuth: true,
     items: [
       { titleKey: 'nav.adminDashboard', href: '/admin', icon: LayoutDashboard },
       { titleKey: 'nav.adminCatalog', href: '/admin/catalog', icon: Library },
@@ -71,4 +76,20 @@ export const navGroups: NavGroup[] = [
       { titleKey: 'nav.adminContent', href: '/admin/content', icon: FileText },
     ],
   },
+];
+
+/**
+ * Routes that require authentication.
+ * Used by middleware and client-side redirect logic.
+ */
+export const protectedRoutes = [
+  '/collection',
+  '/series-progress',
+  '/favorites',
+  '/cart',
+  '/orders',
+  '/profile',
+  '/settings',
+  '/notifications',
+  '/admin',
 ];
