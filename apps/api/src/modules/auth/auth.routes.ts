@@ -22,6 +22,7 @@ const loginLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, error: { message: 'Too many login attempts, please try again later' } },
+  skip: () => process.env.NODE_ENV === 'test',
 });
 
 const passwordResetLimiter = rateLimit({
@@ -30,6 +31,7 @@ const passwordResetLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, error: { message: 'Too many password reset attempts, please try again later' } },
+  skip: () => process.env.NODE_ENV === 'test',
 });
 
 // === Refresh cookie config ===
