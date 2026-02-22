@@ -1,6 +1,7 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
+import { AuthProvider } from '@/lib/auth/auth-provider';
 import '@/styles/globals.css';
 
 type LocaleLayoutProps = {
@@ -25,7 +26,9 @@ export default async function LocaleLayout({
         enableSystem={false}
         disableTransitionOnChange
       >
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
         <Toaster
           position="bottom-right"
           richColors
