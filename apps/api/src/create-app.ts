@@ -12,6 +12,7 @@ import { seriesRoutes } from './modules/series/series.routes';
 import { categoriesRoutes } from './modules/categories/categories.routes';
 import { tagsRoutes } from './modules/tags/tags.routes';
 import { charactersRoutes } from './modules/characters/characters.routes';
+import { catalogRoutes } from './modules/catalog/catalog.routes';
 import { errorHandler } from './shared/middleware/error-handler';
 
 export function createApp(): Express {
@@ -64,6 +65,7 @@ export function createApp(): Express {
   app.use('/api/v1/categories', categoriesRoutes);
   app.use('/api/v1/tags', tagsRoutes);
   app.use('/api/v1/characters', charactersRoutes);
+  app.use('/api/v1/catalog', catalogRoutes);
 
   // Error handler (must be registered LAST)
   app.use(errorHandler);
