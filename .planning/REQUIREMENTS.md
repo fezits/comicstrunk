@@ -22,13 +22,13 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Authentication & Users
 
-- [ ] **AUTH-01**: User can sign up with name, email, and password (with complexity requirements)
-- [ ] **AUTH-02**: User can log in securely with rate limiting against brute force
-- [ ] **AUTH-03**: User can recover password via email with temporary link (expires in 1h)
-- [ ] **AUTH-04**: User session persists across browser refresh (JWT + refresh token)
-- [ ] **AUTH-05**: User can view and edit profile (avatar, personal info, social links)
-- [ ] **AUTH-06**: Three access levels enforced: User, Subscriber, Administrator
-- [ ] **AUTH-07**: User must accept Terms of Use and Privacy Policy to complete registration
+- [x] **AUTH-01**: User can sign up with name, email, and password (with complexity requirements)
+- [x] **AUTH-02**: User can log in securely with rate limiting against brute force
+- [x] **AUTH-03**: User can recover password via email with temporary link (expires in 1h)
+- [x] **AUTH-04**: User session persists across browser refresh (JWT + refresh token)
+- [x] **AUTH-05**: User can view and edit profile (avatar, personal info, social links)
+- [x] **AUTH-06**: Three access levels enforced: User, Subscriber, Administrator
+- [x] **AUTH-07**: User must accept Terms of Use and Privacy Policy to complete registration
 
 ### Catalog
 
@@ -335,13 +335,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INFRA-08 | Phase 1 | Pending |
 | INFRA-09 | Phase 1 | Pending |
 | INFRA-10 | Phase 1 | Complete |
-| AUTH-01 | Phase 1 | Pending |
-| AUTH-02 | Phase 1 | Pending |
-| AUTH-03 | Phase 1 | Pending |
-| AUTH-04 | Phase 1 | Pending |
-| AUTH-05 | Phase 1 | Pending |
-| AUTH-06 | Phase 1 | Pending |
-| AUTH-07 | Phase 1 | Pending |
+| AUTH-01 | Phase 1 | Complete |
+| AUTH-02 | Phase 1 | Complete |
+| AUTH-03 | Phase 1 | Complete |
+| AUTH-04 | Phase 1 | Complete |
+| AUTH-05 | Phase 1 | Complete |
+| AUTH-06 | Phase 1 | Complete |
+| AUTH-07 | Phase 1 | Complete |
 | CATL-01 | Phase 2 | Pending |
 | CATL-02 | Phase 2 | Pending |
 | CATL-03 | Phase 2 | Pending |

@@ -10,34 +10,35 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 1 of 10 (Foundation and Infrastructure)
-Plan: 5 of 8 in current phase
+Plan: 6 of 8 in current phase
 Status: Executing
-Last activity: 2026-02-22 — Completed 01-05-PLAN.md (shared contracts)
+Last activity: 2026-02-22 — Completed 01-04-PLAN.md (auth API endpoints)
 
-Progress: [████░░░░░░] 6%
+Progress: [████░░░░░░] 7%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
-- Average duration: 13 min
-- Total execution time: 0.85 hours
+- Total plans completed: 5
+- Average duration: 12 min
+- Total execution time: 0.98 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Foundation | 4/8 | 51 min | 13 min |
+| 1. Foundation | 5/8 | 59 min | 12 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (16 min), 01-02 (12 min), 01-03 (15 min), 01-05 (8 min)
-- Trend: Steady
+- Last 5 plans: 01-01 (16 min), 01-02 (12 min), 01-03 (15 min), 01-05 (8 min), 01-04 (8 min)
+- Trend: Steady/Improving
 
 *Updated after each plan completion*
 | Phase 01 P01 | 16min | 2 tasks | 22 files |
 | Phase 01 P02 | 12min | 2 tasks | 7 files |
 | Phase 01 P03 | 15min | 2 tasks | 8 files |
 | Phase 01 P05 | 8min | 1 task | 5 files |
+| Phase 01 P04 | 8min | 2 tasks | 15 files |
 
 ## Accumulated Context
 
@@ -65,6 +66,11 @@ Recent decisions affecting current work:
 - [01-05]: Contracts kept CJS build output (dist/) for Node.js runtime -- not switched to direct TS consumption
 - [01-05]: Password schema reused between signup and reset-confirm via shared Zod constant
 - [01-05]: Social handle transforms strip leading @ during Zod parse
+- [01-04]: JWT secrets validated at module load via requireEnv() helper -- app fails fast if secrets missing
+- [01-04]: Refresh token stored in httpOnly cookie scoped to /api/v1/auth/refresh path only
+- [01-04]: Password reset uses console logger placeholder (email service deferred to Phase 7)
+- [01-04]: Router exports need explicit Router type annotation due to pnpm strict isolation (TS2742)
+- [01-04]: Added dotenv/config import at top of app.ts for env var loading
 
 ### Pending Todos
 
@@ -79,5 +85,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 01-05-PLAN.md (shared contracts)
-Resume file: .planning/phases/01-foundation-and-infrastructure/01-05-SUMMARY.md
+Stopped at: Completed 01-04-PLAN.md (auth API endpoints)
+Resume file: .planning/phases/01-foundation-and-infrastructure/01-04-SUMMARY.md
