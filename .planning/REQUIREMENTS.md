@@ -34,8 +34,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **CATL-01**: Catalog entry has: title, author, publisher, imprint, barcode/ISBN, cover image, description
 - [ ] **CATL-02**: Catalog entries can belong to a series (with volume and edition number)
-- [ ] **CATL-03**: Catalog entries classified by categories (e.g., superhero, manga, horror) and free-form tags
-- [ ] **CATL-04**: Catalog entries associated with characters/heroes (e.g., Batman, Goku)
+- [x] **CATL-03**: Catalog entries classified by categories (e.g., superhero, manga, horror) and free-form tags
+- [x] **CATL-04**: Catalog entries associated with characters/heroes (e.g., Batman, Goku)
 - [ ] **CATL-05**: New catalog entries pass through editorial approval before appearing publicly
 - [ ] **CATL-06**: Admin can approve or reject catalog entries with a reason
 - [ ] **CATL-07**: Search with combined filters: publisher, character, series, category, price range, condition, year
@@ -49,7 +49,7 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Series & Tracking
 
 - [x] **SERI-01**: Each series has: title, description, total number of editions
-- [ ] **SERI-02**: Catalog entries linked to series with volume and edition number
+- [x] **SERI-02**: Catalog entries linked to series with volume and edition number
 - [ ] **SERI-03**: Series listing page with search
 - [ ] **SERI-04**: Series detail page showing all editions
 - [ ] **SERI-05**: User can see series progress ("15 of 42 editions") when logged in
@@ -344,8 +344,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-07 | Phase 1 | Complete |
 | CATL-01 | Phase 2 | Complete |
 | CATL-02 | Phase 2 | Pending |
-| CATL-03 | Phase 2 | Pending |
-| CATL-04 | Phase 2 | Pending |
+| CATL-03 | Phase 2 | Complete |
+| CATL-04 | Phase 2 | Complete |
 | CATL-05 | Phase 2 | Pending |
 | CATL-06 | Phase 2 | Pending |
 | CATL-07 | Phase 2 | Pending |
@@ -356,7 +356,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CATL-12 | Phase 2 | Pending |
 | CATL-13 | Phase 2 | Complete |
 | SERI-01 | Phase 2 | Complete |
-| SERI-02 | Phase 2 | Pending |
+| SERI-02 | Phase 2 | Complete |
 | SERI-03 | Phase 2 | Pending |
 | SERI-04 | Phase 2 | Pending |
 | SERI-05 | Phase 3 | Pending |

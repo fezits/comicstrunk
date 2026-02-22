@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 2 of 10 (Catalog and Taxonomy)
-Plan: 1 of 7 in current phase
+Plan: 2 of 7 in current phase
 Status: Executing
-Last activity: 2026-02-22 — Completed 02-01-PLAN.md (shared schemas and API utilities)
+Last activity: 2026-02-22 — Completed 02-02-PLAN.md (taxonomy CRUD API modules)
 
-Progress: [██████████░░░░░░░░░░] 11%
+Progress: [████████████░░░░░░░░] 13%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
-- Average duration: 11 min
-- Total execution time: 1.4 hours
+- Total plans completed: 9
+- Average duration: 10 min
+- Total execution time: 1.5 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Foundation | 7/8 | 80 min | 11 min |
-| 2. Catalog | 1/7 | 6 min | 6 min |
+| 2. Catalog | 2/7 | 13 min | 7 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-05 (8 min), 01-04 (8 min), 01-06 (13 min), 01-06b (8 min), 02-01 (6 min)
+- Last 5 plans: 01-04 (8 min), 01-06 (13 min), 01-06b (8 min), 02-01 (6 min), 02-02 (7 min)
 - Trend: Steady/Improving
 
 *Updated after each plan completion*
@@ -43,6 +43,7 @@ Progress: [██████████░░░░░░░░░░] 11%
 | Phase 01 P06 | 13min | 1 task | 31 files |
 | Phase 01 P06b | 8min | 1 task | 17 files |
 | Phase 02 P01 | 6min | 2 tasks | 11 files |
+| Phase 02 P02 | 7min | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -88,6 +89,9 @@ Recent decisions affecting current work:
 - [02-01]: Upload middleware uses explicit RequestHandler return type for pnpm strict isolation TS2742 compat
 - [02-01]: Slug uniqueSlug uses unknown intermediate cast for Prisma dynamic model delegate access
 - [02-01]: CSV MIME filter accepts text/csv, application/vnd.ms-excel, and .csv extension fallback
+- [02-02]: req.params.id cast to string via 'as string' for Express qs v2 typing compatibility (params are string|string[])
+- [02-02]: Taxonomy seed script runs standalone via npx tsx, uses upsert on unique slug for idempotent re-runs
+- [02-02]: Delete operations check _count.catalogEntries > 0 before allowing taxonomy entity removal
 
 ### Pending Todos
 
@@ -97,10 +101,10 @@ None yet.
 
 - [Phase 1] cPanel production deployment not yet validated — deployment scripts and config ready, awaiting hosting environment setup (user approved deferral)
 - [Phase 5] Mercado Pago v2 webhook payload structure may have changed; verify at developers.mercadopago.com before coding
-- [Phase 2] Initial catalog seed data (Panini Brasil, Mythos, Devir titles) source and scope not yet defined
+- [Phase 2] Initial catalog seed data resolved -- 12 categories, 13 publisher tags, 9 characters seeded via seed-taxonomy.ts
 
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 02-01-PLAN.md (shared schemas and API utilities)
-Resume file: .planning/phases/02-catalog-and-taxonomy/02-01-SUMMARY.md
+Stopped at: Completed 02-02-PLAN.md (taxonomy CRUD API modules)
+Resume file: .planning/phases/02-catalog-and-taxonomy/02-02-SUMMARY.md
