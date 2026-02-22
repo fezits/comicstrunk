@@ -10,16 +10,16 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 2 of 10 (Catalog and Taxonomy)
-Plan: 2 of 7 in current phase
+Plan: 3 of 7 in current phase
 Status: Executing
-Last activity: 2026-02-22 — Completed 02-02-PLAN.md (taxonomy CRUD API modules)
+Last activity: 2026-02-22 — Completed 02-03-PLAN.md (catalog entry API module)
 
-Progress: [████████████░░░░░░░░] 13%
+Progress: [████████████░░░░░░░░] 14%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
+- Total plans completed: 10
 - Average duration: 10 min
 - Total execution time: 1.5 hours
 
@@ -28,10 +28,10 @@ Progress: [████████████░░░░░░░░] 13%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Foundation | 7/8 | 80 min | 11 min |
-| 2. Catalog | 2/7 | 13 min | 7 min |
+| 2. Catalog | 3/7 | 18 min | 6 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-04 (8 min), 01-06 (13 min), 01-06b (8 min), 02-01 (6 min), 02-02 (7 min)
+- Last 5 plans: 01-06 (13 min), 01-06b (8 min), 02-01 (6 min), 02-02 (7 min), 02-03 (5 min)
 - Trend: Steady/Improving
 
 *Updated after each plan completion*
@@ -44,6 +44,7 @@ Progress: [████████████░░░░░░░░] 13%
 | Phase 01 P06b | 8min | 1 task | 17 files |
 | Phase 02 P01 | 6min | 2 tasks | 11 files |
 | Phase 02 P02 | 7min | 3 tasks | 10 files |
+| Phase 02 P03 | 5min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -92,6 +93,10 @@ Recent decisions affecting current work:
 - [02-02]: req.params.id cast to string via 'as string' for Express qs v2 typing compatibility (params are string|string[])
 - [02-02]: Taxonomy seed script runs standalone via npx tsx, uses upsert on unique slug for idempotent re-runs
 - [02-02]: Delete operations check _count.catalogEntries > 0 before allowing taxonomy entity removal
+- [02-03]: Interactive $transaction used for junction table updates (batched array overload has TypeScript generic incompatibility)
+- [02-03]: Public catalog endpoints return 404 for non-APPROVED entries to prevent draft content leakage
+- [02-03]: Admin list route (/admin/list) placed before /:id in Express router to prevent path collision
+- [02-03]: Cloudinary old image cleanup extracts publicId via regex URL pattern match
 
 ### Pending Todos
 
@@ -106,5 +111,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 02-02-PLAN.md (taxonomy CRUD API modules)
-Resume file: .planning/phases/02-catalog-and-taxonomy/02-02-SUMMARY.md
+Stopped at: Completed 02-03-PLAN.md (catalog entry API module)
+Resume file: .planning/phases/02-catalog-and-taxonomy/02-03-SUMMARY.md
