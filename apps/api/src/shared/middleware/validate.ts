@@ -9,8 +9,10 @@ export function validate(schema: ZodSchema, source: 'body' | 'query' | 'params' 
       req[source] = parsed;
       next();
     } catch (error) {
-      if (error instanceof ZodError) {
-        const details = error.errors.map((e) => ({
+      // Use instanceof check or duck-type for ZodError (handles module deduplication edge cases)
+      if (error instanceof ZodError || (error as unknown as Record<string, unknown>)?.constructor?.name === 'ZodError') {
+        const zodErr = error as ZodError;
+        const details = zodErr.errors.map((e) => ({
           field: e.path.join('.'),
           message: e.message,
         }));

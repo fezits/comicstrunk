@@ -43,9 +43,9 @@ export function errorHandler(
     }
   }
 
-  // Zod validation error
-  if (err instanceof ZodError) {
-    const details = err.errors.map((e) => ({
+  // Zod validation error (duck-type check handles module deduplication edge cases)
+  if (err instanceof ZodError || (err as unknown as Record<string, unknown>)?.constructor?.name === 'ZodError') {
+    const details = (err as ZodError).errors.map((e) => ({
       field: e.path.join('.'),
       message: e.message,
     }));
