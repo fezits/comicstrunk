@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 2 of 10 (Catalog and Taxonomy)
-Plan: 3 of 7 in current phase
+Plan: 4 of 7 in current phase
 Status: Executing
-Last activity: 2026-02-22 — Completed 02-03-PLAN.md (catalog entry API module)
+Last activity: 2026-02-22 — Completed 02-04-PLAN.md (catalog search and CSV import/export)
 
-Progress: [████████████░░░░░░░░] 14%
+Progress: [████████████░░░░░░░░] 15%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 10
-- Average duration: 10 min
-- Total execution time: 1.5 hours
+- Total plans completed: 11
+- Average duration: 9 min
+- Total execution time: 1.6 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Foundation | 7/8 | 80 min | 11 min |
-| 2. Catalog | 3/7 | 18 min | 6 min |
+| 2. Catalog | 4/7 | 22 min | 6 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-06 (13 min), 01-06b (8 min), 02-01 (6 min), 02-02 (7 min), 02-03 (5 min)
+- Last 5 plans: 01-06b (8 min), 02-01 (6 min), 02-02 (7 min), 02-03 (5 min), 02-04 (4 min)
 - Trend: Steady/Improving
 
 *Updated after each plan completion*
@@ -45,6 +45,7 @@ Progress: [████████████░░░░░░░░] 14%
 | Phase 02 P01 | 6min | 2 tasks | 11 files |
 | Phase 02 P02 | 7min | 3 tasks | 10 files |
 | Phase 02 P03 | 5min | 2 tasks | 3 files |
+| Phase 02 P04 | 4min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -97,6 +98,10 @@ Recent decisions affecting current work:
 - [02-03]: Public catalog endpoints return 404 for non-APPROVED entries to prevent draft content leakage
 - [02-03]: Admin list route (/admin/list) placed before /:id in Express router to prevent path collision
 - [02-03]: Cloudinary old image cleanup extracts publicId via regex URL pattern match
+- [02-04]: GET / root path delegates to searchCatalog for both unfiltered browsing and filtered search
+- [02-04]: CSV import creates entries as DRAFT status, not PENDING or APPROVED
+- [02-04]: Series lookup during CSV import uses case-insensitive contains match on title
+- [02-04]: Import capped at 1000 rows per CSV file to prevent memory issues
 
 ### Pending Todos
 
@@ -111,5 +116,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 02-03-PLAN.md (catalog entry API module)
-Resume file: .planning/phases/02-catalog-and-taxonomy/02-03-SUMMARY.md
+Stopped at: Completed 02-04-PLAN.md (catalog search and CSV import/export)
+Resume file: .planning/phases/02-catalog-and-taxonomy/02-04-SUMMARY.md

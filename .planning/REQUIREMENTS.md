@@ -38,12 +38,12 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **CATL-04**: Catalog entries associated with characters/heroes (e.g., Batman, Goku)
 - [x] **CATL-05**: New catalog entries pass through editorial approval before appearing publicly
 - [x] **CATL-06**: Admin can approve or reject catalog entries with a reason
-- [ ] **CATL-07**: Search with combined filters: publisher, character, series, category, price range, condition, year
-- [ ] **CATL-08**: Search results sortable by price, date, rating, title
-- [ ] **CATL-09**: All catalog listings paginated
-- [ ] **CATL-10**: Average rating (1-5 stars) displayed on each catalog entry
-- [ ] **CATL-11**: Admin can bulk import catalog entries via CSV
-- [ ] **CATL-12**: Admin can export catalog data as CSV
+- [x] **CATL-07**: Search with combined filters: publisher, character, series, category, price range, condition, year
+- [x] **CATL-08**: Search results sortable by price, date, rating, title
+- [x] **CATL-09**: All catalog listings paginated
+- [x] **CATL-10**: Average rating (1-5 stars) displayed on each catalog entry
+- [x] **CATL-11**: Admin can bulk import catalog entries via CSV
+- [x] **CATL-12**: Admin can export catalog data as CSV
 - [x] **CATL-13**: Catalog schema includes barcode/ISBN fields and high-quality cover image storage (future-ready for AI recognition)
 
 ### Series & Tracking
@@ -348,12 +348,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CATL-04 | Phase 2 | Complete |
 | CATL-05 | Phase 2 | Complete |
 | CATL-06 | Phase 2 | Complete |
-| CATL-07 | Phase 2 | Pending |
-| CATL-08 | Phase 2 | Pending |
-| CATL-09 | Phase 2 | Pending |
-| CATL-10 | Phase 2 | Pending |
-| CATL-11 | Phase 2 | Pending |
-| CATL-12 | Phase 2 | Pending |
+| CATL-07 | Phase 2 | Complete |
+| CATL-08 | Phase 2 | Complete |
+| CATL-09 | Phase 2 | Complete |
+| CATL-10 | Phase 2 | Complete |
+| CATL-11 | Phase 2 | Complete |
+| CATL-12 | Phase 2 | Complete |
 | CATL-13 | Phase 2 | Complete |
 | SERI-01 | Phase 2 | Complete |
 | SERI-02 | Phase 2 | Complete |
