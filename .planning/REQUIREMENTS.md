@@ -32,7 +32,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Catalog
 
-- [ ] **CATL-01**: Catalog entry has: title, author, publisher, imprint, barcode/ISBN, cover image, description
+- [x] **CATL-01**: Catalog entry has: title, author, publisher, imprint, barcode/ISBN, cover image, description
 - [ ] **CATL-02**: Catalog entries can belong to a series (with volume and edition number)
 - [ ] **CATL-03**: Catalog entries classified by categories (e.g., superhero, manga, horror) and free-form tags
 - [ ] **CATL-04**: Catalog entries associated with characters/heroes (e.g., Batman, Goku)
@@ -44,11 +44,11 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **CATL-10**: Average rating (1-5 stars) displayed on each catalog entry
 - [ ] **CATL-11**: Admin can bulk import catalog entries via CSV
 - [ ] **CATL-12**: Admin can export catalog data as CSV
-- [ ] **CATL-13**: Catalog schema includes barcode/ISBN fields and high-quality cover image storage (future-ready for AI recognition)
+- [x] **CATL-13**: Catalog schema includes barcode/ISBN fields and high-quality cover image storage (future-ready for AI recognition)
 
 ### Series & Tracking
 
-- [ ] **SERI-01**: Each series has: title, description, total number of editions
+- [x] **SERI-01**: Each series has: title, description, total number of editions
 - [ ] **SERI-02**: Catalog entries linked to series with volume and edition number
 - [ ] **SERI-03**: Series listing page with search
 - [ ] **SERI-04**: Series detail page showing all editions
@@ -342,7 +342,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-05 | Phase 1 | Complete |
 | AUTH-06 | Phase 1 | Complete |
 | AUTH-07 | Phase 1 | Complete |
-| CATL-01 | Phase 2 | Pending |
+| CATL-01 | Phase 2 | Complete |
 | CATL-02 | Phase 2 | Pending |
 | CATL-03 | Phase 2 | Pending |
 | CATL-04 | Phase 2 | Pending |
@@ -354,8 +354,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CATL-10 | Phase 2 | Pending |
 | CATL-11 | Phase 2 | Pending |
 | CATL-12 | Phase 2 | Pending |
-| CATL-13 | Phase 2 | Pending |
-| SERI-01 | Phase 2 | Pending |
+| CATL-13 | Phase 2 | Complete |
+| SERI-01 | Phase 2 | Complete |
 | SERI-02 | Phase 2 | Pending |
 | SERI-03 | Phase 2 | Pending |
 | SERI-04 | Phase 2 | Pending |

@@ -5,32 +5,33 @@
 See: .planning/PROJECT.md (updated 2026-02-21)
 
 **Core value:** Collectors can catalog, track, and organize their physical comic book collection — knowing exactly what they have, what they've read, and what's missing from their series.
-**Current focus:** Phase 1 — Foundation and Infrastructure
+**Current focus:** Phase 2 — Catalog and Taxonomy
 
 ## Current Position
 
-Phase: 1 of 10 (Foundation and Infrastructure)
-Plan: 8 of 8 in current phase
+Phase: 2 of 10 (Catalog and Taxonomy)
+Plan: 1 of 7 in current phase
 Status: Executing
-Last activity: 2026-02-22 — Completed 01-06b-PLAN.md (layout system, route groups, API client)
+Last activity: 2026-02-22 — Completed 02-01-PLAN.md (shared schemas and API utilities)
 
-Progress: [█████████░] 9%
+Progress: [██████████░░░░░░░░░░] 11%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
+- Total plans completed: 8
 - Average duration: 11 min
-- Total execution time: 1.3 hours
+- Total execution time: 1.4 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Foundation | 7/8 | 80 min | 11 min |
+| 2. Catalog | 1/7 | 6 min | 6 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-03 (15 min), 01-05 (8 min), 01-04 (8 min), 01-06 (13 min), 01-06b (8 min)
+- Last 5 plans: 01-05 (8 min), 01-04 (8 min), 01-06 (13 min), 01-06b (8 min), 02-01 (6 min)
 - Trend: Steady/Improving
 
 *Updated after each plan completion*
@@ -41,6 +42,7 @@ Progress: [█████████░] 9%
 | Phase 01 P04 | 8min | 2 tasks | 15 files |
 | Phase 01 P06 | 13min | 1 task | 31 files |
 | Phase 01 P06b | 8min | 1 task | 17 files |
+| Phase 02 P01 | 6min | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -82,6 +84,10 @@ Recent decisions affecting current work:
 - [01-06b]: API client uses coordinated single-promise pattern for 401 token refresh to prevent race conditions
 - [01-06b]: Auth layout uses centered card (no sidebar/header); all other route groups use sidebar+header shell
 - [01-06b]: Landing page moved to (public) route group with feature highlight cards
+- [02-01]: Cloudinary returns empty URL/publicId when unconfigured (dev fallback, no crash)
+- [02-01]: Upload middleware uses explicit RequestHandler return type for pnpm strict isolation TS2742 compat
+- [02-01]: Slug uniqueSlug uses unknown intermediate cast for Prisma dynamic model delegate access
+- [02-01]: CSV MIME filter accepts text/csv, application/vnd.ms-excel, and .csv extension fallback
 
 ### Pending Todos
 
@@ -96,5 +102,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 01-06b-PLAN.md (layout system, route groups, API client)
-Resume file: .planning/phases/01-foundation-and-infrastructure/01-06b-SUMMARY.md
+Stopped at: Completed 02-01-PLAN.md (shared schemas and API utilities)
+Resume file: .planning/phases/02-catalog-and-taxonomy/02-01-SUMMARY.md
