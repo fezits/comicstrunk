@@ -151,36 +151,45 @@ export async function refreshTokens(oldRefreshToken: string) {
     data: { revoked: true },
   });
 
-  // Sign new tokens (same token family for rotation)
-  const accessToken = signAccessToken({ userId: payload.userId, role: storedToken.userId ? 'USER' : 'USER' });
-
-  // Get user to include correct role
+  // Get user data for token signing and response
   const user = await prisma.user.findUnique({
     where: { id: payload.userId },
-    select: { role: true },
+    select: { id: true, name: true, email: true, role: true },
   });
 
+  if (!user) {
+    throw new UnauthorizedError('User not found');
+  }
+
+  // Sign new tokens (same token family for rotation)
   const accessTokenFinal = signAccessToken({
-    userId: payload.userId,
-    role: user?.role || 'USER',
+    userId: user.id,
+    role: user.role,
   });
 
   const refreshToken = signRefreshToken({
-    userId: payload.userId,
+    userId: user.id,
     tokenFamily: payload.tokenFamily,
   });
 
   // Store new refresh token hash
   await prisma.refreshToken.create({
     data: {
-      userId: payload.userId,
+      userId: user.id,
       tokenHash: hashToken(refreshToken),
       tokenFamily: payload.tokenFamily,
       expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000),
     },
   });
 
-  return { accessToken: accessTokenFinal, refreshToken };
+  const authUser: AuthUser = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+  };
+
+  return { accessToken: accessTokenFinal, refreshToken, user: authUser };
 }
 
 // === Logout ===

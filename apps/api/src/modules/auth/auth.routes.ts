@@ -91,7 +91,7 @@ router.post(
       }
       const result = await authService.refreshTokens(oldRefreshToken);
       res.cookie(REFRESH_COOKIE_NAME, result.refreshToken, REFRESH_COOKIE_OPTIONS);
-      sendSuccess(res, { accessToken: result.accessToken });
+      sendSuccess(res, { accessToken: result.accessToken, user: result.user });
     } catch (err) {
       next(err);
     }
