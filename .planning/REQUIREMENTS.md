@@ -18,7 +18,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **INFRA-07**: i18n architecture in place (PT-BR at launch, extensible for new languages without code changes)
 - [ ] **INFRA-08**: Responsive layout system (mobile < 768px, tablet 768-1023px, desktop 1024px+)
 - [ ] **INFRA-09**: Dark/light theme with toggle, dark as default, persisted across sessions
-- [ ] **INFRA-10**: Shared contracts package (TypeScript types + Zod schemas) consumed by both apps
+- [x] **INFRA-10**: Shared contracts package (TypeScript types + Zod schemas) consumed by both apps
 
 ### Authentication & Users
 
@@ -334,7 +334,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INFRA-07 | Phase 1 | Pending |
 | INFRA-08 | Phase 1 | Pending |
 | INFRA-09 | Phase 1 | Pending |
-| INFRA-10 | Phase 1 | Pending |
+| INFRA-10 | Phase 1 | Complete |
 | AUTH-01 | Phase 1 | Pending |
 | AUTH-02 | Phase 1 | Pending |
 | AUTH-03 | Phase 1 | Pending |

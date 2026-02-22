@@ -10,33 +10,34 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 1 of 10 (Foundation and Infrastructure)
-Plan: 3 of 8 in current phase
+Plan: 5 of 8 in current phase
 Status: Executing
-Last activity: 2026-02-21 — Completed 01-03-PLAN.md (cPanel deployment config)
+Last activity: 2026-02-22 — Completed 01-05-PLAN.md (shared contracts)
 
-Progress: [███░░░░░░░] 4%
+Progress: [████░░░░░░] 6%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 14 min
-- Total execution time: 0.72 hours
+- Total plans completed: 4
+- Average duration: 13 min
+- Total execution time: 0.85 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Foundation | 3/8 | 43 min | 14 min |
+| 1. Foundation | 4/8 | 51 min | 13 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (16 min), 01-02 (12 min), 01-03 (15 min)
+- Last 5 plans: 01-01 (16 min), 01-02 (12 min), 01-03 (15 min), 01-05 (8 min)
 - Trend: Steady
 
 *Updated after each plan completion*
 | Phase 01 P01 | 16min | 2 tasks | 22 files |
 | Phase 01 P02 | 12min | 2 tasks | 7 files |
 | Phase 01 P03 | 15min | 2 tasks | 8 files |
+| Phase 01 P05 | 8min | 1 task | 5 files |
 
 ## Accumulated Context
 
@@ -61,6 +62,9 @@ Recent decisions affecting current work:
 - [01-03]: Prisma client singleton created in shared/lib for reuse across API modules
 - [01-03]: HTTPS enforcement handled by Apache .htaccess rewrite rules, not Express middleware
 - [01-03]: cPanel production deployment deferred to later validation -- local dev confirmed working
+- [01-05]: Contracts kept CJS build output (dist/) for Node.js runtime -- not switched to direct TS consumption
+- [01-05]: Password schema reused between signup and reset-confirm via shared Zod constant
+- [01-05]: Social handle transforms strip leading @ during Zod parse
 
 ### Pending Todos
 
@@ -74,6 +78,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-21
-Stopped at: Completed 01-03-PLAN.md (cPanel deployment config)
-Resume file: .planning/phases/01-foundation-and-infrastructure/01-03-SUMMARY.md
+Last session: 2026-02-22
+Stopped at: Completed 01-05-PLAN.md (shared contracts)
+Resume file: .planning/phases/01-foundation-and-infrastructure/01-05-SUMMARY.md
