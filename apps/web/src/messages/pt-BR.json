@@ -142,5 +142,30 @@
     "title": "Pagina nao encontrada",
     "description": "A pagina que voce esta procurando nao existe ou foi movida.",
     "backHome": "Voltar ao inicio"
+  },
+  "series": {
+    "title": "Series",
+    "subtitle": "Explore as series de quadrinhos do catalogo",
+    "searchPlaceholder": "Buscar series...",
+    "editions": "edicoes",
+    "noResults": "Nenhuma serie encontrada",
+    "noDescription": "Sem descricao",
+    "previousPage": "Anterior",
+    "nextPage": "Proxima",
+    "pageOf": "Pagina {current} de {total}",
+    "detail": {
+      "allEditions": "Todas as Edicoes",
+      "edition": "Edicao",
+      "volume": "Volume",
+      "noEditions": "Nenhuma edicao cadastrada",
+      "totalEditions": "Total de edicoes",
+      "catalogProgress": "{count} de {total} edicoes no catalogo",
+      "catalogProgressUnknown": "{count} edicoes no catalogo",
+      "notFound": "Serie nao encontrada",
+      "notFoundDescription": "A serie que voce esta procurando nao existe ou foi removida.",
+      "backToSeries": "Voltar para Series",
+      "noRatings": "Sem avaliacoes",
+      "rating": "{rating} ({count})"
+    }
   }
 }
