@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 1 of 10 (Foundation and Infrastructure)
-Plan: 7 of 8 in current phase
+Plan: 8 of 8 in current phase
 Status: Executing
-Last activity: 2026-02-22 — Completed 01-06-PLAN.md (frontend config: i18n, theming, shadcn/ui)
+Last activity: 2026-02-22 — Completed 01-06b-PLAN.md (layout system, route groups, API client)
 
-Progress: [████████░░] 8%
+Progress: [█████████░] 9%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: 12 min
-- Total execution time: 1.2 hours
+- Total plans completed: 7
+- Average duration: 11 min
+- Total execution time: 1.3 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Foundation | 6/8 | 72 min | 12 min |
+| 1. Foundation | 7/8 | 80 min | 11 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (12 min), 01-03 (15 min), 01-05 (8 min), 01-04 (8 min), 01-06 (13 min)
+- Last 5 plans: 01-03 (15 min), 01-05 (8 min), 01-04 (8 min), 01-06 (13 min), 01-06b (8 min)
 - Trend: Steady/Improving
 
 *Updated after each plan completion*
@@ -40,6 +40,7 @@ Progress: [████████░░] 8%
 | Phase 01 P05 | 8min | 1 task | 5 files |
 | Phase 01 P04 | 8min | 2 tasks | 15 files |
 | Phase 01 P06 | 13min | 1 task | 31 files |
+| Phase 01 P06b | 8min | 1 task | 17 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,11 @@ Recent decisions affecting current work:
 - [01-06]: next-intl v4 used instead of v3 per research -- API compatible with plan patterns
 - [01-06]: Purple primary CSS variable (263 84% 55%) with blue secondary (217 91% 60%) in both light/dark themes
 - [01-06]: Sonner used for toasts positioned bottom-right; globals.css moved from src/app/ to src/styles/
+- [01-06b]: Navigation organized into 5 groups (Explorar, Colecao, Pedidos, Conta, Admin) with collapsible sections
+- [01-06b]: Admin nav group filtered by default -- role-based visibility deferred to Phase 10
+- [01-06b]: API client uses coordinated single-promise pattern for 401 token refresh to prevent race conditions
+- [01-06b]: Auth layout uses centered card (no sidebar/header); all other route groups use sidebar+header shell
+- [01-06b]: Landing page moved to (public) route group with feature highlight cards
 
 ### Pending Todos
 
@@ -90,5 +96,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 01-06-PLAN.md (frontend config: i18n, theming, shadcn/ui)
-Resume file: .planning/phases/01-foundation-and-infrastructure/01-06-SUMMARY.md
+Stopped at: Completed 01-06b-PLAN.md (layout system, route groups, API client)
+Resume file: .planning/phases/01-foundation-and-infrastructure/01-06b-SUMMARY.md
