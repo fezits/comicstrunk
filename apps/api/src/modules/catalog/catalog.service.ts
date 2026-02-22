@@ -296,3 +296,106 @@ export async function listCatalogEntries(params: {
 
   return { data, total, page, limit };
 }
+
+// === CSV Import / Export ===
+
+const MAX_IMPORT_ROWS = 1000;
+
+export async function importFromCSV(buffer: Buffer, adminId: string) {
+  const { data: rows } = parseCSV<Record<string, string>>(buffer);
+
+  if (rows.length > MAX_IMPORT_ROWS) {
+    throw new BadRequestError(`CSV exceeds maximum of ${MAX_IMPORT_ROWS} rows`);
+  }
+
+  const errors: Array<{ row: number; message: string }> = [];
+  let created = 0;
+
+  for (let i = 0; i < rows.length; i++) {
+    const rowNumber = i + 2; // +2 accounts for header row + 0-index
+    const raw = rows[i];
+
+    // Validate row with Zod schema
+    const result = catalogImportRowSchema.safeParse(raw);
+    if (!result.success) {
+      const messages = result.error.issues.map((issue) => issue.message).join('; ');
+      errors.push({ row: rowNumber, message: messages });
+      continue;
+    }
+
+    const validated = result.data;
+
+    try {
+      // Look up series by title if seriesTitle column is provided
+      let seriesId: string | undefined;
+      const seriesTitle = raw.seriesTitle?.trim();
+      if (seriesTitle) {
+        const series = await prisma.series.findFirst({
+          where: { title: { contains: seriesTitle } },
+        });
+        if (!series) {
+          errors.push({
+            row: rowNumber,
+            message: `Series "${seriesTitle}" not found — entry created without series`,
+          });
+        } else {
+          seriesId = series.id;
+        }
+      }
+
+      await prisma.catalogEntry.create({
+        data: {
+          title: validated.title,
+          author: validated.author || null,
+          publisher: validated.publisher || null,
+          imprint: validated.imprint || null,
+          barcode: validated.barcode || null,
+          isbn: validated.isbn || null,
+          description: validated.description || null,
+          seriesId: seriesId || null,
+          createdById: adminId,
+          approvalStatus: 'DRAFT',
+        },
+      });
+      created++;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      errors.push({ row: rowNumber, message });
+    }
+  }
+
+  return { created, errors, total: rows.length };
+}
+
+export async function exportToCSV() {
+  const entries = await prisma.catalogEntry.findMany({
+    where: { approvalStatus: 'APPROVED' },
+    orderBy: { title: 'asc' },
+    include: {
+      series: true,
+      categories: { include: { category: true } },
+      tags: { include: { tag: true } },
+      characters: { include: { character: true } },
+    },
+  });
+
+  const rows = entries.map((entry) => ({
+    title: entry.title,
+    author: entry.author || '',
+    publisher: entry.publisher || '',
+    imprint: entry.imprint || '',
+    barcode: entry.barcode || '',
+    isbn: entry.isbn || '',
+    description: entry.description || '',
+    seriesTitle: entry.series?.title || '',
+    volumeNumber: entry.volumeNumber ?? '',
+    editionNumber: entry.editionNumber ?? '',
+    categories: entry.categories.map((c) => c.category.name).join('; '),
+    tags: entry.tags.map((t) => t.tag.name).join('; '),
+    characters: entry.characters.map((ch) => ch.character.name).join('; '),
+    averageRating: entry.averageRating.toString(),
+    ratingCount: entry.ratingCount.toString(),
+  }));
+
+  return generateCSV(rows);
+}

@@ -11,7 +11,7 @@ import type { CatalogSearchInput } from '@comicstrunk/contracts';
 import { validate } from '../../shared/middleware/validate';
 import { authenticate } from '../../shared/middleware/authenticate';
 import { authorize } from '../../shared/middleware/authorize';
-import { uploadSingle } from '../../shared/middleware/upload';
+import { uploadSingle, uploadCSV } from '../../shared/middleware/upload';
 import { sendSuccess, sendPaginated } from '../../shared/utils/response';
 import { BadRequestError } from '../../shared/utils/api-error';
 import * as catalogService from './catalog.service';
@@ -82,6 +82,49 @@ router.get(
         limit: result.limit,
         total: result.total,
       });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// ============================================================================
+// Admin CSV import/export (MUST be before /:id)
+// ============================================================================
+
+// GET /export — admin only, download all APPROVED entries as CSV
+router.get(
+  '/export',
+  authenticate,
+  authorize('ADMIN'),
+  async (_req: Request, res: Response, next: NextFunction) => {
+    try {
+      const csvString = await catalogService.exportToCSV();
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="catalog-export-${Date.now()}.csv"`,
+      );
+      res.send(csvString);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /import — admin only, bulk import from CSV with row-level validation
+router.post(
+  '/import',
+  authenticate,
+  authorize('ADMIN'),
+  uploadCSV('file'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (!req.file) {
+        throw new BadRequestError('No CSV file provided');
+      }
+      const result = await catalogService.importFromCSV(req.file.buffer, req.user!.userId);
+      sendSuccess(res, result);
     } catch (err) {
       next(err);
     }
