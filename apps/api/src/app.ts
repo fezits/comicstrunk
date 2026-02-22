@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express, { type Express } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -6,6 +7,9 @@ import morgan from 'morgan';
 import http from 'http';
 import { CONTRACT_VERSION } from '@comicstrunk/contracts';
 import { prisma } from './shared/lib/prisma';
+import { authRoutes } from './modules/auth/auth.routes';
+import { usersRoutes } from './modules/users/users.routes';
+import { errorHandler } from './shared/middleware/error-handler';
 
 const app: Express = express();
 
@@ -45,9 +49,12 @@ app.get('/health', async (_req, res) => {
   res.status(statusCode).json(payload);
 });
 
-// API v1 routes (will be registered by feature modules in future plans)
-// app.use('/api/v1/auth', authRoutes);
-// app.use('/api/v1/users', usersRoutes);
+// API v1 routes
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/users', usersRoutes);
+
+// Error handler (must be registered LAST)
+app.use(errorHandler);
 
 // Start server - Passenger will capture this listen() call in production
 const port = process.env.PORT || 3001;
