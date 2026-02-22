@@ -45,23 +45,71 @@
     "closeMenu": "Fechar menu"
   },
   "auth": {
-    "login": "Entrar",
-    "signup": "Criar Conta",
-    "email": "E-mail",
-    "password": "Senha",
-    "name": "Nome completo",
-    "forgotPassword": "Esqueci minha senha",
-    "resetPassword": "Redefinir senha",
-    "acceptTerms": "Aceito os Termos de Uso e Politica de Privacidade",
-    "alreadyHaveAccount": "Ja tem uma conta?",
-    "dontHaveAccount": "Nao tem uma conta?",
-    "loginButton": "Entrar",
-    "signupButton": "Criar conta",
-    "resetButton": "Enviar link de redefinicao",
-    "newPassword": "Nova senha",
-    "confirmPassword": "Confirmar senha",
-    "resetSuccess": "Link de redefinicao enviado para seu e-mail",
-    "resetConfirmSuccess": "Senha redefinida com sucesso"
+    "login": {
+      "title": "Entrar",
+      "subtitle": "Acesse sua conta de colecionador"
+    },
+    "signup": {
+      "title": "Criar conta",
+      "subtitle": "Comece a organizar sua colecao"
+    },
+    "forgotPassword": {
+      "title": "Esqueceu a senha?",
+      "subtitle": "Enviaremos um link para redefinir"
+    },
+    "resetPassword": {
+      "title": "Redefinir senha",
+      "subtitle": "Escolha uma nova senha"
+    },
+    "labels": {
+      "email": "E-mail",
+      "password": "Senha",
+      "name": "Nome completo",
+      "confirmPassword": "Confirmar senha",
+      "newPassword": "Nova senha",
+      "acceptTerms": "Aceito os Termos de Uso e Politica de Privacidade"
+    },
+    "buttons": {
+      "login": "Entrar",
+      "signup": "Criar conta",
+      "sendResetLink": "Enviar link de redefinicao",
+      "resetPassword": "Redefinir senha"
+    },
+    "links": {
+      "forgotPassword": "Esqueci minha senha",
+      "haveAccount": "Ja tem uma conta?",
+      "noAccount": "Nao tem uma conta?",
+      "backToLogin": "Voltar para login"
+    },
+    "validation": {
+      "required": "Campo obrigatorio",
+      "invalidEmail": "E-mail invalido",
+      "passwordTooShort": "Senha deve ter no minimo 8 caracteres",
+      "passwordMustContainUppercase": "Deve conter pelo menos uma letra maiuscula",
+      "passwordMustContainLowercase": "Deve conter pelo menos uma letra minuscula",
+      "passwordMustContainNumber": "Deve conter pelo menos um numero",
+      "passwordsMismatch": "As senhas nao conferem",
+      "mustAcceptTerms": "Voce deve aceitar os termos de uso"
+    },
+    "passwordRequirements": {
+      "title": "A senha deve conter:",
+      "minLength": "No minimo 8 caracteres",
+      "uppercase": "Uma letra maiuscula",
+      "lowercase": "Uma letra minuscula",
+      "number": "Um numero"
+    },
+    "success": {
+      "accountCreated": "Conta criada com sucesso!",
+      "loginSuccess": "Login realizado com sucesso!",
+      "resetLinkSent": "Se o email existir, enviaremos um link para redefinir sua senha.",
+      "passwordReset": "Senha redefinida com sucesso!"
+    },
+    "errors": {
+      "invalidCredentials": "Credenciais invalidas. Verifique seu e-mail e senha.",
+      "emailAlreadyExists": "Este e-mail ja esta cadastrado.",
+      "rateLimited": "Muitas tentativas. Tente novamente em alguns minutos.",
+      "invalidOrExpiredToken": "Link invalido ou expirado. Solicite um novo link de redefinicao."
+    }
   },
   "theme": {
     "dark": "Escuro",
