@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 1 of 10 (Foundation and Infrastructure)
-Plan: 6 of 8 in current phase
+Plan: 7 of 8 in current phase
 Status: Executing
-Last activity: 2026-02-22 — Completed 01-04-PLAN.md (auth API endpoints)
+Last activity: 2026-02-22 — Completed 01-06-PLAN.md (frontend config: i18n, theming, shadcn/ui)
 
-Progress: [████░░░░░░] 7%
+Progress: [████████░░] 8%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
+- Total plans completed: 6
 - Average duration: 12 min
-- Total execution time: 0.98 hours
+- Total execution time: 1.2 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Foundation | 5/8 | 59 min | 12 min |
+| 1. Foundation | 6/8 | 72 min | 12 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (16 min), 01-02 (12 min), 01-03 (15 min), 01-05 (8 min), 01-04 (8 min)
+- Last 5 plans: 01-02 (12 min), 01-03 (15 min), 01-05 (8 min), 01-04 (8 min), 01-06 (13 min)
 - Trend: Steady/Improving
 
 *Updated after each plan completion*
@@ -39,6 +39,7 @@ Progress: [████░░░░░░] 7%
 | Phase 01 P03 | 15min | 2 tasks | 8 files |
 | Phase 01 P05 | 8min | 1 task | 5 files |
 | Phase 01 P04 | 8min | 2 tasks | 15 files |
+| Phase 01 P06 | 13min | 1 task | 31 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,10 @@ Recent decisions affecting current work:
 - [01-04]: Password reset uses console logger placeholder (email service deferred to Phase 7)
 - [01-04]: Router exports need explicit Router type annotation due to pnpm strict isolation (TS2742)
 - [01-04]: Added dotenv/config import at top of app.ts for env var loading
+- [01-06]: Space Grotesk chosen as primary font for geometric/technical aesthetic fitting dark immersive vibe
+- [01-06]: next-intl v4 used instead of v3 per research -- API compatible with plan patterns
+- [01-06]: Purple primary CSS variable (263 84% 55%) with blue secondary (217 91% 60%) in both light/dark themes
+- [01-06]: Sonner used for toasts positioned bottom-right; globals.css moved from src/app/ to src/styles/
 
 ### Pending Todos
 
@@ -85,5 +90,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 01-04-PLAN.md (auth API endpoints)
-Resume file: .planning/phases/01-foundation-and-infrastructure/01-04-SUMMARY.md
+Stopped at: Completed 01-06-PLAN.md (frontend config: i18n, theming, shadcn/ui)
+Resume file: .planning/phases/01-foundation-and-infrastructure/01-06-SUMMARY.md
