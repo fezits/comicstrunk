@@ -1,5 +1,8 @@
 import { join } from 'path';
 import type { NextConfig } from 'next';
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 // Standalone output for cPanel Passenger deployment
 // Enabled only in CI or explicitly via STANDALONE=true environment variable.
@@ -17,4 +20,4 @@ const nextConfig: NextConfig = {
     : {}),
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

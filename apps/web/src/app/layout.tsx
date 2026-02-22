@@ -1,9 +1,15 @@
 import type { Metadata } from 'next';
-import './globals.css';
+import { Space_Grotesk } from 'next/font/google';
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-space-grotesk',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'Comics Trunk',
-  description: 'A platform for comic book collectors in Brazil',
+  description: 'Plataforma para colecionadores de quadrinhos no Brasil',
 };
 
 export default function RootLayout({
@@ -13,7 +19,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <body>{children}</body>
+      <body className={`${spaceGrotesk.variable} font-sans antialiased`}>
+        {children}
+      </body>
     </html>
   );
 }

@@ -1,0 +1,74 @@
+{
+  "common": {
+    "appName": "Comics Trunk",
+    "loading": "Carregando...",
+    "error": "Ocorreu um erro",
+    "success": "Sucesso",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "back": "Voltar",
+    "search": "Buscar",
+    "noResults": "Nenhum resultado encontrado",
+    "confirm": "Confirmar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "close": "Fechar"
+  },
+  "nav": {
+    "home": "Inicio",
+    "collection": "Minha Colecao",
+    "marketplace": "Marketplace",
+    "deals": "Ofertas",
+    "settings": "Configuracoes",
+    "admin": "Administracao",
+    "login": "Entrar",
+    "signup": "Cadastrar",
+    "logout": "Sair",
+    "profile": "Perfil"
+  },
+  "auth": {
+    "login": "Entrar",
+    "signup": "Criar Conta",
+    "email": "E-mail",
+    "password": "Senha",
+    "name": "Nome completo",
+    "forgotPassword": "Esqueci minha senha",
+    "resetPassword": "Redefinir senha",
+    "acceptTerms": "Aceito os Termos de Uso e Politica de Privacidade",
+    "alreadyHaveAccount": "Ja tem uma conta?",
+    "dontHaveAccount": "Nao tem uma conta?",
+    "loginButton": "Entrar",
+    "signupButton": "Criar conta",
+    "resetButton": "Enviar link de redefinicao",
+    "newPassword": "Nova senha",
+    "confirmPassword": "Confirmar senha",
+    "resetSuccess": "Link de redefinicao enviado para seu e-mail",
+    "resetConfirmSuccess": "Senha redefinida com sucesso"
+  },
+  "theme": {
+    "dark": "Escuro",
+    "light": "Claro",
+    "toggle": "Alternar tema"
+  },
+  "errors": {
+    "required": "Campo obrigatorio",
+    "invalidEmail": "E-mail invalido",
+    "passwordTooShort": "Senha deve ter no minimo 8 caracteres",
+    "passwordRequirements": "Senha deve conter letras maiusculas, minusculas e numeros",
+    "passwordsMismatch": "As senhas nao conferem",
+    "generic": "Algo deu errado. Tente novamente.",
+    "unauthorized": "Voce precisa estar logado para acessar esta pagina",
+    "forbidden": "Voce nao tem permissao para acessar esta pagina",
+    "notFound": "Pagina nao encontrada"
+  },
+  "home": {
+    "title": "Comics Trunk",
+    "subtitle": "Sua colecao de quadrinhos em um so lugar",
+    "description": "Catalogue, organize e descubra quadrinhos. Conecte-se com outros colecionadores."
+  },
+  "notFound": {
+    "title": "Pagina nao encontrada",
+    "description": "A pagina que voce esta procurando nao existe ou foi movida.",
+    "backHome": "Voltar ao inicio"
+  }
+}
