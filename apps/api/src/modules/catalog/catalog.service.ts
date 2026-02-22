@@ -1,7 +1,14 @@
+import { Prisma } from '@prisma/client';
 import { prisma } from '../../shared/lib/prisma';
 import { uploadImage, deleteImage } from '../../shared/lib/cloudinary';
+import { parseCSV, generateCSV } from '../../shared/lib/csv';
 import { BadRequestError, NotFoundError } from '../../shared/utils/api-error';
-import type { CreateCatalogEntryInput, UpdateCatalogEntryInput } from '@comicstrunk/contracts';
+import { catalogImportRowSchema } from '@comicstrunk/contracts';
+import type {
+  CreateCatalogEntryInput,
+  UpdateCatalogEntryInput,
+  CatalogSearchInput,
+} from '@comicstrunk/contracts';
 
 // === Valid approval state transitions ===
 
@@ -199,6 +206,66 @@ export async function uploadCoverImage(id: string, buffer: Buffer) {
   });
 
   return updated;
+}
+
+// === Combined-filter Search ===
+
+export async function searchCatalog(filters: CatalogSearchInput) {
+  const where: Prisma.CatalogEntryWhereInput = {
+    approvalStatus: 'APPROVED',
+  };
+
+  if (filters.title) {
+    where.title = { contains: filters.title };
+  }
+  if (filters.publisher) {
+    where.publisher = { contains: filters.publisher };
+  }
+  if (filters.seriesId) {
+    where.seriesId = filters.seriesId;
+  }
+  if (filters.categoryIds?.length) {
+    where.categories = { some: { categoryId: { in: filters.categoryIds } } };
+  }
+  if (filters.characterIds?.length) {
+    where.characters = { some: { characterId: { in: filters.characterIds } } };
+  }
+  if (filters.tagIds?.length) {
+    where.tags = { some: { tagId: { in: filters.tagIds } } };
+  }
+  if (filters.yearFrom || filters.yearTo) {
+    const dateFilter: Prisma.DateTimeFilter = {};
+    if (filters.yearFrom) {
+      dateFilter.gte = new Date(`${filters.yearFrom}-01-01`);
+    }
+    if (filters.yearTo) {
+      dateFilter.lte = new Date(`${filters.yearTo}-12-31T23:59:59`);
+    }
+    where.createdAt = dateFilter;
+  }
+
+  const sortFieldMap: Record<string, string> = {
+    title: 'title',
+    createdAt: 'createdAt',
+    averageRating: 'averageRating',
+  };
+  const sortField = sortFieldMap[filters.sortBy] || 'createdAt';
+  const orderBy = { [sortField]: filters.sortOrder };
+
+  const skip = (filters.page - 1) * filters.limit;
+
+  const [entries, total] = await Promise.all([
+    prisma.catalogEntry.findMany({
+      where,
+      skip,
+      take: filters.limit,
+      orderBy,
+      include: catalogIncludes(),
+    }),
+    prisma.catalogEntry.count({ where }),
+  ]);
+
+  return { entries, total, page: filters.page, limit: filters.limit };
 }
 
 // === Admin List ===

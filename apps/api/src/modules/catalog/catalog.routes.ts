@@ -3,9 +3,11 @@ import { z } from 'zod';
 import {
   createCatalogEntrySchema,
   updateCatalogEntrySchema,
+  catalogSearchSchema,
   paginationSchema,
   approvalStatusSchema,
 } from '@comicstrunk/contracts';
+import type { CatalogSearchInput } from '@comicstrunk/contracts';
 import { validate } from '../../shared/middleware/validate';
 import { authenticate } from '../../shared/middleware/authenticate';
 import { authorize } from '../../shared/middleware/authorize';
@@ -67,19 +69,15 @@ router.get(
 // Public endpoints (no auth)
 // ============================================================================
 
-// GET / — public browse: only APPROVED entries
+// GET / — public browse with combined filters: only APPROVED entries
 router.get(
   '/',
-  validate(paginationSchema, 'query'),
+  validate(catalogSearchSchema, 'query'),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { page, limit } = req.query as unknown as { page: number; limit: number };
-      const result = await catalogService.listCatalogEntries({
-        page,
-        limit,
-        approvalStatus: 'APPROVED',
-      });
-      sendPaginated(res, result.data, {
+      const filters = req.query as unknown as CatalogSearchInput;
+      const result = await catalogService.searchCatalog(filters);
+      sendPaginated(res, result.entries, {
         page: result.page,
         limit: result.limit,
         total: result.total,
