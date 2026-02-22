@@ -1,0 +1,24 @@
+import { type Request, type Response, type NextFunction } from 'express';
+import { type ZodSchema, ZodError } from 'zod';
+import { BadRequestError } from '../utils/api-error';
+
+export function validate(schema: ZodSchema, source: 'body' | 'query' | 'params' = 'body') {
+  return (req: Request, _res: Response, next: NextFunction): void => {
+    try {
+      const parsed = schema.parse(req[source]);
+      req[source] = parsed;
+      next();
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const details = error.errors.map((e) => ({
+          field: e.path.join('.'),
+          message: e.message,
+        }));
+        const err = new BadRequestError('Validation failed');
+        (err as BadRequestError & { details: unknown }).details = details;
+        return next(err);
+      }
+      next(error);
+    }
+  };
+}
