@@ -17,9 +17,9 @@ export function CatalogCard({ entry }: CatalogCardProps) {
 
   return (
     <Link href={`/${locale}/catalog/${entry.id}`} className="block group">
-      <div className="w-full min-h-[580px] flex flex-col bg-card text-card-foreground rounded-lg shadow-lg border border-border/50 dark:border-transparent hover:scale-[1.02] transition-transform duration-300 overflow-hidden">
+      <div className="w-full h-[480px] flex flex-col bg-card text-card-foreground rounded-lg shadow-lg border border-border/50 dark:border-transparent hover:scale-[1.02] transition-transform duration-300 overflow-hidden">
         {/* Cover image */}
-        <div className="relative h-80 md:h-72 bg-muted overflow-hidden">
+        <div className="relative h-64 bg-muted overflow-hidden">
           {entry.coverImageUrl ? (
             <img
               src={entry.coverImageUrl}
@@ -69,43 +69,43 @@ export function CatalogCard({ entry }: CatalogCardProps) {
         </div>
 
         {/* Content */}
-        <div className="flex flex-col flex-1 px-3 py-2">
+        <div className="flex flex-col flex-1 px-3 py-2 overflow-hidden">
           {/* Star rating — centered */}
           <div className="flex justify-center mb-1">
             <StarRating rating={entry.averageRating} count={entry.ratingCount} size="sm" />
           </div>
 
-          {/* Title */}
+          {/* Title — fixed height for 2 lines */}
           <h3 className="font-bold text-sm line-clamp-2 h-10 mb-1">
             {entry.title}
           </h3>
 
-          {/* Series badge */}
-          {entry.series && (
-            <div className="mb-1">
+          {/* Series badge — always reserve space */}
+          <div className="h-7 mb-1">
+            {entry.series && (
               <span className="inline-flex items-center gap-1 bg-muted px-2 py-1 rounded-full">
                 <BookOpen className="h-3 w-3 text-primary" />
-                <span className="text-xs text-foreground">{entry.series.title}</span>
+                <span className="text-xs text-foreground line-clamp-1">{entry.series.title}</span>
               </span>
-            </div>
-          )}
+            )}
+          </div>
 
-          {/* Details */}
-          <div className="text-xs space-y-0.5 text-muted-foreground">
+          {/* Details — fills remaining space */}
+          <div className="text-xs space-y-0.5 text-muted-foreground flex-1">
             {entry.author && (
-              <p>
+              <p className="truncate">
                 <span className="font-semibold text-foreground">{t('detail.author')}:</span>{' '}
                 {entry.author}
               </p>
             )}
             {entry.publisher && (
-              <p>
+              <p className="truncate">
                 <span className="font-semibold text-foreground">{t('detail.publisher')}:</span>{' '}
                 {entry.publisher}
               </p>
             )}
             {entry.createdAt && (
-              <p>
+              <p className="truncate">
                 <span className="font-semibold text-foreground">{t('releaseDate')}:</span>{' '}
                 {new Date(entry.createdAt).toLocaleDateString(locale)}
               </p>
