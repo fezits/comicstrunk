@@ -13,6 +13,7 @@ import { categoriesRoutes } from './modules/categories/categories.routes';
 import { tagsRoutes } from './modules/tags/tags.routes';
 import { charactersRoutes } from './modules/characters/characters.routes';
 import { catalogRoutes } from './modules/catalog/catalog.routes';
+import { collectionRoutes } from './modules/collection/collection.routes';
 import { errorHandler } from './shared/middleware/error-handler';
 import { UPLOADS_PATH } from './shared/lib/cloudinary';
 
@@ -70,6 +71,7 @@ export function createApp(): Express {
   app.use('/api/v1/tags', tagsRoutes);
   app.use('/api/v1/characters', charactersRoutes);
   app.use('/api/v1/catalog', catalogRoutes);
+  app.use('/api/v1/collection', collectionRoutes);
 
   // Error handler (must be registered LAST)
   app.use(errorHandler);

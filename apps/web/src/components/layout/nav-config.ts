@@ -46,7 +46,7 @@ export const navGroups: NavGroup[] = [
     requiresAuth: true,
     items: [
       { titleKey: 'nav.collection', href: '/collection', icon: BookOpen },
-      { titleKey: 'nav.seriesProgress', href: '/series-progress', icon: BarChart3 },
+      { titleKey: 'nav.seriesProgress', href: '/collection/series-progress', icon: BarChart3 },
       { titleKey: 'nav.favorites', href: '/favorites', icon: Heart },
     ],
   },
@@ -89,7 +89,7 @@ export const navGroups: NavGroup[] = [
  */
 export const protectedRoutes = [
   '/collection',
-  '/series-progress',
+  '/collection/series-progress',
   '/favorites',
   '/cart',
   '/orders',
