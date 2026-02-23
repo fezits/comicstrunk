@@ -1,12 +1,18 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { BookOpen } from 'lucide-react';
+import { toast } from 'sonner';
+import { BookOpen, Plus, Check } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { StarRating } from './star-rating';
+import { useAuth } from '@/lib/auth/use-auth';
+import { addCollectionItem } from '@/lib/api/collection';
 import type { CatalogEntry } from '@/lib/api/catalog';
 
 interface CatalogDetailProps {
@@ -25,7 +31,13 @@ function DetailRow({ label, value }: { label: string; value: string | number | n
 
 export function CatalogDetail({ entry }: CatalogDetailProps) {
   const t = useTranslations('catalog.detail');
+  const tCollection = useTranslations('collection');
   const locale = useLocale();
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
+
+  const [adding, setAdding] = useState(false);
+  const [added, setAdded] = useState(false);
 
   const categories = entry.categories.map((c) => c.category);
   const tags = entry.tags.map((tg) => tg.tag);
@@ -40,6 +52,26 @@ export function CatalogDetail({ entry }: CatalogDetailProps) {
         .filter(Boolean)
         .join(' — ')
     : null;
+
+  const handleAddToCollection = async () => {
+    setAdding(true);
+    try {
+      await addCollectionItem({ catalogEntryId: entry.id });
+      setAdded(true);
+      toast.success(tCollection('addSuccess'));
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      if (status === 409) {
+        // Already in collection
+        setAdded(true);
+        toast.info(t('alreadyInCollection'));
+      } else {
+        toast.error(tCollection('addError'));
+      }
+    } finally {
+      setAdding(false);
+    }
+  };
 
   return (
     <div className="flex flex-col md:flex-row gap-8">
@@ -56,6 +88,31 @@ export function CatalogDetail({ entry }: CatalogDetailProps) {
             <BookOpen className="h-16 w-16 text-muted-foreground/40" />
           )}
         </div>
+
+        {/* Add to Collection button below cover */}
+        {isAuthenticated && (
+          <div className="mt-4">
+            {added ? (
+              <Button variant="outline" className="w-full" disabled>
+                <Check className="h-4 w-4 mr-2" />
+                {t('addedToCollection')}
+              </Button>
+            ) : (
+              <Button className="w-full" onClick={handleAddToCollection} disabled={adding}>
+                <Plus className="h-4 w-4 mr-2" />
+                {adding ? t('addingToCollection') : t('addToCollection')}
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full mt-1 text-xs"
+              onClick={() => router.push(`/${locale}/collection/add?catalogEntryId=${entry.id}`)}
+            >
+              {t('addWithDetails')}
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Metadata */}

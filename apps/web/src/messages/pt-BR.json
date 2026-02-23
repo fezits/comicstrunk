@@ -190,7 +190,12 @@
       "tags": "Tags",
       "characters": "Personagens",
       "notFound": "Entrada nao encontrada",
-      "notFoundDescription": "A entrada que voce esta procurando nao existe ou foi removida."
+      "notFoundDescription": "A entrada que voce esta procurando nao existe ou foi removida.",
+      "addToCollection": "Adicionar a Colecao",
+      "addingToCollection": "Adicionando...",
+      "addedToCollection": "Na sua colecao",
+      "addWithDetails": "Adicionar com detalhes",
+      "alreadyInCollection": "Este item ja esta na sua colecao"
     }
   },
   "series": {
@@ -412,7 +417,14 @@
       "backToCollection": "Voltar a colecao",
       "noProgress": "Nenhuma serie encontrada na sua colecao",
       "startCollecting": "Adicionar itens a colecao",
-      "collected": "{count} de {total} ({percentage}%)"
+      "collected": "{count} de {total} ({percentage}%)",
+      "missingEditions": "Edicoes faltando",
+      "showMissing": "Ver faltantes",
+      "hideMissing": "Ocultar faltantes",
+      "noMissing": "Colecao completa!",
+      "searchInCatalog": "Buscar no catalogo",
+      "edition": "Ed. {number}",
+      "volume": "Vol. {number}"
     }
   }
 }

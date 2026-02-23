@@ -162,6 +162,19 @@ export async function importCollection(
   return response.data.data;
 }
 
+export interface MissingEdition {
+  id: string;
+  title: string;
+  editionNumber: number | null;
+  volumeNumber: number | null;
+  coverImageUrl: string | null;
+}
+
+export async function getMissingEditions(seriesId: string): Promise<MissingEdition[]> {
+  const response = await apiClient.get(`/collection/missing-editions/${seriesId}`);
+  return response.data.data;
+}
+
 export async function getCSVTemplate(): Promise<void> {
   const response = await apiClient.get('/collection/csv-template', {
     responseType: 'blob',
