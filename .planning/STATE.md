@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 2 of 10 (Catalog and Taxonomy)
-Plan: 5 of 7 in current phase
+Plan: 6 of 7 in current phase
 Status: Executing
-Last activity: 2026-02-23 — Completed 02-05-PLAN.md (series browse UI with listing and detail pages)
+Last activity: 2026-02-23 — Completed 02-06-PLAN.md (catalog browse UI with filters, sorting, pagination, and detail page)
 
-Progress: [████████████░░░░░░░░] 16%
+Progress: [█████████████░░░░░░░] 18%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 12
+- Total plans completed: 13
 - Average duration: 9 min
-- Total execution time: 1.7 hours
+- Total execution time: 1.8 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Foundation | 7/8 | 80 min | 11 min |
-| 2. Catalog | 5/7 | 27 min | 5 min |
+| 2. Catalog | 6/7 | 31 min | 5 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-01 (6 min), 02-02 (7 min), 02-03 (5 min), 02-04 (4 min), 02-05 (5 min)
+- Last 5 plans: 02-02 (7 min), 02-03 (5 min), 02-04 (4 min), 02-05 (5 min), 02-06 (4 min)
 - Trend: Steady/Improving
 
 *Updated after each plan completion*
@@ -47,6 +47,7 @@ Progress: [████████████░░░░░░░░] 16%
 | Phase 02 P03 | 5min | 2 tasks | 3 files |
 | Phase 02 P04 | 4min | 2 tasks | 2 files |
 | Phase 02 P05 | 5min | 2 tasks | 6 files |
+| Phase 02 P06 | 4min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -106,6 +107,11 @@ Recent decisions affecting current work:
 - [02-05]: Series listing uses client-side fetching with URL search params for search state persistence
 - [02-05]: Edition ratings display star icon with numeric rating and count, fallback to 'Sem avaliacoes'
 - [02-05]: Progress indicator shows 'X de Y edicoes' when totalEditions known, otherwise just count
+- [02-06]: URL search params sync for filter state persistence, enabling shareable/bookmarkable catalog URLs
+- [02-06]: Grid/list view toggle with separate CatalogCard and CatalogListItem components
+- [02-06]: Collapsible filter panel on desktop (toggle button) with Sheet drawer on mobile
+- [02-06]: Half-star rating via CSS overflow clipping on lucide Star icon
+- [02-06]: 400ms debounce on search input to reduce API calls during typing
 
 ### Pending Todos
 
@@ -120,5 +126,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 02-05-PLAN.md (series browse UI with listing and detail pages)
-Resume file: .planning/phases/02-catalog-and-taxonomy/02-05-SUMMARY.md
+Stopped at: Completed 02-06-PLAN.md (catalog browse UI with filters, sorting, pagination, and detail page)
+Resume file: .planning/phases/02-catalog-and-taxonomy/02-06-SUMMARY.md
