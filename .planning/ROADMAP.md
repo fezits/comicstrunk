@@ -78,15 +78,13 @@ Plans:
   3. A user can see their series progress — "15 of 42 editions" — and a dedicated page shows all their series with progress bars and a list of missing editions that links to catalog search
   4. A user on the FREE plan cannot add more than 50 copies and sees a clear message with an upgrade suggestion when they hit the limit; a BASIC user can add up to 200
   5. A user can download a CSV template, fill it, import it to populate their collection with error reporting for invalid rows, and export their collection to CSV
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 03-01: Collection API — add/edit/remove copy endpoints, read status with date, atomic collection limit enforcement (UPDATE ... WHERE count < limit), plan-based limit lookup, condition grading, personal notes, photo upload (Cloudinary)
-- [ ] 03-02: Series progress API — series progress calculation endpoint (owned vs. total editions), missing editions list, link data to catalog entries
-- [ ] 03-03: Collection CSV API — downloadable template endpoint, CSV import with row-by-row validation and error report, CSV export
-- [ ] 03-04: Collection UI — collection page (list view with cover thumbnails, condition badges, read status), add-to-collection modal on catalog entry page, edit/remove actions, photo upload
-- [ ] 03-05: Series progress UI — series progress page with progress bars per series, missing editions panel, links from missing editions to catalog/marketplace search
-- [ ] 03-06: Collection CSV UI — import flow (template download, file upload, error report display), export button, plan limit reached state with upgrade CTA
+- [x] 03-01-PLAN.md — Collection API: CRUD, read/sale status, CSV import/export, series progress, plan limits
+- [x] 03-02-PLAN.md — Collection UI polish: add-to-collection on catalog detail, missing editions on series progress
+- [ ] 03-03-PLAN.md — Gap closure: API source sync (missing-editions endpoint, photo upload routes/service, atomic $transaction) (Wave 1)
+- [ ] 03-04-PLAN.md — Gap closure: Frontend plan limit UX + photo upload UI (Wave 2)
 
 ### Phase 4: Marketplace and Orders
 **Goal**: Sellers can list copies for sale and buyers can discover them, add them to a cart with a 24-hour reservation, and create an order — with price, commission, and seller-net amounts all permanently snapshotted at order creation
