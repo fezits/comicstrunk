@@ -1,5 +1,5 @@
 import {
-  Home,
+  Library,
   Store,
   Tag,
   BookOpen,
@@ -10,7 +10,6 @@ import {
   User,
   Settings,
   LayoutDashboard,
-  Library,
   Users,
   FileText,
   type LucideIcon,
@@ -35,7 +34,7 @@ export const navGroups: NavGroup[] = [
   {
     labelKey: 'nav.groups.public',
     items: [
-      { titleKey: 'nav.home', href: '/', icon: Home },
+      { titleKey: 'nav.home', href: '/catalog', icon: Library },
       { titleKey: 'nav.marketplace', href: '/marketplace', icon: Store },
       { titleKey: 'nav.deals', href: '/deals', icon: Tag },
     ],
