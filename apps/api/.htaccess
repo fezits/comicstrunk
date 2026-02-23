@@ -1,0 +1,10 @@
+RewriteEngine On
+
+# Force HTTPS - Apache handles SSL termination for Passenger
+RewriteCond %{HTTPS} !=on
+RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+# Pass requests to Passenger (Node.js)
+PassengerEnabled on
+PassengerAppType node
+PassengerStartupFile dist/app.js

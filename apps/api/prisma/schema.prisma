@@ -1,0 +1,1021 @@
+// Comics Trunk - Complete Database Schema (All 10 Phases)
+// Defined upfront so no phase ever needs a destructive migration.
+//
+// Naming conventions:
+//   - Models: PascalCase
+//   - Fields: camelCase
+//   - Tables: snake_case via @@map
+//   - Columns: snake_case via @map (for multi-word fields)
+//   - Primary keys: @id @default(cuid())
+//   - Timestamps: createdAt @default(now()), updatedAt @updatedAt
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum UserRole {
+  USER
+  SUBSCRIBER
+  ADMIN
+}
+
+enum ApprovalStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ItemCondition {
+  NEW
+  VERY_GOOD
+  GOOD
+  FAIR
+  POOR
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  COMPLETED
+  CANCELLED
+  DISPUTED
+}
+
+enum OrderItemStatus {
+  PENDING
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  COMPLETED
+  CANCELLED
+  DISPUTED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  PIX
+}
+
+enum AccountType {
+  CHECKING
+  SAVINGS
+}
+
+enum PlanType {
+  FREE
+  BASIC
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  PAST_DUE
+  TRIALING
+}
+
+enum BillingInterval {
+  MONTHLY
+  QUARTERLY
+  SEMIANNUAL
+  ANNUAL
+}
+
+enum NotificationType {
+  WELCOME
+  PAYMENT_CONFIRMED
+  ORDER_SHIPPED
+  ITEM_SOLD
+  PASSWORD_RESET
+  DISPUTE_OPENED
+  DISPUTE_RESPONDED
+  DISPUTE_RESOLVED
+  SUBSCRIPTION_PAYMENT_FAILED
+  SUBSCRIPTION_EXPIRED
+}
+
+enum DealType {
+  COUPON
+  PROMOTION
+}
+
+enum HomepageSectionType {
+  BANNER_CAROUSEL
+  CATALOG_HIGHLIGHTS
+  DEALS_OF_DAY
+  FEATURED_COUPONS
+}
+
+enum DisputeReason {
+  NOT_RECEIVED
+  DIFFERENT_FROM_LISTING
+  DAMAGED_IN_TRANSIT
+  NOT_SHIPPED_ON_TIME
+}
+
+enum DisputeStatus {
+  OPEN
+  IN_MEDIATION
+  RESOLVED_REFUND
+  RESOLVED_PARTIAL_REFUND
+  RESOLVED_NO_REFUND
+  CANCELLED
+}
+
+enum LegalDocumentType {
+  TERMS_OF_USE
+  PRIVACY_POLICY
+  SELLER_TERMS
+  PAYMENT_POLICY
+  RETURNS_POLICY
+  SHIPPING_POLICY
+  CANCELLATION_POLICY
+  COOKIES_POLICY
+}
+
+enum DataRequestType {
+  ACCESS
+  CORRECTION
+  DELETION
+  EXPORT
+}
+
+enum DataRequestStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  REJECTED
+}
+
+enum ContactCategory {
+  SUGGESTION
+  PROBLEM
+  PARTNERSHIP
+  OTHER
+}
+
+// ============================================================================
+// AUTH (Phase 1)
+// ============================================================================
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  name            String
+  passwordHash    String    @map("password_hash")
+  role            UserRole  @default(USER)
+  avatarUrl       String?   @map("avatar_url")
+  bio             String?   @db.Text
+  websiteUrl      String?   @map("website_url")
+  twitterHandle   String?   @map("twitter_handle")
+  instagramHandle String?   @map("instagram_handle")
+  acceptedTermsAt DateTime  @map("accepted_terms_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Auth relations
+  refreshTokens  RefreshToken[]
+  passwordResets PasswordReset[]
+
+  // Catalog relations
+  catalogEntries CatalogEntry[]
+
+  // Collection relations
+  collectionItems CollectionItem[]
+
+  // Cart & Marketplace relations
+  cartItems         CartItem[]
+  shippingAddresses ShippingAddress[]
+
+  // Order relations
+  ordersAsBuyer Order[]
+
+  // Payment relations (seller banking)
+  bankAccounts BankAccount[]
+
+  // Subscription relations
+  subscriptions Subscription[]
+
+  // Community relations
+  reviews      Review[]
+  comments     Comment[]
+  commentLikes CommentLike[]
+  favorites    Favorite[]
+
+  // Notification relations
+  notifications           Notification[]
+  notificationPreferences NotificationPreference[]
+
+  // Deal relations (click tracking)
+  clickLogs ClickLog[]
+
+  // Dispute relations
+  disputesAsBuyer  Dispute[] @relation("BuyerDisputes")
+  disputesAsSeller Dispute[] @relation("SellerDisputes")
+  disputesResolved Dispute[] @relation("ResolverDisputes")
+  disputeEvidence  DisputeEvidence[]
+  disputeMessages  DisputeMessage[]
+
+  // Legal relations
+  legalAcceptances LegalAcceptance[]
+
+  // LGPD relations
+  dataRequests DataRequest[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  tokenHash   String   @map("token_hash")
+  tokenFamily String   @map("token_family")
+  revoked     Boolean  @default(false)
+  expiresAt   DateTime @map("expires_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@map("refresh_tokens")
+}
+
+model PasswordReset {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_resets")
+}
+
+// ============================================================================
+// CATALOG (Phase 2)
+// ============================================================================
+
+model CatalogEntry {
+  id              String         @id @default(cuid())
+  title           String
+  author          String?
+  publisher       String?
+  imprint         String?
+  barcode         String?
+  isbn            String?
+  description     String?        @db.Text
+  coverImageUrl   String?        @map("cover_image_url")
+  approvalStatus  ApprovalStatus @default(DRAFT) @map("approval_status")
+  rejectionReason String?        @map("rejection_reason") @db.Text
+  averageRating   Decimal        @default(0) @map("average_rating") @db.Decimal(3, 2)
+  ratingCount     Int            @default(0) @map("rating_count")
+  createdById     String         @map("created_by_id")
+  seriesId        String?        @map("series_id")
+  volumeNumber    Int?           @map("volume_number")
+  editionNumber   Int?           @map("edition_number")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  createdBy User    @relation(fields: [createdById], references: [id])
+  series    Series? @relation(fields: [seriesId], references: [id])
+
+  // Junction table relations
+  categories CatalogCategory[]
+  tags       CatalogTag[]
+  characters CatalogCharacter[]
+
+  // Collection relations
+  collectionItems CollectionItem[]
+
+  // Community relations
+  reviews   Review[]
+  comments  Comment[]
+  favorites Favorite[]
+
+  @@index([createdById])
+  @@index([seriesId])
+  @@index([approvalStatus])
+  @@index([barcode])
+  @@index([isbn])
+  @@map("catalog_entries")
+}
+
+model Series {
+  id            String   @id @default(cuid())
+  title         String
+  description   String?  @db.Text
+  totalEditions Int      @map("total_editions")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  catalogEntries CatalogEntry[]
+
+  @@map("series")
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  catalogEntries CatalogCategory[]
+  deals          Deal[]
+
+  @@map("categories")
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  catalogEntries CatalogTag[]
+
+  @@map("tags")
+}
+
+model Character {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?  @db.Text
+  imageUrl    String?  @map("image_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  catalogEntries CatalogCharacter[]
+
+  @@map("characters")
+}
+
+// Junction tables for many-to-many relations
+
+model CatalogCategory {
+  catalogEntryId String @map("catalog_entry_id")
+  categoryId     String @map("category_id")
+
+  catalogEntry CatalogEntry @relation(fields: [catalogEntryId], references: [id], onDelete: Cascade)
+  category     Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([catalogEntryId, categoryId])
+  @@index([categoryId])
+  @@map("catalog_categories")
+}
+
+model CatalogTag {
+  catalogEntryId String @map("catalog_entry_id")
+  tagId          String @map("tag_id")
+
+  catalogEntry CatalogEntry @relation(fields: [catalogEntryId], references: [id], onDelete: Cascade)
+  tag          Tag          @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([catalogEntryId, tagId])
+  @@index([tagId])
+  @@map("catalog_tags")
+}
+
+model CatalogCharacter {
+  catalogEntryId String @map("catalog_entry_id")
+  characterId    String @map("character_id")
+
+  catalogEntry CatalogEntry @relation(fields: [catalogEntryId], references: [id], onDelete: Cascade)
+  character    Character    @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@id([catalogEntryId, characterId])
+  @@index([characterId])
+  @@map("catalog_characters")
+}
+
+// ============================================================================
+// COLLECTION (Phase 3)
+// ============================================================================
+
+model CollectionItem {
+  id             String        @id @default(cuid())
+  userId         String        @map("user_id")
+  catalogEntryId String        @map("catalog_entry_id")
+  quantity       Int           @default(1)
+  pricePaid      Decimal?      @map("price_paid") @db.Decimal(10, 2)
+  condition      ItemCondition @default(NEW)
+  notes          String?       @db.Text
+  isRead         Boolean       @default(false) @map("is_read")
+  readAt         DateTime?     @map("read_at")
+  isForSale      Boolean       @default(false) @map("is_for_sale")
+  salePrice      Decimal?      @map("sale_price") @db.Decimal(10, 2)
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  user         User         @relation(fields: [userId], references: [id])
+  catalogEntry CatalogEntry @relation(fields: [catalogEntryId], references: [id])
+
+  // Cart relations
+  cartItems CartItem[]
+
+  // Order item relations
+  orderItems OrderItem[]
+
+  @@index([userId])
+  @@index([catalogEntryId])
+  @@index([isForSale])
+  @@map("collection_items")
+}
+
+// ============================================================================
+// CART & MARKETPLACE (Phase 4)
+// ============================================================================
+
+model CartItem {
+  id               String   @id @default(cuid())
+  userId           String   @map("user_id")
+  collectionItemId String   @map("collection_item_id")
+  reservedAt       DateTime @map("reserved_at")
+  expiresAt        DateTime @map("expires_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collectionItem CollectionItem @relation(fields: [collectionItemId], references: [id])
+
+  @@index([userId])
+  @@index([collectionItemId])
+  @@index([expiresAt])
+  @@map("cart_items")
+}
+
+model ShippingAddress {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  label        String?
+  street       String
+  number       String
+  complement   String?
+  neighborhood String
+  city         String
+  state        String
+  zipCode      String   @map("zip_code")
+  isDefault    Boolean  @default(false) @map("is_default")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("shipping_addresses")
+}
+
+model ShippingMethod {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("shipping_methods")
+}
+
+// ============================================================================
+// ORDERS (Phase 4)
+// ============================================================================
+
+model Order {
+  id                      String      @id @default(cuid())
+  orderNumber             String      @unique @map("order_number")
+  buyerId                 String      @map("buyer_id")
+  status                  OrderStatus @default(PENDING)
+  shippingAddressSnapshot Json        @map("shipping_address_snapshot")
+  totalAmount             Decimal     @map("total_amount") @db.Decimal(10, 2)
+  createdAt               DateTime    @default(now()) @map("created_at")
+  updatedAt               DateTime    @updatedAt @map("updated_at")
+
+  buyer User @relation(fields: [buyerId], references: [id])
+
+  orderItems OrderItem[]
+  payments   Payment[]
+  disputes   Dispute[]
+  reviews    Review[]
+
+  @@index([buyerId])
+  @@index([status])
+  @@index([orderNumber])
+  @@map("orders")
+}
+
+model OrderItem {
+  id                       String          @id @default(cuid())
+  orderId                  String          @map("order_id")
+  collectionItemId         String          @map("collection_item_id")
+  sellerId                 String          @map("seller_id")
+  priceSnapshot            Decimal         @map("price_snapshot") @db.Decimal(10, 2)
+  commissionRateSnapshot   Decimal         @map("commission_rate_snapshot") @db.Decimal(5, 4)
+  commissionAmountSnapshot Decimal         @map("commission_amount_snapshot") @db.Decimal(10, 2)
+  sellerNetSnapshot        Decimal         @map("seller_net_snapshot") @db.Decimal(10, 2)
+  status                   OrderItemStatus @default(PENDING)
+  trackingCode             String?         @map("tracking_code")
+  carrier                  String?
+  shippedAt                DateTime?       @map("shipped_at")
+  deliveredAt              DateTime?       @map("delivered_at")
+  cancelledAt              DateTime?       @map("cancelled_at")
+  createdAt                DateTime        @default(now()) @map("created_at")
+  updatedAt                DateTime        @updatedAt @map("updated_at")
+
+  order          Order          @relation(fields: [orderId], references: [id])
+  collectionItem CollectionItem @relation(fields: [collectionItemId], references: [id])
+
+  disputes Dispute[]
+
+  @@index([orderId])
+  @@index([collectionItemId])
+  @@index([sellerId])
+  @@index([status])
+  @@map("order_items")
+}
+
+// ============================================================================
+// PAYMENTS (Phase 5)
+// ============================================================================
+
+model Payment {
+  id                String        @id @default(cuid())
+  orderId           String        @map("order_id")
+  method            PaymentMethod @default(PIX)
+  providerPaymentId String?       @map("provider_payment_id")
+  providerStatus    String?       @map("provider_status")
+  amount            Decimal       @db.Decimal(10, 2)
+  pixQrCode         String?       @map("pix_qr_code") @db.Text
+  pixCopyPaste      String?       @map("pix_copy_paste") @db.Text
+  pixExpiresAt      DateTime?     @map("pix_expires_at")
+  paidAt            DateTime?     @map("paid_at")
+  refundedAmount    Decimal?      @map("refunded_amount") @db.Decimal(10, 2)
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@index([orderId])
+  @@index([providerPaymentId])
+  @@map("payments")
+}
+
+model WebhookEvent {
+  id          String    @id @default(cuid())
+  provider    String
+  eventId     String    @map("event_id")
+  eventType   String    @map("event_type")
+  payload     Json
+  processedAt DateTime? @map("processed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@unique([provider, eventId])
+  @@index([eventType])
+  @@map("webhook_events")
+}
+
+// ============================================================================
+// COMMISSIONS (Phase 4-5)
+// ============================================================================
+
+model CommissionConfig {
+  id        String   @id @default(cuid())
+  planType  PlanType @map("plan_type")
+  rate      Decimal  @db.Decimal(5, 4)
+  minRate   Decimal? @map("min_rate") @db.Decimal(5, 4)
+  maxRate   Decimal? @map("max_rate") @db.Decimal(5, 4)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([planType])
+  @@map("commission_configs")
+}
+
+// ============================================================================
+// SELLER BANKING (Phase 5)
+// ============================================================================
+
+model BankAccount {
+  id            String      @id @default(cuid())
+  userId        String      @map("user_id")
+  bankName      String      @map("bank_name")
+  branchNumber  String      @map("branch_number")
+  accountNumber String      @map("account_number")
+  cpf           String
+  holderName    String      @map("holder_name")
+  accountType   AccountType @map("account_type")
+  isPrimary     Boolean     @default(false) @map("is_primary")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("bank_accounts")
+}
+
+// ============================================================================
+// SUBSCRIPTIONS (Phase 6)
+// ============================================================================
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  userId               String             @map("user_id")
+  stripeCustomerId     String?            @map("stripe_customer_id")
+  stripeSubscriptionId String?            @map("stripe_subscription_id")
+  planType             PlanType           @default(FREE) @map("plan_type")
+  status               SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart   DateTime?          @map("current_period_start")
+  currentPeriodEnd     DateTime?          @map("current_period_end")
+  cancelledAt          DateTime?          @map("cancelled_at")
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([stripeCustomerId])
+  @@index([stripeSubscriptionId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+model PlanConfig {
+  id              String          @id @default(cuid())
+  planType        PlanType        @map("plan_type")
+  name            String
+  price           Decimal         @db.Decimal(10, 2)
+  billingInterval BillingInterval @map("billing_interval")
+  collectionLimit Int             @map("collection_limit")
+  commissionRate  Decimal         @map("commission_rate") @db.Decimal(5, 4)
+  trialDays       Int             @default(0) @map("trial_days")
+  isActive        Boolean         @default(true) @map("is_active")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  @@index([planType])
+  @@index([isActive])
+  @@map("plan_configs")
+}
+
+// ============================================================================
+// COMMUNITY (Phase 7)
+// ============================================================================
+
+model Review {
+  id             String   @id @default(cuid())
+  userId         String   @map("user_id")
+  catalogEntryId String?  @map("catalog_entry_id")
+  sellerId       String?  @map("seller_id")
+  orderId        String?  @map("order_id")
+  rating         Int
+  text           String?  @db.Text
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  user         User          @relation(fields: [userId], references: [id])
+  catalogEntry CatalogEntry? @relation(fields: [catalogEntryId], references: [id])
+  order        Order?        @relation(fields: [orderId], references: [id])
+
+  @@unique([userId, catalogEntryId])
+  @@unique([userId, sellerId, orderId])
+  @@index([catalogEntryId])
+  @@index([sellerId])
+  @@index([orderId])
+  @@map("reviews")
+}
+
+model Comment {
+  id             String   @id @default(cuid())
+  userId         String   @map("user_id")
+  catalogEntryId String   @map("catalog_entry_id")
+  parentId       String?  @map("parent_id")
+  content        String   @db.Text
+  likesCount     Int      @default(0) @map("likes_count")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  user         User         @relation(fields: [userId], references: [id])
+  catalogEntry CatalogEntry @relation(fields: [catalogEntryId], references: [id])
+  parent       Comment?     @relation("CommentReplies", fields: [parentId], references: [id])
+  replies      Comment[]    @relation("CommentReplies")
+
+  likes CommentLike[]
+
+  @@index([userId])
+  @@index([catalogEntryId])
+  @@index([parentId])
+  @@map("comments")
+}
+
+model CommentLike {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  commentId String   @map("comment_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+  @@index([commentId])
+  @@map("comment_likes")
+}
+
+model Favorite {
+  id             String   @id @default(cuid())
+  userId         String   @map("user_id")
+  catalogEntryId String   @map("catalog_entry_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  catalogEntry CatalogEntry @relation(fields: [catalogEntryId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, catalogEntryId])
+  @@index([catalogEntryId])
+  @@map("favorites")
+}
+
+// ============================================================================
+// NOTIFICATIONS (Phase 7)
+// ============================================================================
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String           @map("user_id")
+  type      NotificationType
+  title     String
+  message   String           @db.Text
+  isRead    Boolean          @default(false) @map("is_read")
+  readAt    DateTime?        @map("read_at")
+  metadata  Json?
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, isRead])
+  @@index([type])
+  @@map("notifications")
+}
+
+model NotificationPreference {
+  id        String           @id @default(cuid())
+  userId    String           @map("user_id")
+  type      NotificationType
+  enabled   Boolean          @default(true)
+  createdAt DateTime         @default(now()) @map("created_at")
+  updatedAt DateTime         @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type])
+  @@map("notification_preferences")
+}
+
+// ============================================================================
+// DEALS (Phase 9)
+// ============================================================================
+
+model PartnerStore {
+  id           String   @id @default(cuid())
+  name         String
+  slug         String   @unique
+  affiliateTag String   @map("affiliate_tag")
+  baseUrl      String   @map("base_url")
+  logoUrl      String?  @map("logo_url")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  deals Deal[]
+
+  @@map("partner_stores")
+}
+
+model Deal {
+  id               String    @id @default(cuid())
+  storeId          String    @map("store_id")
+  type             DealType
+  title            String
+  description      String?   @db.Text
+  couponCode       String?   @map("coupon_code")
+  discount         String?
+  bannerUrl        String?   @map("banner_url")
+  affiliateBaseUrl String    @map("affiliate_base_url")
+  categoryId       String?   @map("category_id")
+  startsAt         DateTime? @map("starts_at")
+  expiresAt        DateTime? @map("expires_at")
+  isActive         Boolean   @default(true) @map("is_active")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  store    PartnerStore @relation(fields: [storeId], references: [id])
+  category Category?    @relation(fields: [categoryId], references: [id])
+
+  clickLogs ClickLog[]
+
+  @@index([storeId])
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([expiresAt])
+  @@map("deals")
+}
+
+model ClickLog {
+  id        String   @id @default(cuid())
+  dealId    String   @map("deal_id")
+  userId    String?  @map("user_id")
+  ipAddress String   @map("ip_address")
+  userAgent String?  @map("user_agent") @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  deal Deal  @relation(fields: [dealId], references: [id])
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([dealId, userId, createdAt])
+  @@index([dealId])
+  @@map("click_logs")
+}
+
+// ============================================================================
+// HOMEPAGE (Phase 9)
+// ============================================================================
+
+model HomepageSection {
+  id          String              @id @default(cuid())
+  type        HomepageSectionType
+  title       String?
+  sortOrder   Int                 @map("sort_order")
+  isVisible   Boolean             @default(true) @map("is_visible")
+  contentRefs Json?               @map("content_refs")
+  createdAt   DateTime            @default(now()) @map("created_at")
+  updatedAt   DateTime            @updatedAt @map("updated_at")
+
+  @@index([sortOrder])
+  @@map("homepage_sections")
+}
+
+// ============================================================================
+// DISPUTES (Phase 8)
+// ============================================================================
+
+model Dispute {
+  id           String        @id @default(cuid())
+  orderId      String        @map("order_id")
+  orderItemId  String        @map("order_item_id")
+  buyerId      String        @map("buyer_id")
+  sellerId     String        @map("seller_id")
+  reason       DisputeReason
+  description  String        @db.Text
+  status       DisputeStatus @default(OPEN)
+  resolution   String?       @db.Text
+  resolvedById String?       @map("resolved_by_id")
+  resolvedAt   DateTime?     @map("resolved_at")
+  refundAmount Decimal?      @map("refund_amount") @db.Decimal(10, 2)
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  order     Order     @relation(fields: [orderId], references: [id])
+  orderItem OrderItem @relation(fields: [orderItemId], references: [id])
+  buyer     User      @relation("BuyerDisputes", fields: [buyerId], references: [id])
+  seller    User      @relation("SellerDisputes", fields: [sellerId], references: [id])
+  resolver  User?     @relation("ResolverDisputes", fields: [resolvedById], references: [id])
+
+  evidence DisputeEvidence[]
+  messages DisputeMessage[]
+
+  @@index([orderId])
+  @@index([orderItemId])
+  @@index([buyerId])
+  @@index([sellerId])
+  @@index([status])
+  @@map("disputes")
+}
+
+model DisputeEvidence {
+  id            String   @id @default(cuid())
+  disputeId     String   @map("dispute_id")
+  submittedById String   @map("submitted_by_id")
+  imageUrl      String   @map("image_url")
+  description   String?  @db.Text
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  dispute     Dispute @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+  submittedBy User    @relation(fields: [submittedById], references: [id])
+
+  @@index([disputeId])
+  @@map("dispute_evidence")
+}
+
+model DisputeMessage {
+  id        String   @id @default(cuid())
+  disputeId String   @map("dispute_id")
+  senderId  String   @map("sender_id")
+  message   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  dispute Dispute @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+  sender  User    @relation(fields: [senderId], references: [id])
+
+  @@index([disputeId])
+  @@map("dispute_messages")
+}
+
+// ============================================================================
+// LEGAL (Phase 10)
+// ============================================================================
+
+model LegalDocument {
+  id           String            @id @default(cuid())
+  type         LegalDocumentType
+  version      Int
+  content      String            @db.MediumText
+  dateOfEffect DateTime          @map("date_of_effect")
+  isMandatory  Boolean           @default(false) @map("is_mandatory")
+  createdAt    DateTime          @default(now()) @map("created_at")
+
+  acceptances LegalAcceptance[]
+
+  @@index([type])
+  @@index([type, version])
+  @@map("legal_documents")
+}
+
+model LegalAcceptance {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  documentId String   @map("document_id")
+  acceptedAt DateTime @map("accepted_at")
+  ipAddress  String   @map("ip_address")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user     User          @relation(fields: [userId], references: [id])
+  document LegalDocument @relation(fields: [documentId], references: [id])
+
+  @@index([userId])
+  @@index([documentId])
+  @@map("legal_acceptances")
+}
+
+// ============================================================================
+// LGPD (Phase 10)
+// ============================================================================
+
+model DataRequest {
+  id          String            @id @default(cuid())
+  userId      String            @map("user_id")
+  type        DataRequestType
+  status      DataRequestStatus @default(PENDING)
+  details     String?           @db.Text
+  completedAt DateTime?         @map("completed_at")
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+  @@map("data_requests")
+}
+
+// ============================================================================
+// CONTACT (Phase 10)
+// ============================================================================
+
+model ContactMessage {
+  id         String          @id @default(cuid())
+  name       String
+  email      String
+  category   ContactCategory
+  subject    String
+  message    String          @db.Text
+  isRead     Boolean         @default(false) @map("is_read")
+  isResolved Boolean         @default(false) @map("is_resolved")
+  readAt     DateTime?       @map("read_at")
+  resolvedAt DateTime?       @map("resolved_at")
+  createdAt  DateTime        @default(now()) @map("created_at")
+
+  @@index([isRead])
+  @@index([isResolved])
+  @@map("contact_messages")
+}

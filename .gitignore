@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+
+# Build output
+dist/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Turborepo
+.turbo/
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Prisma
+.prisma/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Debug logs
+npm-debug.log*
+pnpm-debug.log*
