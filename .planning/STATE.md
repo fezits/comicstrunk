@@ -12,16 +12,16 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 Phase: 4 of 10 (Marketplace and Orders)
 Plan: 0 of 7 in current phase
 Status: Ready
-Last activity: 2026-02-23 — Completed 03-02 (collection UI polish: add-to-collection on catalog, missing editions on series progress)
+Last activity: 2026-02-23 — Completed 03-03 (gap closure: missing-editions endpoint, photo upload/remove, atomic transactions)
 
 Progress: [██████████████████████████░░░░] 27%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 16
+- Total plans completed: 17
 - Average duration: 8 min
-- Total execution time: 2.2 hours
+- Total execution time: 2.3 hours
 
 **By Phase:**
 
@@ -29,10 +29,10 @@ Progress: [███████████████████████
 |-------|-------|-------|----------|
 | 1. Foundation | 7/8 | 80 min | 11 min |
 | 2. Catalog | 7/7 | 37 min | 5 min |
-| 3. Collection | 2/2 | 19 min | 10 min |
+| 3. Collection | 3/3 | 25 min | 8 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-06 (4 min), 02-07 (6 min), 03-01 (9 min), 03-02 (10 min)
+- Last 5 plans: 02-07 (6 min), 03-01 (9 min), 03-02 (10 min), 03-03 (6 min)
 - Trend: Steady
 
 *Updated after each plan completion*
@@ -52,6 +52,7 @@ Progress: [███████████████████████
 | Phase 02 P07 | 6min | 2 tasks | 12 files |
 | Phase 03 P01 | 9min | 2 tasks | 7 files |
 | Phase 03 P02 | 10min | 2 tasks | 4 files |
+| Phase 03 P03 | 6min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -125,6 +126,8 @@ Recent decisions affecting current work:
 - [03-02]: Quick add button on catalog detail uses default values for fast workflow; 'Add with details' link provides full form
 - [03-02]: Missing editions fetched lazily on expand to prevent N+1 queries on page load
 - [03-02]: Missing editions link to individual catalog detail pages, not to search results
+- [Phase 03]: [03-03]: BadRequestError for photo limit uses inline message (constructor only accepts 1 arg)
+- [Phase 03]: [03-03]: Migration marked as already applied via prisma migrate resolve since photo_urls column existed from dist
 
 ### Pending Todos
 
@@ -139,5 +142,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 03-02 (collection UI polish: add-to-collection on catalog, missing editions on series progress)
-Resume file: .planning/phases/03-collection-management/03-02-SUMMARY.md
+Stopped at: Completed 03-03 (gap closure: missing-editions endpoint, photo upload/remove, atomic transactions)
+Resume file: .planning/phases/03-collection-management/03-03-SUMMARY.md
