@@ -411,6 +411,16 @@
       "title": "Excluir item da colecao",
       "description": "Tem certeza que deseja excluir este item? Esta acao nao pode ser desfeita."
     },
+    "planLimitMessage": "Limite do plano atingido",
+    "planLimitUpgrade": "Voce atingiu o limite de itens do seu plano. Faca upgrade para o plano BASIC para adicionar ate 200 itens.",
+    "photos": "Fotos",
+    "addPhoto": "Adicionar foto",
+    "removePhoto": "Remover foto",
+    "photoUploading": "Enviando foto...",
+    "photoAdded": "Foto adicionada!",
+    "photoRemoved": "Foto removida!",
+    "photoError": "Erro ao gerenciar foto",
+    "maxPhotos": "Maximo de {limit} fotos por item",
     "seriesProgress": {
       "title": "Progresso de Series",
       "subtitle": "Acompanhe o progresso da sua colecao por serie",

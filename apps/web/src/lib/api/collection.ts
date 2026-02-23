@@ -17,6 +17,7 @@ export interface CollectionItem {
   readAt: string | null;
   isForSale: boolean;
   salePrice: number | null;
+  photoUrls: string[] | null;
   createdAt: string;
   updatedAt: string;
   catalogEntry: CatalogEntry;
@@ -187,4 +188,18 @@ export async function getCSVTemplate(): Promise<void> {
   link.click();
   link.remove();
   window.URL.revokeObjectURL(url);
+}
+
+export async function addPhoto(itemId: string, file: File): Promise<CollectionItem> {
+  const formData = new FormData();
+  formData.append('photo', file);
+  const response = await apiClient.post(`/collection/${itemId}/photos`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data.data;
+}
+
+export async function removePhoto(itemId: string, photoIndex: number): Promise<CollectionItem> {
+  const response = await apiClient.delete(`/collection/${itemId}/photos/${photoIndex}`);
+  return response.data.data;
 }
