@@ -17,7 +17,7 @@ export function CatalogCard({ entry }: CatalogCardProps) {
 
   return (
     <Link href={`/${locale}/catalog/${entry.id}`} className="block group">
-      <div className="w-full min-h-[580px] flex flex-col bg-card text-card-foreground rounded-lg shadow-lg hover:scale-[1.02] transition-transform duration-300 overflow-hidden">
+      <div className="w-full min-h-[580px] flex flex-col bg-card text-card-foreground rounded-lg shadow-lg border border-border/50 dark:border-transparent hover:scale-[1.02] transition-transform duration-300 overflow-hidden">
         {/* Cover image */}
         <div className="relative h-80 md:h-72 bg-muted overflow-hidden">
           {entry.coverImageUrl ? (
@@ -27,8 +27,8 @@ export function CatalogCard({ entry }: CatalogCardProps) {
               className="object-cover object-top w-full h-full"
             />
           ) : (
-            <div className="h-full w-full flex items-center justify-center">
-              <BookOpen className="h-16 w-16 text-muted-foreground/30" />
+            <div className="h-full w-full flex items-center justify-center bg-primary/5 dark:bg-muted">
+              <BookOpen className="h-16 w-16 text-primary/20" />
             </div>
           )}
 

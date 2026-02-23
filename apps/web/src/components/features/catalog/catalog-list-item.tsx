@@ -17,7 +17,7 @@ export function CatalogListItem({ entry }: CatalogListItemProps) {
 
   return (
     <Link href={`/${locale}/catalog/${entry.id}`} className="block group">
-      <div className="relative flex bg-card text-card-foreground p-4 rounded-lg shadow-md hover:scale-[1.02] cursor-pointer transition-transform duration-300">
+      <div className="relative flex bg-card text-card-foreground p-4 rounded-lg shadow-md border border-border/50 dark:border-transparent hover:scale-[1.02] cursor-pointer transition-transform duration-300">
         {/* Cover */}
         <div className="w-24 h-32 shrink-0 mr-4 rounded overflow-hidden bg-muted">
           {entry.coverImageUrl ? (
@@ -27,8 +27,8 @@ export function CatalogListItem({ entry }: CatalogListItemProps) {
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <BookOpen className="h-8 w-8 text-muted-foreground/30" />
+            <div className="w-full h-full flex items-center justify-center bg-primary/5 dark:bg-muted">
+              <BookOpen className="h-8 w-8 text-primary/20" />
             </div>
           )}
         </div>
