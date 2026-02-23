@@ -24,7 +24,7 @@ export function CatalogCard({ entry }: CatalogCardProps) {
             <img
               src={entry.coverImageUrl}
               alt={entry.title}
-              className="object-cover object-top w-full h-full"
+              className="object-contain w-full h-full"
             />
           ) : (
             <div className="h-full w-full flex items-center justify-center bg-primary/5 dark:bg-muted">
