@@ -41,8 +41,11 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Only attempt refresh on 401 and only once per request
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Skip refresh retry for the refresh endpoint itself (prevents deadlock)
+    const isRefreshRequest = originalRequest.url?.includes('/auth/refresh');
+
+    // Only attempt refresh on 401, once per request, and not on refresh requests
+    if (error.response?.status === 401 && !originalRequest._retry && !isRefreshRequest) {
       originalRequest._retry = true;
 
       // Coordinate: only one refresh call at a time
@@ -57,14 +60,9 @@ apiClient.interceptors.response.use(
             return newToken;
           })
           .catch((refreshError) => {
-            // Refresh failed: clear token and redirect to login
+            // Refresh failed: clear token, let AuthProvider handle redirect
             setAccessToken(null);
             refreshPromise = null;
-
-            if (typeof window !== 'undefined') {
-              window.location.href = '/pt-BR/login';
-            }
-
             throw refreshError;
           });
       }

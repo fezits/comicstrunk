@@ -1,5 +1,6 @@
 import { PrismaClient, PlanType, BillingInterval, UserRole } from '@prisma/client';
 import { hashSync } from 'bcryptjs';
+import { seedCatalog } from './seed-catalog';
 
 const prisma = new PrismaClient();
 
@@ -81,7 +82,10 @@ async function main() {
   });
   console.log(`  Commission config: BASIC ${basicCommission.rate} (${basicCommission.id})`);
 
-  console.log('Seeding complete.');
+  // Seed catalog data (categories, tags, characters, series, entries)
+  await seedCatalog(admin.id);
+
+  console.log('\nSeeding complete.');
 }
 
 main()

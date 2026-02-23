@@ -119,10 +119,15 @@ export async function updateCatalogEntry(id: string, data: UpdateCatalogEntryInp
       }
     }
 
-    // Update scalar fields
+    // Update scalar fields; auto-reset REJECTED → DRAFT when entry is edited
+    const statusReset =
+      existing.approvalStatus === 'REJECTED'
+        ? { approvalStatus: 'DRAFT' as const, rejectionReason: null }
+        : {};
+
     await tx.catalogEntry.update({
       where: { id },
-      data: scalarData,
+      data: { ...scalarData, ...statusReset },
     });
   });
 

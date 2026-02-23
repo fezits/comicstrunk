@@ -12,6 +12,11 @@ export async function getAdminCatalogList(params: {
   return response.data;
 }
 
+export async function getAdminCatalogEntry(id: string): Promise<CatalogEntry> {
+  const response = await apiClient.get(`/catalog/admin/${id}`);
+  return response.data.data;
+}
+
 export async function createCatalogEntry(
   data: Record<string, unknown>,
 ): Promise<CatalogEntry> {

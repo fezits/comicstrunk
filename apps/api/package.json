@@ -13,7 +13,8 @@
     "db:studio": "prisma studio",
     "db:generate": "prisma generate",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui --open"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -48,6 +49,7 @@
     "@types/node": "^20.0.0",
     "@types/papaparse": "^5.5.2",
     "@types/supertest": "^6.0.3",
+    "@vitest/ui": "^4.0.18",
     "prisma": "5.22.0",
     "supertest": "^7.2.2",
     "tsx": "^4.0.0",

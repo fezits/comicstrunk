@@ -8,8 +8,8 @@ import type { CreateCatalogEntryInput } from '@comicstrunk/contracts';
 
 import { Skeleton } from '@/components/ui/skeleton';
 import { CatalogForm } from '@/components/features/catalog/catalog-form';
-import { getCatalogEntryById, type CatalogEntry } from '@/lib/api/catalog';
-import { updateCatalogEntry, uploadCoverImage } from '@/lib/api/admin-catalog';
+import type { CatalogEntry } from '@/lib/api/catalog';
+import { getAdminCatalogEntry, updateCatalogEntry, uploadCoverImage } from '@/lib/api/admin-catalog';
 
 export default function EditCatalogEntryPage() {
   const t = useTranslations('admin.catalog');
@@ -23,7 +23,7 @@ export default function EditCatalogEntryPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    getCatalogEntryById(id)
+    getAdminCatalogEntry(id)
       .then(setEntry)
       .catch(() => toast.error(t('notFound')))
       .finally(() => setLoading(false));
