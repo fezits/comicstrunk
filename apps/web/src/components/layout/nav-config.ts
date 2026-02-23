@@ -13,6 +13,7 @@ import {
   Library,
   Users,
   FileText,
+  FolderOpen,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -45,7 +46,7 @@ export const navGroups: NavGroup[] = [
     requiresAuth: true,
     items: [
       { titleKey: 'nav.collection', href: '/collection', icon: BookOpen },
-      { titleKey: 'nav.seriesProgress', href: '/series-progress', icon: BarChart3 },
+      { titleKey: 'nav.seriesProgress', href: '/collection/series-progress', icon: BarChart3 },
       { titleKey: 'nav.favorites', href: '/favorites', icon: Heart },
     ],
   },
@@ -74,6 +75,10 @@ export const navGroups: NavGroup[] = [
       { titleKey: 'nav.adminCatalog', href: '/admin/catalog', icon: Library },
       { titleKey: 'nav.adminUsers', href: '/admin/users', icon: Users },
       { titleKey: 'nav.adminContent', href: '/admin/content', icon: FileText },
+      { titleKey: 'nav.adminCategories', href: '/admin/content/categories', icon: FolderOpen },
+      { titleKey: 'nav.adminSeries', href: '/admin/content/series', icon: BookOpen },
+      { titleKey: 'nav.adminTags', href: '/admin/content/tags', icon: Tag },
+      { titleKey: 'nav.adminCharacters', href: '/admin/content/characters', icon: Users },
     ],
   },
 ];
@@ -84,7 +89,7 @@ export const navGroups: NavGroup[] = [
  */
 export const protectedRoutes = [
   '/collection',
-  '/series-progress',
+  '/collection/series-progress',
   '/favorites',
   '/cart',
   '/orders',

@@ -6,3 +6,4 @@ export * from './common';
 export * from './catalog';
 export * from './series';
 export * from './taxonomy';
+export * from './collection';
