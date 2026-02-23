@@ -12,16 +12,16 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 Phase: 4 of 10 (Marketplace and Orders)
 Plan: 0 of 7 in current phase
 Status: Ready
-Last activity: 2026-02-23 — Completed 03-03 (gap closure: missing-editions endpoint, photo upload/remove, atomic transactions)
+Last activity: 2026-02-23 — Completed 03-04 (gap closure: frontend plan limits + photo UI)
 
-Progress: [██████████████████████████░░░░] 27%
+Progress: [████████████████████████████░░] 29%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 17
+- Total plans completed: 18
 - Average duration: 8 min
-- Total execution time: 2.3 hours
+- Total execution time: 2.4 hours
 
 **By Phase:**
 
@@ -29,10 +29,10 @@ Progress: [███████████████████████
 |-------|-------|-------|----------|
 | 1. Foundation | 7/8 | 80 min | 11 min |
 | 2. Catalog | 7/7 | 37 min | 5 min |
-| 3. Collection | 3/3 | 25 min | 8 min |
+| 3. Collection | 4/4 | 29 min | 7 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-07 (6 min), 03-01 (9 min), 03-02 (10 min), 03-03 (6 min)
+- Last 5 plans: 03-01 (9 min), 03-02 (10 min), 03-03 (6 min), 03-04 (4 min)
 - Trend: Steady
 
 *Updated after each plan completion*
@@ -53,6 +53,7 @@ Progress: [███████████████████████
 | Phase 03 P01 | 9min | 2 tasks | 7 files |
 | Phase 03 P02 | 10min | 2 tasks | 4 files |
 | Phase 03 P03 | 6min | 2 tasks | 4 files |
+| Phase 03 P04 | 4min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -128,6 +129,8 @@ Recent decisions affecting current work:
 - [03-02]: Missing editions link to individual catalog detail pages, not to search results
 - [Phase 03]: [03-03]: BadRequestError for photo limit uses inline message (constructor only accepts 1 arg)
 - [Phase 03]: [03-03]: Migration marked as already applied via prisma migrate resolve since photo_urls column existed from dist
+- [Phase 03]: [03-04]: Plan limit detection uses axios error status 400 + message.includes('Collection limit reached') pattern
+- [Phase 03]: [03-04]: Photo section only rendered in non-editing view to avoid layout conflicts with edit form
 
 ### Pending Todos
 
@@ -142,5 +145,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 03-03 (gap closure: missing-editions endpoint, photo upload/remove, atomic transactions)
-Resume file: .planning/phases/03-collection-management/03-03-SUMMARY.md
+Stopped at: Completed 03-04 (gap closure: frontend plan limits + photo UI)
+Resume file: .planning/phases/03-collection-management/03-04-SUMMARY.md
