@@ -1,11 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useLocale } from 'next-intl';
-import { BookOpen } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { BookOpen, Heart, Plus, Repeat2 } from 'lucide-react';
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { StarRating } from './star-rating';
 import type { CatalogEntry } from '@/lib/api/catalog';
 
@@ -15,62 +13,106 @@ interface CatalogCardProps {
 
 export function CatalogCard({ entry }: CatalogCardProps) {
   const locale = useLocale();
-  const categories = entry.categories.map((c) => c.category);
+  const t = useTranslations('catalog');
 
   return (
     <Link href={`/${locale}/catalog/${entry.id}`} className="block group">
-      <Card className="h-full overflow-hidden transition-shadow hover:shadow-lg">
-        {/* Cover */}
-        <div className="aspect-[2/3] bg-muted flex items-center justify-center overflow-hidden">
+      <div className="w-full min-h-[580px] flex flex-col bg-card text-card-foreground rounded-lg shadow-lg hover:scale-[1.02] transition-transform duration-300 overflow-hidden">
+        {/* Cover image */}
+        <div className="relative h-80 md:h-72 bg-muted overflow-hidden">
           {entry.coverImageUrl ? (
             <img
               src={entry.coverImageUrl}
               alt={entry.title}
-              className="h-full w-full object-cover transition-transform group-hover:scale-105"
+              className="object-cover object-top w-full h-full"
             />
           ) : (
-            <BookOpen className="h-12 w-12 text-muted-foreground/40" />
+            <div className="h-full w-full flex items-center justify-center">
+              <BookOpen className="h-16 w-16 text-muted-foreground/30" />
+            </div>
           )}
+
+          {/* Action buttons — top-right */}
+          <div className="absolute top-2 right-2 flex flex-col items-end space-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <button
+              className="w-8 h-8 flex items-center justify-center bg-primary hover:bg-primary/80 border-2 border-white rounded-full text-white transition"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              title={t('addToCollection')}
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+            <button
+              className="w-8 h-8 flex items-center justify-center bg-primary hover:bg-primary/80 border-2 border-white rounded-full text-white transition"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              title={t('favorite')}
+            >
+              <Heart className="h-4 w-4" />
+            </button>
+            <button
+              className="w-8 h-8 flex items-center justify-center bg-primary hover:bg-primary/80 border-2 border-white rounded-full text-white transition opacity-50 cursor-not-allowed"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              title={t('trade')}
+              disabled
+            >
+              <Repeat2 className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
-        <CardContent className="p-4 space-y-2">
+        {/* Content */}
+        <div className="flex flex-col flex-1 px-3 py-2">
+          {/* Star rating — centered */}
+          <div className="flex justify-center mb-1">
+            <StarRating rating={entry.averageRating} count={entry.ratingCount} size="sm" />
+          </div>
+
           {/* Title */}
-          <h3 className="font-semibold line-clamp-2 group-hover:text-primary transition-colors">
+          <h3 className="font-bold text-sm line-clamp-2 h-10 mb-1">
             {entry.title}
           </h3>
 
-          {/* Author & Publisher */}
-          <p className="text-sm text-muted-foreground truncate">
-            {[entry.author, entry.publisher].filter(Boolean).join(' — ')}
-          </p>
-
           {/* Series badge */}
           {entry.series && (
-            <Badge variant="secondary" className="text-xs">
-              {entry.series.title}
-            </Badge>
-          )}
-
-          {/* Rating */}
-          <StarRating rating={entry.averageRating} count={entry.ratingCount} size="sm" />
-
-          {/* Categories (first 3) */}
-          {categories.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {categories.slice(0, 3).map((cat) => (
-                <Badge key={cat.id} variant="outline" className="text-xs">
-                  {cat.name}
-                </Badge>
-              ))}
-              {categories.length > 3 && (
-                <Badge variant="outline" className="text-xs text-muted-foreground">
-                  +{categories.length - 3}
-                </Badge>
-              )}
+            <div className="mb-1">
+              <span className="inline-flex items-center gap-1 bg-muted px-2 py-1 rounded-full">
+                <BookOpen className="h-3 w-3 text-primary" />
+                <span className="text-xs text-foreground">{entry.series.title}</span>
+              </span>
             </div>
           )}
-        </CardContent>
-      </Card>
+
+          {/* Details */}
+          <div className="text-xs space-y-0.5 text-muted-foreground">
+            {entry.author && (
+              <p>
+                <span className="font-semibold text-foreground">{t('detail.author')}:</span>{' '}
+                {entry.author}
+              </p>
+            )}
+            {entry.publisher && (
+              <p>
+                <span className="font-semibold text-foreground">{t('detail.publisher')}:</span>{' '}
+                {entry.publisher}
+              </p>
+            )}
+            {entry.createdAt && (
+              <p>
+                <span className="font-semibold text-foreground">{t('releaseDate')}:</span>{' '}
+                {new Date(entry.createdAt).toLocaleDateString(locale)}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
     </Link>
   );
 }
