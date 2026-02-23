@@ -65,6 +65,24 @@ router.get(
   },
 );
 
+// GET /admin/:id — admin only, get any entry regardless of approval status
+router.get(
+  '/admin/:id',
+  authenticate,
+  authorize('ADMIN'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const entry = await catalogService.getCatalogEntryById(
+        req.params.id as string,
+        false, // publicOnly = false → returns any status
+      );
+      sendSuccess(res, entry);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
 // ============================================================================
 // Public endpoints (no auth)
 // ============================================================================

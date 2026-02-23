@@ -14,13 +14,14 @@ import { tagsRoutes } from './modules/tags/tags.routes';
 import { charactersRoutes } from './modules/characters/characters.routes';
 import { catalogRoutes } from './modules/catalog/catalog.routes';
 import { errorHandler } from './shared/middleware/error-handler';
+import { UPLOADS_PATH } from './shared/lib/cloudinary';
 
 export function createApp(): Express {
   const app: Express = express();
 
   // Security
   app.set('trust proxy', 1); // Trust first proxy (Apache/Passenger)
-  app.use(helmet());
+  app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
   app.use(
     cors({
       origin: process.env.WEB_URL || 'http://localhost:3000',
@@ -36,6 +37,9 @@ export function createApp(): Express {
   if (process.env.NODE_ENV !== 'test') {
     app.use(morgan('combined'));
   }
+
+  // Serve uploaded files (covers, etc.)
+  app.use('/uploads', express.static(UPLOADS_PATH));
 
   // Health check (outside /api/v1 prefix for simple uptime monitoring)
   app.get('/health', async (_req, res) => {

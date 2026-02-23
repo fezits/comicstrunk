@@ -46,7 +46,13 @@ export async function getSeries(params?: {
   page?: number;
   limit?: number;
 }): Promise<SeriesListResponse> {
-  const response = await apiClient.get('/series', { params });
+  // Strip undefined values so Axios doesn't send "param=undefined" in query string
+  const cleanParams: Record<string, string | number> = {};
+  if (params?.title) cleanParams.title = params.title;
+  if (params?.page != null) cleanParams.page = params.page;
+  if (params?.limit != null) cleanParams.limit = params.limit;
+
+  const response = await apiClient.get('/series', { params: cleanParams });
   return response.data;
 }
 

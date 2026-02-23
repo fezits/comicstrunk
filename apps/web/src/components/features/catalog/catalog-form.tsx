@@ -78,7 +78,7 @@ export function CatalogForm({ entry, onSubmit, onCancel, loading }: CatalogFormP
   const selectedCharacterIds = watch('characterIds') ?? [];
 
   useEffect(() => {
-    Promise.all([getCategories(), getTags(), getCharacters(1, 200), getSeries({ limit: 200 })]).then(
+    Promise.all([getCategories(), getTags(), getCharacters(1, 200), getSeries({ limit: 100 })]).then(
       ([cats, tgs, chars, ser]) => {
         setCategories(cats);
         setTags(tgs);
