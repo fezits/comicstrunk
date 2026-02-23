@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Read(*)",
+      "Write(*)",
+      "Edit(*)",
+      "WebFetch(*)",
+      "WebSearch",
+      "Skill(gsd:progress)",
+      "Skill(gsd:plan-phase)",
+      "Skill(gsd:discuss-phase)"
+    ]
+  }
+}
