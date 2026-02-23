@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 2 of 10 (Catalog and Taxonomy)
-Plan: 4 of 7 in current phase
+Plan: 5 of 7 in current phase
 Status: Executing
-Last activity: 2026-02-22 — Completed 02-04-PLAN.md (catalog search and CSV import/export)
+Last activity: 2026-02-23 — Completed 02-05-PLAN.md (series browse UI with listing and detail pages)
 
-Progress: [████████████░░░░░░░░] 15%
+Progress: [████████████░░░░░░░░] 16%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 11
+- Total plans completed: 12
 - Average duration: 9 min
-- Total execution time: 1.6 hours
+- Total execution time: 1.7 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Foundation | 7/8 | 80 min | 11 min |
-| 2. Catalog | 4/7 | 22 min | 6 min |
+| 2. Catalog | 5/7 | 27 min | 5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-06b (8 min), 02-01 (6 min), 02-02 (7 min), 02-03 (5 min), 02-04 (4 min)
+- Last 5 plans: 02-01 (6 min), 02-02 (7 min), 02-03 (5 min), 02-04 (4 min), 02-05 (5 min)
 - Trend: Steady/Improving
 
 *Updated after each plan completion*
@@ -46,6 +46,7 @@ Progress: [████████████░░░░░░░░] 15%
 | Phase 02 P02 | 7min | 3 tasks | 10 files |
 | Phase 02 P03 | 5min | 2 tasks | 3 files |
 | Phase 02 P04 | 4min | 2 tasks | 2 files |
+| Phase 02 P05 | 5min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -102,6 +103,9 @@ Recent decisions affecting current work:
 - [02-04]: CSV import creates entries as DRAFT status, not PENDING or APPROVED
 - [02-04]: Series lookup during CSV import uses case-insensitive contains match on title
 - [02-04]: Import capped at 1000 rows per CSV file to prevent memory issues
+- [02-05]: Series listing uses client-side fetching with URL search params for search state persistence
+- [02-05]: Edition ratings display star icon with numeric rating and count, fallback to 'Sem avaliacoes'
+- [02-05]: Progress indicator shows 'X de Y edicoes' when totalEditions known, otherwise just count
 
 ### Pending Todos
 
@@ -115,6 +119,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-22
-Stopped at: Completed 02-04-PLAN.md (catalog search and CSV import/export)
-Resume file: .planning/phases/02-catalog-and-taxonomy/02-04-SUMMARY.md
+Last session: 2026-02-23
+Stopped at: Completed 02-05-PLAN.md (series browse UI with listing and detail pages)
+Resume file: .planning/phases/02-catalog-and-taxonomy/02-05-SUMMARY.md

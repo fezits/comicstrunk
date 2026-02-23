@@ -50,8 +50,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **SERI-01**: Each series has: title, description, total number of editions
 - [x] **SERI-02**: Catalog entries linked to series with volume and edition number
-- [ ] **SERI-03**: Series listing page with search
-- [ ] **SERI-04**: Series detail page showing all editions
+- [x] **SERI-03**: Series listing page with search
+- [x] **SERI-04**: Series detail page showing all editions
 - [ ] **SERI-05**: User can see series progress ("15 of 42 editions") when logged in
 - [ ] **SERI-06**: Dedicated series progress page: all series the user collects, with progress bars and missing editions
 - [ ] **SERI-07**: Link from missing editions to catalog/marketplace search
@@ -357,8 +357,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CATL-13 | Phase 2 | Complete |
 | SERI-01 | Phase 2 | Complete |
 | SERI-02 | Phase 2 | Complete |
-| SERI-03 | Phase 2 | Pending |
-| SERI-04 | Phase 2 | Pending |
+| SERI-03 | Phase 2 | Complete |
+| SERI-04 | Phase 2 | Complete |
 | SERI-05 | Phase 3 | Pending |
 | SERI-06 | Phase 3 | Pending |
 | SERI-07 | Phase 3 | Pending |
