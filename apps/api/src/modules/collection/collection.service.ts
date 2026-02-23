@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../../shared/lib/prisma';
 import { parseCSV, generateCSV } from '../../shared/lib/csv';
+import { uploadImage, deleteImage } from '../../shared/lib/cloudinary';
 import { BadRequestError, NotFoundError, ConflictError } from '../../shared/utils/api-error';
 import { collectionImportRowSchema, COLLECTION_LIMITS } from '@comicstrunk/contracts';
 import type {
@@ -13,6 +14,8 @@ import type {
 // === Commission rate (fixed for now, Phase 5 will use CommissionConfig) ===
 
 const COMMISSION_RATE = 0.1; // 10%
+
+const MAX_PHOTOS_PER_ITEM = 5;
 
 // === Standard includes for collection item queries ===
 
@@ -36,11 +39,15 @@ function collectionIncludes() {
 
 // === Plan Limit Check ===
 
-async function checkPlanLimit(userId: string, additionalItems = 1): Promise<void> {
-  const currentCount = await prisma.collectionItem.count({ where: { userId } });
+async function checkPlanLimit(
+  tx: Prisma.TransactionClient,
+  userId: string,
+  additionalItems = 1,
+): Promise<{ currentCount: number; limit: number; planType: string }> {
+  const currentCount = await tx.collectionItem.count({ where: { userId } });
 
   // Check subscription — default to FREE if none
-  const subscription = await prisma.subscription.findFirst({
+  const subscription = await tx.subscription.findFirst({
     where: { userId, status: 'ACTIVE' },
     orderBy: { createdAt: 'desc' },
   });
@@ -53,47 +60,51 @@ async function checkPlanLimit(userId: string, additionalItems = 1): Promise<void
       `Collection limit reached (${limit} items for ${planType} plan). Current: ${currentCount}.`,
     );
   }
+
+  return { currentCount, limit, planType };
 }
 
 // === CRUD Operations ===
 
 export async function addItem(userId: string, data: CreateCollectionItemInput) {
-  // Verify catalog entry exists and is approved
-  const catalogEntry = await prisma.catalogEntry.findUnique({
-    where: { id: data.catalogEntryId },
+  return prisma.$transaction(async (tx) => {
+    // Verify catalog entry exists and is approved
+    const catalogEntry = await tx.catalogEntry.findUnique({
+      where: { id: data.catalogEntryId },
+    });
+
+    if (!catalogEntry || catalogEntry.approvalStatus !== 'APPROVED') {
+      throw new NotFoundError('Catalog entry not found or not approved');
+    }
+
+    // Check for duplicate (same user + same catalog entry)
+    const existing = await tx.collectionItem.findFirst({
+      where: { userId, catalogEntryId: data.catalogEntryId },
+    });
+
+    if (existing) {
+      throw new ConflictError('This item is already in your collection');
+    }
+
+    // Check plan limit atomically
+    await checkPlanLimit(tx, userId);
+
+    const item = await tx.collectionItem.create({
+      data: {
+        userId,
+        catalogEntryId: data.catalogEntryId,
+        quantity: data.quantity,
+        pricePaid: data.pricePaid,
+        condition: data.condition,
+        notes: data.notes,
+        isRead: data.isRead,
+        readAt: data.isRead ? new Date() : null,
+      },
+      include: collectionIncludes(),
+    });
+
+    return item;
   });
-
-  if (!catalogEntry || catalogEntry.approvalStatus !== 'APPROVED') {
-    throw new NotFoundError('Catalog entry not found or not approved');
-  }
-
-  // Check for duplicate (same user + same catalog entry)
-  const existing = await prisma.collectionItem.findFirst({
-    where: { userId, catalogEntryId: data.catalogEntryId },
-  });
-
-  if (existing) {
-    throw new ConflictError('This item is already in your collection');
-  }
-
-  // Check plan limit
-  await checkPlanLimit(userId);
-
-  const item = await prisma.collectionItem.create({
-    data: {
-      userId,
-      catalogEntryId: data.catalogEntryId,
-      quantity: data.quantity,
-      pricePaid: data.pricePaid,
-      condition: data.condition,
-      notes: data.notes,
-      isRead: data.isRead,
-      readAt: data.isRead ? new Date() : null,
-    },
-    include: collectionIncludes(),
-  });
-
-  return item;
 }
 
 export async function updateItem(userId: string, itemId: string, data: UpdateCollectionItemInput) {
@@ -351,6 +362,99 @@ export async function getSeriesProgress(userId: string, seriesId?: string) {
   }));
 }
 
+// === Missing Editions ===
+
+export async function getMissingEditions(userId: string, seriesId: string) {
+  // Get all APPROVED catalog entries in this series
+  const allEditions = await prisma.catalogEntry.findMany({
+    where: { seriesId, approvalStatus: 'APPROVED' },
+    select: {
+      id: true,
+      title: true,
+      editionNumber: true,
+      volumeNumber: true,
+      coverImageUrl: true,
+    },
+    orderBy: { editionNumber: 'asc' },
+  });
+
+  // Get IDs of editions the user already owns
+  const ownedItems = await prisma.collectionItem.findMany({
+    where: {
+      userId,
+      catalogEntry: { seriesId },
+    },
+    select: { catalogEntryId: true },
+  });
+
+  const ownedIds = new Set(ownedItems.map((i) => i.catalogEntryId));
+
+  // Return editions NOT in the user's collection
+  return allEditions.filter((e) => !ownedIds.has(e.id));
+}
+
+// === Photo Management ===
+
+export async function addPhoto(userId: string, itemId: string, photoUrl: string) {
+  const item = await prisma.collectionItem.findUnique({
+    where: { id: itemId },
+    include: collectionIncludes(),
+  });
+
+  if (!item) throw new NotFoundError('Collection item not found');
+  if (item.userId !== userId) throw new NotFoundError('Collection item not found');
+
+  const currentPhotos = Array.isArray(item.photoUrls) ? (item.photoUrls as string[]) : [];
+
+  if (currentPhotos.length >= MAX_PHOTOS_PER_ITEM) {
+    throw new BadRequestError(
+      `Maximum ${MAX_PHOTOS_PER_ITEM} photos per item allowed. Current: ${currentPhotos.length}.`,
+    );
+  }
+
+  return prisma.collectionItem.update({
+    where: { id: itemId },
+    data: { photoUrls: [...currentPhotos, photoUrl] },
+    include: collectionIncludes(),
+  });
+}
+
+export async function removePhoto(userId: string, itemId: string, photoIndex: number) {
+  const item = await prisma.collectionItem.findUnique({
+    where: { id: itemId },
+    include: collectionIncludes(),
+  });
+
+  if (!item) throw new NotFoundError('Collection item not found');
+  if (item.userId !== userId) throw new NotFoundError('Collection item not found');
+
+  const currentPhotos = Array.isArray(item.photoUrls) ? (item.photoUrls as string[]) : [];
+
+  if (photoIndex < 0 || photoIndex >= currentPhotos.length) {
+    throw new BadRequestError('Invalid photo index');
+  }
+
+  // Try to clean up the image file (Cloudinary or local)
+  const photoUrl = currentPhotos[photoIndex];
+  try {
+    // Extract publicId from URL for Cloudinary cleanup
+    const cloudinaryMatch = photoUrl.match(/\/comicstrunk\/collection\/[^/.]+/);
+    if (cloudinaryMatch) {
+      await deleteImage(cloudinaryMatch[0].substring(1)); // Remove leading /
+    }
+  } catch {
+    // Silently continue if cleanup fails — photo URL already removed from DB
+  }
+
+  const updatedPhotos = currentPhotos.filter((_, idx) => idx !== photoIndex);
+
+  return prisma.collectionItem.update({
+    where: { id: itemId },
+    data: { photoUrls: updatedPhotos.length > 0 ? updatedPhotos : Prisma.JsonNull },
+    include: collectionIncludes(),
+  });
+}
+
 // === CSV Import ===
 
 const MAX_IMPORT_ROWS = 500;
@@ -366,70 +470,72 @@ export async function importCSV(userId: string, buffer: Buffer) {
     throw new BadRequestError(`CSV exceeds maximum of ${MAX_IMPORT_ROWS} rows`);
   }
 
-  // Check plan limit upfront
-  await checkPlanLimit(userId, rows.length);
+  return prisma.$transaction(async (tx) => {
+    // Check plan limit atomically
+    await checkPlanLimit(tx, userId, rows.length);
 
-  const errors: Array<{ row: number; message: string }> = [];
-  let imported = 0;
-  let skipped = 0;
+    const errors: Array<{ row: number; message: string }> = [];
+    let imported = 0;
+    let skipped = 0;
 
-  for (let i = 0; i < rows.length; i++) {
-    const rowNumber = i + 2; // +2 for header row + 0-index
-    const raw = rows[i];
+    for (let i = 0; i < rows.length; i++) {
+      const rowNumber = i + 2; // +2 for header row + 0-index
+      const raw = rows[i];
 
-    const result = collectionImportRowSchema.safeParse(raw);
-    if (!result.success) {
-      const messages = result.error.issues.map((issue) => issue.message).join('; ');
-      errors.push({ row: rowNumber, message: messages });
-      continue;
-    }
-
-    const validated = result.data;
-
-    try {
-      // Find catalog entry by title
-      const catalogEntry = await prisma.catalogEntry.findFirst({
-        where: {
-          title: { contains: validated.catalogEntryTitle },
-          approvalStatus: 'APPROVED',
-        },
-      });
-
-      if (!catalogEntry) {
-        errors.push({ row: rowNumber, message: `Catalog entry "${validated.catalogEntryTitle}" not found` });
+      const result = collectionImportRowSchema.safeParse(raw);
+      if (!result.success) {
+        const messages = result.error.issues.map((issue) => issue.message).join('; ');
+        errors.push({ row: rowNumber, message: messages });
         continue;
       }
 
-      // Check for duplicate
-      const existing = await prisma.collectionItem.findFirst({
-        where: { userId, catalogEntryId: catalogEntry.id },
-      });
+      const validated = result.data;
 
-      if (existing) {
-        skipped++;
-        continue;
+      try {
+        // Find catalog entry by title
+        const catalogEntry = await tx.catalogEntry.findFirst({
+          where: {
+            title: { contains: validated.catalogEntryTitle },
+            approvalStatus: 'APPROVED',
+          },
+        });
+
+        if (!catalogEntry) {
+          errors.push({ row: rowNumber, message: `Catalog entry "${validated.catalogEntryTitle}" not found` });
+          continue;
+        }
+
+        // Check for duplicate
+        const existing = await tx.collectionItem.findFirst({
+          where: { userId, catalogEntryId: catalogEntry.id },
+        });
+
+        if (existing) {
+          skipped++;
+          continue;
+        }
+
+        await tx.collectionItem.create({
+          data: {
+            userId,
+            catalogEntryId: catalogEntry.id,
+            quantity: validated.quantity,
+            pricePaid: validated.pricePaid,
+            condition: validated.condition,
+            notes: validated.notes || null,
+            isRead: validated.isRead,
+            readAt: validated.isRead ? new Date() : null,
+          },
+        });
+        imported++;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Unknown error';
+        errors.push({ row: rowNumber, message });
       }
-
-      await prisma.collectionItem.create({
-        data: {
-          userId,
-          catalogEntryId: catalogEntry.id,
-          quantity: validated.quantity,
-          pricePaid: validated.pricePaid,
-          condition: validated.condition,
-          notes: validated.notes || null,
-          isRead: validated.isRead,
-          readAt: validated.isRead ? new Date() : null,
-        },
-      });
-      imported++;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
-      errors.push({ row: rowNumber, message });
     }
-  }
 
-  return { imported, skipped, errors, total: rows.length };
+    return { imported, skipped, errors, total: rows.length };
+  });
 }
 
 // === CSV Export ===
