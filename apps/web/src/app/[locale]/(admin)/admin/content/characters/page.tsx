@@ -43,7 +43,7 @@ export default function AdminCharactersPage() {
   const fetchItems = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await getCharacters(1, 200);
+      const res = await getCharacters(1, 100);
       setItems(res.data as CharacterItem[]);
     } catch {
       toast.error(tCommon('error'));
