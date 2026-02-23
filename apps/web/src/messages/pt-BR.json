@@ -34,6 +34,10 @@
     "adminCatalog": "Catalogo",
     "adminUsers": "Usuarios",
     "adminContent": "Conteudo",
+    "adminCategories": "Categorias",
+    "adminSeries": "Series",
+    "adminTags": "Tags",
+    "adminCharacters": "Personagens",
     "groups": {
       "public": "Explorar",
       "collection": "Minha Colecao",
@@ -273,10 +277,15 @@
       }
     },
     "content": {
+      "title": "Gestao de Conteudo",
       "series": "Series",
+      "seriesDesc": "Gerenciar series de quadrinhos e edicoes",
       "categories": "Categorias",
+      "categoriesDesc": "Gerenciar categorias do catalogo",
       "tags": "Tags",
+      "tagsDesc": "Gerenciar tags de classificacao",
       "characters": "Personagens",
+      "charactersDesc": "Gerenciar personagens e herois",
       "create": "Criar",
       "save": "Salvar",
       "name": "Nome",
