@@ -17,14 +17,14 @@ export function CatalogCard({ entry }: CatalogCardProps) {
 
   return (
     <Link href={`/${locale}/catalog/${entry.id}`} className="block group">
-      <div className="w-full h-[480px] flex flex-col bg-card text-card-foreground rounded-lg shadow-lg border border-border/50 dark:border-transparent hover:scale-[1.02] transition-transform duration-300 overflow-hidden">
+      <div className="w-full flex flex-col bg-card text-card-foreground rounded-lg shadow-lg border border-border/50 dark:border-transparent hover:scale-[1.02] transition-transform duration-300 overflow-hidden">
         {/* Cover image */}
-        <div className="relative h-64 bg-muted overflow-hidden">
+        <div className="relative aspect-[2/3] bg-muted overflow-hidden">
           {entry.coverImageUrl ? (
             <img
               src={entry.coverImageUrl}
               alt={entry.title}
-              className="object-contain w-full h-full"
+              className="h-full w-full object-cover transition-transform group-hover:scale-105"
             />
           ) : (
             <div className="h-full w-full flex items-center justify-center bg-primary/5 dark:bg-muted">
