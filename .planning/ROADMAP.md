@@ -96,16 +96,16 @@ Plans:
   3. A buyer can manage multiple delivery addresses and select one during checkout; the order is created with a unique identifier and all prices/commission/seller-net permanently snapshotted
   4. An order containing items from multiple sellers shows each item's shipping tracking separately; each item has its own status in the PENDING → PAID → PROCESSING → SHIPPED → DELIVERED → COMPLETED flow
   5. A seller can enter a tracking code and carrier for a shipped item; items not shipped within 7 days are automatically cancelled
-**Plans**: TBD
+**Plans**: 7 plans
 
 Plans:
-- [ ] 04-01: Cart API — atomic cart reservation (UPDATE ... WHERE status = 'available', check affectedRows === 1), 24h expiry, max 50 items, session persistence, self-purchase prevention, expiry release cron, 7-day abandoned cart cleanup cron
-- [ ] 04-02: Order API — order creation with unique identifier generation (ORD-YYYYMMDD-XXXXXX), price snapshot, commission snapshot (rate from seller's current plan), seller-net snapshot as NOT NULL columns; multi-seller order splitting; order status state machine
-- [ ] 04-03: Shipping and address API — address CRUD (multiple addresses, default selection), admin-configurable shipping methods, seller tracking code update endpoint, shipping status notifications trigger, auto-cancel cron for unshipped items after 7 days
-- [ ] 04-04: Commission API — commission rate lookup by seller plan (FREE: 10%, BASIC: 8%), admin rate configuration with min/max, real-time net amount calculation endpoint
-- [ ] 04-05: Marketplace UI — marketplace listing page (search, filter by condition/price/publisher/character), seller profile public page, listing detail page with commission transparency display
-- [ ] 04-06: Cart and checkout UI — cart sidebar/page with reservation countdown, multi-seller grouping, address selection at checkout, order summary with price + commission + seller-net per item
-- [ ] 04-07: Order management UI — buyer order history page, order detail page (status timeline, per-item tracking), seller dashboard orders page, seller tracking code entry form
+- [ ] 04-01-PLAN.md — Contracts schemas + commission API + cron infrastructure + utilities (Wave 1)
+- [ ] 04-02-PLAN.md — Cart API: atomic reservation, 24h expiry, self-purchase prevention, 50-item limit (Wave 2)
+- [ ] 04-03-PLAN.md — Shipping/address API: address CRUD, shipping methods, seller tracking (Wave 2)
+- [ ] 04-04-PLAN.md — Order API: creation from cart with snapshots, state machine, cancellation (Wave 3)
+- [ ] 04-05-PLAN.md — Marketplace UI: browse, listing detail, seller profile, API clients (Wave 3)
+- [ ] 04-06-PLAN.md — Cart + checkout UI: sidebar with countdown, address selection, order creation (Wave 4)
+- [ ] 04-07-PLAN.md — Order management UI: buyer/seller dashboards, status timeline, tracking form (Wave 4)
 
 ### Phase 5: Payments and Commissions
 **Goal**: Buyers can pay for orders with PIX (QR code and copia-e-cola), payment status is confirmed automatically via webhook with idempotency protection, and sellers have a clear view of their payouts pending admin processing
