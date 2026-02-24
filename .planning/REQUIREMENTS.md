@@ -386,12 +386,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ORDR-05 | Phase 4 | Pending |
 | ORDR-06 | Phase 4 | Pending |
 | ORDR-07 | Phase 4 | Pending |
-| ORDR-08 | Phase 4 | Pending |
+| ORDR-08 | Phase 5 | Pending |
 | SHIP-01 | Phase 4 | Pending |
 | SHIP-02 | Phase 4 | Pending |
 | SHIP-03 | Phase 4 | Pending |
 | SHIP-04 | Phase 4 | Pending |
-| SHIP-05 | Phase 4 | Pending |
+| SHIP-05 | Phase 7 | Pending |
 | COMM-01 | Phase 4 | Pending |
 | COMM-02 | Phase 4 | Pending |
 | COMM-03 | Phase 4 | Pending |

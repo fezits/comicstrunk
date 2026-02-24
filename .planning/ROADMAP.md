@@ -89,7 +89,7 @@ Plans:
 ### Phase 4: Marketplace and Orders
 **Goal**: Sellers can list copies for sale and buyers can discover them, add them to a cart with a 24-hour reservation, and create an order — with price, commission, and seller-net amounts all permanently snapshotted at order creation
 **Depends on**: Phase 3
-**Requirements**: CART-01, CART-02, CART-03, CART-04, CART-05, CART-06, CART-07, CART-08, ORDR-01, ORDR-02, ORDR-03, ORDR-04, ORDR-05, ORDR-06, ORDR-07, ORDR-08, SHIP-01, SHIP-02, SHIP-03, SHIP-04, SHIP-05, COMM-01, COMM-02, COMM-03, COMM-04, COMM-05
+**Requirements**: CART-01, CART-02, CART-03, CART-04, CART-05, CART-06, CART-07, CART-08, ORDR-01, ORDR-02, ORDR-03, ORDR-04, ORDR-05, ORDR-06, ORDR-07, SHIP-01, SHIP-02, SHIP-03, SHIP-04, COMM-01, COMM-02, COMM-03, COMM-04, COMM-05
 **Success Criteria** (what must be TRUE):
   1. A seller can mark a copy as for sale with a price and immediately sees the commission amount and net payout in BRL in real time; the listing appears in marketplace search
   2. A buyer can add a copy to their cart, see the 24-hour reservation countdown, and cannot add a copy already reserved by another buyer or listed by themselves
@@ -110,7 +110,7 @@ Plans:
 ### Phase 5: Payments and Commissions
 **Goal**: Buyers can pay for orders with PIX (QR code and copia-e-cola), payment status is confirmed automatically via webhook with idempotency protection, and sellers have a clear view of their payouts pending admin processing
 **Depends on**: Phase 4
-**Requirements**: PYMT-01, PYMT-02, PYMT-03, PYMT-04, PYMT-05, PYMT-06, PYMT-07, PYMT-08, COMM-06, BANK-01, BANK-02, BANK-03
+**Requirements**: ORDR-08, PYMT-01, PYMT-02, PYMT-03, PYMT-04, PYMT-05, PYMT-06, PYMT-07, PYMT-08, COMM-06, BANK-01, BANK-02, BANK-03
 **Success Criteria** (what must be TRUE):
   1. A buyer at checkout sees a PIX QR code and copia-e-cola string; after paying in their banking app, the order status updates to Paid automatically within minutes
   2. The same PIX webhook event delivered twice by Mercado Pago does not create duplicate commissions, emails, or status transitions — the idempotency guard blocks the duplicate silently
@@ -153,7 +153,7 @@ Plans:
 ### Phase 7: Community and Notifications
 **Goal**: Users can engage with the catalog through reviews, comments, and favorites; buyers and sellers can rate each other after transactions; and the platform communicates proactively via in-app notifications and transactional emails
 **Depends on**: Phase 5
-**Requirements**: SOCL-01, SOCL-02, SOCL-03, SOCL-04, SOCL-05, SOCL-06, SOCL-07, NOTF-01, NOTF-02, NOTF-03, NOTF-04, NOTF-05, NOTF-06, NOTF-07, NOTF-08, NOTF-09
+**Requirements**: SHIP-05, SOCL-01, SOCL-02, SOCL-03, SOCL-04, SOCL-05, SOCL-06, SOCL-07, NOTF-01, NOTF-02, NOTF-03, NOTF-04, NOTF-05, NOTF-06, NOTF-07, NOTF-08, NOTF-09
 **Success Criteria** (what must be TRUE):
   1. A logged-in user can write a 1-5 star review with text on a catalog entry, edit it later, and see the updated average rating reflected on the entry; a buyer can rate a seller only after a completed order
   2. A user can comment on a catalog entry, reply to a comment (one nesting level), and like any comment; they can favorite a catalog entry and access all favorites from their profile
