@@ -78,41 +78,39 @@ Plans:
   3. A user can see their series progress — "15 of 42 editions" — and a dedicated page shows all their series with progress bars and a list of missing editions that links to catalog search
   4. A user on the FREE plan cannot add more than 50 copies and sees a clear message with an upgrade suggestion when they hit the limit; a BASIC user can add up to 200
   5. A user can download a CSV template, fill it, import it to populate their collection with error reporting for invalid rows, and export their collection to CSV
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 03-01: Collection API — add/edit/remove copy endpoints, read status with date, atomic collection limit enforcement (UPDATE ... WHERE count < limit), plan-based limit lookup, condition grading, personal notes, photo upload (Cloudinary)
-- [ ] 03-02: Series progress API — series progress calculation endpoint (owned vs. total editions), missing editions list, link data to catalog entries
-- [ ] 03-03: Collection CSV API — downloadable template endpoint, CSV import with row-by-row validation and error report, CSV export
-- [ ] 03-04: Collection UI — collection page (list view with cover thumbnails, condition badges, read status), add-to-collection modal on catalog entry page, edit/remove actions, photo upload
-- [ ] 03-05: Series progress UI — series progress page with progress bars per series, missing editions panel, links from missing editions to catalog/marketplace search
-- [ ] 03-06: Collection CSV UI — import flow (template download, file upload, error report display), export button, plan limit reached state with upgrade CTA
+- [x] 03-01-PLAN.md — Collection API: CRUD, read/sale status, CSV import/export, series progress, plan limits
+- [x] 03-02-PLAN.md — Collection UI polish: add-to-collection on catalog detail, missing editions on series progress
+- [ ] 03-03-PLAN.md — Gap closure: API source sync (missing-editions endpoint, photo upload routes/service, atomic $transaction) (Wave 1)
+- [ ] 03-04-PLAN.md — Gap closure: Frontend plan limit UX + photo upload UI (Wave 2)
 
 ### Phase 4: Marketplace and Orders
 **Goal**: Sellers can list copies for sale and buyers can discover them, add them to a cart with a 24-hour reservation, and create an order — with price, commission, and seller-net amounts all permanently snapshotted at order creation
 **Depends on**: Phase 3
-**Requirements**: CART-01, CART-02, CART-03, CART-04, CART-05, CART-06, CART-07, CART-08, ORDR-01, ORDR-02, ORDR-03, ORDR-04, ORDR-05, ORDR-06, ORDR-07, ORDR-08, SHIP-01, SHIP-02, SHIP-03, SHIP-04, SHIP-05, COMM-01, COMM-02, COMM-03, COMM-04, COMM-05
+**Requirements**: CART-01, CART-02, CART-03, CART-04, CART-05, CART-06, CART-07, CART-08, ORDR-01, ORDR-02, ORDR-03, ORDR-04, ORDR-05, ORDR-06, ORDR-07, SHIP-01, SHIP-02, SHIP-03, SHIP-04, COMM-01, COMM-02, COMM-03, COMM-04, COMM-05
 **Success Criteria** (what must be TRUE):
   1. A seller can mark a copy as for sale with a price and immediately sees the commission amount and net payout in BRL in real time; the listing appears in marketplace search
   2. A buyer can add a copy to their cart, see the 24-hour reservation countdown, and cannot add a copy already reserved by another buyer or listed by themselves
   3. A buyer can manage multiple delivery addresses and select one during checkout; the order is created with a unique identifier and all prices/commission/seller-net permanently snapshotted
   4. An order containing items from multiple sellers shows each item's shipping tracking separately; each item has its own status in the PENDING → PAID → PROCESSING → SHIPPED → DELIVERED → COMPLETED flow
   5. A seller can enter a tracking code and carrier for a shipped item; items not shipped within 7 days are automatically cancelled
-**Plans**: TBD
+**Plans**: 7 plans
 
 Plans:
-- [ ] 04-01: Cart API — atomic cart reservation (UPDATE ... WHERE status = 'available', check affectedRows === 1), 24h expiry, max 50 items, session persistence, self-purchase prevention, expiry release cron, 7-day abandoned cart cleanup cron
-- [ ] 04-02: Order API — order creation with unique identifier generation (ORD-YYYYMMDD-XXXXXX), price snapshot, commission snapshot (rate from seller's current plan), seller-net snapshot as NOT NULL columns; multi-seller order splitting; order status state machine
-- [ ] 04-03: Shipping and address API — address CRUD (multiple addresses, default selection), admin-configurable shipping methods, seller tracking code update endpoint, shipping status notifications trigger, auto-cancel cron for unshipped items after 7 days
-- [ ] 04-04: Commission API — commission rate lookup by seller plan (FREE: 10%, BASIC: 8%), admin rate configuration with min/max, real-time net amount calculation endpoint
-- [ ] 04-05: Marketplace UI — marketplace listing page (search, filter by condition/price/publisher/character), seller profile public page, listing detail page with commission transparency display
-- [ ] 04-06: Cart and checkout UI — cart sidebar/page with reservation countdown, multi-seller grouping, address selection at checkout, order summary with price + commission + seller-net per item
-- [ ] 04-07: Order management UI — buyer order history page, order detail page (status timeline, per-item tracking), seller dashboard orders page, seller tracking code entry form
+- [ ] 04-01-PLAN.md — Contracts schemas + commission API + cron infrastructure + utilities (Wave 1)
+- [ ] 04-02-PLAN.md — Cart API: atomic reservation, 24h expiry, self-purchase prevention, 50-item limit (Wave 2)
+- [ ] 04-03-PLAN.md — Shipping/address API: address CRUD, shipping methods, seller tracking (Wave 2)
+- [ ] 04-04-PLAN.md — Order API: creation from cart with snapshots, state machine, cancellation (Wave 3)
+- [ ] 04-05-PLAN.md — Marketplace UI: browse, listing detail, seller profile, API clients (Wave 3)
+- [ ] 04-06-PLAN.md — Cart + checkout UI: sidebar with countdown, address selection, order creation (Wave 4)
+- [ ] 04-07-PLAN.md — Order management UI: buyer/seller dashboards, status timeline, tracking form (Wave 4)
 
 ### Phase 5: Payments and Commissions
 **Goal**: Buyers can pay for orders with PIX (QR code and copia-e-cola), payment status is confirmed automatically via webhook with idempotency protection, and sellers have a clear view of their payouts pending admin processing
 **Depends on**: Phase 4
-**Requirements**: PYMT-01, PYMT-02, PYMT-03, PYMT-04, PYMT-05, PYMT-06, PYMT-07, PYMT-08, COMM-06, BANK-01, BANK-02, BANK-03
+**Requirements**: ORDR-08, PYMT-01, PYMT-02, PYMT-03, PYMT-04, PYMT-05, PYMT-06, PYMT-07, PYMT-08, COMM-06, BANK-01, BANK-02, BANK-03
 **Success Criteria** (what must be TRUE):
   1. A buyer at checkout sees a PIX QR code and copia-e-cola string; after paying in their banking app, the order status updates to Paid automatically within minutes
   2. The same PIX webhook event delivered twice by Mercado Pago does not create duplicate commissions, emails, or status transitions — the idempotency guard blocks the duplicate silently
@@ -155,7 +153,7 @@ Plans:
 ### Phase 7: Community and Notifications
 **Goal**: Users can engage with the catalog through reviews, comments, and favorites; buyers and sellers can rate each other after transactions; and the platform communicates proactively via in-app notifications and transactional emails
 **Depends on**: Phase 5
-**Requirements**: SOCL-01, SOCL-02, SOCL-03, SOCL-04, SOCL-05, SOCL-06, SOCL-07, NOTF-01, NOTF-02, NOTF-03, NOTF-04, NOTF-05, NOTF-06, NOTF-07, NOTF-08, NOTF-09
+**Requirements**: SHIP-05, SOCL-01, SOCL-02, SOCL-03, SOCL-04, SOCL-05, SOCL-06, SOCL-07, NOTF-01, NOTF-02, NOTF-03, NOTF-04, NOTF-05, NOTF-06, NOTF-07, NOTF-08, NOTF-09
 **Success Criteria** (what must be TRUE):
   1. A logged-in user can write a 1-5 star review with text on a catalog entry, edit it later, and see the updated average rating reflected on the entry; a buyer can rate a seller only after a completed order
   2. A user can comment on a catalog entry, reply to a comment (one nesting level), and like any comment; they can favorite a catalog entry and access all favorites from their profile
@@ -244,7 +242,7 @@ Note: Phase 7 (Community) and Phase 8 (Disputes) both depend on Phase 5 (Payment
 |-------|----------------|--------|-----------|
 | 1. Foundation and Infrastructure | 7/8 | In Progress | - |
 | 2. Catalog and Taxonomy | 7/7 | Complete | 2026-02-23 |
-| 3. Collection Management | 1/2 | In Progress | - |
+| 3. Collection Management | 2/2 | Complete | 2026-02-23 |
 | 4. Marketplace and Orders | 0/7 | Not started | - |
 | 5. Payments and Commissions | 0/9 | Not started | - |
 | 6. Subscriptions | 0/6 | Not started | - |

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import {
   ArrowLeft,
   BookOpen,
+  Camera,
   Eye,
   EyeOff,
   Tag,
@@ -45,6 +46,8 @@ import {
   deleteCollectionItem,
   markAsRead,
   markForSale,
+  addPhoto,
+  removePhoto,
   type CollectionItem,
   type ItemCondition,
 } from '@/lib/api/collection';
@@ -86,6 +89,10 @@ export default function CollectionItemDetailPage() {
   // Delete dialog
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  // Photo upload
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const fetchItem = useCallback(async () => {
     setLoading(true);
@@ -189,6 +196,34 @@ export default function CollectionItemDetailPage() {
       toast.error(t('deleteError'));
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !item) return;
+    setUploadingPhoto(true);
+    try {
+      const updated = await addPhoto(item.id, file);
+      setItem(updated);
+      toast.success(t('photoAdded'));
+    } catch {
+      toast.error(t('photoError'));
+    } finally {
+      setUploadingPhoto(false);
+      // Reset input so same file can be re-selected
+      if (photoInputRef.current) photoInputRef.current.value = '';
+    }
+  };
+
+  const handlePhotoRemove = async (index: number) => {
+    if (!item) return;
+    try {
+      const updated = await removePhoto(item.id, index);
+      setItem(updated);
+      toast.success(t('photoRemoved'));
+    } catch {
+      toast.error(t('photoError'));
     }
   };
 
@@ -452,6 +487,66 @@ export default function CollectionItemDetailPage() {
                 <p className="text-sm text-muted-foreground whitespace-pre-line">
                   {entry.description}
                 </p>
+              </div>
+            </>
+          )}
+
+          {/* Photos section */}
+          {!editing && (
+            <>
+              <Separator />
+              <div>
+                <h2 className="text-lg font-semibold mb-3">{t('photos')}</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  {/* Existing photos */}
+                  {(Array.isArray(item.photoUrls) ? item.photoUrls : []).map(
+                    (url: string, idx: number) => (
+                      <div
+                        key={idx}
+                        className="relative group aspect-square rounded-lg overflow-hidden bg-muted"
+                      >
+                        <img
+                          src={url}
+                          alt={`${t('photos')} ${idx + 1}`}
+                          className="h-full w-full object-cover"
+                        />
+                        <button
+                          onClick={() => handlePhotoRemove(idx)}
+                          className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          title={t('removePhoto')}
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ),
+                  )}
+                  {/* Add photo button (show only if under limit of 5) */}
+                  {(Array.isArray(item.photoUrls) ? item.photoUrls : []).length < 5 && (
+                    <label className="aspect-square rounded-lg border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary">
+                      <input
+                        ref={photoInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        className="hidden"
+                        onChange={handlePhotoUpload}
+                        disabled={uploadingPhoto}
+                      />
+                      {uploadingPhoto ? (
+                        <span className="text-xs">{t('photoUploading')}</span>
+                      ) : (
+                        <>
+                          <Camera className="h-6 w-6" />
+                          <span className="text-xs">{t('addPhoto')}</span>
+                        </>
+                      )}
+                    </label>
+                  )}
+                </div>
+                {(Array.isArray(item.photoUrls) ? item.photoUrls : []).length >= 5 && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {t('maxPhotos', { limit: 5 })}
+                  </p>
+                )}
               </div>
             </>
           )}

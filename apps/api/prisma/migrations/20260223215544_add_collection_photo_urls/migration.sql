@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `collection_items` ADD COLUMN `photo_urls` JSON NULL;

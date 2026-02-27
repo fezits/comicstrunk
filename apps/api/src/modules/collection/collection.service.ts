@@ -41,17 +41,15 @@ function collectionIncludes() {
 
 // === Plan Limit Check (returns structured data) ===
 
-type TxClient = Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'>;
-
 async function checkPlanLimit(
-  client: TxClient,
+  tx: Prisma.TransactionClient,
   userId: string,
   additionalItems = 1,
 ): Promise<{ currentCount: number; limit: number; planType: string }> {
-  const currentCount = await client.collectionItem.count({ where: { userId } });
+  const currentCount = await tx.collectionItem.count({ where: { userId } });
 
-  // Check subscription -- default to FREE if none
-  const subscription = await client.subscription.findFirst({
+  // Check subscription — default to FREE if none
+  const subscription = await tx.subscription.findFirst({
     where: { userId, status: 'ACTIVE' },
     orderBy: { createdAt: 'desc' },
   });
@@ -380,90 +378,6 @@ export async function getSeriesProgress(userId: string, seriesId?: string) {
   }));
 }
 
-// === Photo Management ===
-
-export async function addPhoto(userId: string, itemId: string, photoUrl: string) {
-  const item = await prisma.collectionItem.findUnique({
-    where: { id: itemId },
-    include: collectionIncludes(),
-  });
-
-  if (!item) {
-    throw new NotFoundError('Collection item not found');
-  }
-
-  if (item.userId !== userId) {
-    throw new NotFoundError('Collection item not found');
-  }
-
-  const currentPhotos = Array.isArray(item.photoUrls)
-    ? (item.photoUrls as string[])
-    : [];
-
-  if (currentPhotos.length >= MAX_PHOTOS_PER_ITEM) {
-    throw new BadRequestError(
-      `Maximum ${MAX_PHOTOS_PER_ITEM} photos per item allowed`,
-      { currentCount: currentPhotos.length, limit: MAX_PHOTOS_PER_ITEM },
-    );
-  }
-
-  return prisma.collectionItem.update({
-    where: { id: itemId },
-    data: { photoUrls: [...currentPhotos, photoUrl] },
-    include: collectionIncludes(),
-  });
-}
-
-export async function removePhoto(userId: string, itemId: string, photoIndex: number) {
-  const item = await prisma.collectionItem.findUnique({
-    where: { id: itemId },
-    include: collectionIncludes(),
-  });
-
-  if (!item) {
-    throw new NotFoundError('Collection item not found');
-  }
-
-  if (item.userId !== userId) {
-    throw new NotFoundError('Collection item not found');
-  }
-
-  const currentPhotos = Array.isArray(item.photoUrls)
-    ? (item.photoUrls as string[])
-    : [];
-
-  if (photoIndex < 0 || photoIndex >= currentPhotos.length) {
-    throw new BadRequestError('Invalid photo index');
-  }
-
-  const removedUrl = currentPhotos[photoIndex];
-
-  // Extract publicId from Cloudinary URL or local path for cleanup
-  try {
-    // Cloudinary URLs: https://res.cloudinary.com/.../v123/folder/filename.ext
-    const cloudinaryMatch = removedUrl.match(/\/upload\/(?:v\d+\/)?(.+)\.\w+$/);
-    if (cloudinaryMatch) {
-      await deleteImage(cloudinaryMatch[1]);
-    } else {
-      // Local uploads: http://localhost:3001/uploads/folder/filename.ext
-      const localMatch = removedUrl.match(/\/uploads\/(.+)$/);
-      if (localMatch) {
-        await deleteImage(localMatch[1]);
-      }
-    }
-  } catch {
-    // Silently continue if cleanup fails -- don't block photo removal
-  }
-
-  const updatedPhotos = currentPhotos.filter((_, idx) => idx !== photoIndex);
-
-  return prisma.collectionItem.update({
-    where: { id: itemId },
-    data: { photoUrls: updatedPhotos.length > 0 ? updatedPhotos : Prisma.JsonNull },
-    include: collectionIncludes(),
-  });
-}
-
 // === Missing Editions ===
 
 export async function getMissingEditions(userId: string, seriesId: string) {
@@ -480,18 +394,90 @@ export async function getMissingEditions(userId: string, seriesId: string) {
     orderBy: { editionNumber: 'asc' },
   });
 
-  // Get user's collection items for this series
+  // Get IDs of editions the user already owns
   const ownedItems = await prisma.collectionItem.findMany({
-    where: { userId, catalogEntry: { seriesId } },
+    where: {
+      userId,
+      catalogEntry: { seriesId },
+    },
     select: { catalogEntryId: true },
   });
 
-  const ownedSet = new Set(ownedItems.map((item) => item.catalogEntryId));
+  const ownedIds = new Set(ownedItems.map((i) => i.catalogEntryId));
 
-  return allEditions.filter((edition) => !ownedSet.has(edition.id));
+  // Return editions NOT in the user's collection
+  return allEditions.filter((e) => !ownedIds.has(e.id));
 }
 
-// === CSV Import (atomic with transaction) ===
+// === Photo Management ===
+
+export async function addPhoto(userId: string, itemId: string, photoUrl: string) {
+  const item = await prisma.collectionItem.findUnique({
+    where: { id: itemId },
+    include: collectionIncludes(),
+  });
+
+  if (!item) throw new NotFoundError('Collection item not found');
+  if (item.userId !== userId) throw new NotFoundError('Collection item not found');
+
+  const currentPhotos = Array.isArray(item.photoUrls) ? (item.photoUrls as string[]) : [];
+
+  if (currentPhotos.length >= MAX_PHOTOS_PER_ITEM) {
+    throw new BadRequestError(
+      `Maximum ${MAX_PHOTOS_PER_ITEM} photos per item allowed. Current: ${currentPhotos.length}.`,
+    );
+  }
+
+  return prisma.collectionItem.update({
+    where: { id: itemId },
+    data: { photoUrls: [...currentPhotos, photoUrl] },
+    include: collectionIncludes(),
+  });
+}
+
+export async function removePhoto(userId: string, itemId: string, photoIndex: number) {
+  const item = await prisma.collectionItem.findUnique({
+    where: { id: itemId },
+    include: collectionIncludes(),
+  });
+
+  if (!item) throw new NotFoundError('Collection item not found');
+  if (item.userId !== userId) throw new NotFoundError('Collection item not found');
+
+  const currentPhotos = Array.isArray(item.photoUrls) ? (item.photoUrls as string[]) : [];
+
+  if (photoIndex < 0 || photoIndex >= currentPhotos.length) {
+    throw new BadRequestError('Invalid photo index');
+  }
+
+  // Try to clean up the image file (Cloudinary or local)
+  const removedUrl = currentPhotos[photoIndex];
+  try {
+    // Cloudinary URLs: https://res.cloudinary.com/.../v123/folder/filename.ext
+    const cloudinaryMatch = removedUrl.match(/\/upload\/(?:v\d+\/)?(.+)\.\w+$/);
+    if (cloudinaryMatch) {
+      await deleteImage(cloudinaryMatch[1]);
+    } else {
+      // Local uploads: http://localhost:3001/uploads/folder/filename.ext
+      const localMatch = removedUrl.match(/\/uploads\/(.+)$/);
+      if (localMatch) {
+        await deleteImage(localMatch[1]);
+      }
+    }
+  } catch {
+    // Silently continue if cleanup fails — photo URL already removed from DB
+  }
+
+  const updatedPhotos = currentPhotos.filter((_, idx) => idx !== photoIndex);
+
+  return prisma.collectionItem.update({
+    where: { id: itemId },
+    data: { photoUrls: updatedPhotos.length > 0 ? updatedPhotos : Prisma.JsonNull },
+    include: collectionIncludes(),
+  });
+}
+
+// === CSV Import ===
 
 const MAX_IMPORT_ROWS = 500;
 

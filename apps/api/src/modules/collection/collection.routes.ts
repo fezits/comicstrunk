@@ -249,6 +249,49 @@ router.delete(
   },
 );
 
+// POST /:id/photos — upload a photo for a collection item
+router.post(
+  '/:id/photos',
+  uploadSingle('photo'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (!req.file) {
+        throw new BadRequestError('No photo file provided');
+      }
+      const { url } = await uploadImage(req.file.buffer, 'comicstrunk/collection');
+      const item = await collectionService.addPhoto(
+        req.user!.userId,
+        req.params.id as string,
+        url,
+      );
+      sendSuccess(res, item);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// DELETE /:id/photos/:photoIndex — remove a photo by index
+router.delete(
+  '/:id/photos/:photoIndex',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const photoIndex = parseInt(req.params.photoIndex as string, 10);
+      if (isNaN(photoIndex)) {
+        throw new BadRequestError('Invalid photo index');
+      }
+      const item = await collectionService.removePhoto(
+        req.user!.userId,
+        req.params.id as string,
+        photoIndex,
+      );
+      sendSuccess(res, item);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
 // PATCH /:id/read — toggle read status
 router.patch(
   '/:id/read',
