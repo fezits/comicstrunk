@@ -36,6 +36,8 @@ export const createShippingMethodSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
+export const updateShippingMethodSchema = createShippingMethodSchema.partial();
+
 // === Inferred Types ===
 
 export type CreateShippingAddressInput = z.infer<typeof createShippingAddressSchema>;
@@ -43,3 +45,4 @@ export type UpdateShippingAddressInput = z.infer<typeof updateShippingAddressSch
 export type ShippingAddress = z.infer<typeof shippingMethodSchema>;
 export type ShippingMethod = z.infer<typeof shippingMethodSchema>;
 export type CreateShippingMethodInput = z.infer<typeof createShippingMethodSchema>;
+export type UpdateShippingMethodInput = z.infer<typeof updateShippingMethodSchema>;
