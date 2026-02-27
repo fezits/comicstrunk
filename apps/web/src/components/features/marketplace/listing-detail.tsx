@@ -17,6 +17,7 @@ import {
 import { addToCart } from '@/lib/api/cart';
 import { previewCommission, type CommissionPreview } from '@/lib/api/commission';
 import { useAuth } from '@/lib/auth/use-auth';
+import { useCart } from '@/contexts/cart-context';
 import type { ItemCondition } from '@/lib/api/collection';
 
 interface ListingDetailProps {
@@ -42,6 +43,7 @@ export function ListingDetail({ id }: ListingDetailProps) {
   const locale = useLocale();
   const t = useTranslations('marketplace');
   const { user, isAuthenticated } = useAuth();
+  const { incrementCount } = useCart();
 
   const [listing, setListing] = useState<MarketplaceListing | null>(null);
   const [commission, setCommission] = useState<CommissionPreview | null>(null);
@@ -101,6 +103,7 @@ export function ListingDetail({ id }: ListingDetailProps) {
     setAddingToCart(true);
     try {
       await addToCart(listing.id);
+      incrementCount();
       toast.success(t('addedToCart'));
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status;
