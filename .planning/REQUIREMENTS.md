@@ -124,10 +124,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Shipping & Addresses
 
-- [ ] **SHIP-01**: User can register multiple delivery addresses with one as default
-- [ ] **SHIP-02**: Address fields: street, number, complement, neighborhood, city, state, ZIP (CEP)
-- [ ] **SHIP-03**: Shipping methods configurable by admin (PAC, SEDEX, local pickup, etc.)
-- [ ] **SHIP-04**: Seller updates tracking code and carrier for each item
+- [x] **SHIP-01**: User can register multiple delivery addresses with one as default
+- [x] **SHIP-02**: Address fields: street, number, complement, neighborhood, city, state, ZIP (CEP)
+- [x] **SHIP-03**: Shipping methods configurable by admin (PAC, SEDEX, local pickup, etc.)
+- [x] **SHIP-04**: Seller updates tracking code and carrier for each item
 - [ ] **SHIP-05**: Buyer notified of shipping updates
 
 ### Social & Community
@@ -387,10 +387,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ORDR-06 | Phase 4 | Pending |
 | ORDR-07 | Phase 4 | Pending |
 | ORDR-08 | Phase 5 | Pending |
-| SHIP-01 | Phase 4 | Pending |
-| SHIP-02 | Phase 4 | Pending |
-| SHIP-03 | Phase 4 | Pending |
-| SHIP-04 | Phase 4 | Pending |
+| SHIP-01 | Phase 4 | Complete |
+| SHIP-02 | Phase 4 | Complete |
+| SHIP-03 | Phase 4 | Complete |
+| SHIP-04 | Phase 4 | Complete |
 | SHIP-05 | Phase 7 | Pending |
 | COMM-01 | Phase 4 | Complete |
 | COMM-02 | Phase 4 | Complete |

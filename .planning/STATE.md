@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 4 of 10 (Marketplace and Orders)
-Plan: 2 of 7 in current phase
+Plan: 3 of 7 in current phase
 Status: Executing
-Last activity: 2026-02-27 — Completed 04-02 (cart API with atomic reservation)
+Last activity: 2026-02-27 — Completed 04-03 (shipping and address management API)
 
 Progress: [█████████████████████████████░] 31%
 
@@ -56,6 +56,7 @@ Progress: [███████████████████████
 | Phase 03 P04 | 4min | 2 tasks | 4 files |
 | Phase 04 P01 | 10min | 2 tasks | 16 files |
 | Phase 04 P02 | 5min | 2 tasks | 3 files |
+| Phase 04 P03 | 9min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -140,6 +141,9 @@ Recent decisions affecting current work:
 - [Phase 04]: [04-02]: Interactive $transaction for addToCart prevents race conditions on unique physical items
 - [Phase 04]: [04-02]: Cart items include remainingMs for frontend countdown display
 - [Phase 04]: [04-02]: Static route /summary placed before /:id in Express router to prevent path collision
+- [Phase 04]: [04-03]: updateShippingMethodSchema added as partial of createShippingMethodSchema for consistent CRUD validation
+- [Phase 04]: [04-03]: Default address auto-promotion on delete uses most recent (createdAt desc) remaining address
+- [Phase 04]: [04-03]: Tracking update only allowed in PROCESSING status to enforce correct order lifecycle
 
 ### Pending Todos
 
@@ -154,5 +158,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-27
-Stopped at: Completed 04-02 (cart API with atomic reservation)
-Resume file: .planning/phases/04-marketplace-and-orders/04-02-SUMMARY.md
+Stopped at: Completed 04-03 (shipping and address management API)
+Resume file: .planning/phases/04-marketplace-and-orders/04-03-SUMMARY.md
