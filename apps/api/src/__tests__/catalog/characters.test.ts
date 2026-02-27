@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { PrismaClient } from '@prisma/client';
 import { request, loginAs, TEST_ADMIN, TEST_USER } from '../setup';
+import { TEST_PREFIX } from '../global-setup';
 
 const prisma = new PrismaClient();
 const createdIds: string[] = [];
@@ -12,9 +13,9 @@ beforeAll(async () => {
   const existing = await request.get('/api/v1/characters?limit=100');
   if (existing.body.data.length < 3) {
     for (const c of [
-      { name: 'Seed Goku', description: 'Test Goku' },
-      { name: 'Seed Batman', description: 'Test Batman' },
-      { name: 'Seed Luffy', description: 'Test Luffy' },
+      { name: `${TEST_PREFIX}Seed Goku`, description: 'Test Goku' },
+      { name: `${TEST_PREFIX}Seed Batman`, description: 'Test Batman' },
+      { name: `${TEST_PREFIX}Seed Luffy`, description: 'Test Luffy' },
     ]) {
       const res = await request
         .post('/api/v1/characters')
@@ -87,7 +88,7 @@ describe('Characters API', () => {
   describe('POST /api/v1/characters (admin)', () => {
     it('admin can create a character', async () => {
       const { accessToken } = await loginAs(TEST_ADMIN.email, TEST_ADMIN.password);
-      const uniqueName = `CRUD Char ${Date.now()}`;
+      const uniqueName = `${TEST_PREFIX}CRUD Char ${Date.now()}`;
 
       const res = await request
         .post('/api/v1/characters')
@@ -106,7 +107,7 @@ describe('Characters API', () => {
       await request
         .post('/api/v1/characters')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ name: 'Should Fail' })
+        .send({ name: `${TEST_PREFIX}Should Fail` })
         .expect(403);
     });
   });
@@ -115,7 +116,7 @@ describe('Characters API', () => {
     it('admin can update a character', async () => {
       const { accessToken } = await loginAs(TEST_ADMIN.email, TEST_ADMIN.password);
 
-      const uniqueName = `Char Update ${Date.now()}`;
+      const uniqueName = `${TEST_PREFIX}Char Update ${Date.now()}`;
       const createRes = await request
         .post('/api/v1/characters')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -140,7 +141,7 @@ describe('Characters API', () => {
       const createRes = await request
         .post('/api/v1/characters')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ name: `Char Del ${Date.now()}` })
+        .send({ name: `${TEST_PREFIX}Char Del ${Date.now()}` })
         .expect(201);
 
       await request

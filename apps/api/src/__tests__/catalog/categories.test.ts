@@ -1,6 +1,7 @@
 import { describe, it, expect, afterAll } from 'vitest';
 import { PrismaClient } from '@prisma/client';
 import { request, loginAs, TEST_ADMIN, TEST_USER } from '../setup';
+import { TEST_PREFIX } from '../global-setup';
 
 const prisma = new PrismaClient();
 const createdIds: string[] = [];
@@ -25,9 +26,9 @@ describe('Categories API', () => {
       expect(res.body.data.length).toBeGreaterThanOrEqual(3);
 
       const names = res.body.data.map((c: { name: string }) => c.name);
-      expect(names).toContain('Manga');
-      expect(names).toContain('Superhero');
-      expect(names).toContain('Indie');
+      expect(names).toContain(`${TEST_PREFIX}Manga`);
+      expect(names).toContain(`${TEST_PREFIX}Superhero`);
+      expect(names).toContain(`${TEST_PREFIX}Indie`);
     });
 
     it('each category has id, name, slug', async () => {
@@ -68,7 +69,7 @@ describe('Categories API', () => {
       const res = await request
         .post('/api/v1/categories')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ name: `Test Cat ${Date.now()}`, description: 'For testing' })
+        .send({ name: `${TEST_PREFIX}Test Cat ${Date.now()}`, description: 'For testing' })
         .expect(201);
 
       expect(res.body.success).toBe(true);
@@ -83,14 +84,14 @@ describe('Categories API', () => {
       await request
         .post('/api/v1/categories')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ name: 'Should Fail' })
+        .send({ name: `${TEST_PREFIX}Should Fail` })
         .expect(403);
     });
 
     it('unauthenticated cannot create a category', async () => {
       await request
         .post('/api/v1/categories')
-        .send({ name: 'No Auth' })
+        .send({ name: `${TEST_PREFIX}No Auth` })
         .expect(401);
     });
 
@@ -100,7 +101,7 @@ describe('Categories API', () => {
       const res = await request
         .post('/api/v1/categories')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ name: 'Manga' });
+        .send({ name: `${TEST_PREFIX}Manga` });
 
       // Prisma unique constraint → should not return 201
       expect(res.status).toBeGreaterThanOrEqual(400);
@@ -114,11 +115,11 @@ describe('Categories API', () => {
       const createRes = await request
         .post('/api/v1/categories')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ name: `Cat Upd ${Date.now()}` })
+        .send({ name: `${TEST_PREFIX}Cat Upd ${Date.now()}` })
         .expect(201);
       createdIds.push(createRes.body.data.id);
 
-      const updatedName = `Cat Upd2 ${Date.now()}`;
+      const updatedName = `${TEST_PREFIX}Cat Upd2 ${Date.now()}`;
       const res = await request
         .put(`/api/v1/categories/${createRes.body.data.id}`)
         .set('Authorization', `Bearer ${accessToken}`)
@@ -136,7 +137,7 @@ describe('Categories API', () => {
       const createRes = await request
         .post('/api/v1/categories')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ name: `Cat Del ${Date.now()}` })
+        .send({ name: `${TEST_PREFIX}Cat Del ${Date.now()}` })
         .expect(201);
 
       await request

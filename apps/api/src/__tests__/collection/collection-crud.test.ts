@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { PrismaClient } from '@prisma/client';
 import { request, loginAs, TEST_ADMIN, TEST_USER } from '../setup';
+import { TEST_PREFIX } from '../global-setup';
 
 const prisma = new PrismaClient();
 
@@ -27,7 +28,7 @@ beforeAll(async () => {
   const seriesRes = await request
     .post('/api/v1/series')
     .set('Authorization', `Bearer ${adminToken}`)
-    .send({ title: `Collection CRUD Series ${Date.now()}`, totalEditions: 10 })
+    .send({ title: `${TEST_PREFIX}Collection CRUD Series ${Date.now()}`, totalEditions: 10 })
     .expect(201);
   testSeriesId = seriesRes.body.data.id;
 
@@ -37,7 +38,7 @@ beforeAll(async () => {
       .post('/api/v1/catalog')
       .set('Authorization', `Bearer ${adminToken}`)
       .send({
-        title: `Collection CRUD Entry ${i} ${Date.now()}`,
+        title: `${TEST_PREFIX}Collection CRUD Entry ${i} ${Date.now()}`,
         author: 'Test Author',
         publisher: 'Test Publisher',
         seriesId: testSeriesId,
@@ -162,7 +163,7 @@ describe('Collection CRUD API', () => {
       const draftRes = await request
         .post('/api/v1/catalog')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ title: `Draft Entry ${Date.now()}` })
+        .send({ title: `${TEST_PREFIX}Draft Entry ${Date.now()}` })
         .expect(201);
 
       const draftId = draftRes.body.data.id;
