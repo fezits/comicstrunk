@@ -70,14 +70,14 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Cart & Marketplace
 
-- [ ] **CART-01**: Adding a copy to cart reserves it for 24 hours (no one else can buy it)
-- [ ] **CART-02**: Maximum 50 items per cart
-- [ ] **CART-03**: Cart persists across sessions
-- [ ] **CART-04**: Expired reservations are automatically released
-- [ ] **CART-05**: Abandoned carts cleaned up after 7 days
-- [ ] **CART-06**: User cannot buy their own copy
-- [ ] **CART-07**: Each copy can only be in one cart at a time
-- [ ] **CART-08**: Cart reservation uses atomic UPDATE (prevents double-sell race condition on unique items)
+- [x] **CART-01**: Adding a copy to cart reserves it for 24 hours (no one else can buy it)
+- [x] **CART-02**: Maximum 50 items per cart
+- [x] **CART-03**: Cart persists across sessions
+- [x] **CART-04**: Expired reservations are automatically released
+- [x] **CART-05**: Abandoned carts cleaned up after 7 days
+- [x] **CART-06**: User cannot buy their own copy
+- [x] **CART-07**: Each copy can only be in one cart at a time
+- [x] **CART-08**: Cart reservation uses atomic UPDATE (prevents double-sell race condition on unique items)
 
 ### Orders
 
@@ -371,14 +371,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | COLL-07 | Phase 3 | Complete |
 | COLL-08 | Phase 3 | Complete |
 | COLL-09 | Phase 3 | Complete |
-| CART-01 | Phase 4 | Pending |
-| CART-02 | Phase 4 | Pending |
-| CART-03 | Phase 4 | Pending |
-| CART-04 | Phase 4 | Pending |
-| CART-05 | Phase 4 | Pending |
-| CART-06 | Phase 4 | Pending |
-| CART-07 | Phase 4 | Pending |
-| CART-08 | Phase 4 | Pending |
+| CART-01 | Phase 4 | Complete |
+| CART-02 | Phase 4 | Complete |
+| CART-03 | Phase 4 | Complete |
+| CART-04 | Phase 4 | Complete |
+| CART-05 | Phase 4 | Complete |
+| CART-06 | Phase 4 | Complete |
+| CART-07 | Phase 4 | Complete |
+| CART-08 | Phase 4 | Complete |
 | ORDR-01 | Phase 4 | Pending |
 | ORDR-02 | Phase 4 | Pending |
 | ORDR-03 | Phase 4 | Pending |

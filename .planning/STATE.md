@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 4 of 10 (Marketplace and Orders)
-Plan: 1 of 7 in current phase
+Plan: 2 of 7 in current phase
 Status: Executing
-Last activity: 2026-02-27 — Completed 04-01 (marketplace foundation: contracts, commission, marketplace, cron)
+Last activity: 2026-02-27 — Completed 04-02 (cart API with atomic reservation)
 
 Progress: [█████████████████████████████░] 31%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 18
+- Total plans completed: 19
 - Average duration: 8 min
-- Total execution time: 2.4 hours
+- Total execution time: 2.5 hours
 
 **By Phase:**
 
@@ -55,6 +55,7 @@ Progress: [███████████████████████
 | Phase 03 P03 | 6min | 2 tasks | 4 files |
 | Phase 03 P04 | 4min | 2 tasks | 4 files |
 | Phase 04 P01 | 10min | 2 tasks | 16 files |
+| Phase 04 P02 | 5min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -136,6 +137,9 @@ Recent decisions affecting current work:
 - [Phase 04]: [04-01]: Marketplace endpoints are fully public (no auth middleware) for unauthenticated browsing
 - [Phase 04]: [04-01]: commissionPreviewSchema uses z.coerce.number() for query param parsing
 - [Phase 04]: [04-01]: Cron jobs registered in createApp() after route registration but before error handler
+- [Phase 04]: [04-02]: Interactive $transaction for addToCart prevents race conditions on unique physical items
+- [Phase 04]: [04-02]: Cart items include remainingMs for frontend countdown display
+- [Phase 04]: [04-02]: Static route /summary placed before /:id in Express router to prevent path collision
 
 ### Pending Todos
 
@@ -150,5 +154,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-27
-Stopped at: Completed 04-01 (marketplace foundation: contracts, commission, marketplace, cron)
-Resume file: .planning/phases/04-marketplace-and-orders/04-01-SUMMARY.md
+Stopped at: Completed 04-02 (cart API with atomic reservation)
+Resume file: .planning/phases/04-marketplace-and-orders/04-02-SUMMARY.md
