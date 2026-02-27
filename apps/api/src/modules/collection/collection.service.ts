@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, type PrismaClient } from '@prisma/client';
 import { prisma } from '../../shared/lib/prisma';
 import { parseCSV, generateCSV } from '../../shared/lib/csv';
 import { uploadImage, deleteImage } from '../../shared/lib/cloudinary';
@@ -14,6 +14,8 @@ import type {
 // === Commission rate (fixed for now, Phase 5 will use CommissionConfig) ===
 
 const COMMISSION_RATE = 0.1; // 10%
+
+// === Max photos per collection item ===
 
 const MAX_PHOTOS_PER_ITEM = 5;
 
@@ -37,7 +39,7 @@ function collectionIncludes() {
   };
 }
 
-// === Plan Limit Check ===
+// === Plan Limit Check (returns structured data) ===
 
 async function checkPlanLimit(
   tx: Prisma.TransactionClient,
@@ -53,11 +55,13 @@ async function checkPlanLimit(
   });
 
   const planType = subscription?.planType ?? 'FREE';
-  const limit = COLLECTION_LIMITS[planType as keyof typeof COLLECTION_LIMITS] ?? COLLECTION_LIMITS.FREE;
+  const limit =
+    COLLECTION_LIMITS[planType as keyof typeof COLLECTION_LIMITS] ?? COLLECTION_LIMITS.FREE;
 
   if (currentCount + additionalItems > limit) {
     throw new BadRequestError(
       `Collection limit reached (${limit} items for ${planType} plan). Current: ${currentCount}.`,
+      { currentCount, limit, planType },
     );
   }
 
@@ -86,7 +90,7 @@ export async function addItem(userId: string, data: CreateCollectionItemInput) {
       throw new ConflictError('This item is already in your collection');
     }
 
-    // Check plan limit atomically
+    // Check plan limit atomically within the transaction
     await checkPlanLimit(tx, userId);
 
     const item = await tx.collectionItem.create({
@@ -133,7 +137,11 @@ export async function updateItem(userId: string, itemId: string, data: UpdateCol
 export async function deleteItem(userId: string, itemId: string) {
   const item = await prisma.collectionItem.findUnique({
     where: { id: itemId },
-    include: { orderItems: { where: { status: { in: ['PENDING', 'PAID', 'PROCESSING', 'SHIPPED'] } } } },
+    include: {
+      orderItems: {
+        where: { status: { in: ['PENDING', 'PAID', 'PROCESSING', 'SHIPPED'] } },
+      },
+    },
   });
 
   if (!item) {
@@ -152,7 +160,8 @@ export async function deleteItem(userId: string, itemId: string) {
 }
 
 export async function getItems(userId: string, filters: CollectionSearchInput) {
-  const { query, condition, isRead, isForSale, seriesId, sortBy, sortOrder, page, limit } = filters;
+  const { query, condition, isRead, isForSale, seriesId, sortBy, sortOrder, page, limit } =
+    filters;
   const skip = (page - 1) * limit;
 
   const where: Prisma.CollectionItemWhereInput = { userId };
@@ -262,24 +271,28 @@ export async function markForSale(userId: string, itemId: string, data: MarkForS
     throw new BadRequestError('Sale price is required when marking for sale');
   }
 
-  const commission = data.isForSale && data.salePrice
-    ? Number((data.salePrice * COMMISSION_RATE).toFixed(2))
-    : null;
+  const commission =
+    data.isForSale && data.salePrice
+      ? Number((data.salePrice * COMMISSION_RATE).toFixed(2))
+      : null;
 
-  return prisma.collectionItem.update({
-    where: { id: itemId },
-    data: {
-      isForSale: data.isForSale,
-      salePrice: data.isForSale ? data.salePrice : null,
-    },
-    include: collectionIncludes(),
-  }).then((updated) => ({
-    ...updated,
-    commission,
-    sellerNet: data.isForSale && data.salePrice && commission
-      ? Number((data.salePrice - commission).toFixed(2))
-      : null,
-  }));
+  return prisma.collectionItem
+    .update({
+      where: { id: itemId },
+      data: {
+        isForSale: data.isForSale,
+        salePrice: data.isForSale ? data.salePrice : null,
+      },
+      include: collectionIncludes(),
+    })
+    .then((updated) => ({
+      ...updated,
+      commission,
+      sellerNet:
+        data.isForSale && data.salePrice && commission
+          ? Number((data.salePrice - commission).toFixed(2))
+          : null,
+    }));
 }
 
 // === Stats ===
@@ -332,12 +345,15 @@ export async function getSeriesProgress(userId: string, seriesId?: string) {
   });
 
   // Group by series
-  const seriesMap = new Map<string, {
-    seriesId: string;
-    seriesTitle: string;
-    totalEditions: number;
-    collected: number;
-  }>();
+  const seriesMap = new Map<
+    string,
+    {
+      seriesId: string;
+      seriesTitle: string;
+      totalEditions: number;
+      collected: number;
+    }
+  >();
 
   for (const item of items) {
     const series = item.catalogEntry.series;
@@ -435,12 +451,18 @@ export async function removePhoto(userId: string, itemId: string, photoIndex: nu
   }
 
   // Try to clean up the image file (Cloudinary or local)
-  const photoUrl = currentPhotos[photoIndex];
+  const removedUrl = currentPhotos[photoIndex];
   try {
-    // Extract publicId from URL for Cloudinary cleanup
-    const cloudinaryMatch = photoUrl.match(/\/comicstrunk\/collection\/[^/.]+/);
+    // Cloudinary URLs: https://res.cloudinary.com/.../v123/folder/filename.ext
+    const cloudinaryMatch = removedUrl.match(/\/upload\/(?:v\d+\/)?(.+)\.\w+$/);
     if (cloudinaryMatch) {
-      await deleteImage(cloudinaryMatch[0].substring(1)); // Remove leading /
+      await deleteImage(cloudinaryMatch[1]);
+    } else {
+      // Local uploads: http://localhost:3001/uploads/folder/filename.ext
+      const localMatch = removedUrl.match(/\/uploads\/(.+)$/);
+      if (localMatch) {
+        await deleteImage(localMatch[1]);
+      }
     }
   } catch {
     // Silently continue if cleanup fails — photo URL already removed from DB
@@ -471,7 +493,7 @@ export async function importCSV(userId: string, buffer: Buffer) {
   }
 
   return prisma.$transaction(async (tx) => {
-    // Check plan limit atomically
+    // Check plan limit atomically within the transaction
     await checkPlanLimit(tx, userId, rows.length);
 
     const errors: Array<{ row: number; message: string }> = [];
@@ -501,7 +523,10 @@ export async function importCSV(userId: string, buffer: Buffer) {
         });
 
         if (!catalogEntry) {
-          errors.push({ row: rowNumber, message: `Catalog entry "${validated.catalogEntryTitle}" not found` });
+          errors.push({
+            row: rowNumber,
+            message: `Catalog entry "${validated.catalogEntryTitle}" not found`,
+          });
           continue;
         }
 
@@ -584,7 +609,7 @@ export function getCSVTemplate() {
     {
       catalogEntryTitle: 'Example Comic Title',
       quantity: 1,
-      pricePaid: 29.90,
+      pricePaid: 29.9,
       condition: 'NEW',
       notes: 'Optional notes',
       isRead: 'false',
