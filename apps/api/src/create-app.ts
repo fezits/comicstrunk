@@ -18,6 +18,7 @@ import { commissionRoutes } from './modules/commission/commission.routes';
 import { marketplaceRoutes } from './modules/marketplace/marketplace.routes';
 import { cartRoutes } from './modules/cart/cart.routes';
 import { shippingRoutes } from './modules/shipping/shipping.routes';
+import { ordersRoutes } from './modules/orders/orders.routes';
 import { errorHandler } from './shared/middleware/error-handler';
 import { UPLOADS_PATH } from './shared/lib/cloudinary';
 import { registerCronJobs } from './shared/cron';
@@ -81,6 +82,7 @@ export function createApp(): Express {
   app.use('/api/v1/marketplace', marketplaceRoutes);
   app.use('/api/v1/cart', cartRoutes);
   app.use('/api/v1/shipping', shippingRoutes);
+  app.use('/api/v1/orders', ordersRoutes);
 
   // Register cron jobs for background tasks
   registerCronJobs();
