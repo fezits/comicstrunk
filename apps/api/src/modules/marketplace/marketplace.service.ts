@@ -41,6 +41,7 @@ export async function searchListings(params: MarketplaceSearchInput) {
     publisher,
     characterId,
     seriesId,
+    sellerId,
     sortBy,
     sortOrder,
     page,
@@ -82,6 +83,10 @@ export async function searchListings(params: MarketplaceSearchInput) {
     where.catalogEntry = catalogEntryFilter;
   } else {
     where.catalogEntry = { approvalStatus: 'APPROVED' };
+  }
+
+  if (sellerId) {
+    where.userId = sellerId;
   }
 
   if (condition) {

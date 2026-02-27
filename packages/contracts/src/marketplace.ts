@@ -10,6 +10,7 @@ export const marketplaceSearchSchema = z.object({
   publisher: z.string().optional(),
   characterId: z.string().optional(),
   seriesId: z.string().optional(),
+  sellerId: z.string().optional(),
   sortBy: z.enum(['price', 'newest', 'condition']).default('newest'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
   page: z.coerce.number().int().positive().default(1),
