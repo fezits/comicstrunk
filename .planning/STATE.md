@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 4 of 10 (Marketplace and Orders)
-Plan: 3 of 7 in current phase
+Plan: 4 of 7 in current phase
 Status: Executing
-Last activity: 2026-02-27 — Completed 04-03 (shipping and address management API)
+Last activity: 2026-02-27 — Completed 04-04 (orders API with state machine and multi-seller support)
 
 Progress: [█████████████████████████████░] 31%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 19
+- Total plans completed: 20
 - Average duration: 8 min
-- Total execution time: 2.5 hours
+- Total execution time: 2.6 hours
 
 **By Phase:**
 
@@ -32,7 +32,7 @@ Progress: [███████████████████████
 | 3. Collection | 4/4 | 29 min | 7 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-01 (9 min), 03-02 (10 min), 03-03 (6 min), 03-04 (4 min)
+- Last 5 plans: 03-02 (10 min), 03-03 (6 min), 03-04 (4 min), 04-01 (10 min), 04-04 (7 min)
 - Trend: Steady
 
 *Updated after each plan completion*
@@ -57,6 +57,7 @@ Progress: [███████████████████████
 | Phase 04 P01 | 10min | 2 tasks | 16 files |
 | Phase 04 P02 | 5min | 2 tasks | 3 files |
 | Phase 04 P03 | 9min | 2 tasks | 4 files |
+| Phase 04 P04 | 7min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -144,6 +145,11 @@ Recent decisions affecting current work:
 - [Phase 04]: [04-03]: updateShippingMethodSchema added as partial of createShippingMethodSchema for consistent CRUD validation
 - [Phase 04]: [04-03]: Default address auto-promotion on delete uses most recent (createdAt desc) remaining address
 - [Phase 04]: [04-03]: Tracking update only allowed in PROCESSING status to enforce correct order lifecycle
+- [Phase 04]: [04-04]: Order state machine defined as separate utility for reuse across services, cron, and dispute resolution
+- [Phase 04]: [04-04]: createOrder uses interactive $transaction for atomicity across cart read, address validation, order creation, and cart clear
+- [Phase 04]: [04-04]: Shipping address snapshot captures all fields as JSON at order creation for immutable audit trail
+- [Phase 04]: [04-04]: syncOrderStatus auto-promotes order to COMPLETED/CANCELLED when all items reach terminal state
+- [Phase 04]: [04-04]: Buyer restricted to COMPLETED/DISPUTED transitions; seller handles all other item status advancement
 
 ### Pending Todos
 
@@ -158,5 +164,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-27
-Stopped at: Completed 04-03 (shipping and address management API)
-Resume file: .planning/phases/04-marketplace-and-orders/04-03-SUMMARY.md
+Stopped at: Completed 04-04 (orders API with state machine and multi-seller support)
+Resume file: .planning/phases/04-marketplace-and-orders/04-04-SUMMARY.md

@@ -81,13 +81,13 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Orders
 
-- [ ] **ORDR-01**: Each order has a unique identifier (e.g., ORD-20260221-A1B2C3)
-- [ ] **ORDR-02**: Prices are snapshot at order creation (immutable — never recalculated)
-- [ ] **ORDR-03**: Order can contain items from multiple sellers (each ships separately)
-- [ ] **ORDR-04**: Each item has individual shipping tracking
-- [ ] **ORDR-05**: Order status flow: Pending → Paid → Processing → Shipped → Delivered → Completed
-- [ ] **ORDR-06**: Orders can be cancelled or disputed at any stage
-- [ ] **ORDR-07**: Items not shipped within 7 days are automatically cancelled
+- [x] **ORDR-01**: Each order has a unique identifier (e.g., ORD-20260221-A1B2C3)
+- [x] **ORDR-02**: Prices are snapshot at order creation (immutable — never recalculated)
+- [x] **ORDR-03**: Order can contain items from multiple sellers (each ships separately)
+- [x] **ORDR-04**: Each item has individual shipping tracking
+- [x] **ORDR-05**: Order status flow: Pending → Paid → Processing → Shipped → Delivered → Completed
+- [x] **ORDR-06**: Orders can be cancelled or disputed at any stage
+- [x] **ORDR-07**: Items not shipped within 7 days are automatically cancelled
 - [ ] **ORDR-08**: PIX payment expires in 24h
 
 ### Payments
@@ -107,7 +107,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **COMM-02**: Commission rate varies by seller plan: FREE 10%, BASIC 8%
 - [x] **COMM-03**: Rates are configurable by admin (with optional min/max values)
 - [x] **COMM-04**: Real-time net amount preview shown to seller when setting price ("You'll receive R$ X")
-- [ ] **COMM-05**: Commission rate and net amount snapshot at order creation (immutable for audit)
+- [x] **COMM-05**: Commission rate and net amount snapshot at order creation (immutable for audit)
 - [ ] **COMM-06**: Admin commission dashboard: totals by period, by plan, transaction list
 
 ### Subscriptions
@@ -379,13 +379,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CART-06 | Phase 4 | Complete |
 | CART-07 | Phase 4 | Complete |
 | CART-08 | Phase 4 | Complete |
-| ORDR-01 | Phase 4 | Pending |
-| ORDR-02 | Phase 4 | Pending |
-| ORDR-03 | Phase 4 | Pending |
-| ORDR-04 | Phase 4 | Pending |
-| ORDR-05 | Phase 4 | Pending |
-| ORDR-06 | Phase 4 | Pending |
-| ORDR-07 | Phase 4 | Pending |
+| ORDR-01 | Phase 4 | Complete |
+| ORDR-02 | Phase 4 | Complete |
+| ORDR-03 | Phase 4 | Complete |
+| ORDR-04 | Phase 4 | Complete |
+| ORDR-05 | Phase 4 | Complete |
+| ORDR-06 | Phase 4 | Complete |
+| ORDR-07 | Phase 4 | Complete |
 | ORDR-08 | Phase 5 | Pending |
 | SHIP-01 | Phase 4 | Complete |
 | SHIP-02 | Phase 4 | Complete |
@@ -396,7 +396,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | COMM-02 | Phase 4 | Complete |
 | COMM-03 | Phase 4 | Complete |
 | COMM-04 | Phase 4 | Complete |
-| COMM-05 | Phase 4 | Pending |
+| COMM-05 | Phase 4 | Complete |
 | PYMT-01 | Phase 5 | Pending |
 | PYMT-02 | Phase 5 | Pending |
 | PYMT-03 | Phase 5 | Pending |
