@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { PrismaClient } from '@prisma/client';
 import { request, loginAs, TEST_ADMIN, TEST_USER } from '../setup';
+import { TEST_PREFIX } from '../global-setup';
 
 const prisma = new PrismaClient();
 const createdIds: string[] = [];
@@ -64,7 +65,7 @@ describe('Tags API', () => {
       const res = await request
         .post('/api/v1/tags')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ name: `Test Tag ${Date.now()}` })
+        .send({ name: `${TEST_PREFIX}Test Tag ${Date.now()}` })
         .expect(201);
 
       expect(res.body.data).toHaveProperty('name');
@@ -78,14 +79,14 @@ describe('Tags API', () => {
       await request
         .post('/api/v1/tags')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ name: 'Should Fail Tag' })
+        .send({ name: `${TEST_PREFIX}Should Fail Tag` })
         .expect(403);
     });
 
     it('duplicate name returns error status', async () => {
       const { accessToken } = await loginAs(TEST_ADMIN.email, TEST_ADMIN.password);
 
-      const dupName = `Dup Tag ${Date.now()}`;
+      const dupName = `${TEST_PREFIX}Dup Tag ${Date.now()}`;
       // Create first
       const first = await request
         .post('/api/v1/tags')
@@ -111,17 +112,17 @@ describe('Tags API', () => {
       const createRes = await request
         .post('/api/v1/tags')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ name: `Tag Upd ${Date.now()}` })
+        .send({ name: `${TEST_PREFIX}Tag Upd ${Date.now()}` })
         .expect(201);
       createdIds.push(createRes.body.data.id);
 
       const res = await request
         .put(`/api/v1/tags/${createRes.body.data.id}`)
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ name: 'Tag Updated' })
+        .send({ name: `${TEST_PREFIX}Tag Updated` })
         .expect(200);
 
-      expect(res.body.data.name).toBe('Tag Updated');
+      expect(res.body.data.name).toBe(`${TEST_PREFIX}Tag Updated`);
     });
   });
 
@@ -132,7 +133,7 @@ describe('Tags API', () => {
       const createRes = await request
         .post('/api/v1/tags')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ name: `Tag Del ${Date.now()}` })
+        .send({ name: `${TEST_PREFIX}Tag Del ${Date.now()}` })
         .expect(201);
 
       await request

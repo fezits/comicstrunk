@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { PrismaClient } from '@prisma/client';
 import { request, loginAs, TEST_ADMIN, TEST_USER } from '../setup';
+import { TEST_PREFIX } from '../global-setup';
 
 const prisma = new PrismaClient();
 
@@ -26,7 +27,7 @@ beforeAll(async () => {
   const seriesRes = await request
     .post('/api/v1/series')
     .set('Authorization', `Bearer ${adminToken}`)
-    .send({ title: `Features Series ${Date.now()}`, totalEditions: 5 })
+    .send({ title: `${TEST_PREFIX}Features Series ${Date.now()}`, totalEditions: 5 })
     .expect(201);
   testSeriesId = seriesRes.body.data.id;
 
@@ -36,7 +37,7 @@ beforeAll(async () => {
       .post('/api/v1/catalog')
       .set('Authorization', `Bearer ${adminToken}`)
       .send({
-        title: `Features Entry ${i} ${Date.now()}`,
+        title: `${TEST_PREFIX}Features Entry ${i} ${Date.now()}`,
         author: 'Author',
         seriesId: testSeriesId,
         editionNumber: i,
