@@ -424,6 +424,7 @@ model CollectionItem {
   readAt         DateTime?     @map("read_at")
   isForSale      Boolean       @default(false) @map("is_for_sale")
   salePrice      Decimal?      @map("sale_price") @db.Decimal(10, 2)
+  photoUrls      Json?         @map("photo_urls")
   createdAt      DateTime      @default(now()) @map("created_at")
   updatedAt      DateTime      @updatedAt @map("updated_at")
 

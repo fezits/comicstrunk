@@ -115,8 +115,20 @@ export default function AddCollectionItemPage() {
       });
       toast.success(t('addSuccess'));
       router.push(`/${locale}/collection`);
-    } catch {
-      toast.error(t('addError'));
+    } catch (err: unknown) {
+      const axiosError = err as {
+        response?: { status?: number; data?: { error?: { message?: string } } };
+      };
+      const message = axiosError?.response?.data?.error?.message || '';
+
+      if (axiosError?.response?.status === 400 && message.includes('Collection limit reached')) {
+        toast.error(t('planLimitMessage'), {
+          description: t('planLimitUpgrade'),
+          duration: 8000,
+        });
+      } else {
+        toast.error(t('addError'));
+      }
     } finally {
       setSaving(false);
     }
@@ -135,8 +147,20 @@ export default function AddCollectionItemPage() {
         toast.success(t('importSuccess', { count: result.imported }));
       }
       router.push(`/${locale}/collection`);
-    } catch {
-      toast.error(t('importError'));
+    } catch (err: unknown) {
+      const axiosError = err as {
+        response?: { status?: number; data?: { error?: { message?: string } } };
+      };
+      const message = axiosError?.response?.data?.error?.message || '';
+
+      if (axiosError?.response?.status === 400 && message.includes('Collection limit reached')) {
+        toast.error(t('planLimitMessage'), {
+          description: t('planLimitUpgrade'),
+          duration: 8000,
+        });
+      } else {
+        toast.error(t('importError'));
+      }
     } finally {
       setImporting(false);
     }

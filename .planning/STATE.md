@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-21)
 
 **Core value:** Collectors can catalog, track, and organize their physical comic book collection — knowing exactly what they have, what they've read, and what's missing from their series.
-**Current focus:** Phase 2 — Catalog and Taxonomy
+**Current focus:** Phase 4 — Marketplace and Orders
 
 ## Current Position
 
-Phase: 2 of 10 (Catalog and Taxonomy)
-Plan: 7 of 7 in current phase (PHASE COMPLETE)
-Status: Phase Complete
-Last activity: 2026-02-23 — Completed 02-07-PLAN.md (admin catalog management UI with approval queue, forms, CSV, and taxonomy CRUD)
+Phase: 4 of 10 (Marketplace and Orders)
+Plan: 0 of 7 in current phase
+Status: Ready
+Last activity: 2026-02-23 — Completed 03-04 (gap closure: frontend plan limits + photo UI)
 
-Progress: [████████████████░░░░] 20%
+Progress: [████████████████████████████░░] 29%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
+- Total plans completed: 18
 - Average duration: 8 min
-- Total execution time: 1.9 hours
+- Total execution time: 2.4 hours
 
 **By Phase:**
 
@@ -29,10 +29,11 @@ Progress: [████████████████░░░░] 20%
 |-------|-------|-------|----------|
 | 1. Foundation | 7/8 | 80 min | 11 min |
 | 2. Catalog | 7/7 | 37 min | 5 min |
+| 3. Collection | 4/4 | 29 min | 7 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-03 (5 min), 02-04 (4 min), 02-05 (5 min), 02-06 (4 min), 02-07 (6 min)
-- Trend: Steady/Improving
+- Last 5 plans: 03-01 (9 min), 03-02 (10 min), 03-03 (6 min), 03-04 (4 min)
+- Trend: Steady
 
 *Updated after each plan completion*
 | Phase 01 P01 | 16min | 2 tasks | 22 files |
@@ -49,6 +50,10 @@ Progress: [████████████████░░░░] 20%
 | Phase 02 P05 | 5min | 2 tasks | 6 files |
 | Phase 02 P06 | 4min | 2 tasks | 10 files |
 | Phase 02 P07 | 6min | 2 tasks | 12 files |
+| Phase 03 P01 | 9min | 2 tasks | 7 files |
+| Phase 03 P02 | 10min | 2 tasks | 4 files |
+| Phase 03 P03 | 6min | 2 tasks | 4 files |
+| Phase 03 P04 | 4min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -116,6 +121,16 @@ Recent decisions affecting current work:
 - [02-07]: Admin taxonomy CRUD uses inline dialog pattern (create/edit in same modal) for consistency
 - [02-07]: Delete blocked when catalog entry count > 0 with disabled button and tooltip hint
 - [02-07]: ApprovalBadge uses shadcn Badge variant mapping: DRAFT=outline, PENDING=secondary, APPROVED=default, REJECTED=destructive
+- [03-01]: BadRequestError details typed as unknown to support both object and array payloads
+- [03-01]: Photo cleanup on removePhoto silently continues if Cloudinary/local deletion fails
+- [03-01]: photoUrls stored as Json? field set to Prisma.JsonNull when empty instead of empty array
+- [03-02]: Quick add button on catalog detail uses default values for fast workflow; 'Add with details' link provides full form
+- [03-02]: Missing editions fetched lazily on expand to prevent N+1 queries on page load
+- [03-02]: Missing editions link to individual catalog detail pages, not to search results
+- [Phase 03]: [03-03]: BadRequestError for photo limit uses inline message (constructor only accepts 1 arg)
+- [Phase 03]: [03-03]: Migration marked as already applied via prisma migrate resolve since photo_urls column existed from dist
+- [Phase 03]: [03-04]: Plan limit detection uses axios error status 400 + message.includes('Collection limit reached') pattern
+- [Phase 03]: [03-04]: Photo section only rendered in non-editing view to avoid layout conflicts with edit form
 
 ### Pending Todos
 
@@ -130,5 +145,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 02-07-PLAN.md (admin catalog management UI) — Phase 2 COMPLETE
-Resume file: .planning/phases/02-catalog-and-taxonomy/02-07-SUMMARY.md
+Stopped at: Completed 03-04 (gap closure: frontend plan limits + photo UI)
+Resume file: .planning/phases/03-collection-management/03-04-SUMMARY.md

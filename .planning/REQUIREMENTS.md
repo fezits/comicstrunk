@@ -52,21 +52,21 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **SERI-02**: Catalog entries linked to series with volume and edition number
 - [x] **SERI-03**: Series listing page with search
 - [x] **SERI-04**: Series detail page showing all editions
-- [ ] **SERI-05**: User can see series progress ("15 of 42 editions") when logged in
-- [ ] **SERI-06**: Dedicated series progress page: all series the user collects, with progress bars and missing editions
-- [ ] **SERI-07**: Link from missing editions to catalog/marketplace search
+- [x] **SERI-05**: User can see series progress ("15 of 42 editions") when logged in
+- [x] **SERI-06**: Dedicated series progress page: all series the user collects, with progress bars and missing editions
+- [x] **SERI-07**: Link from missing editions to catalog/marketplace search
 
 ### Collection Management
 
-- [ ] **COLL-01**: User can add copies to collection specifying: quantity, price paid, condition (New/Very Good/Good/Fair/Poor), personal notes
-- [ ] **COLL-02**: User can mark a copy as read (with reading date)
-- [ ] **COLL-03**: User can mark a copy as for sale (sets price; commission preview shown in real-time)
-- [ ] **COLL-04**: User can upload photos of their copy
-- [ ] **COLL-05**: User can import collection via CSV (with downloadable template and error report)
-- [ ] **COLL-06**: User can export collection as CSV
-- [ ] **COLL-07**: Collection size enforced per subscription plan (FREE: 50, BASIC: 200) with clear message and upgrade suggestion when limit is reached
-- [ ] **COLL-08**: Existing copies are never removed on downgrade — only new additions blocked
-- [ ] **COLL-09**: Collection limit enforcement uses atomic database operations (prevents race condition)
+- [x] **COLL-01**: User can add copies to collection specifying: quantity, price paid, condition (New/Very Good/Good/Fair/Poor), personal notes
+- [x] **COLL-02**: User can mark a copy as read (with reading date)
+- [x] **COLL-03**: User can mark a copy as for sale (sets price; commission preview shown in real-time)
+- [x] **COLL-04**: User can upload photos of their copy
+- [x] **COLL-05**: User can import collection via CSV (with downloadable template and error report)
+- [x] **COLL-06**: User can export collection as CSV
+- [x] **COLL-07**: Collection size enforced per subscription plan (FREE: 50, BASIC: 200) with clear message and upgrade suggestion when limit is reached
+- [x] **COLL-08**: Existing copies are never removed on downgrade — only new additions blocked
+- [x] **COLL-09**: Collection limit enforcement uses atomic database operations (prevents race condition)
 
 ### Cart & Marketplace
 
@@ -359,18 +359,18 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SERI-02 | Phase 2 | Complete |
 | SERI-03 | Phase 2 | Complete |
 | SERI-04 | Phase 2 | Complete |
-| SERI-05 | Phase 3 | Pending |
-| SERI-06 | Phase 3 | Pending |
-| SERI-07 | Phase 3 | Pending |
-| COLL-01 | Phase 3 | Pending |
-| COLL-02 | Phase 3 | Pending |
-| COLL-03 | Phase 3 | Pending |
-| COLL-04 | Phase 3 | Pending |
-| COLL-05 | Phase 3 | Pending |
-| COLL-06 | Phase 3 | Pending |
-| COLL-07 | Phase 3 | Pending |
-| COLL-08 | Phase 3 | Pending |
-| COLL-09 | Phase 3 | Pending |
+| SERI-05 | Phase 3 | Complete |
+| SERI-06 | Phase 3 | Complete |
+| SERI-07 | Phase 3 | Complete |
+| COLL-01 | Phase 3 | Complete |
+| COLL-02 | Phase 3 | Complete |
+| COLL-03 | Phase 3 | Complete |
+| COLL-04 | Phase 3 | Complete |
+| COLL-05 | Phase 3 | Complete |
+| COLL-06 | Phase 3 | Complete |
+| COLL-07 | Phase 3 | Complete |
+| COLL-08 | Phase 3 | Complete |
+| COLL-09 | Phase 3 | Complete |
 | CART-01 | Phase 4 | Pending |
 | CART-02 | Phase 4 | Pending |
 | CART-03 | Phase 4 | Pending |
@@ -386,12 +386,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ORDR-05 | Phase 4 | Pending |
 | ORDR-06 | Phase 4 | Pending |
 | ORDR-07 | Phase 4 | Pending |
-| ORDR-08 | Phase 4 | Pending |
+| ORDR-08 | Phase 5 | Pending |
 | SHIP-01 | Phase 4 | Pending |
 | SHIP-02 | Phase 4 | Pending |
 | SHIP-03 | Phase 4 | Pending |
 | SHIP-04 | Phase 4 | Pending |
-| SHIP-05 | Phase 4 | Pending |
+| SHIP-05 | Phase 7 | Pending |
 | COMM-01 | Phase 4 | Pending |
 | COMM-02 | Phase 4 | Pending |
 | COMM-03 | Phase 4 | Pending |
