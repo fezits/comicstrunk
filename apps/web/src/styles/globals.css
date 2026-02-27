@@ -5,7 +5,7 @@
 @layer base {
   :root {
     /* Light theme: clean whites with purple accents */
-    --background: 0 0% 100%;
+    --background: 240 5% 96%;
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
@@ -33,25 +33,25 @@
   }
 
   .dark {
-    /* Dark theme: deep backgrounds, collector's vault feel */
-    --background: 240 10% 3.9%;
+    /* Dark theme: softer dark gray, not pure black */
+    --background: 240 6% 10%;
     --foreground: 0 0% 98%;
-    --card: 240 10% 5.5%;
+    --card: 240 6% 14%;
     --card-foreground: 0 0% 98%;
-    --popover: 240 10% 5.5%;
+    --popover: 240 6% 12%;
     --popover-foreground: 0 0% 98%;
     --primary: 263 84% 55%;
     --primary-foreground: 0 0% 98%;
     --secondary: 217 91% 60%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
+    --muted: 240 5% 20%;
     --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
+    --accent: 240 5% 20%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
+    --border: 240 5% 20%;
+    --input: 240 5% 20%;
     --ring: 263 84% 55%;
     --chart-1: 263 84% 55%;
     --chart-2: 217 91% 60%;

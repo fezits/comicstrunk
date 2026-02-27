@@ -109,7 +109,7 @@ export default function CollectionPage() {
     return () => {
       cancelled = true;
     };
-  }, [searchParams.toString()]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [searchParams.toString()]); // eslint-disable-line
 
   const handleFiltersChange = useCallback(
     (newFilters: CollectionSearchParams) => {
