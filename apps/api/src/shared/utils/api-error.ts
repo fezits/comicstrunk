@@ -11,8 +11,11 @@ export class ApiError extends Error {
 }
 
 export class BadRequestError extends ApiError {
-  constructor(message = 'Bad request') {
+  public readonly details?: unknown;
+
+  constructor(message = 'Bad request', details?: unknown) {
     super(message, 400);
+    this.details = details;
   }
 }
 

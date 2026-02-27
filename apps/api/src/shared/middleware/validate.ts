@@ -16,8 +16,7 @@ export function validate(schema: ZodSchema, source: 'body' | 'query' | 'params' 
           field: e.path.join('.'),
           message: e.message,
         }));
-        const err = new BadRequestError('Validation failed');
-        (err as BadRequestError & { details: unknown }).details = details;
+        const err = new BadRequestError('Validation failed', details);
         return next(err);
       }
       next(error);
