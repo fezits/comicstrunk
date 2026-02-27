@@ -14,8 +14,11 @@ import { tagsRoutes } from './modules/tags/tags.routes';
 import { charactersRoutes } from './modules/characters/characters.routes';
 import { catalogRoutes } from './modules/catalog/catalog.routes';
 import { collectionRoutes } from './modules/collection/collection.routes';
+import { commissionRoutes } from './modules/commission/commission.routes';
+import { marketplaceRoutes } from './modules/marketplace/marketplace.routes';
 import { errorHandler } from './shared/middleware/error-handler';
 import { UPLOADS_PATH } from './shared/lib/cloudinary';
+import { registerCronJobs } from './shared/cron';
 
 export function createApp(): Express {
   const app: Express = express();
@@ -72,6 +75,11 @@ export function createApp(): Express {
   app.use('/api/v1/characters', charactersRoutes);
   app.use('/api/v1/catalog', catalogRoutes);
   app.use('/api/v1/collection', collectionRoutes);
+  app.use('/api/v1/commission', commissionRoutes);
+  app.use('/api/v1/marketplace', marketplaceRoutes);
+
+  // Register cron jobs for background tasks
+  registerCronJobs();
 
   // Error handler (must be registered LAST)
   app.use(errorHandler);
