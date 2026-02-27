@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 4 of 10 (Marketplace and Orders)
-Plan: 4 of 7 in current phase
+Plan: 5 of 7 in current phase
 Status: Executing
-Last activity: 2026-02-27 — Completed 04-04 (orders API with state machine and multi-seller support)
+Last activity: 2026-02-27 — Completed 04-05 (marketplace frontend with browse, detail, and seller profile)
 
 Progress: [█████████████████████████████░] 31%
 
@@ -58,6 +58,7 @@ Progress: [███████████████████████
 | Phase 04 P02 | 5min | 2 tasks | 3 files |
 | Phase 04 P03 | 9min | 2 tasks | 4 files |
 | Phase 04 P04 | 7min | 2 tasks | 4 files |
+| Phase 04 P05 | 13min | 2 tasks | 15 files |
 
 ## Accumulated Context
 
@@ -150,6 +151,10 @@ Recent decisions affecting current work:
 - [Phase 04]: [04-04]: Shipping address snapshot captures all fields as JSON at order creation for immutable audit trail
 - [Phase 04]: [04-04]: syncOrderStatus auto-promotes order to COMPLETED/CANCELLED when all items reach terminal state
 - [Phase 04]: [04-04]: Buyer restricted to COMPLETED/DISPUTED transitions; seller handles all other item status advancement
+- [Phase 04]: MarketplaceCard uses single component with variant prop (grid/list) instead of separate components
+- [Phase 04]: Seller profile page derived from marketplace listings by sellerId filter (no dedicated profile API)
+- [Phase 04]: Added sellerId filter to marketplace contract and service for seller profile page
+- [Phase 04]: Commission transparency only shown to authenticated users (previewCommission requires auth)
 
 ### Pending Todos
 
@@ -164,5 +169,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-27
-Stopped at: Completed 04-04 (orders API with state machine and multi-seller support)
-Resume file: .planning/phases/04-marketplace-and-orders/04-04-SUMMARY.md
+Stopped at: Completed 04-05 (marketplace frontend with browse, detail, and seller profile)
+Resume file: .planning/phases/04-marketplace-and-orders/04-05-SUMMARY.md
