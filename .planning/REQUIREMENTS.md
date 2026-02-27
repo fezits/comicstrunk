@@ -103,10 +103,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Commissions
 
-- [ ] **COMM-01**: Commission is a percentage of sale price, paid by seller
-- [ ] **COMM-02**: Commission rate varies by seller plan: FREE 10%, BASIC 8%
-- [ ] **COMM-03**: Rates are configurable by admin (with optional min/max values)
-- [ ] **COMM-04**: Real-time net amount preview shown to seller when setting price ("You'll receive R$ X")
+- [x] **COMM-01**: Commission is a percentage of sale price, paid by seller
+- [x] **COMM-02**: Commission rate varies by seller plan: FREE 10%, BASIC 8%
+- [x] **COMM-03**: Rates are configurable by admin (with optional min/max values)
+- [x] **COMM-04**: Real-time net amount preview shown to seller when setting price ("You'll receive R$ X")
 - [ ] **COMM-05**: Commission rate and net amount snapshot at order creation (immutable for audit)
 - [ ] **COMM-06**: Admin commission dashboard: totals by period, by plan, transaction list
 
@@ -392,10 +392,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SHIP-03 | Phase 4 | Pending |
 | SHIP-04 | Phase 4 | Pending |
 | SHIP-05 | Phase 7 | Pending |
-| COMM-01 | Phase 4 | Pending |
-| COMM-02 | Phase 4 | Pending |
-| COMM-03 | Phase 4 | Pending |
-| COMM-04 | Phase 4 | Pending |
+| COMM-01 | Phase 4 | Complete |
+| COMM-02 | Phase 4 | Complete |
+| COMM-03 | Phase 4 | Complete |
+| COMM-04 | Phase 4 | Complete |
 | COMM-05 | Phase 4 | Pending |
 | PYMT-01 | Phase 5 | Pending |
 | PYMT-02 | Phase 5 | Pending |

@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 4 of 10 (Marketplace and Orders)
-Plan: 0 of 7 in current phase
-Status: Ready
-Last activity: 2026-02-23 — Completed 03-04 (gap closure: frontend plan limits + photo UI)
+Plan: 1 of 7 in current phase
+Status: Executing
+Last activity: 2026-02-27 — Completed 04-01 (marketplace foundation: contracts, commission, marketplace, cron)
 
-Progress: [████████████████████████████░░] 29%
+Progress: [█████████████████████████████░] 31%
 
 ## Performance Metrics
 
@@ -54,6 +54,7 @@ Progress: [███████████████████████
 | Phase 03 P02 | 10min | 2 tasks | 4 files |
 | Phase 03 P03 | 6min | 2 tasks | 4 files |
 | Phase 03 P04 | 4min | 2 tasks | 4 files |
+| Phase 04 P01 | 10min | 2 tasks | 16 files |
 
 ## Accumulated Context
 
@@ -131,6 +132,10 @@ Recent decisions affecting current work:
 - [Phase 03]: [03-03]: Migration marked as already applied via prisma migrate resolve since photo_urls column existed from dist
 - [Phase 03]: [03-04]: Plan limit detection uses axios error status 400 + message.includes('Collection limit reached') pattern
 - [Phase 03]: [03-04]: Photo section only rendered in non-editing view to avoid layout conflicts with edit form
+- [Phase 04]: [04-01]: Commission auto-seed on first getCommissionRate call ensures configs exist without manual migration
+- [Phase 04]: [04-01]: Marketplace endpoints are fully public (no auth middleware) for unauthenticated browsing
+- [Phase 04]: [04-01]: commissionPreviewSchema uses z.coerce.number() for query param parsing
+- [Phase 04]: [04-01]: Cron jobs registered in createApp() after route registration but before error handler
 
 ### Pending Todos
 
@@ -144,6 +149,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-23
-Stopped at: Completed 03-04 (gap closure: frontend plan limits + photo UI)
-Resume file: .planning/phases/03-collection-management/03-04-SUMMARY.md
+Last session: 2026-02-27
+Stopped at: Completed 04-01 (marketplace foundation: contracts, commission, marketplace, cron)
+Resume file: .planning/phases/04-marketplace-and-orders/04-01-SUMMARY.md
