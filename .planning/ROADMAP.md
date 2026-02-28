@@ -117,18 +117,16 @@ Plans:
   3. An admin can manually confirm a PIX payment from the admin payment dashboard when auto-verification has not triggered
   4. A user can view their complete payment history with amounts, dates, and order references
   5. A seller can register a bank account (bank, branch, account, CPF, holder, account type) and admin can view all sellers' bank data for payout processing
-**Plans**: TBD
+**Plans**: 7 plans
 
 Plans:
-- [ ] 05-01: PIX payment API — Mercado Pago v2 SDK integration, QR code generation aligned with cart reservation TTL (MIN(remaining_cart_time - 5min, 30min)), copia-e-cola string, PIX expiry set to match cart reservation
-- [ ] 05-02: Webhook handler — idempotency table (webhook_events with unique constraint on provider + event_id), PIX payment confirmation flow, order status transition to PAID, commission recording, duplicate event silent discard
-- [ ] 05-03: Payment management API — admin manual payment approval endpoint, refund endpoint (total and partial), payment history endpoint, admin payment dashboard data endpoint
-- [ ] 05-04: Seller banking API — bank account CRUD (multiple accounts, primary flag), admin view endpoint for payout processing, BANK-01/02/03 fields
-- [ ] 05-05: Commission reporting API — admin commission dashboard data: totals by period, by plan, transaction list export
-- [ ] 05-06: PIX payment UI — checkout PIX page with QR code display, copia-e-cola copy button, countdown timer (aligned with QR expiry), status polling (every 5s), success/failure states
-- [ ] 05-07: Payment history UI — user payment history page, order-linked receipts, payment status badges
-- [ ] 05-08: Admin payments UI — admin payment dashboard (pending approvals, manual confirm/reject), commission dashboard (totals by period, by plan, transaction list), sellers with pending payouts, seller bank data view
-- [ ] 05-09: Seller banking UI — seller bank account registration form, multiple accounts list, primary account selection
+- [ ] 05-01-PLAN.md — PIX payment API: Mercado Pago v2 SDK integration, contracts schemas, webhook handler with idempotency, QR code generation, PIX expiry alignment (Wave 1)
+- [ ] 05-02-PLAN.md — Seller banking API: bank account CRUD with CPF validation, primary flag management, admin view endpoint (Wave 1)
+- [ ] 05-03-PLAN.md — Payment management + commission reporting API: admin approval/reject, refunds, payment history, pending list, commission dashboard aggregation (Wave 2)
+- [ ] 05-04-PLAN.md — PIX payment UI: checkout PIX page with QR code, copia-e-cola, countdown timer, status polling, success/failure states (Wave 3)
+- [ ] 05-05-PLAN.md — Payment history + seller banking UI: user payment history page, bank account CRUD form, CPF masking, primary flag management (Wave 3)
+- [ ] 05-06-PLAN.md — Admin payments UI: payment dashboard (pending approvals, all payments), commission dashboard (period selector, totals), admin banking view (Wave 3)
+- [ ] 05-07-PLAN.md — Integration: checkout redirect to payment page, order detail payment section, navigation updates for Phase 5 pages (Wave 4)
 
 ### Phase 6: Subscriptions
 **Goal**: Users can subscribe to the BASIC paid plan via Stripe, enjoy higher collection limits and lower commission rates, and the system automatically enforces plan rules and downgrades accounts when payments lapse
@@ -140,15 +138,15 @@ Plans:
   3. A subscriber whose Stripe payment fails receives a notification and, after Stripe's final retry, is automatically downgraded to FREE — their existing collection entries above 50 are preserved but no new additions are allowed
   4. An admin can configure plan prices, trial period length, and activate/deactivate plans; commission rates per plan are configurable in admin
   5. A user can manage their subscription (view status, cancel, see next billing date) from their account settings
-**Plans**: TBD
+**Plans**: 6 plans
 
 Plans:
-- [ ] 06-01: Subscription API — Stripe Checkout Session creation for BASIC plan, configurable billing intervals (monthly/quarterly/semi-annual/annual), trial period support, plan activation/deactivation, admin plan price configuration
-- [ ] 06-02: Stripe webhook handler — checkout.session.completed, customer.subscription.updated, customer.subscription.deleted events with idempotency guard (reuse webhook_events pattern from Phase 5); end-of-period downgrade scheduling; payment failure notification trigger
-- [ ] 06-03: Subscription enforcement — daily reconciliation background worker (node-cron) cross-checks Stripe subscription status against local plan, auto-downgrades expired/failed subscriptions; collection limit re-enforcement on downgrade (block adds, preserve existing)
-- [ ] 06-04: Admin subscription management API — admin approve/activate subscription changes endpoint, commission rate per-plan configuration (reuses COMM-03 admin endpoint from Phase 4), plan CRUD
-- [ ] 06-05: Subscription UI — upgrade flow (plan comparison page, Stripe Checkout redirect, success/cancel return pages), Stripe Customer Portal integration for self-service management, subscription status display in account settings
-- [ ] 06-06: Admin subscription management UI — plan management panel (create/edit/deactivate plans, set prices and trial period), commission rate configuration UI with impact preview
+- [ ] 06-01-PLAN.md — Subscription API: Stripe SDK lib, contracts schemas, PlanConfig migration + seed, checkout/portal/status/cancel endpoints (Wave 1)
+- [ ] 06-02-PLAN.md — Stripe webhook handler: raw body middleware, checkout.session.completed, subscription.updated/deleted, payment failure, idempotency guard (Wave 1)
+- [ ] 06-03-PLAN.md — Subscription enforcement: daily reconciliation cron, TRIALING status in collection/commission checks, auto-downgrade safety net (Wave 2)
+- [ ] 06-04-PLAN.md — Admin subscription API: subscription list with filters, manual activation, plan config CRUD (Wave 2)
+- [ ] 06-05-PLAN.md — Subscription UI: plan comparison, Stripe Checkout redirect, success/cancel pages, status card, Customer Portal link (Wave 3)
+- [ ] 06-06-PLAN.md — Admin subscription UI: subscription list page, plan management with commission impact preview (Wave 3)
 
 ### Phase 7: Community and Notifications
 **Goal**: Users can engage with the catalog through reviews, comments, and favorites; buyers and sellers can rate each other after transactions; and the platform communicates proactively via in-app notifications and transactional emails
@@ -169,7 +167,7 @@ Plans:
 - [ ] 07-04: Transactional email service — Resend SDK integration, email templates (welcome, payment confirmed, order shipped, item sold, password reset) with responsive layout and PT-BR branding, notification preference gate before send
 - [ ] 07-05: Reviews and comments UI — review form on catalog entry page, star rating component, review list, edit review flow, comment thread with nested replies, like button, seller profile page with rating history
 - [ ] 07-06: Favorites UI — favorite button on catalog entry cards and detail pages, favorites list page
-- [ ] 07-07: Notification UI — bell icon in navbar with unread badge (polling every 30–60s), notification dropdown (recent 5), full notifications page, mark-as-read interaction, notification preferences settings page
+- [ ] 07-07: Notification UI — bell icon in navbar with unread badge (polling every 30-60s), notification dropdown (recent 5), full notifications page, mark-as-read interaction, notification preferences settings page
 
 ### Phase 8: Disputes
 **Goal**: Buyers have a protected dispute channel when orders go wrong — they can open a dispute with evidence, sellers can respond, and admins mediate with a logged decision — giving the platform a trust foundation that generic Brazilian marketplaces lack
@@ -244,7 +242,7 @@ Note: Phase 7 (Community) and Phase 8 (Disputes) both depend on Phase 5 (Payment
 | 2. Catalog and Taxonomy | 7/7 | Complete | 2026-02-23 |
 | 3. Collection Management | 2/2 | Complete | 2026-02-23 |
 | 4. Marketplace and Orders | 0/7 | Not started | - |
-| 5. Payments and Commissions | 0/9 | Not started | - |
+| 5. Payments and Commissions | 0/7 | Not started | - |
 | 6. Subscriptions | 0/6 | Not started | - |
 | 7. Community and Notifications | 0/7 | Not started | - |
 | 8. Disputes | 0/5 | Not started | - |
