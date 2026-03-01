@@ -15,3 +15,7 @@ export * from './marketplace';
 export * from './payments';
 export * from './banking';
 export * from './subscription';
+export * from './reviews';
+export * from './comments';
+export * from './favorites';
+export * from './notifications';

@@ -24,6 +24,10 @@ import { paymentsRoutes } from './modules/payments/payments.routes';
 import { webhookRoutes } from './modules/payments/webhook.routes';
 import { subscriptionRoutes } from './modules/subscriptions/subscriptions.routes';
 import { stripeWebhookRoutes } from './modules/subscriptions/stripe-webhook.routes';
+import { notificationsRoutes } from './modules/notifications/notifications.routes';
+import { commentsRoutes } from './modules/comments/comments.routes';
+import { favoritesRoutes } from './modules/favorites/favorites.routes';
+import { reviewsRoutes } from './modules/reviews/reviews.routes';
 import { errorHandler } from './shared/middleware/error-handler';
 import { UPLOADS_PATH } from './shared/lib/cloudinary';
 import { registerCronJobs } from './shared/cron';
@@ -99,6 +103,10 @@ export function createApp(): Express {
   app.use('/api/v1/payments', paymentsRoutes);
   app.use('/api/v1/webhooks/mercadopago', webhookRoutes);
   app.use('/api/v1/subscriptions', subscriptionRoutes);
+  app.use('/api/v1/notifications', notificationsRoutes);
+  app.use('/api/v1/comments', commentsRoutes);
+  app.use('/api/v1/favorites', favoritesRoutes);
+  app.use('/api/v1/reviews', reviewsRoutes);
 
   // Register cron jobs for background tasks
   registerCronJobs();

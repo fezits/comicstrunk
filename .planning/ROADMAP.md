@@ -158,16 +158,16 @@ Plans:
   3. The notification bell icon shows an unread count badge; clicking it reveals a dropdown of recent notifications; a full notifications page shows all history with mark-as-read
   4. After key events, the affected user receives an email: welcome on signup, payment confirmed on order paid, shipping update when tracking code is added, sale alert when their copy sells, and password reset link on request — all emails are responsive and branded
   5. A user can enable or disable each notification type (payment, shipping, sale, etc.) from their notification preferences page
-**Plans**: TBD
+**Plans**: 7 plans
 
 Plans:
-- [ ] 07-01: Reviews and ratings API — catalog review CRUD (one per user per catalog, edit own, 1-5 stars + text), seller review creation (post-purchase gate, one per transaction), average rating aggregation for catalog and seller profile
-- [ ] 07-02: Comments and favorites API — catalog comment CRUD (one nesting level of replies), comment likes (toggle), favorites CRUD (add/remove catalog entry, list favorites)
-- [ ] 07-03: Notification system API — notification creation service (called by other modules on events), in-app notification endpoints (unread count, dropdown list, full page, mark read), notification preferences CRUD
-- [ ] 07-04: Transactional email service — Resend SDK integration, email templates (welcome, payment confirmed, order shipped, item sold, password reset) with responsive layout and PT-BR branding, notification preference gate before send
-- [ ] 07-05: Reviews and comments UI — review form on catalog entry page, star rating component, review list, edit review flow, comment thread with nested replies, like button, seller profile page with rating history
-- [ ] 07-06: Favorites UI — favorite button on catalog entry cards and detail pages, favorites list page
-- [ ] 07-07: Notification UI — bell icon in navbar with unread badge (polling every 30-60s), notification dropdown (recent 5), full notifications page, mark-as-read interaction, notification preferences settings page
+- [ ] 07-01-PLAN.md — Reviews and ratings API: contracts schemas, catalog review CRUD (one per user per catalog, edit own, 1-5 stars + text), seller review creation (post-purchase gate via order COMPLETED status, one per transaction), average rating aggregation for catalog entries and seller profiles (Wave 1)
+- [ ] 07-02-PLAN.md — Comments and favorites API: contracts schemas, catalog comment CRUD (one nesting level of replies enforced at app layer), comment likes toggle with likesCount sync, favorites toggle/list/check endpoints (Wave 1)
+- [ ] 07-03-PLAN.md — Notification system API: contracts schemas, reusable createNotification() service with preference gate, in-app notification endpoints (list, unread count, mark read, mark all read), notification preferences CRUD, hooks into auth/order/shipping flows (Wave 1)
+- [ ] 07-04-PLAN.md — Transactional email service: Resend SDK abstraction (shared/lib/resend.ts), 5 responsive email templates in PT-BR (welcome, payment confirmed, order shipped, item sold, password reset), preference gate before send, graceful degradation without credentials (Wave 2)
+- [ ] 07-05-PLAN.md — Reviews and comments UI: reusable star rating component (display + input), catalog review form (create/edit/delete), review list with average, comment thread with nested replies, like button with optimistic update, seller rating summary, catalog detail page integration (Wave 3)
+- [ ] 07-06-PLAN.md — Favorites UI: favorite button (heart toggle) on catalog cards and detail pages, favorites list page at /favorites with pagination, optimistic toggle, auth redirect (Wave 3)
+- [ ] 07-07-PLAN.md — Notification UI: bell icon in header with unread badge, notification dropdown (recent 5), full notifications page with filters and mark-as-read, notification preferences settings with per-type toggles, 30-second polling context provider (Wave 3)
 
 ### Phase 8: Disputes
 **Goal**: Buyers have a protected dispute channel when orders go wrong — they can open a dispute with evidence, sellers can respond, and admins mediate with a logged decision — giving the platform a trust foundation that generic Brazilian marketplaces lack

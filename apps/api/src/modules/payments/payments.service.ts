@@ -7,6 +7,8 @@ import {
   ForbiddenError,
 } from '../../shared/utils/api-error';
 import { roundCurrency } from '../../shared/lib/currency';
+import { createNotification } from '../notifications/notifications.service';
+import { sendPaymentConfirmedEmail } from '../notifications/email.service';
 
 // === Initiate PIX Payment ===
 
@@ -213,6 +215,36 @@ export async function processPaymentConfirmation(orderId: string) {
       data: { paidAt: new Date(), providerStatus: 'approved' },
     });
   });
+
+  // Fire-and-forget: notify buyer of payment confirmation
+  try {
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        buyer: { select: { name: true, email: true } },
+        orderItems: { select: { id: true } },
+      },
+    });
+    if (order) {
+      createNotification({
+        userId: order.buyerId,
+        type: 'PAYMENT_CONFIRMED',
+        title: 'Pagamento confirmado',
+        message: `O pagamento do pedido ${order.orderNumber} foi confirmado com sucesso!`,
+        metadata: { orderId, orderNumber: order.orderNumber },
+      }).catch(() => {});
+
+      // Fire-and-forget: send payment confirmed email
+      void sendPaymentConfirmedEmail(order.buyerId, order.buyer.email, {
+        userName: order.buyer.name,
+        orderNumber: order.orderNumber,
+        totalAmount: Number(order.totalAmount).toFixed(2),
+        itemCount: order.orderItems.length,
+      });
+    }
+  } catch {
+    // Non-blocking — payment confirmation is the critical path, not the notification
+  }
 }
 
 // === Get Payment by Order ID ===

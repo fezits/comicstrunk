@@ -3,6 +3,7 @@ import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
 import { AuthProvider } from '@/lib/auth/auth-provider';
 import { CartProvider } from '@/contexts/cart-context';
+import { NotificationProvider } from '@/contexts/notification-context';
 import '@/styles/globals.css';
 
 type LocaleLayoutProps = {
@@ -29,7 +30,9 @@ export default async function LocaleLayout({
       >
         <AuthProvider>
           <CartProvider>
-            {children}
+            <NotificationProvider>
+              {children}
+            </NotificationProvider>
           </CartProvider>
         </AuthProvider>
         <Toaster

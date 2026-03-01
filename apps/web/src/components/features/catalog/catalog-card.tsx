@@ -2,9 +2,10 @@
 
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import { BookOpen, Heart, Plus, Repeat2 } from 'lucide-react';
+import { BookOpen, Plus, Repeat2 } from 'lucide-react';
 
 import { StarRating } from './star-rating';
+import { FavoriteButton } from '@/components/features/favorites/favorite-button';
 import type { CatalogEntry } from '@/lib/api/catalog';
 
 interface CatalogCardProps {
@@ -44,16 +45,11 @@ export function CatalogCard({ entry }: CatalogCardProps) {
             >
               <Plus className="h-4 w-4" />
             </button>
-            <button
-              className="w-8 h-8 flex items-center justify-center bg-primary hover:bg-primary/80 border-2 border-white rounded-full text-white transition"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-              title={t('favorite')}
-            >
-              <Heart className="h-4 w-4" />
-            </button>
+            <FavoriteButton
+              catalogEntryId={entry.id}
+              size="sm"
+              className="bg-background/80 backdrop-blur-sm shadow-sm"
+            />
             <button
               className="w-8 h-8 flex items-center justify-center bg-primary hover:bg-primary/80 border-2 border-white rounded-full text-white transition opacity-50 cursor-not-allowed"
               onClick={(e) => {

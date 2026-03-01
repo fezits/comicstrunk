@@ -4,15 +4,19 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Star } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
 import { CatalogDetail } from '@/components/features/catalog/catalog-detail';
+import { CatalogReviewList } from '@/components/features/reviews/catalog-review-list';
+import { CommentThread } from '@/components/features/comments/comment-thread';
 import { getCatalogEntryById, type CatalogEntry } from '@/lib/api/catalog';
 
 export default function CatalogDetailPage() {
   const t = useTranslations('catalog');
+  const tReviews = useTranslations('reviews');
   const locale = useLocale();
   const params = useParams();
   const id = params.id as string;
@@ -90,6 +94,28 @@ export default function CatalogDetailPage() {
       </nav>
 
       <CatalogDetail entry={entry} />
+
+      <Separator className="my-8" />
+
+      {/* Reviews Section */}
+      <section id="reviews">
+        <div className="flex items-center gap-2 mb-6">
+          <Star className="h-5 w-5" />
+          <h2 className="text-xl font-semibold">{tReviews('title')}</h2>
+        </div>
+        <CatalogReviewList
+          catalogEntryId={id}
+          averageRating={entry.averageRating}
+          ratingCount={entry.ratingCount}
+        />
+      </section>
+
+      <Separator className="my-8" />
+
+      {/* Comments Section */}
+      <section id="comments">
+        <CommentThread catalogEntryId={id} />
+      </section>
     </div>
   );
 }

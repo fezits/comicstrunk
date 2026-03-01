@@ -37,6 +37,7 @@
     "multer": "^2.0.2",
     "node-cron": "^4.2.1",
     "papaparse": "^5.5.3",
+    "resend": "^6.9.3",
     "slugify": "^1.6.6",
     "stripe": "^20.4.0",
     "winston": "^3.19.0",

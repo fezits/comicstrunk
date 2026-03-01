@@ -18,6 +18,7 @@ import {
   PieChart,
   Crown,
   Layers,
+  Bell,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -68,6 +69,7 @@ export const navGroups: NavGroup[] = [
     requiresAuth: true,
     items: [
       { titleKey: 'nav.profile', href: '/profile', icon: User },
+      { titleKey: 'nav.notifications', href: '/notifications', icon: Bell },
       { titleKey: 'nav.subscription', href: '/subscription', icon: Crown },
       { titleKey: 'nav.settings', href: '/settings', icon: Settings },
     ],
@@ -113,5 +115,6 @@ export const protectedRoutes = [
   '/settings',
   '/subscription',
   '/notifications',
+  '/notifications/preferences',
   '/admin',
 ];

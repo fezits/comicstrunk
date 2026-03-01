@@ -28,3 +28,26 @@ export function authenticate(req: Request, _res: Response, next: NextFunction): 
     next(new UnauthorizedError('Invalid or expired access token'));
   }
 }
+
+/**
+ * Optional authentication — attaches user if valid token present, otherwise continues without user.
+ * Useful for public endpoints that enhance responses for authenticated users (e.g., like status).
+ */
+export function optionalAuthenticate(req: Request, _res: Response, next: NextFunction): void {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return next();
+  }
+
+  const token = authHeader.slice(7);
+
+  try {
+    const payload = verifyAccessToken(token);
+    req.user = payload;
+  } catch {
+    // Invalid token — continue without user (it's optional)
+  }
+
+  next();
+}

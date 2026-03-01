@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import { Menu, Bell, LogIn, UserPlus, LogOut, ShoppingCart } from 'lucide-react';
+import { Menu, LogIn, UserPlus, LogOut, ShoppingCart } from 'lucide-react';
 
 import { useAuth } from '@/lib/auth/use-auth';
 import { useCart } from '@/contexts/cart-context';
@@ -19,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ThemeToggle } from './theme-toggle';
 import { MobileNav } from './mobile-nav';
 import { CartSidebar } from '@/components/features/cart/cart-sidebar';
+import { NotificationBell } from '@/components/features/notifications/notification-bell';
 
 export function Header() {
   const t = useTranslations();
@@ -74,18 +75,8 @@ export function Header() {
                   )}
                 </Button>
 
-                {/* Notification bell in header */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative"
-                  asChild
-                >
-                  <Link href={`/${locale}/notifications`}>
-                    <Bell className="h-5 w-5" />
-                    <span className="sr-only">{t('nav.notifications')}</span>
-                  </Link>
-                </Button>
+                {/* Notification bell with dropdown */}
+                <NotificationBell />
 
                 <ThemeToggle />
 

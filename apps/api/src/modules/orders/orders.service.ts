@@ -8,6 +8,8 @@ import {
   NotFoundError,
   ForbiddenError,
 } from '../../shared/utils/api-error';
+import { createNotification } from '../notifications/notifications.service';
+import { sendOrderShippedEmail, sendItemSoldEmail } from '../notifications/email.service';
 
 // === Order includes for rich responses ===
 
@@ -34,7 +36,7 @@ function orderIncludes() {
 // === Create Order from Cart (ORDR-01 through ORDR-07) ===
 
 export async function createOrder(buyerId: string, shippingAddressId: string) {
-  return prisma.$transaction(async (tx) => {
+  const order = await prisma.$transaction(async (tx) => {
     const now = new Date();
 
     // 1. Fetch active (non-expired) cart items for buyer
@@ -159,6 +161,49 @@ export async function createOrder(buyerId: string, shippingAddressId: string) {
 
     return order;
   });
+
+  // Fire-and-forget: notify each unique seller about the new sale
+  const uniqueSellerIds = [...new Set(order.orderItems.map((item) => item.sellerId))];
+  for (const sellerId of uniqueSellerIds) {
+    createNotification({
+      userId: sellerId,
+      type: 'ITEM_SOLD',
+      title: 'Nova venda!',
+      message: 'Voce tem um novo pedido. Confira os detalhes e prepare o envio.',
+      metadata: { orderId: order.id, orderNumber: order.orderNumber },
+    }).catch(() => {});
+  }
+
+  // Fire-and-forget: send item sold email to each seller
+  void (async () => {
+    try {
+      for (const sellerId of uniqueSellerIds) {
+        const seller = await prisma.user.findUnique({
+          where: { id: sellerId },
+          select: { name: true, email: true },
+        });
+        if (!seller) continue;
+
+        // Aggregate items for this seller in this order
+        const sellerItems = order.orderItems.filter((item) => item.sellerId === sellerId);
+        for (const item of sellerItems) {
+          const title =
+            item.collectionItem?.catalogEntry?.title ?? 'Item do catalogo';
+          void sendItemSoldEmail(sellerId, seller.email, {
+            sellerName: seller.name,
+            orderNumber: order.orderNumber,
+            itemTitle: title,
+            salePrice: Number(item.priceSnapshot).toFixed(2),
+            sellerNet: Number(item.sellerNetSnapshot).toFixed(2),
+          });
+        }
+      }
+    } catch {
+      // Non-blocking — notifications already sent above
+    }
+  })();
+
+  return order;
 }
 
 // === Get Order by ID ===
@@ -362,6 +407,59 @@ export async function updateOrderItemStatus(
         salePrice: null,
       },
     });
+  }
+
+  // Fire-and-forget: notify buyer of shipping status changes
+  if (newStatus === 'SHIPPED') {
+    createNotification({
+      userId: orderItem.order.buyerId,
+      type: 'ORDER_SHIPPED',
+      title: 'Pedido enviado',
+      message: `Um item do seu pedido foi enviado!${orderItem.trackingCode ? ` Codigo de rastreio: ${orderItem.trackingCode}` : ''}`,
+      metadata: { orderId: orderItem.orderId, orderItemId: orderItem.id, trackingCode: orderItem.trackingCode },
+    }).catch(() => {});
+
+    // Fire-and-forget: send shipping email to buyer
+    if (orderItem.trackingCode) {
+      void (async () => {
+        try {
+          const buyer = await prisma.user.findUnique({
+            where: { id: orderItem.order.buyerId },
+            select: { name: true, email: true },
+          });
+          const itemWithCatalog = await prisma.orderItem.findUnique({
+            where: { id: orderItem.id },
+            include: {
+              collectionItem: {
+                include: {
+                  catalogEntry: { select: { title: true } },
+                },
+              },
+            },
+          });
+          if (buyer && itemWithCatalog) {
+            const itemTitle =
+              itemWithCatalog.collectionItem?.catalogEntry?.title ?? 'Item do catalogo';
+            void sendOrderShippedEmail(orderItem.order.buyerId, buyer.email, {
+              userName: buyer.name,
+              orderNumber: orderItem.order.orderNumber,
+              trackingCode: orderItem.trackingCode!,
+              itemTitle,
+            });
+          }
+        } catch {
+          // Non-blocking
+        }
+      })();
+    }
+  } else if (newStatus === 'DELIVERED') {
+    createNotification({
+      userId: orderItem.order.buyerId,
+      type: 'ORDER_SHIPPED',
+      title: 'Pedido entregue',
+      message: 'Um item do seu pedido foi marcado como entregue.',
+      metadata: { orderId: orderItem.orderId, orderItemId: orderItem.id },
+    }).catch(() => {});
   }
 
   // Check if all items in the order have reached a terminal state
