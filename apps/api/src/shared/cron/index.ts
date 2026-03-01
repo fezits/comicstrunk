@@ -2,6 +2,7 @@ import cron from 'node-cron';
 import { prisma } from '../lib/prisma';
 import { stripe, isStripeConfigured } from '../lib/stripe';
 import { createNotification } from '../../modules/notifications/notifications.service';
+import { executeAccountDeletion } from '../../modules/lgpd/lgpd.service';
 
 /**
  * Register all scheduled cron jobs for cart/order lifecycle management.
@@ -229,6 +230,55 @@ export function registerCronJobs(): void {
       }
     } catch (err) {
       console.error('[CRON] Error deactivating expired deals:', err);
+    }
+  });
+
+  // Daily at 4:30 AM: Process LGPD account deletion requests older than 30 days
+  cron.schedule('30 4 * * *', async () => {
+    try {
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+      const pendingDeletions = await prisma.dataRequest.findMany({
+        where: {
+          type: 'DELETION',
+          status: 'PENDING',
+          createdAt: { lt: thirtyDaysAgo },
+        },
+      });
+
+      let processedCount = 0;
+
+      for (const request of pendingDeletions) {
+        try {
+          await executeAccountDeletion(request.userId);
+
+          await prisma.dataRequest.update({
+            where: { id: request.id },
+            data: {
+              status: 'COMPLETED',
+              completedAt: new Date(),
+            },
+          });
+
+          processedCount++;
+          console.log(
+            `[CRON] LGPD: Account deletion completed for user ${request.userId} (request ${request.id})`,
+          );
+        } catch (reqErr) {
+          console.error(
+            `[CRON] LGPD: Error processing deletion request ${request.id}:`,
+            reqErr,
+          );
+        }
+      }
+
+      if (processedCount > 0) {
+        console.log(
+          `[CRON] LGPD: Processed ${processedCount} account deletion(s)`,
+        );
+      }
+    } catch (err) {
+      console.error('[CRON] LGPD: Error in account deletion cron:', err);
     }
   });
 

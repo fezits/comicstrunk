@@ -4,6 +4,7 @@ import { Toaster } from 'sonner';
 import { AuthProvider } from '@/lib/auth/auth-provider';
 import { CartProvider } from '@/contexts/cart-context';
 import { NotificationProvider } from '@/contexts/notification-context';
+import { CookieConsentBanner } from '@/components/features/legal/cookie-consent-banner';
 import '@/styles/globals.css';
 
 type LocaleLayoutProps = {
@@ -32,6 +33,7 @@ export default async function LocaleLayout({
           <CartProvider>
             <NotificationProvider>
               {children}
+              <CookieConsentBanner />
             </NotificationProvider>
           </CartProvider>
         </AuthProvider>

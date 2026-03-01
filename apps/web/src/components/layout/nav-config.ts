@@ -21,6 +21,10 @@ import {
   Layers,
   Bell,
   Scale,
+  Shield,
+  MessageSquare,
+  FileCheck,
+  Mail,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -47,6 +51,7 @@ export const navGroups: NavGroup[] = [
       { titleKey: 'nav.catalog', href: '/catalog', icon: Library },
       { titleKey: 'nav.marketplace', href: '/marketplace', icon: Store },
       { titleKey: 'nav.deals', href: '/deals', icon: Tag },
+      { titleKey: 'nav.contact', href: '/contact', icon: MessageSquare },
     ],
   },
   {
@@ -75,6 +80,7 @@ export const navGroups: NavGroup[] = [
       { titleKey: 'nav.notifications', href: '/notifications', icon: Bell },
       { titleKey: 'nav.subscription', href: '/subscription', icon: Crown },
       { titleKey: 'nav.settings', href: '/settings', icon: Settings },
+      { titleKey: 'nav.lgpd', href: '/lgpd', icon: Shield },
     ],
   },
   {
@@ -101,6 +107,9 @@ export const navGroups: NavGroup[] = [
       { titleKey: 'nav.adminPlans', href: '/admin/subscriptions/plans', icon: Layers },
       { titleKey: 'nav.adminDeals', href: '/admin/deals', icon: Tag },
       { titleKey: 'nav.adminHomepage', href: '/admin/homepage', icon: Home },
+      { titleKey: 'nav.adminLegal', href: '/admin/legal', icon: FileCheck },
+      { titleKey: 'nav.adminLgpd', href: '/admin/lgpd', icon: Shield },
+      { titleKey: 'nav.adminContact', href: '/admin/contact', icon: Mail },
     ],
   },
 ];
@@ -122,5 +131,6 @@ export const protectedRoutes = [
   '/subscription',
   '/notifications',
   '/notifications/preferences',
+  '/lgpd',
   '/admin',
 ];

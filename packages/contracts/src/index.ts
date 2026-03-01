@@ -22,3 +22,7 @@ export * from './notifications';
 export * from './disputes';
 export * from './deals';
 export * from './homepage';
+export * from './legal';
+export * from './lgpd';
+export * from './contact';
+export * from './admin';
