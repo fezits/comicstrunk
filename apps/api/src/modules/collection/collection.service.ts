@@ -49,8 +49,9 @@ async function checkPlanLimit(
   const currentCount = await tx.collectionItem.count({ where: { userId } });
 
   // Check subscription — default to FREE if none
+  // TRIALING status grants same benefits as ACTIVE (Phase 6 subscription support)
   const subscription = await tx.subscription.findFirst({
-    where: { userId, status: 'ACTIVE' },
+    where: { userId, status: { in: ['ACTIVE', 'TRIALING'] } },
     orderBy: { createdAt: 'desc' },
   });
 

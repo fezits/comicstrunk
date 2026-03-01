@@ -1,2 +1,3 @@
--- AlterTable
-ALTER TABLE `collection_items` ADD COLUMN `photo_urls` JSON NULL;
+-- This migration was a duplicate of 20260223195255_add_collection_photo_urls
+-- The photo_urls column was already added by the previous migration.
+-- No-op to fix shadow database compatibility.

@@ -169,6 +169,36 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
               </Button>
             </div>
           )}
+
+          {/* Legal / policy links */}
+          <Separator className="my-3" />
+          <div className="px-3 flex flex-wrap gap-x-3 gap-y-1">
+            <Link
+              href={`/${locale}/terms`}
+              onClick={handleNavigate}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Termos
+            </Link>
+            <Link
+              href={`/${locale}/privacy`}
+              onClick={handleNavigate}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Privacidade
+            </Link>
+            <Link
+              href={`/${locale}/policies`}
+              onClick={handleNavigate}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Politicas
+            </Link>
+          </div>
+
+          <p className="px-3 mt-2 text-xs text-muted-foreground">
+            {t('common.appName')} &copy; {new Date().getFullYear()}
+          </p>
         </nav>
       </SheetContent>
     </Sheet>

@@ -5,6 +5,8 @@ import { signAccessToken, signRefreshToken, verifyRefreshToken, hashToken } from
 import { logger } from '../../shared/lib/logger';
 import { BadRequestError, ConflictError, UnauthorizedError } from '../../shared/utils/api-error';
 import type { SignupInput, LoginInput, AuthUser } from '@comicstrunk/contracts';
+import { createNotification } from '../notifications/notifications.service';
+import { sendWelcomeEmail, sendPasswordResetEmail } from '../notifications/email.service';
 
 const BCRYPT_ROUNDS = 12;
 const REFRESH_TOKEN_EXPIRY_DAYS = 7;
@@ -63,6 +65,16 @@ export async function signup(input: SignupInput) {
     email: user.email,
     role: user.role,
   };
+
+  // Fire-and-forget: send welcome notification and email
+  createNotification({
+    userId: user.id,
+    type: 'WELCOME',
+    title: 'Bem-vindo ao Comics Trunk!',
+    message: 'Sua conta foi criada com sucesso. Comece explorando o catalogo e adicionando seus gibis a colecao!',
+  }).catch(() => {});
+
+  void sendWelcomeEmail(user.id, user.email, user.name);
 
   return { accessToken, refreshToken, user: authUser };
 }
@@ -235,9 +247,12 @@ export async function requestPasswordReset(email: string) {
     },
   });
 
-  // Phase 1 placeholder: log the reset URL
+  // Send password reset email (fire-and-forget)
   const webUrl = process.env.WEB_URL || 'http://localhost:3000';
-  logger.info(`Password reset link: ${webUrl}/reset-password?token=${rawToken}`);
+  const resetLink = `${webUrl}/reset-password?token=${rawToken}`;
+
+  logger.info(`Password reset link: ${resetLink}`);
+  void sendPasswordResetEmail(user.email, { userName: user.name, resetLink });
 }
 
 // === Confirm Password Reset ===

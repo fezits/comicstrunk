@@ -670,6 +670,7 @@ model PlanConfig {
   commissionRate  Decimal         @map("commission_rate") @db.Decimal(5, 4)
   trialDays       Int             @default(0) @map("trial_days")
   isActive        Boolean         @default(true) @map("is_active")
+  stripePriceId   String?         @map("stripe_price_id")
   createdAt       DateTime        @default(now()) @map("created_at")
   updatedAt       DateTime        @updatedAt @map("updated_at")
 

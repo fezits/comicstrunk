@@ -2,6 +2,9 @@ import { NextIntlClientProvider } from 'next-intl';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
 import { AuthProvider } from '@/lib/auth/auth-provider';
+import { CartProvider } from '@/contexts/cart-context';
+import { NotificationProvider } from '@/contexts/notification-context';
+import { CookieConsentBanner } from '@/components/features/legal/cookie-consent-banner';
 import '@/styles/globals.css';
 
 type LocaleLayoutProps = {
@@ -27,7 +30,12 @@ export default async function LocaleLayout({
         disableTransitionOnChange
       >
         <AuthProvider>
-          {children}
+          <CartProvider>
+            <NotificationProvider>
+              {children}
+              <CookieConsentBanner />
+            </NotificationProvider>
+          </CartProvider>
         </AuthProvider>
         <Toaster
           position="bottom-right"

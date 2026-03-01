@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-21)
 
 **Core value:** Collectors can catalog, track, and organize their physical comic book collection — knowing exactly what they have, what they've read, and what's missing from their series.
-**Current focus:** Phase 4 — Marketplace and Orders
+**Current focus:** Phase 6 — Subscriptions
 
 ## Current Position
 
-Phase: 4 of 10 (Marketplace and Orders)
-Plan: 0 of 7 in current phase
-Status: Ready
-Last activity: 2026-02-23 — Completed 03-04 (gap closure: frontend plan limits + photo UI)
+Phase: 6 of 10 (Subscriptions)
+Plan: 6 of 6 in current phase
+Status: PHASE 06 COMPLETE
+Last activity: 2026-02-27 — Completed all 6 plans (Stripe API, webhook, enforcement, admin, UI)
 
-Progress: [████████████████████████████░░] 29%
+Progress: [█████████████████████████████████████████████] 55%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 18
+- Total plans completed: 38
 - Average duration: 8 min
-- Total execution time: 2.4 hours
+- Total execution time: 5.5 hours
 
 **By Phase:**
 
@@ -30,9 +30,12 @@ Progress: [███████████████████████
 | 1. Foundation | 7/8 | 80 min | 11 min |
 | 2. Catalog | 7/7 | 37 min | 5 min |
 | 3. Collection | 4/4 | 29 min | 7 min |
+| 4. Marketplace | 7/7 | 70 min | 10 min |
+| 5. Payments | 7/7 | 65 min | 9 min |
+| 6. Subscriptions | 6/6 | 60 min | 10 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-01 (9 min), 03-02 (10 min), 03-03 (6 min), 03-04 (4 min)
+- Last 5 plans: 03-02 (10 min), 03-03 (6 min), 03-04 (4 min), 04-01 (10 min), 04-04 (7 min)
 - Trend: Steady
 
 *Updated after each plan completion*
@@ -54,6 +57,13 @@ Progress: [███████████████████████
 | Phase 03 P02 | 10min | 2 tasks | 4 files |
 | Phase 03 P03 | 6min | 2 tasks | 4 files |
 | Phase 03 P04 | 4min | 2 tasks | 4 files |
+| Phase 04 P01 | 10min | 2 tasks | 16 files |
+| Phase 04 P02 | 5min | 2 tasks | 3 files |
+| Phase 04 P03 | 9min | 2 tasks | 4 files |
+| Phase 04 P04 | 7min | 2 tasks | 4 files |
+| Phase 04 P05 | 13min | 2 tasks | 15 files |
+| Phase 04 P06 | 14min | 2 tasks | 17 files |
+| Phase 04 P07 | 12min | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -131,6 +141,29 @@ Recent decisions affecting current work:
 - [Phase 03]: [03-03]: Migration marked as already applied via prisma migrate resolve since photo_urls column existed from dist
 - [Phase 03]: [03-04]: Plan limit detection uses axios error status 400 + message.includes('Collection limit reached') pattern
 - [Phase 03]: [03-04]: Photo section only rendered in non-editing view to avoid layout conflicts with edit form
+- [Phase 04]: [04-01]: Commission auto-seed on first getCommissionRate call ensures configs exist without manual migration
+- [Phase 04]: [04-01]: Marketplace endpoints are fully public (no auth middleware) for unauthenticated browsing
+- [Phase 04]: [04-01]: commissionPreviewSchema uses z.coerce.number() for query param parsing
+- [Phase 04]: [04-01]: Cron jobs registered in createApp() after route registration but before error handler
+- [Phase 04]: [04-02]: Interactive $transaction for addToCart prevents race conditions on unique physical items
+- [Phase 04]: [04-02]: Cart items include remainingMs for frontend countdown display
+- [Phase 04]: [04-02]: Static route /summary placed before /:id in Express router to prevent path collision
+- [Phase 04]: [04-03]: updateShippingMethodSchema added as partial of createShippingMethodSchema for consistent CRUD validation
+- [Phase 04]: [04-03]: Default address auto-promotion on delete uses most recent (createdAt desc) remaining address
+- [Phase 04]: [04-03]: Tracking update only allowed in PROCESSING status to enforce correct order lifecycle
+- [Phase 04]: [04-04]: Order state machine defined as separate utility for reuse across services, cron, and dispute resolution
+- [Phase 04]: [04-04]: createOrder uses interactive $transaction for atomicity across cart read, address validation, order creation, and cart clear
+- [Phase 04]: [04-04]: Shipping address snapshot captures all fields as JSON at order creation for immutable audit trail
+- [Phase 04]: [04-04]: syncOrderStatus auto-promotes order to COMPLETED/CANCELLED when all items reach terminal state
+- [Phase 04]: [04-04]: Buyer restricted to COMPLETED/DISPUTED transitions; seller handles all other item status advancement
+- [Phase 04]: MarketplaceCard uses single component with variant prop (grid/list) instead of separate components
+- [Phase 04]: Seller profile page derived from marketplace listings by sellerId filter (no dedicated profile API)
+- [Phase 04]: Added sellerId filter to marketplace contract and service for seller profile page
+- [Phase 04]: Commission transparency only shown to authenticated users (previewCommission requires auth)
+- [Phase 04]: CartProvider wraps locale layout inside AuthProvider for shared cart state across header, sidebar, and listing detail
+- [Phase 04]: Cart badge uses optimistic count updates (increment/decrement) for instant UI feedback
+- [Phase 04]: Address selector uses custom radio-style cards (not radix RadioGroup) for richer layout
+- [Phase 04]: CEP masking via simple onChange handler rather than mask library dependency
 
 ### Pending Todos
 
@@ -144,6 +177,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-23
-Stopped at: Completed 03-04 (gap closure: frontend plan limits + photo UI)
-Resume file: .planning/phases/03-collection-management/03-04-SUMMARY.md
+Last session: 2026-02-27
+Stopped at: Phase 06 COMPLETE — all 6 plans executed (Stripe, webhook, enforcement, admin, UI)
+Resume file: .planning/phases/06-subscriptions/06-06-SUMMARY.md

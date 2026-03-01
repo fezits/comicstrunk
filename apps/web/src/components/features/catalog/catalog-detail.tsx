@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { StarRating } from './star-rating';
+import { FavoriteButton } from '@/components/features/favorites/favorite-button';
 import { useAuth } from '@/lib/auth/use-auth';
 import { addCollectionItem } from '@/lib/api/collection';
 import type { CatalogEntry } from '@/lib/api/catalog';
@@ -117,7 +118,10 @@ export function CatalogDetail({ entry }: CatalogDetailProps) {
 
       {/* Metadata */}
       <div className="flex-1 space-y-4">
-        <h1 className="text-3xl font-bold tracking-tight">{entry.title}</h1>
+        <div className="flex items-start gap-3">
+          <h1 className="text-3xl font-bold tracking-tight flex-1">{entry.title}</h1>
+          <FavoriteButton catalogEntryId={entry.id} size="md" />
+        </div>
 
         <StarRating rating={entry.averageRating} count={entry.ratingCount} size="lg" />
 
