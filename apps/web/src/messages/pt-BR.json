@@ -16,6 +16,7 @@
   },
   "nav": {
     "home": "Inicio",
+    "catalog": "Catalogo",
     "collection": "Minha Colecao",
     "marketplace": "Marketplace",
     "deals": "Ofertas",
@@ -47,6 +48,8 @@
     "adminDisputes": "Disputas",
     "adminSubscriptions": "Assinaturas",
     "adminPlans": "Planos",
+    "adminDeals": "Ofertas",
+    "adminHomepage": "Homepage",
     "groups": {
       "public": "Explorar",
       "collection": "Minha Colecao",

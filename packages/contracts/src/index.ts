@@ -20,3 +20,5 @@ export * from './comments';
 export * from './favorites';
 export * from './notifications';
 export * from './disputes';
+export * from './deals';
+export * from './homepage';

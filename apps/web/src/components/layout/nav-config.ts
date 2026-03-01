@@ -1,4 +1,5 @@
 import {
+  Home,
   Library,
   Store,
   Tag,
@@ -42,7 +43,8 @@ export const navGroups: NavGroup[] = [
   {
     labelKey: 'nav.groups.public',
     items: [
-      { titleKey: 'nav.home', href: '/catalog', icon: Library },
+      { titleKey: 'nav.home', href: '/', icon: Home },
+      { titleKey: 'nav.catalog', href: '/catalog', icon: Library },
       { titleKey: 'nav.marketplace', href: '/marketplace', icon: Store },
       { titleKey: 'nav.deals', href: '/deals', icon: Tag },
     ],
@@ -97,6 +99,8 @@ export const navGroups: NavGroup[] = [
       { titleKey: 'nav.adminDisputes', href: '/admin/disputes', icon: Scale },
       { titleKey: 'nav.adminSubscriptions', href: '/admin/subscriptions', icon: Crown },
       { titleKey: 'nav.adminPlans', href: '/admin/subscriptions/plans', icon: Layers },
+      { titleKey: 'nav.adminDeals', href: '/admin/deals', icon: Tag },
+      { titleKey: 'nav.adminHomepage', href: '/admin/homepage', icon: Home },
     ],
   },
 ];

@@ -213,5 +213,24 @@ export function registerCronJobs(): void {
     }
   });
 
+  // Daily at 2 AM: Deactivate expired deals
+  cron.schedule('0 2 * * *', async () => {
+    try {
+      const now = new Date();
+      const result = await prisma.deal.updateMany({
+        where: {
+          isActive: true,
+          expiresAt: { lt: now },
+        },
+        data: { isActive: false },
+      });
+      if (result.count > 0) {
+        console.log(`[CRON] Deactivated ${result.count} expired deal(s)`);
+      }
+    } catch (err) {
+      console.error('[CRON] Error deactivating expired deals:', err);
+    }
+  });
+
   console.log('[CRON] All scheduled jobs registered');
 }

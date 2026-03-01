@@ -1,8 +1,69 @@
-import { PrismaClient, PlanType, BillingInterval, UserRole } from '@prisma/client';
+import { PrismaClient, PlanType, BillingInterval, UserRole, HomepageSectionType } from '@prisma/client';
 import { hashSync } from 'bcryptjs';
 import { seedCatalog } from './seed-catalog';
+import { seedDeals } from './seed-deals';
 
 const prisma = new PrismaClient();
+
+async function seedHomepage() {
+  console.log('\n  Seeding homepage sections...');
+
+  const sections = [
+    {
+      id: 'homepage-banner-carousel',
+      type: HomepageSectionType.BANNER_CAROUSEL,
+      title: 'Destaques',
+      sortOrder: 0,
+      isVisible: true,
+      contentRefs: {},
+    },
+    {
+      id: 'homepage-catalog-highlights',
+      type: HomepageSectionType.CATALOG_HIGHLIGHTS,
+      title: 'Catalogo em Destaque',
+      sortOrder: 1,
+      isVisible: true,
+      contentRefs: {},
+    },
+    {
+      id: 'homepage-deals-of-day',
+      type: HomepageSectionType.DEALS_OF_DAY,
+      title: 'Ofertas do Dia',
+      sortOrder: 2,
+      isVisible: true,
+      contentRefs: {},
+    },
+    {
+      id: 'homepage-featured-coupons',
+      type: HomepageSectionType.FEATURED_COUPONS,
+      title: 'Cupons em Destaque',
+      sortOrder: 3,
+      isVisible: true,
+      contentRefs: {},
+    },
+  ];
+
+  for (const section of sections) {
+    const result = await prisma.homepageSection.upsert({
+      where: { id: section.id },
+      update: {
+        title: section.title,
+        sortOrder: section.sortOrder,
+        isVisible: section.isVisible,
+        contentRefs: section.contentRefs,
+      },
+      create: {
+        id: section.id,
+        type: section.type,
+        title: section.title,
+        sortOrder: section.sortOrder,
+        isVisible: section.isVisible,
+        contentRefs: section.contentRefs,
+      },
+    });
+    console.log(`  Homepage section: ${result.title} (${result.type})`);
+  }
+}
 
 async function main() {
   console.log('Seeding database...');
@@ -129,6 +190,12 @@ async function main() {
 
   // Seed catalog data (categories, tags, characters, series, entries)
   await seedCatalog(admin.id);
+
+  // Seed partner stores and deals
+  await seedDeals();
+
+  // Seed homepage sections
+  await seedHomepage();
 
   console.log('\nSeeding complete.');
 }
