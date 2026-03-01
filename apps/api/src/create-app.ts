@@ -19,6 +19,11 @@ import { marketplaceRoutes } from './modules/marketplace/marketplace.routes';
 import { cartRoutes } from './modules/cart/cart.routes';
 import { shippingRoutes } from './modules/shipping/shipping.routes';
 import { ordersRoutes } from './modules/orders/orders.routes';
+import { bankingRoutes } from './modules/banking/banking.routes';
+import { paymentsRoutes } from './modules/payments/payments.routes';
+import { webhookRoutes } from './modules/payments/webhook.routes';
+import { subscriptionRoutes } from './modules/subscriptions/subscriptions.routes';
+import { stripeWebhookRoutes } from './modules/subscriptions/stripe-webhook.routes';
 import { errorHandler } from './shared/middleware/error-handler';
 import { UPLOADS_PATH } from './shared/lib/cloudinary';
 import { registerCronJobs } from './shared/cron';
@@ -34,6 +39,13 @@ export function createApp(): Express {
       origin: process.env.WEB_URL || 'http://localhost:3000',
       credentials: true,
     }),
+  );
+
+  // Stripe webhook needs raw body for signature verification — must be BEFORE express.json()
+  app.use(
+    '/api/v1/webhooks/stripe',
+    express.raw({ type: 'application/json' }),
+    stripeWebhookRoutes,
   );
 
   // Parsing
@@ -83,6 +95,10 @@ export function createApp(): Express {
   app.use('/api/v1/cart', cartRoutes);
   app.use('/api/v1/shipping', shippingRoutes);
   app.use('/api/v1/orders', ordersRoutes);
+  app.use('/api/v1/banking', bankingRoutes);
+  app.use('/api/v1/payments', paymentsRoutes);
+  app.use('/api/v1/webhooks/mercadopago', webhookRoutes);
+  app.use('/api/v1/subscriptions', subscriptionRoutes);
 
   // Register cron jobs for background tasks
   registerCronJobs();

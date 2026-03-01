@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { prisma } from '../../shared/lib/prisma';
 import { roundCurrency } from '../../shared/lib/currency';
 import { NotFoundError } from '../../shared/utils/api-error';
@@ -69,8 +70,9 @@ export async function previewCommission(
   sellerNet: number;
 }> {
   // Look up user's subscription to determine plan type
+  // TRIALING status grants same benefits as ACTIVE (Phase 6 subscription support)
   const subscription = await prisma.subscription.findFirst({
-    where: { userId, status: 'ACTIVE' },
+    where: { userId, status: { in: ['ACTIVE', 'TRIALING'] } },
     orderBy: { createdAt: 'desc' },
   });
 
@@ -128,4 +130,143 @@ export async function updateCommissionConfig(id: string, data: UpdateCommissionC
       ...(data.isActive !== undefined && { isActive: data.isActive }),
     },
   });
+}
+
+// === Admin: Commission Dashboard ===
+
+interface CommissionByRate {
+  rate: number;
+  transaction_count: bigint;
+  total_commission: number | null;
+  total_sales: number | null;
+}
+
+export async function getCommissionDashboard(periodStart: Date, periodEnd: Date) {
+  const validStatuses = ['PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'COMPLETED'];
+
+  // Use raw SQL for efficient aggregation grouped by commission rate
+  const byRate = await prisma.$queryRaw<CommissionByRate[]>`
+    SELECT
+      oi.commission_rate_snapshot as rate,
+      COUNT(*) as transaction_count,
+      SUM(oi.commission_amount_snapshot) as total_commission,
+      SUM(oi.price_snapshot) as total_sales
+    FROM order_items oi
+    INNER JOIN orders o ON o.id = oi.order_id
+    WHERE o.status IN (${Prisma.join(validStatuses)})
+      AND o.created_at >= ${periodStart}
+      AND o.created_at <= ${periodEnd}
+    GROUP BY oi.commission_rate_snapshot
+  `;
+
+  // Compute totals from the grouped results
+  let totalCommission = 0;
+  let totalSales = 0;
+  let transactionCount = 0;
+
+  const byPlan = byRate.map((row) => {
+    const commission = Number(row.total_commission ?? 0);
+    const sales = Number(row.total_sales ?? 0);
+    const count = Number(row.transaction_count);
+    totalCommission += commission;
+    totalSales += sales;
+    transactionCount += count;
+
+    return {
+      rate: Number(row.rate),
+      transactionCount: count,
+      totalCommission: roundCurrency(commission),
+      totalSales: roundCurrency(sales),
+    };
+  });
+
+  return {
+    byPlan,
+    totals: {
+      totalCommission: roundCurrency(totalCommission),
+      totalSales: roundCurrency(totalSales),
+      transactionCount,
+    },
+    period: {
+      start: periodStart.toISOString(),
+      end: periodEnd.toISOString(),
+    },
+  };
+}
+
+// === Admin: Commission Transactions ===
+
+export async function getCommissionTransactions(
+  page: number,
+  limit: number,
+  periodStart?: Date,
+  periodEnd?: Date,
+) {
+  const validStatuses = [
+    'PAID',
+    'PROCESSING',
+    'SHIPPED',
+    'DELIVERED',
+    'COMPLETED',
+  ] as const;
+
+  const where: Prisma.OrderItemWhereInput = {
+    order: {
+      status: { in: [...validStatuses] },
+      ...(periodStart && periodEnd
+        ? { createdAt: { gte: periodStart, lte: periodEnd } }
+        : {}),
+    },
+  };
+
+  const [transactions, total] = await Promise.all([
+    prisma.orderItem.findMany({
+      where,
+      include: {
+        order: {
+          select: {
+            id: true,
+            orderNumber: true,
+            status: true,
+            createdAt: true,
+            buyer: {
+              select: { id: true, name: true, email: true },
+            },
+          },
+        },
+        collectionItem: {
+          select: {
+            catalogEntry: {
+              select: { id: true, title: true },
+            },
+          },
+        },
+      },
+      orderBy: { order: { createdAt: 'desc' } },
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+    prisma.orderItem.count({ where }),
+  ]);
+
+  // Flatten the response for easier consumption
+  const mapped = transactions.map((item) => ({
+    id: item.id,
+    orderId: item.orderId,
+    orderNumber: item.order.orderNumber,
+    orderStatus: item.order.status,
+    orderCreatedAt: item.order.createdAt,
+    buyerId: item.order.buyer.id,
+    buyerName: item.order.buyer.name,
+    buyerEmail: item.order.buyer.email,
+    sellerId: item.sellerId,
+    catalogEntryTitle: item.collectionItem.catalogEntry.title,
+    priceSnapshot: Number(item.priceSnapshot),
+    commissionRateSnapshot: Number(item.commissionRateSnapshot),
+    commissionAmountSnapshot: Number(item.commissionAmountSnapshot),
+    sellerNetSnapshot: Number(item.sellerNetSnapshot),
+    status: item.status,
+  }));
+
+  return { transactions: mapped, total, page, limit };
 }

@@ -12,7 +12,6 @@ import {
   Package,
   Truck,
   ExternalLink,
-  CreditCard,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -28,6 +27,7 @@ import {
 } from '@/components/ui/dialog';
 import { OrderStatusBadge } from './order-status-badge';
 import { OrderStatusTimeline } from './order-status-timeline';
+import { PaymentStatusSection } from './payment-status-section';
 import {
   getOrder,
   cancelOrder,
@@ -288,18 +288,8 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
         </Card>
       )}
 
-      {/* Payment placeholder */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <CreditCard className="h-4 w-4" />
-            {t('payment')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">{t('paymentPending')}</p>
-        </CardContent>
-      </Card>
+      {/* Payment status */}
+      <PaymentStatusSection orderId={order.id} orderStatus={order.status} />
 
       {/* Cancel button */}
       {canCancel && (

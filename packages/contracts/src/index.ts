@@ -12,3 +12,6 @@ export * from './orders';
 export * from './shipping';
 export * from './commission';
 export * from './marketplace';
+export * from './payments';
+export * from './banking';
+export * from './subscription';

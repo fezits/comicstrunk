@@ -17,7 +17,7 @@ export const ORDER_TRANSITIONS: Record<string, string[]> = {
 
 export const ORDER_ITEM_TRANSITIONS: Record<string, string[]> = {
   PENDING: ['PAID', 'CANCELLED'],
-  PAID: ['PROCESSING', 'CANCELLED'],
+  PAID: ['PROCESSING', 'CANCELLED', 'REFUNDED'],
   PROCESSING: ['SHIPPED', 'CANCELLED'],
   SHIPPED: ['DELIVERED', 'DISPUTED'],
   DELIVERED: ['COMPLETED', 'DISPUTED'],

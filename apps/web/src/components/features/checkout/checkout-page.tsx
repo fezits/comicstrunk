@@ -88,7 +88,7 @@ export function CheckoutPage() {
     try {
       const order = await createOrder(selectedAddressId);
       toast.success(t('orderCreated'));
-      router.push(`/${locale}/orders/${order.id}`);
+      router.push(`/${locale}/checkout/payment?orderId=${order.id}`);
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status;
       if (status === 409) {
