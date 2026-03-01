@@ -19,3 +19,4 @@ export * from './reviews';
 export * from './comments';
 export * from './favorites';
 export * from './notifications';
+export * from './disputes';

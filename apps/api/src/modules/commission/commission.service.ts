@@ -144,6 +144,12 @@ interface CommissionByRate {
 export async function getCommissionDashboard(periodStart: Date, periodEnd: Date) {
   const validStatuses = ['PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'COMPLETED'];
 
+  // DISPUTE HOLD: Exclude DISPUTED order items from payout calculations.
+  // Items with status DISPUTED have their payouts held until the dispute is resolved.
+  // Once resolved (REFUNDED or reverted to DELIVERED/SHIPPED), they will naturally
+  // appear or disappear from these calculations.
+  const excludedItemStatuses = ['DISPUTED', 'REFUNDED', 'CANCELLED'];
+
   // Use raw SQL for efficient aggregation grouped by commission rate
   const byRate = await prisma.$queryRaw<CommissionByRate[]>`
     SELECT
@@ -154,6 +160,7 @@ export async function getCommissionDashboard(periodStart: Date, periodEnd: Date)
     FROM order_items oi
     INNER JOIN orders o ON o.id = oi.order_id
     WHERE o.status IN (${Prisma.join(validStatuses)})
+      AND oi.status NOT IN (${Prisma.join(excludedItemStatuses)})
       AND o.created_at >= ${periodStart}
       AND o.created_at <= ${periodEnd}
     GROUP BY oi.commission_rate_snapshot
@@ -249,7 +256,10 @@ export async function getCommissionTransactions(
     prisma.orderItem.count({ where }),
   ]);
 
-  // Flatten the response for easier consumption
+  // Flatten the response for easier consumption.
+  // DISPUTE HOLD: Items with DISPUTED status have their payouts held.
+  // They are included in the list but clearly marked as "held" so admins
+  // can see which transactions are pending dispute resolution.
   const mapped = transactions.map((item) => ({
     id: item.id,
     orderId: item.orderId,
@@ -266,6 +276,8 @@ export async function getCommissionTransactions(
     commissionAmountSnapshot: Number(item.commissionAmountSnapshot),
     sellerNetSnapshot: Number(item.sellerNetSnapshot),
     status: item.status,
+    // DISPUTE HOLD: Flag items whose payouts are held due to active dispute
+    payoutHeld: item.status === 'DISPUTED',
   }));
 
   return { transactions: mapped, total, page, limit };

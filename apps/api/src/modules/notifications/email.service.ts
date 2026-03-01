@@ -6,6 +6,8 @@ import { paymentConfirmedEmailTemplate } from '../../shared/email-templates/paym
 import { orderShippedEmailTemplate } from '../../shared/email-templates/order-shipped';
 import { itemSoldEmailTemplate } from '../../shared/email-templates/item-sold';
 import { passwordResetEmailTemplate } from '../../shared/email-templates/password-reset';
+import { disputeOpenedEmailTemplate } from '../../shared/email-templates/dispute-opened';
+import { disputeResolvedEmailTemplate } from '../../shared/email-templates/dispute-resolved';
 
 // === Internal helper: send a single email ===
 
@@ -133,4 +135,44 @@ export async function sendPasswordResetEmail(
 ): Promise<void> {
   const { subject, html } = passwordResetEmailTemplate(data);
   await sendEmail(email, subject, html);
+}
+
+/**
+ * Send dispute opened email to seller.
+ * Checks DISPUTE_OPENED notification preference.
+ */
+export async function sendDisputeOpenedEmail(
+  userId: string,
+  email: string,
+  data: {
+    sellerName: string;
+    orderNumber: string;
+    reason: string;
+    descriptionExcerpt: string;
+    disputeId: string;
+  },
+): Promise<void> {
+  const { subject, html } = disputeOpenedEmailTemplate(data);
+  await checkPreferenceAndSend(userId, 'DISPUTE_OPENED', email, subject, html);
+}
+
+/**
+ * Send dispute resolved email to buyer or seller.
+ * Checks DISPUTE_RESOLVED notification preference.
+ */
+export async function sendDisputeResolvedEmail(
+  userId: string,
+  email: string,
+  data: {
+    userName: string;
+    orderNumber: string;
+    disputeId: string;
+    resolutionType: 'RESOLVED_REFUND' | 'RESOLVED_PARTIAL_REFUND' | 'RESOLVED_NO_REFUND';
+    justification: string;
+    refundAmount?: string;
+    role: 'buyer' | 'seller';
+  },
+): Promise<void> {
+  const { subject, html } = disputeResolvedEmailTemplate(data);
+  await checkPreferenceAndSend(userId, 'DISPUTE_RESOLVED', email, subject, html);
 }

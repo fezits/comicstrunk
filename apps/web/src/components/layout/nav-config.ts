@@ -19,6 +19,7 @@ import {
   Crown,
   Layers,
   Bell,
+  Scale,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -93,6 +94,7 @@ export const navGroups: NavGroup[] = [
       { titleKey: 'nav.adminPayments', href: '/admin/payments', icon: CreditCard },
       { titleKey: 'nav.adminCommission', href: '/admin/commission', icon: PieChart },
       { titleKey: 'nav.adminBanking', href: '/admin/banking', icon: Landmark },
+      { titleKey: 'nav.adminDisputes', href: '/admin/disputes', icon: Scale },
       { titleKey: 'nav.adminSubscriptions', href: '/admin/subscriptions', icon: Crown },
       { titleKey: 'nav.adminPlans', href: '/admin/subscriptions/plans', icon: Layers },
     ],

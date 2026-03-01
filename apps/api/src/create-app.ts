@@ -28,6 +28,7 @@ import { notificationsRoutes } from './modules/notifications/notifications.route
 import { commentsRoutes } from './modules/comments/comments.routes';
 import { favoritesRoutes } from './modules/favorites/favorites.routes';
 import { reviewsRoutes } from './modules/reviews/reviews.routes';
+import { disputesRoutes } from './modules/disputes/disputes.routes';
 import { errorHandler } from './shared/middleware/error-handler';
 import { UPLOADS_PATH } from './shared/lib/cloudinary';
 import { registerCronJobs } from './shared/cron';
@@ -107,6 +108,7 @@ export function createApp(): Express {
   app.use('/api/v1/comments', commentsRoutes);
   app.use('/api/v1/favorites', favoritesRoutes);
   app.use('/api/v1/reviews', reviewsRoutes);
+  app.use('/api/v1/disputes', disputesRoutes);
 
   // Register cron jobs for background tasks
   registerCronJobs();

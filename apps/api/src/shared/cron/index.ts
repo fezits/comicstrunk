@@ -1,6 +1,7 @@
 import cron from 'node-cron';
 import { prisma } from '../lib/prisma';
 import { stripe, isStripeConfigured } from '../lib/stripe';
+import { createNotification } from '../../modules/notifications/notifications.service';
 
 /**
  * Register all scheduled cron jobs for cart/order lifecycle management.
@@ -146,6 +147,69 @@ export function registerCronJobs(): void {
       );
     } catch (err) {
       console.error('[CRON] Error in subscription reconciliation:', err);
+    }
+  });
+
+  // Daily at 6 AM: Auto-escalate disputes with no seller response after 48h
+  cron.schedule('0 6 * * *', async () => {
+    try {
+      const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000);
+
+      // Find OPEN disputes older than 48h
+      const staleDisputes = await prisma.dispute.findMany({
+        where: {
+          status: 'OPEN',
+          createdAt: { lt: cutoff },
+        },
+        include: {
+          buyer: { select: { id: true, name: true } },
+          seller: { select: { id: true, name: true } },
+          order: { select: { id: true, orderNumber: true } },
+        },
+      });
+
+      let escalatedCount = 0;
+
+      for (const dispute of staleDisputes) {
+        // Check if seller has responded (any message from seller)
+        const sellerMessages = await prisma.disputeMessage.count({
+          where: { disputeId: dispute.id, senderId: dispute.sellerId },
+        });
+
+        if (sellerMessages === 0) {
+          // Auto-escalate to IN_MEDIATION
+          await prisma.dispute.update({
+            where: { id: dispute.id },
+            data: { status: 'IN_MEDIATION' },
+          });
+
+          // Notify admins about escalation
+          const admins = await prisma.user.findMany({
+            where: { role: 'ADMIN' },
+            select: { id: true },
+          });
+
+          const shortId = dispute.id.slice(-6);
+
+          for (const admin of admins) {
+            createNotification({
+              userId: admin.id,
+              type: 'DISPUTE_RESPONDED',
+              title: 'Disputa escalada automaticamente',
+              message: `Disputa #${shortId} do pedido #${dispute.order.orderNumber} foi escalada — vendedor nao respondeu em 48h`,
+              metadata: { disputeId: dispute.id, orderId: dispute.orderId },
+            }).catch(() => {});
+          }
+
+          escalatedCount++;
+        }
+      }
+
+      if (escalatedCount > 0) {
+        console.log(`[CRON] Auto-escalated ${escalatedCount} dispute(s)`);
+      }
+    } catch (err) {
+      console.error('[CRON] Error in dispute auto-escalation:', err);
     }
   });
 
