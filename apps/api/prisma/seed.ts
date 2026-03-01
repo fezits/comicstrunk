@@ -22,11 +22,9 @@ async function main() {
   });
   console.log(`  Admin user: ${admin.email} (${admin.id})`);
 
-  // Create default plan configs
-  const freePlan = await prisma.planConfig.upsert({
-    where: { id: 'plan-free-monthly' },
-    update: {},
-    create: {
+  // Create default plan configs (FREE + BASIC for all billing intervals)
+  const planConfigs = [
+    {
       id: 'plan-free-monthly',
       planType: PlanType.FREE,
       name: 'Gratuito',
@@ -35,27 +33,74 @@ async function main() {
       collectionLimit: 50,
       commissionRate: 0.1, // 10%
       trialDays: 0,
-      isActive: true,
     },
-  });
-  console.log(`  Plan config: ${freePlan.name} (${freePlan.id})`);
-
-  const basicPlan = await prisma.planConfig.upsert({
-    where: { id: 'plan-basic-monthly' },
-    update: {},
-    create: {
+    {
       id: 'plan-basic-monthly',
       planType: PlanType.BASIC,
-      name: 'Basico',
-      price: 14.9,
+      name: 'Basico Mensal',
+      price: 9.9,
       billingInterval: BillingInterval.MONTHLY,
       collectionLimit: 200,
       commissionRate: 0.08, // 8%
-      trialDays: 0,
-      isActive: true,
+      trialDays: 7,
     },
-  });
-  console.log(`  Plan config: ${basicPlan.name} (${basicPlan.id})`);
+    {
+      id: 'plan-basic-quarterly',
+      planType: PlanType.BASIC,
+      name: 'Basico Trimestral',
+      price: 24.9,
+      billingInterval: BillingInterval.QUARTERLY,
+      collectionLimit: 200,
+      commissionRate: 0.08, // 8%
+      trialDays: 7,
+    },
+    {
+      id: 'plan-basic-semiannual',
+      planType: PlanType.BASIC,
+      name: 'Basico Semestral',
+      price: 44.9,
+      billingInterval: BillingInterval.SEMIANNUAL,
+      collectionLimit: 200,
+      commissionRate: 0.08, // 8%
+      trialDays: 7,
+    },
+    {
+      id: 'plan-basic-annual',
+      planType: PlanType.BASIC,
+      name: 'Basico Anual',
+      price: 79.9,
+      billingInterval: BillingInterval.ANNUAL,
+      collectionLimit: 200,
+      commissionRate: 0.08, // 8%
+      trialDays: 7,
+    },
+  ];
+
+  for (const plan of planConfigs) {
+    const result = await prisma.planConfig.upsert({
+      where: { id: plan.id },
+      update: {
+        name: plan.name,
+        price: plan.price,
+        collectionLimit: plan.collectionLimit,
+        commissionRate: plan.commissionRate,
+        trialDays: plan.trialDays,
+        isActive: true,
+      },
+      create: {
+        id: plan.id,
+        planType: plan.planType,
+        name: plan.name,
+        price: plan.price,
+        billingInterval: plan.billingInterval,
+        collectionLimit: plan.collectionLimit,
+        commissionRate: plan.commissionRate,
+        trialDays: plan.trialDays,
+        isActive: true,
+      },
+    });
+    console.log(`  Plan config: ${result.name} (${result.id})`);
+  }
 
   // Create default commission configs
   const freeCommission = await prisma.commissionConfig.upsert({
