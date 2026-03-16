@@ -29,6 +29,13 @@ Thumbs.db
 .vscode/
 .idea/
 
+# Uploads (user-generated content)
+apps/api/uploads/
+
+# Playwright
+playwright-report/
+test-results/
+
 # Debug logs
 npm-debug.log*
 pnpm-debug.log*

@@ -12,9 +12,10 @@ const router = Router();
 
 // === Rate limiter for public contact form ===
 
+const contactIsDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
 const contactLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hora
-  max: 5, // 5 mensagens por IP por hora
+  max: contactIsDev ? 100 : 5, // generous in dev for e2e tests
   standardHeaders: true,
   legacyHeaders: false,
   message: {

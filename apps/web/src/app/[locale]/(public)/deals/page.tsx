@@ -46,8 +46,7 @@ export default function DealsPage() {
     } finally {
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams.toString()]);
+  }, [searchParams]); // eslint-disable-line
 
   useEffect(() => {
     fetchDeals();

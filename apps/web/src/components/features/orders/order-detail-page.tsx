@@ -90,7 +90,7 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
   const t = useTranslations('orders');
   const tCommon = useTranslations('common');
   const locale = useLocale();
-  const router = useRouter();
+  const _router = useRouter();
 
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
@@ -250,7 +250,6 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
                   <OrderItemCard
                     key={item.id}
                     item={item}
-                    locale={locale}
                   />
                 ))}
               </div>
@@ -338,10 +337,9 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
 
 function OrderItemCard({
   item,
-  locale,
 }: {
   item: OrderItem;
-  locale: string;
+  locale?: string;
 }) {
   const t = useTranslations('orders');
   const tMarketplace = useTranslations('marketplace');

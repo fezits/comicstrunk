@@ -93,6 +93,26 @@ export async function exportCSV(): Promise<void> {
   window.URL.revokeObjectURL(url);
 }
 
+export async function importJSON(data: {
+  rows: unknown[];
+  options?: {
+    defaultApprovalStatus?: 'DRAFT' | 'APPROVED';
+    skipDuplicates?: boolean;
+    batchSize?: number;
+  };
+}): Promise<{
+  total: number;
+  created: number;
+  skipped: number;
+  errors: Array<{ row: number; externalId: string; message: string }>;
+  seriesCreated: string[];
+  categoriesCreated: string[];
+  durationMs: number;
+}> {
+  const response = await apiClient.post('/catalog/import-json', data);
+  return response.data.data;
+}
+
 // === Admin Taxonomy API ===
 
 export async function createCategory(data: { name: string; description?: string }) {

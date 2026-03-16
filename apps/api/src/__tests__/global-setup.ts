@@ -102,6 +102,24 @@ async function cleanupTestData(prisma: PrismaClient) {
   });
   const orphanIds = orphanTestEntries.map((e) => e.id);
   if (orphanIds.length > 0) {
+    // Find collection items linked to these catalog entries
+    const orphanCollItems = await prisma.collectionItem.findMany({
+      where: { catalogEntryId: { in: orphanIds } },
+      select: { id: true },
+    });
+    const orphanCollItemIds = orphanCollItems.map((c) => c.id);
+
+    // Delete cart items and order items that reference these collection items
+    if (orphanCollItemIds.length > 0) {
+      await prisma.cartItem.deleteMany({ where: { collectionItemId: { in: orphanCollItemIds } } });
+      await prisma.orderItem.deleteMany({ where: { collectionItemId: { in: orphanCollItemIds } } });
+    }
+
+    // Delete all dependent records before deleting catalog entries
+    await prisma.favorite.deleteMany({ where: { catalogEntryId: { in: orphanIds } } });
+    await prisma.comment.deleteMany({ where: { catalogEntryId: { in: orphanIds } } });
+    await prisma.review.deleteMany({ where: { catalogEntryId: { in: orphanIds } } });
+    await prisma.collectionItem.deleteMany({ where: { catalogEntryId: { in: orphanIds } } });
     await prisma.catalogCharacter.deleteMany({ where: { catalogEntryId: { in: orphanIds } } });
     await prisma.catalogTag.deleteMany({ where: { catalogEntryId: { in: orphanIds } } });
     await prisma.catalogCategory.deleteMany({ where: { catalogEntryId: { in: orphanIds } } });

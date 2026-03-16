@@ -43,6 +43,11 @@ const mockEntry: CatalogEntry = {
   ratingCount: 12,
   volumeNumber: 1,
   editionNumber: 1,
+  coverPrice: null,
+  publishYear: null,
+  publishMonth: null,
+  pageCount: null,
+  coverFileName: null,
   createdAt: '2026-01-15T00:00:00.000Z',
   series: {
     id: 'series-1',

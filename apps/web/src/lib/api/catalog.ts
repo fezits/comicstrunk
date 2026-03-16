@@ -45,6 +45,11 @@ export interface CatalogEntry {
   ratingCount: number;
   volumeNumber: number | null;
   editionNumber: number | null;
+  coverPrice: number | null;
+  publishYear: number | null;
+  publishMonth: number | null;
+  pageCount: number | null;
+  coverFileName: string | null;
   createdAt: string;
   series: CatalogSeries | null;
   categories: Array<{ categoryId: string; category: Category }>;

@@ -59,6 +59,9 @@ export function createApp(): Express {
     stripeWebhookRoutes,
   );
 
+  // Increased JSON limit for bulk import endpoint — must be before general parser
+  app.use('/api/v1/catalog/import-json', express.json({ limit: '50mb' }));
+
   // Parsing
   app.use(express.json());
   app.use(cookieParser());

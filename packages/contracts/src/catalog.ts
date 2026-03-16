@@ -23,6 +23,11 @@ export const createCatalogEntrySchema = z.object({
   seriesId: z.string().cuid().optional(),
   volumeNumber: z.number().int().positive().optional(),
   editionNumber: z.number().int().positive().optional(),
+  coverPrice: z.number().positive().optional(),
+  publishYear: z.number().int().min(1900).max(2100).optional(),
+  publishMonth: z.number().int().min(1).max(12).optional(),
+  pageCount: z.number().int().positive().optional(),
+  coverFileName: z.string().max(255).optional(),
   categoryIds: z.array(z.string().cuid()).optional(),
   tagIds: z.array(z.string().cuid()).optional(),
   characterIds: z.array(z.string().cuid()).optional(),
@@ -69,9 +74,30 @@ export const catalogImportRowSchema = z.object({
   description: z.string().optional(),
 });
 
+// === JSON Import Schemas ===
+export const jsonImportRowSchema = z.object({
+  id: z.string().min(1, 'External ID is required'),
+  name: z.string().min(1, 'Name is required'),
+  publisher: z.string().optional(),
+  universe: z.string().optional(),
+  series: z.string().optional(),
+  price: z.number().positive().optional(),
+  pubDate: z.string().optional(),
+  pages: z.string().optional(),
+  coverFile: z.string().optional(),
+});
+
+export const jsonImportOptionsSchema = z.object({
+  defaultApprovalStatus: z.enum(['DRAFT', 'APPROVED']).default('APPROVED'),
+  skipDuplicates: z.boolean().default(true),
+  batchSize: z.number().int().min(10).max(200).default(50),
+});
+
 // === Inferred Types ===
 export type CreateCatalogEntryInput = z.infer<typeof createCatalogEntrySchema>;
 export type UpdateCatalogEntryInput = z.infer<typeof updateCatalogEntrySchema>;
 export type CatalogSearchInput = z.infer<typeof catalogSearchSchema>;
 export type ApprovalActionInput = z.infer<typeof approvalActionSchema>;
 export type CatalogImportRow = z.infer<typeof catalogImportRowSchema>;
+export type JsonImportRow = z.infer<typeof jsonImportRowSchema>;
+export type JsonImportOptions = z.infer<typeof jsonImportOptionsSchema>;

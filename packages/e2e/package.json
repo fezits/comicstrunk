@@ -1,0 +1,27 @@
+{
+  "name": "@comicstrunk/e2e",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:auth": "playwright test tests/auth/",
+    "test:navigation": "playwright test tests/navigation/",
+    "test:catalog": "playwright test tests/catalog/",
+    "test:collection": "playwright test tests/collection/",
+    "test:admin": "playwright test tests/admin/",
+    "test:marketplace": "playwright test tests/marketplace/",
+    "test:orders": "playwright test tests/orders/",
+    "test:payments": "playwright test tests/payments/",
+    "test:disputes": "playwright test tests/disputes/",
+    "report": "playwright show-report",
+    "codegen": "playwright codegen http://localhost:3000/pt-BR"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "@types/node": "^20.0.0",
+    "axios": "^1.7.9"
+  }
+}

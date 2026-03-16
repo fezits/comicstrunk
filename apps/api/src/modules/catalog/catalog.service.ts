@@ -239,14 +239,14 @@ export async function searchCatalog(filters: CatalogSearchInput) {
     where.tags = { some: { tagId: { in: filters.tagIds } } };
   }
   if (filters.yearFrom || filters.yearTo) {
-    const dateFilter: Prisma.DateTimeFilter = {};
+    const yearFilter: Prisma.IntNullableFilter = {};
     if (filters.yearFrom) {
-      dateFilter.gte = new Date(`${filters.yearFrom}-01-01`);
+      yearFilter.gte = filters.yearFrom;
     }
     if (filters.yearTo) {
-      dateFilter.lte = new Date(`${filters.yearTo}-12-31T23:59:59`);
+      yearFilter.lte = filters.yearTo;
     }
-    where.createdAt = dateFilter;
+    where.publishYear = yearFilter;
   }
 
   const sortFieldMap: Record<string, string> = {

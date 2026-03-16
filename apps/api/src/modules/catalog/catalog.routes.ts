@@ -15,6 +15,7 @@ import { uploadSingle, uploadCSV } from '../../shared/middleware/upload';
 import { sendSuccess, sendPaginated } from '../../shared/utils/response';
 import { BadRequestError } from '../../shared/utils/api-error';
 import * as catalogService from './catalog.service';
+import { importFromJSON } from './catalog-import.service';
 import type { Request, Response, NextFunction } from 'express';
 
 const router = Router();
@@ -142,6 +143,27 @@ router.post(
         throw new BadRequestError('No CSV file provided');
       }
       const result = await catalogService.importFromCSV(req.file.buffer, req.user!.userId);
+      sendSuccess(res, result);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /import-json — admin only, bulk import from JSON
+router.post(
+  '/import-json',
+  authenticate,
+  authorize('ADMIN'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { rows, options } = req.body;
+
+      if (!Array.isArray(rows)) {
+        throw new BadRequestError('Request body must contain a "rows" JSON array');
+      }
+
+      const result = await importFromJSON(rows, req.user!.userId, options);
       sendSuccess(res, result);
     } catch (err) {
       next(err);

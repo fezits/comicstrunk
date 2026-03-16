@@ -290,6 +290,11 @@ model CatalogEntry {
   seriesId        String?        @map("series_id")
   volumeNumber    Int?           @map("volume_number")
   editionNumber   Int?           @map("edition_number")
+  coverPrice      Decimal?       @map("cover_price") @db.Decimal(10, 2)
+  publishYear     Int?           @map("publish_year")
+  publishMonth    Int?           @map("publish_month")
+  pageCount       Int?           @map("page_count")
+  coverFileName   String?        @map("cover_file_name")
   createdAt       DateTime       @default(now()) @map("created_at")
   updatedAt       DateTime       @updatedAt @map("updated_at")
 
@@ -314,6 +319,7 @@ model CatalogEntry {
   @@index([approvalStatus])
   @@index([barcode])
   @@index([isbn])
+  @@index([publishYear])
   @@map("catalog_entries")
 }
 
