@@ -53,9 +53,9 @@ export function SellerRatingSummary({ sellerId }: SellerRatingSummaryProps) {
       <h3 className="font-semibold">{t('sellerRatings')}</h3>
 
       <div className="flex items-center gap-3">
-        <StarRating rating={averageRating} size="lg" />
+        <StarRating rating={Number(averageRating) || 0} size="lg" />
         <span className="text-lg font-semibold">
-          {averageRating.toFixed(1)}
+          {(Number(averageRating) || 0).toFixed(1)}
         </span>
         <span className="text-muted-foreground">
           ({t('reviewCount', { count: ratingCount })})
