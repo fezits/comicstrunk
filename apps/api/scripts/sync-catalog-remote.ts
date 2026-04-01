@@ -14,6 +14,7 @@
 import 'dotenv/config';
 import * as fs from 'fs';
 import * as path from 'path';
+import type { Browser, Page } from 'playwright';
 
 const API_URL = process.env.COMICSTRUNK_API_URL || 'http://localhost:3005/api/v1';
 const SYNC_EMAIL = process.env.COMICSTRUNK_SYNC_EMAIL || 'sync@comicstrunk.com';
@@ -265,8 +266,156 @@ const PANINI_CATEGORIES = [
 
 const PANINI_PLACEHOLDER = 'placeholder';
 
+const PANINI_BROWSER_URLS: { name: string; url: string }[] = [
+  { name: 'Marvel', url: 'https://panini.com.br/marvel' },
+  { name: 'DC', url: 'https://panini.com.br/dc' },
+  { name: 'Panini Comics', url: 'https://panini.com.br/panini-comics' },
+  { name: 'Planet Mangá', url: 'https://panini.com.br/planet-manga' },
+];
+
+async function extractProductsFromPage(page: Page): Promise<SyncItem[]> {
+  return page.evaluate(() => {
+    const products: any[] = [];
+    // Magento 2 uses .product-item-info as the container
+    const items = document.querySelectorAll('.product-item-info, .product-item');
+    items.forEach(item => {
+      try {
+        const nameEl = item.querySelector('.product-item-name a, .product-item-link, a.product-item-link');
+        const title = nameEl?.textContent?.trim() || '';
+        if (!title) return;
+
+        const linkEl = nameEl as HTMLAnchorElement | null;
+        const href = linkEl?.href || '';
+        // SKU from URL slug: /batman-vol-1.html → extract from data attribute or URL
+        const sku = (item.querySelector('[data-product-sku]') as HTMLElement)?.getAttribute('data-product-sku')
+          || (item.closest('[data-product-id]') as HTMLElement)?.getAttribute('data-product-id')
+          || href.replace(/.*\//, '').replace('.html', '')
+          || '';
+
+        let price: number | null = null;
+        const priceAttr = item.querySelector('[data-price-amount]')?.getAttribute('data-price-amount');
+        if (priceAttr) price = parseFloat(priceAttr);
+        else {
+          const priceEl = item.querySelector('.price');
+          const priceText = priceEl?.textContent?.replace(/[^\d,]/g, '').replace(',', '.');
+          if (priceText) price = parseFloat(priceText) || null;
+        }
+
+        const imgEl = item.querySelector('img.product-image-photo, img') as HTMLImageElement | null;
+        let imageUrl = imgEl?.src || imgEl?.getAttribute('data-src') || null;
+        if (imageUrl?.includes('placeholder')) imageUrl = null;
+
+        products.push({ title, sku, price, imageUrl });
+      } catch { /* skip */ }
+    });
+    return products;
+  }).then(raw => raw.filter(p => p.sku).map(p => ({
+    sourceKey: `panini:${p.sku}`,
+    title: p.title,
+    publisher: 'Panini' as string | null,
+    coverPrice: p.price && p.price > 0 ? p.price : null,
+    categories: [] as string[],
+    imageUrl: p.imageUrl,
+  })));
+}
+
+async function syncPaniniBrowser(stats: SyncStats): Promise<boolean> {
+  console.log('\n=== Panini Browser Fallback ===');
+  let browser: Browser;
+  try {
+    const pw = await import('playwright');
+    browser = await pw.chromium.launch({ headless: true });
+  } catch (e: any) {
+    console.log('  ⚠️ Playwright not available:', e.message);
+    return false;
+  }
+
+  let batch: SyncItem[] = [];
+  let totalFetched = 0;
+
+  for (const cat of PANINI_BROWSER_URLS) {
+    console.log(`  ${cat.name}...`);
+    const page = await browser.newPage();
+    let pageNum = 1;
+    let catFetched = 0;
+
+    try {
+      while (true) {
+        const url = pageNum === 1
+          ? `${cat.url}?product_list_limit=36`
+          : `${cat.url}?product_list_limit=36&p=${pageNum}`;
+
+        await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+        await page.waitForTimeout(2000);
+
+        const products = await extractProductsFromPage(page);
+        if (products.length === 0) break;
+
+        products.forEach(p => { p.categories = [cat.name]; });
+        batch.push(...products);
+        catFetched += products.length;
+        stats.fetched += products.length;
+
+        if (batch.length >= BATCH_SIZE) {
+          await sendBatch(batch, stats);
+          batch = [];
+        }
+
+        // Check if there's a next page
+        const hasNext = await page.evaluate(() => {
+          const nextLink = document.querySelector('.pages-items .next, a.action.next');
+          return !!nextLink;
+        });
+        if (!hasNext) break;
+
+        pageNum++;
+        await sleep(1000);
+      }
+    } catch (e: any) {
+      console.error(`    Error: ${e.message}`);
+    } finally {
+      await page.close();
+    }
+    console.log(`    → ${catFetched} products`);
+    await sleep(1000);
+  }
+
+  if (batch.length > 0) await sendBatch(batch, stats);
+  await browser.close();
+  totalFetched = stats.fetched;
+  console.log(`  Browser fallback total: ${totalFetched}`);
+  return totalFetched > 0;
+}
+
+async function testPaniniApi(): Promise<boolean> {
+  try {
+    const res = await fetch('https://panini.com.br/graphql', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Store: 'default' },
+      body: JSON.stringify({ query: '{ products(pageSize: 1, currentPage: 1) { total_count } }' }),
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) return false;
+    const json = await res.json();
+    return !!json.data?.products?.total_count;
+  } catch { return false; }
+}
+
 async function syncPanini(stats: SyncStats) {
   console.log('\n=== Syncing Panini ===');
+
+  // Test if GraphQL API is available
+  const apiAvailable = await testPaniniApi();
+  if (!apiAvailable) {
+    console.log('  ⚠️ Panini GraphQL API unavailable — trying browser fallback...');
+    const browserWorked = await syncPaniniBrowser(stats);
+    if (!browserWorked) {
+      console.log('  ❌ Browser fallback also failed. Skipping Panini.');
+    }
+    return;
+  }
+
+  console.log('  GraphQL API available ✅');
   let batch: SyncItem[] = [];
 
   for (const cat of PANINI_CATEGORIES) {
