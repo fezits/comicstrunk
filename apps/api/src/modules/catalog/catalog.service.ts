@@ -1,3 +1,5 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../../shared/lib/prisma';
 import { uploadImage, deleteImage } from '../../shared/lib/cloudinary';
@@ -403,4 +405,57 @@ export async function exportToCSV() {
   }));
 
   return generateCSV(rows);
+}
+
+// === Upload Cover by sourceKey ===
+
+export async function uploadCoverBySourceKey(sourceKey: string, buffer: Buffer) {
+  const entry = await prisma.catalogEntry.findUnique({ where: { sourceKey } });
+  if (!entry) {
+    throw new NotFoundError(`No catalog entry found for sourceKey: ${sourceKey}`);
+  }
+
+  // Build filename from sourceKey: rika:123 → rika-123.jpg
+  const coverFileName = sourceKey.replace(':', '-') + '.jpg';
+  const coversDir = path.resolve(__dirname, '..', '..', '..', 'uploads', 'covers');
+  if (!fs.existsSync(coversDir)) fs.mkdirSync(coversDir, { recursive: true });
+
+  const coverPath = path.join(coversDir, coverFileName);
+
+  // Check if already exists
+  if (fs.existsSync(coverPath)) {
+    return { id: entry.id, sourceKey, coverFileName, status: 'already_exists' as const };
+  }
+
+  fs.writeFileSync(coverPath, buffer);
+
+  const updated = await prisma.catalogEntry.update({
+    where: { id: entry.id },
+    data: { coverFileName },
+  });
+
+  return { id: updated.id, sourceKey, coverFileName, status: 'created' as const };
+}
+
+// === Catalog Stats ===
+
+export async function getCatalogStats() {
+  const totalEntries = await prisma.catalogEntry.count();
+  const withCover = await prisma.catalogEntry.count({ where: { coverFileName: { not: null } } });
+  const withoutCover = totalEntries - withCover;
+
+  const rikaTotal = await prisma.catalogEntry.count({ where: { sourceKey: { startsWith: 'rika:' } } });
+  const rikaCover = await prisma.catalogEntry.count({ where: { sourceKey: { startsWith: 'rika:' }, coverFileName: { not: null } } });
+  const paniniTotal = await prisma.catalogEntry.count({ where: { sourceKey: { startsWith: 'panini:' } } });
+  const paniniCover = await prisma.catalogEntry.count({ where: { sourceKey: { startsWith: 'panini:' }, coverFileName: { not: null } } });
+
+  return {
+    totalEntries,
+    withCover,
+    withoutCover,
+    bySource: {
+      rika: { total: rikaTotal, withCover: rikaCover },
+      panini: { total: paniniTotal, withCover: paniniCover },
+    },
+  };
 }

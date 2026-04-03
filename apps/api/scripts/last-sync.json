@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-04-02T11:59:19.228Z",
+  "dryRun": false,
+  "fullScan": false,
+  "rika": {
+    "fetched": 605,
+    "new": 0,
+    "updated": 0,
+    "errors": 0,
+    "covers": 0
+  },
+  "panini": {
+    "fetched": 420,
+    "new": 1,
+    "updated": 0,
+    "errors": 0,
+    "covers": 0
+  }
+}

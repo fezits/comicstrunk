@@ -280,6 +280,7 @@ model CatalogEntry {
   imprint         String?
   barcode         String?
   isbn            String?
+  sourceKey       String?        @unique @map("source_key") // Internal sync key (e.g. rika:12345, panini:ABCD001) - hidden from users
   description     String?        @db.Text
   coverImageUrl   String?        @map("cover_image_url")
   approvalStatus  ApprovalStatus @default(DRAFT) @map("approval_status")

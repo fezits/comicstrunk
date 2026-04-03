@@ -46,10 +46,19 @@ pnpm --filter contracts build      # Compile to dist/
 
 ### API (`apps/api`)
 
-Module-based structure under `src/modules/{feature}/`:
+Module-based structure under `src/modules/{feature}/` — 29 modules:
+admin, auth, banking, cart, catalog, categories, characters, collection, comments, commission, contact, deals, disputes, favorites, homepage, legal, lgpd, marketplace, notifications, orders, payments, reviews, series, shipping, subscriptions, sync, tags, users
+
+Each module contains:
 - **Routes** (`*.routes.ts`) — Express router, validation middleware, calls service, returns via `sendSuccess`/`sendPaginated`
 - **Services** (`*.service.ts`) — All business logic lives here. Orchestrates Prisma queries, applies rules
-- **No separate repository layer yet** — services use Prisma client directly via `shared/lib/prisma.ts`
+- Services use Prisma client directly via `shared/lib/prisma.ts`
+
+Notable modules:
+- **catalog** — Also handles JSON bulk import (`catalog-import.service.ts`) and sync endpoints
+- **sync** — Remote catalog sync via HTTP (upsert by `sourceKey`, cover upload)
+- **subscriptions** — Stripe integration with webhook handler (`stripe-webhook.routes.ts`)
+- **payments** — Mercado Pago PIX with webhook handler (`webhook.routes.ts`)
 
 Shared infrastructure in `src/shared/`:
 - `middleware/validate.ts` — Zod schema validation middleware
@@ -75,11 +84,11 @@ Shared infrastructure in `src/shared/`:
 
 Next.js App Router with locale-based routing (`/[locale]/...`):
 - `(auth)/` — Login, signup, forgot-password, reset-password (public card layout)
-- `(public)/` — Homepage
-- `(admin)/` — Admin pages
-- `(collector)/` — Collector pages
-- `(orders)/` — Order pages
-- `(seller)/` — Seller pages
+- `(public)/` — Homepage, catálogo, marketplace, séries, deals, contato, políticas legais
+- `(admin)/` — Painel admin (catálogo, usuários, comissões, deals, disputas, legal, LGPD, pagamentos, assinaturas, homepage)
+- `(collector)/` — Coleção, favoritos, notificações, assinatura, endereços, pagamentos, LGPD
+- `(orders)/` — Pedidos e disputas do comprador
+- `(seller)/` — Dashboard do vendedor, pedidos, dados bancários, disputas
 
 Key patterns:
 - **Auth:** `AuthProvider` context with `useAuth` hook. Access token in-memory (not localStorage). Axios interceptor handles 401 → silent refresh → retry
@@ -90,11 +99,18 @@ Key patterns:
 
 ### Contracts (`packages/contracts`)
 
-Exports Zod schemas and inferred TypeScript types consumed by both API and Web:
-- `signupSchema`, `loginSchema`, `resetPasswordRequestSchema`, `resetPasswordConfirmSchema`
-- `updateProfileSchema`, `paginationSchema`
-- Types: `AuthUser`, `AuthResponse`, `UserProfile`, `UserRole`, `ApiSuccessResponse`, `ApiErrorResponse`, `PaginatedResponse`
-- `CONTRACT_VERSION` — semver string for API/client compatibility
+Exports Zod schemas and inferred TypeScript types consumed by both API and Web. 28 contract modules covering all features:
+- **Auth:** signup, login, reset-password, profile
+- **Catalog:** CRUD, approval, search, CSV import/export, sync/import
+- **Collection:** CRUD, read status, series progress, CSV
+- **Marketplace:** listings, cart, orders, shipping, commission
+- **Payments:** PIX, banking, payment history
+- **Subscriptions:** plans, Stripe checkout/portal
+- **Community:** reviews, comments, favorites, notifications
+- **Disputes:** creation, response, mediation, resolution
+- **Deals:** affiliate offers, click tracking, homepage config
+- **Admin:** users, legal documents, LGPD, contact
+- **Common:** pagination, API response types, `CONTRACT_VERSION`
 
 ## Database
 
@@ -102,7 +118,7 @@ Exports Zod schemas and inferred TypeScript types consumed by both API and Web:
 
 The schema is defined upfront for all 10 project phases to avoid destructive migrations. Naming: models PascalCase, fields camelCase, tables `@@map("snake_case")`, multi-word columns `@map("snake_case")`. Primary keys are CUIDs.
 
-Key models implemented so far: `User`, `RefreshToken`, `PasswordReset`. Future models (CatalogEntry, CollectionItem, Order, Cart, etc.) are defined but not yet used in code.
+All models are defined and actively used in code: User, RefreshToken, PasswordReset, CatalogEntry, Series, Category, Tag, Character, CollectionItem, Cart/CartItem, Order/OrderItem, Payment, Commission, Subscription, PlanConfig, Review, Comment, Favorite, Notification, Deal, Dispute, LegalDocument, ContactMessage, and more.
 
 ## Code Style
 
@@ -119,6 +135,17 @@ cPanel Passenger deployment via scripts in `scripts/`:
 
 Next.js standalone output is conditional (`STANDALONE=true` or CI) because Windows dev lacks symlink permissions.
 
+## Catalog Sync
+
+The platform imports catalog data from external sources (Rika VTEX API + Panini GraphQL). Two modes:
+
+1. **Local script** (`apps/api/scripts/sync-catalog.ts`) — Runs locally, writes directly to DB. Incremental by default with early-stop.
+2. **Remote API** (`/api/v1/catalog/import-json` + `/api/v1/sync/`) — HTTP endpoints for remote sync. Admin-only, upsert by `sourceKey`.
+
+Key field: `sourceKey` (format: `rika:{id}` or `panini:{sku}`) — internal dedup field, hidden from public API via Prisma `$extends`.
+
+See `docs/SYNC-CATALOG.md` for details.
+
 ## Environment Variables
 
 Documented in `apps/api/.env.example`. Key vars:
@@ -127,3 +154,7 @@ Documented in `apps/api/.env.example`. Key vars:
 - `WEB_URL` — Frontend URL (CORS origin)
 - `NEXT_PUBLIC_API_URL` — API URL exposed to frontend
 - `PORT` — API port (default 3001)
+- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` — Image upload
+- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` — Subscriptions
+- `MERCADOPAGO_ACCESS_TOKEN` — PIX payments
+- `RESEND_API_KEY` — Transactional emails

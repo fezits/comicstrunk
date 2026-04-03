@@ -9,6 +9,7 @@ export * from './taxonomy';
 export * from './collection';
 export * from './cart';
 export * from './orders';
+export * from './sync';
 export * from './shipping';
 export * from './commission';
 export * from './marketplace';

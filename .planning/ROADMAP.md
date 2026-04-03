@@ -238,13 +238,18 @@ Note: Phase 7 (Community) and Phase 8 (Disputes) both depend on Phase 5 (Payment
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation and Infrastructure | 7/8 | In Progress | - |
+| 1. Foundation and Infrastructure | 7/8 | Complete* | 2026-02-22 |
 | 2. Catalog and Taxonomy | 7/7 | Complete | 2026-02-23 |
-| 3. Collection Management | 2/2 | Complete | 2026-02-23 |
-| 4. Marketplace and Orders | 0/7 | Not started | - |
-| 5. Payments and Commissions | 0/7 | Not started | - |
-| 6. Subscriptions | 0/6 | Not started | - |
-| 7. Community and Notifications | 0/7 | Not started | - |
-| 8. Disputes | 0/5 | Not started | - |
-| 9. Affiliate Deals and Homepage | 0/6 | Not started | - |
-| 10. Admin Panel, Legal, and Production Hardening | 0/8 | Not started | - |
+| 3. Collection Management | 4/4 | Complete | 2026-02-23 |
+| 4. Marketplace and Orders | 7/7 | Complete | 2026-02-27 |
+| 5. Payments and Commissions | 7/7 | Complete | 2026-02-27 |
+| 6. Subscriptions | 6/6 | Complete | 2026-02-27 |
+| 7. Community and Notifications | 7/7 | Complete | 2026-03-15 |
+| 8. Disputes | 5/5 | Complete | 2026-03-15 |
+| 9. Affiliate Deals and Homepage | 6/6 | Complete | 2026-03-15 |
+| 10. Admin Panel, Legal, and Production Hardening | 8/8 | Complete | 2026-03-15 |
+
+*Phase 1 plan 01-03 (cPanel deploy validation) deferred — scripts ready, awaiting hosting setup.
+
+**Post-MVP (feat/sync-api-remoto):**
+- JSON bulk import, remote sync API, Panini browser fallback, E2E tests, sync unified into catalog module
