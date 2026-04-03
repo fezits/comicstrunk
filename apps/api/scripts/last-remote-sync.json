@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-04-01T17:08:25.284Z",
+  "apiUrl": "http://localhost:3005/api/v1",
+  "dryRun": true,
+  "fullScan": false,
+  "rika": {
+    "fetched": 0,
+    "created": 0,
+    "updated": 0,
+    "errors": 0,
+    "covers": 0
+  },
+  "panini": {
+    "fetched": 0,
+    "created": 0,
+    "updated": 0,
+    "errors": 0,
+    "covers": 0
+  }
+}

@@ -23,7 +23,7 @@ Você é responsável SOMENTE por código backend:
 - Segurança (autenticação, autorização, proteção contra ataques)
 
 Você NÃO escreve código frontend (React, CSS, HTML, componentes).
-Você NÃO altera arquivos fora de `apps/backend/` ou `packages/shared/`.
+Você NÃO altera arquivos fora de `apps/api/` ou `packages/contracts/`.
 Você NÃO toma decisões de UX ou design.
 </role>
 
@@ -38,30 +38,36 @@ Você NÃO toma decisões de UX ou design.
 - **Pagamentos:** Stripe (assinaturas e futuro cartão), PIX (integração direta)
 - **Email:** Serviço transacional (configuração via env)
 
-### Estrutura esperada do projeto
+### Estrutura do projeto
 
 ```
-apps/backend/
+apps/api/
 ├── src/
-│   ├── config/          # Configurações (db, auth, stripe, etc.)
-│   ├── controllers/     # Handlers das rotas (recebe req, chama service, retorna res)
-│   ├── middlewares/      # Auth, validação, error handler, rate limiting
-│   ├── migrations/       # Alterações de schema do banco
-│   ├── models/           # Definição de entidades e relações
-│   ├── repositories/     # Acesso a dados (queries SQL)
-│   ├── routes/           # Definição de rotas Express
-│   ├── services/         # Lógica de negócio
-│   ├── validators/       # Schemas de validação de input
-│   ├── utils/            # Utilitários internos
-│   └── app.ts            # Setup do Express
-├── tests/
+│   ├── modules/         # Módulos de feature (29 módulos)
+│   │   ├── auth/        # Exemplo: auth.routes.ts + auth.service.ts
+│   │   ├── catalog/     # catalog.routes.ts + catalog.service.ts + catalog-import.service.ts
+│   │   ├── sync/        # sync.routes.ts + sync.service.ts
+│   │   └── ...          # admin, banking, cart, categories, characters, collection,
+│   │                    # comments, commission, contact, deals, disputes, favorites,
+│   │                    # homepage, legal, lgpd, marketplace, notifications, orders,
+│   │                    # payments, reviews, series, shipping, subscriptions, tags, users
+│   ├── shared/
+│   │   ├── middleware/   # Auth, validação, error handler, rate limiting, upload
+│   │   ├── utils/        # api-error, response helpers
+│   │   ├── lib/          # prisma, jwt, cloudinary, resend, mercadopago, stripe
+│   │   └── cron/         # Jobs agendados (expiração de carrinho, downgrade, etc.)
+│   └── app.ts            # Setup do Express + registro de módulos
+├── prisma/
+│   ├── schema.prisma     # Schema completo (todas as entidades)
+│   ├── migrations/       # Migrations Prisma
+│   └── seed.ts           # Seed script
+├── scripts/              # sync-catalog.ts e utilitários
 └── package.json
 
-packages/shared/
+packages/contracts/
 ├── src/
-│   ├── types/            # Interfaces e tipos compartilhados
-│   ├── constants/        # Constantes compartilhadas
-│   └── utils/            # Utilitários compartilhados
+│   ├── auth.ts, catalog.ts, cart.ts, ...  # 28 módulos de schemas Zod
+│   └── index.ts          # Re-exports
 └── package.json
 ```
 

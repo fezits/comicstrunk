@@ -24,8 +24,8 @@ Você é responsável SOMENTE por código frontend:
 Você NÃO implementa regra de negócio — toda regra mora no backend.
 Você NÃO valida segurança crítica — autenticação e autorização são do backend.
 Você NÃO acessa banco de dados diretamente.
-Você NÃO altera arquivos fora de `apps/frontend/` ou `packages/shared/`.
-Você NÃO altera código do backend (`apps/backend/`).
+Você NÃO altera arquivos fora de `apps/web/` ou `packages/contracts/`.
+Você NÃO altera código do backend (`apps/api/`).
 </role>
 
 <stack>
@@ -36,31 +36,32 @@ Você NÃO altera código do backend (`apps/backend/`).
 - **UI:** React
 - **Monorepo:** apps/frontend (aplicação web), packages/shared (tipos e utilitários compartilhados)
 
-### Estrutura esperada do projeto
+### Estrutura do projeto
 
 ```
-apps/frontend/
+apps/web/
 ├── src/
-│   ├── app/              # Next.js App Router (pages, layouts, loading, error)
-│   ├── components/       # Componentes reutilizáveis
-│   │   ├── ui/           # Componentes base (Button, Input, Modal, Toast, etc.)
-│   │   └── features/     # Componentes de domínio (CatalogCard, CollectionItem, etc.)
+│   ├── app/[locale]/     # Next.js App Router com locale routing
+│   │   ├── (auth)/       # Login, signup, forgot/reset password
+│   │   ├── (public)/     # Catálogo, marketplace, séries, deals, contato, políticas
+│   │   ├── (admin)/      # Painel admin (catálogo, usuários, comissões, deals, etc.)
+│   │   ├── (collector)/  # Coleção, favoritos, notificações, assinatura, endereços
+│   │   ├── (orders)/     # Pedidos e disputas do comprador
+│   │   └── (seller)/     # Dashboard do vendedor, pedidos, dados bancários
+│   ├── components/
+│   │   ├── ui/           # shadcn/ui (Button, Input, Modal, Toast, etc.)
+│   │   ├── features/     # Componentes de domínio (CatalogCard, CartSidebar, etc.)
+│   │   └── layout/       # Sidebar, Header, AuthLayout
 │   ├── hooks/            # Hooks customizados
 │   ├── services/         # Camada de integração com API backend
-│   ├── contexts/         # React contexts (auth, theme, etc.)
-│   ├── utils/            # Utilitários do frontend
-│   ├── styles/           # Estilos globais e tokens de tema
-│   ├── i18n/             # Arquivos de tradução
-│   └── types/            # Tipos locais do frontend
+│   ├── contexts/         # React contexts (auth, cart, theme, notificações)
+│   ├── lib/              # api-client (Axios), utils
+│   ├── styles/           # globals.css
+│   └── messages/         # Arquivos de tradução (pt-BR)
 ├── public/               # Assets estáticos
 └── package.json
 
-packages/shared/
-├── src/
-│   ├── types/            # Interfaces e tipos compartilhados com backend
-│   ├── constants/        # Constantes compartilhadas
-│   └── utils/            # Utilitários compartilhados
-└── package.json
+packages/contracts/       # Schemas Zod + tipos TypeScript compartilhados
 ```
 
 </stack>

@@ -2,28 +2,36 @@
 
 ## Visão Geral
 
-Script que sincroniza o catálogo de gibis a partir de duas fontes externas:
+Sistema de sincronização de catálogo de gibis a partir de duas fontes externas:
 
 - **Rika** (rika.com.br) — via VTEX Catalog API
-- **Panini** (panini.com.br) — via Magento GraphQL API
+- **Panini** (panini.com.br) — via Magento GraphQL API (com fallback para browser scraping quando GraphQL indisponível)
 
-O sync é **incremental**: busca por data de lançamento (mais recentes primeiro) e para automaticamente quando encontra itens que já existem no banco. Isso significa que execuções diárias levam segundos (só novidades), não minutos.
+Dois modos de operação:
+
+1. **Script local** (`sync-catalog.ts`) — Executa localmente, escreve direto no banco. Incremental por padrão.
+2. **API remota** — Endpoints HTTP para sync remoto. O script local faz o scraping e envia via HTTP para o servidor de produção.
 
 ## Arquitetura
 
 ```
 ┌──────────────┐     ┌──────────────┐
 │  Rika VTEX   │     │ Panini GQL   │
-│  REST API    │     │  GraphQL     │
+│  REST API    │     │  + Browser   │
 └──────┬───────┘     └──────┬───────┘
        │                    │
        ▼                    ▼
 ┌──────────────────────────────────┐
-│     sync-catalog.ts              │
-│  - Fetch incremental             │
-│  - Compare by sourceKey          │
-│  - Insert new / Update prices    │
-│  - Download covers               │
+│  Modo 1: Script local            │
+│  sync-catalog.ts                 │
+│  → Escreve direto no MySQL       │
+├──────────────────────────────────┤
+│  Modo 2: Script remoto           │
+│  sync-catalog-remote.ts          │
+│  → Login via API                 │
+│  → POST /sync/catalog (lotes)    │
+│  → POST /sync/covers (upload)    │
+│  → GET  /sync/status             │
 └──────────────┬───────────────────┘
                │
                ▼
@@ -33,6 +41,17 @@ O sync é **incremental**: busca por data de lançamento (mais recentes primeiro
 │  uploads/covers/                 │
 └──────────────────────────────────┘
 ```
+
+## Endpoints da API Remota
+
+| Endpoint | Auth | Descrição |
+|----------|------|-----------|
+| `POST /api/v1/sync/catalog` | ADMIN | Upsert de gibis em lote por sourceKey |
+| `POST /api/v1/sync/covers` | ADMIN | Upload de capa vinculada a sourceKey (multipart) |
+| `GET /api/v1/sync/status` | ADMIN | Status do catálogo (totais, por fonte, com/sem capa) |
+| `POST /api/v1/catalog/import-json` | ADMIN | Import JSON em massa (até 50MB) |
+
+Os endpoints de sync estão no módulo `sync/` (`apps/api/src/modules/sync/`) e o import JSON no módulo `catalog/` (`catalog-import.service.ts`).
 
 ## Campos Importantes
 
@@ -120,7 +139,7 @@ Isso garante que execuções diárias sejam rápidas (~1 min vs 30+ min do full 
 - **Ordenação**: `OrderByReleaseDateDESC`
 - **Rate limit**: 500ms entre páginas, 1s entre subcategorias
 
-### Panini (Magento GraphQL)
+### Panini (Magento GraphQL + Browser Fallback)
 
 - **URL**: `https://panini.com.br/graphql`
 - **Header obrigatório**: `Store: default`
@@ -128,6 +147,7 @@ Isso garante que execuções diárias sejam rápidas (~1 min vs 30+ min do full 
 - **Paginação**: 20 itens por página
 - **Rate limit**: 500ms entre páginas, 1s entre categorias
 - **Retry**: 3 tentativas com 3s de delay em caso de timeout (60s)
+- **Browser fallback**: Quando a API GraphQL está indisponível, o script usa Puppeteer para fazer scraping do site via browser headless
 
 ## Capas
 
