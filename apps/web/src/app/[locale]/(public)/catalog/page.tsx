@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import {
@@ -88,10 +89,6 @@ export default function CatalogPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [characters, setCharacters] = useState<Character[]>([]);
-  const [seriesList, setSeriesList] = useState<Series[]>([]);
-
   const [view, setView] = useState<ViewMode>('grid');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -100,18 +97,23 @@ export default function CatalogPage() {
 
   const filters = parseFiltersFromParams(searchParams);
 
-  // Load dropdown data on mount
-  useEffect(() => {
-    Promise.all([
-      getCategories(),
-      getCharacters(1, 100),
-      getSeries({ limit: 100 }),
-    ]).then(([cats, chars, ser]) => {
-      setCategories(cats);
-      setCharacters(chars.data);
-      setSeriesList(ser.data);
-    });
-  }, []);
+  const { data: categories = [] } = useQuery({
+    queryKey: ['taxonomy', 'categories'],
+    queryFn: () => getCategories(),
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const { data: characters = [] } = useQuery({
+    queryKey: ['taxonomy', 'characters'],
+    queryFn: () => getCharacters(1, 100).then((r) => r.data),
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const { data: seriesList = [] } = useQuery({
+    queryKey: ['taxonomy', 'series'],
+    queryFn: () => getSeries({ limit: 100 }).then((r) => r.data),
+    staleTime: 10 * 60 * 1000,
+  });
 
   // Fetch catalog when URL params change
   useEffect(() => {

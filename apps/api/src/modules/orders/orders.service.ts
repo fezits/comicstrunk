@@ -1,7 +1,7 @@
 import { prisma } from '../../shared/lib/prisma';
 import { generateOrderNumber } from '../../shared/lib/order-number';
 import { roundCurrency } from '../../shared/lib/currency';
-import { getCommissionRate, calculateCommission } from '../commission/commission.service';
+import { calculateCommission } from '../commission/commission.service';
 import { assertOrderTransition, assertOrderItemTransition } from '../../shared/lib/order-state-machine';
 import {
   BadRequestError,
@@ -10,6 +10,26 @@ import {
 } from '../../shared/utils/api-error';
 import { createNotification } from '../notifications/notifications.service';
 import { sendOrderShippedEmail, sendItemSoldEmail } from '../notifications/email.service';
+
+// === Batch commission rate lookup (avoids N+1 on commissionConfig table) ===
+
+async function batchGetCommissionRates(planTypes: string[]): Promise<Map<string, number>> {
+  const uniquePlans = [...new Set(planTypes)];
+  const configs = await prisma.commissionConfig.findMany({
+    where: { planType: { in: uniquePlans as any }, isActive: true },
+  });
+  const rateMap = new Map<string, number>();
+  for (const config of configs) {
+    rateMap.set(config.planType, Number(config.rate));
+  }
+  // Fallback defaults for any missing plan
+  for (const plan of uniquePlans) {
+    if (!rateMap.has(plan)) {
+      rateMap.set(plan, plan === 'BASIC' ? 0.08 : 0.1);
+    }
+  }
+  return rateMap;
+}
 
 // === Order includes for rich responses ===
 
@@ -84,7 +104,31 @@ export async function createOrder(buyerId: string, shippingAddressId: string) {
       }
     }
 
-    // 4. Build order items with price/commission snapshots
+    // 4. Batch-fetch all seller subscriptions — one query instead of N
+    const uniqueSellerIds = [...new Set(cartItems.map((ci) => ci.collectionItem.userId))];
+    const sellerSubscriptions = await tx.subscription.findMany({
+      where: {
+        userId: { in: uniqueSellerIds },
+        status: { in: ['ACTIVE', 'TRIALING'] },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // Build a Map: sellerId → planType (first/latest active subscription wins)
+    const sellerPlanMap = new Map<string, string>();
+    for (const sub of sellerSubscriptions) {
+      if (!sellerPlanMap.has(sub.userId)) {
+        sellerPlanMap.set(sub.userId, sub.planType);
+      }
+    }
+
+    // 5. Batch-fetch commission rates for all distinct seller plans
+    const distinctPlans = [...new Set(sellerPlanMap.values())];
+    // Also include FREE as fallback for sellers with no subscription
+    if (!distinctPlans.includes('FREE')) distinctPlans.push('FREE');
+    const commissionRateMap = await batchGetCommissionRates(distinctPlans);
+
+    // 6. Build order items with price/commission snapshots
     let totalAmount = 0;
     const orderItemsData: Array<{
       collectionItemId: string;
@@ -100,17 +144,13 @@ export async function createOrder(buyerId: string, shippingAddressId: string) {
       const sellerId = collectionItem.userId;
       const price = Number(collectionItem.salePrice ?? 0);
 
-      // a. Get seller's current subscription plan
-      const subscription = await tx.subscription.findFirst({
-        where: { userId: sellerId, status: 'ACTIVE' },
-        orderBy: { createdAt: 'desc' },
-      });
-      const planType = subscription?.planType ?? 'FREE';
+      // Look up seller's plan from the pre-fetched map
+      const planType = sellerPlanMap.get(sellerId) ?? 'FREE';
 
-      // b. Get commission rate for seller's plan
-      const commissionRate = await getCommissionRate(planType);
+      // Get commission rate for seller's plan (from pre-fetched map)
+      const commissionRate = commissionRateMap.get(planType) ?? 0.1;
 
-      // c. Calculate commission and seller net
+      // Calculate commission and seller net
       const { commission, sellerNet } = calculateCommission(price, commissionRate);
 
       orderItemsData.push({
@@ -127,7 +167,7 @@ export async function createOrder(buyerId: string, shippingAddressId: string) {
 
     totalAmount = roundCurrency(totalAmount);
 
-    // 5. Snapshot shipping address as JSON
+    // 7. Snapshot shipping address as JSON
     const shippingAddressSnapshot = JSON.parse(JSON.stringify({
       id: address.id,
       label: address.label,
@@ -140,7 +180,7 @@ export async function createOrder(buyerId: string, shippingAddressId: string) {
       zipCode: address.zipCode,
     }));
 
-    // 6. Create order with nested order items
+    // 8. Create order with nested order items
     const order = await tx.order.create({
       data: {
         orderNumber,
@@ -154,7 +194,7 @@ export async function createOrder(buyerId: string, shippingAddressId: string) {
       include: orderIncludes(),
     });
 
-    // 7. Clear buyer's cart (delete all cart items)
+    // 9. Clear buyer's cart (delete all cart items)
     await tx.cartItem.deleteMany({
       where: { userId: buyerId },
     });

@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../../shared/lib/prisma';
-import { uploadImage, deleteImage } from '../../shared/lib/cloudinary';
+import { uploadImage, deleteImage, localCoverUrl, LOCAL_API_BASE_URL } from '../../shared/lib/cloudinary';
 import { parseCSV, generateCSV } from '../../shared/lib/csv';
 import { BadRequestError, NotFoundError } from '../../shared/utils/api-error';
 import { catalogImportRowSchema } from '@comicstrunk/contracts';
@@ -27,6 +27,25 @@ const ACTION_TO_STATUS: Record<string, string> = {
   approve: 'APPROVED',
   reject: 'REJECTED',
 };
+
+// === Resolve effective cover URL ===
+// Imported entries have coverFileName but no coverImageUrl; fill it in at read time.
+
+function resolveCover<T extends { coverImageUrl: string | null; coverFileName: string | null }>(
+  entry: T,
+): T {
+  const url = entry.coverImageUrl;
+  // URL from old server (different host/port) — extract filename and rebuild
+  if (url && !url.startsWith(LOCAL_API_BASE_URL) && url.includes('/uploads/')) {
+    const filename = url.split('/').pop();
+    if (filename) return { ...entry, coverImageUrl: localCoverUrl(filename) };
+  }
+  // No URL but has local filename — build URL
+  if (!url && entry.coverFileName) {
+    return { ...entry, coverImageUrl: localCoverUrl(entry.coverFileName) };
+  }
+  return entry;
+}
 
 // === Standard includes for catalog entry queries ===
 
@@ -80,7 +99,7 @@ export async function getCatalogEntryById(id: string, publicOnly = true) {
     throw new NotFoundError('Catalog entry not found');
   }
 
-  return entry;
+  return resolveCover(entry);
 }
 
 export async function updateCatalogEntry(id: string, data: UpdateCatalogEntryInput) {
@@ -134,10 +153,11 @@ export async function updateCatalogEntry(id: string, data: UpdateCatalogEntryInp
   });
 
   // Fetch and return updated entry with full includes
-  return prisma.catalogEntry.findUnique({
+  const updated = await prisma.catalogEntry.findUnique({
     where: { id },
     include: catalogIncludes(),
   });
+  return updated ? resolveCover(updated) : null;
 }
 
 export async function deleteCatalogEntry(id: string) {
@@ -272,7 +292,7 @@ export async function searchCatalog(filters: CatalogSearchInput) {
     prisma.catalogEntry.count({ where }),
   ]);
 
-  return { entries, total, page: filters.page, limit: filters.limit };
+  return { entries: entries.map(resolveCover), total, page: filters.page, limit: filters.limit };
 }
 
 // === Admin List ===
@@ -301,7 +321,7 @@ export async function listCatalogEntries(params: {
     prisma.catalogEntry.count({ where }),
   ]);
 
-  return { data, total, page, limit };
+  return { data: data.map(resolveCover), total, page, limit };
 }
 
 // === CSV Import / Export ===

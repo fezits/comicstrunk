@@ -8,6 +8,19 @@ import type { Request, Response, NextFunction } from 'express';
 
 const router = Router();
 
+// GET /:id/public — no auth, returns safe public profile
+router.get(
+  '/:id/public',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const profile = await usersService.getPublicProfile(req.params.id as string);
+      sendSuccess(res, profile);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
 // GET /profile
 router.get(
   '/profile',
