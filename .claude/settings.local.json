@@ -9,7 +9,9 @@
       "WebSearch",
       "Skill(gsd:progress)",
       "Skill(gsd:plan-phase)",
-      "Skill(gsd:discuss-phase)"
+      "Skill(gsd:discuss-phase)",
+      "Skill(update-config)",
+      "Skill(update-config:*)"
     ]
   }
 }

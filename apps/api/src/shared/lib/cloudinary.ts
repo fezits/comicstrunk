@@ -101,3 +101,11 @@ function detectExtension(buffer: Buffer): string {
 
 /** Path to uploads directory — used by create-app for express.static */
 export const UPLOADS_PATH = UPLOADS_DIR;
+
+/** Build the public URL for a locally-stored cover file */
+export function localCoverUrl(filename: string, folder = 'comicstrunk/covers'): string {
+  return `${apiBaseUrl}/uploads/${folder}/${filename}`;
+}
+
+/** The base URL used for local uploads — allows callers to detect stale URLs */
+export const LOCAL_API_BASE_URL = apiBaseUrl;

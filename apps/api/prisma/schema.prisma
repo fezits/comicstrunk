@@ -333,6 +333,7 @@ model Series {
 
   catalogEntries CatalogEntry[]
 
+  @@index([title])
   @@map("series")
 }
 

@@ -88,18 +88,7 @@ export async function getSellerListings(
 
 export async function getSellerProfile(
   sellerId: string,
-): Promise<{ id: string; name: string; createdAt?: string }> {
-  // Fetch one listing from this seller to extract their profile info
-  const response = await searchMarketplace({ sellerId, limit: 1 });
-
-  if (response.data.length > 0) {
-    const listing = response.data[0];
-    return {
-      id: listing.seller.id,
-      name: listing.seller.name,
-    };
-  }
-
-  // Fallback: return minimal profile
-  return { id: sellerId, name: '' };
+): Promise<{ id: string; name: string; avatarUrl: string | null; createdAt?: string }> {
+  const response = await apiClient.get(`/users/${sellerId}/public`);
+  return response.data.data;
 }
