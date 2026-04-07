@@ -243,7 +243,16 @@ export async function searchCatalog(filters: CatalogSearchInput) {
   };
 
   if (filters.title) {
-    where.title = { contains: filters.title };
+    // Split search query into words and require ALL words to be present in the title
+    // This allows "Batman Vigilantes" to match "Batman: Vigilantes de Gotham"
+    const words = filters.title.trim().split(/\s+/).filter(w => w.length > 0);
+    if (words.length === 1) {
+      where.title = { contains: words[0] };
+    } else if (words.length > 1) {
+      where.AND = words.map(word => ({
+        title: { contains: word },
+      }));
+    }
   }
   if (filters.publisher) {
     where.publisher = { contains: filters.publisher };

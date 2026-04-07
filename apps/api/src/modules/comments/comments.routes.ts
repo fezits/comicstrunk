@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { createCommentSchema, updateCommentSchema, catalogCommentsQuerySchema } from '@comicstrunk/contracts';
+import { createCommentSchema, updateCommentSchema } from '@comicstrunk/contracts';
+import { paginationSchema } from '@comicstrunk/contracts';
 import { validate } from '../../shared/middleware/validate';
 import { authenticate, optionalAuthenticate } from '../../shared/middleware/authenticate';
 import { sendSuccess, sendPaginated } from '../../shared/utils/response';
@@ -16,7 +17,7 @@ const router = Router();
 router.get(
   '/catalog/:catalogEntryId',
   optionalAuthenticate,
-  validate(catalogCommentsQuerySchema, 'query'),
+  validate(paginationSchema, 'query'),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { page, limit } = req.query as unknown as { page: number; limit: number };
