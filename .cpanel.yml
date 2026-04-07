@@ -1,7 +1,7 @@
 ---
 deployment:
   tasks:
-    - export REPO_PATH=/home/ferna5257/repositories/comicstrunk
+    - export REPO_PATH=/home/ferna5257/repositories/comicstrunk-new
     - export API_PATH=/home/ferna5257/applications/api.comicstrunk.com
     - export WEB_PATH=/home/ferna5257/applications/comicstrunk.com
     - export LOG=$API_PATH/deploy-log.txt
