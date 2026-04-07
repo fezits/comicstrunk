@@ -1,4 +1,3 @@
----
 deployment:
   tasks:
     - export REPO_PATH=/home/ferna5257/repositories/comicstrunk-new
