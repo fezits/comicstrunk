@@ -4,6 +4,7 @@ import { validate } from '../../shared/middleware/validate';
 import { authenticate } from '../../shared/middleware/authenticate';
 import { authorize } from '../../shared/middleware/authorize';
 import { sendSuccess, sendPaginated } from '../../shared/utils/response';
+import { cachePublic } from '../../shared/middleware/cache-control';
 import * as seriesService from './series.service';
 import type { Request, Response, NextFunction } from 'express';
 
@@ -13,6 +14,7 @@ const router = Router();
 router.get(
   '/',
   validate(seriesSearchSchema, 'query'),
+  cachePublic(300),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await seriesService.listSeries(req.query as never);

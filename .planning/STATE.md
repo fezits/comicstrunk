@@ -5,16 +5,22 @@
 See: .planning/PROJECT.md (updated 2026-02-21)
 
 **Core value:** Collectors can catalog, track, and organize their physical comic book collection — knowing exactly what they have, what they've read, and what's missing from their series.
-**Current focus:** Phase 6 — Subscriptions
+**Current focus:** Post-MVP — Catalog sync and incremental improvements
 
 ## Current Position
 
-Phase: 6 of 10 (Subscriptions)
-Plan: 6 of 6 in current phase
-Status: PHASE 06 COMPLETE
-Last activity: 2026-02-27 — Completed all 6 plans (Stripe API, webhook, enforcement, admin, UI)
+Phase: 10 of 10 (ALL PHASES COMPLETE)
+Status: MVP COMPLETE + Sync features added
+Last activity: 2026-04-01 — Unified sync into catalog module, Panini browser fallback
 
-Progress: [█████████████████████████████████████████████] 55%
+Progress: [██████████████████████████████████████████████████] 100%
+
+### Post-MVP Work (feat/sync-api-remoto branch)
+- JSON bulk import endpoint (`POST /catalog/import-json`)
+- Remote sync API (`POST /sync/catalog`, `POST /sync/covers`, `GET /sync/status`)
+- Panini browser fallback when GraphQL API is unavailable
+- Sync endpoints unified into catalog module (refactor)
+- E2E test suite with Playwright
 
 ## Performance Metrics
 
@@ -177,6 +183,13 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-27
-Stopped at: Phase 06 COMPLETE — all 6 plans executed (Stripe, webhook, enforcement, admin, UI)
-Resume file: .planning/phases/06-subscriptions/06-06-SUMMARY.md
+Last session: 2026-04-01
+Stopped at: Post-MVP sync work — unified sync into catalog module
+Resume file: N/A (all phases complete)
+
+### Completed Phases (Post Phase 6)
+- Phase 07: Community and Notifications (reviews, comments, favorites, notifications, transactional emails)
+- Phase 08: Disputes (dispute system with mediation and refund flow)
+- Phase 09: Affiliate Deals and Homepage (deals, click tracking, configurable homepage)
+- Phase 10: Admin Panel, Legal, and Production Hardening (admin dashboard, legal documents, LGPD, contact form)
+- Post-MVP: Catalog sync (JSON bulk import, remote sync API, Panini browser fallback, E2E tests)

@@ -1,0 +1,53 @@
+---
+deployment:
+  tasks:
+    - export REPO_PATH=/home/ferna5257/repositories/comicstrunk
+    - export API_PATH=/home/ferna5257/applications/api.comicstrunk.com
+    - export WEB_PATH=/home/ferna5257/applications/comicstrunk.com
+    - export LOG=$API_PATH/deploy-log.txt
+    - source /home/ferna5257/nodevenv/comicstrunk/bin/activate
+
+    - echo "=== DEPLOY COMICSTRUNK INICIADO $(date) ===" > $LOG
+
+    # ========== INSTALAR DEPENDÊNCIAS ==========
+    - echo "📦 Instalando dependências..." | tee -a $LOG
+    - cd $REPO_PATH && npm install 2>&1 | tee -a $LOG
+
+    # ========== BUILD CONTRACTS ==========
+    - echo "🔨 Build contracts..." | tee -a $LOG
+    - cd $REPO_PATH/packages/contracts && npm run build 2>&1 | tee -a $LOG
+
+    # ========== BUILD API ==========
+    - echo "🔨 Build API..." | tee -a $LOG
+    - cd $REPO_PATH/apps/api && npm run build 2>&1 | tee -a $LOG
+    - cd $REPO_PATH/apps/api && npx prisma generate 2>&1 | tee -a $LOG
+
+    # ========== DEPLOY API ==========
+    - echo "🚀 Deploy API..." | tee -a $LOG
+    - mkdir -p $API_PATH/dist
+    - mkdir -p $API_PATH/prisma
+    - mkdir -p $API_PATH/tmp
+    - /bin/cp -Rf $REPO_PATH/apps/api/dist/. $API_PATH/dist/ 2>&1 | tee -a $LOG
+    - /bin/cp -f $REPO_PATH/apps/api/prisma/schema.prisma $API_PATH/prisma/ 2>&1 | tee -a $LOG
+    - /bin/cp -Rf $REPO_PATH/apps/api/prisma/migrations $API_PATH/prisma/ 2>&1 | tee -a $LOG
+    - /bin/cp -f $REPO_PATH/apps/api/package.json $API_PATH/package.json 2>&1 | tee -a $LOG
+    - cd $API_PATH && npm install --production 2>&1 | tee -a $LOG
+    - touch $API_PATH/tmp/restart.txt
+
+    # ========== BUILD WEB ==========
+    - echo "🔨 Build Web (standalone)..." | tee -a $LOG
+    - cd $REPO_PATH/apps/web && CI=true npm run build 2>&1 | tee -a $LOG
+
+    # ========== DEPLOY WEB ==========
+    - echo "🚀 Deploy Web..." | tee -a $LOG
+    - mkdir -p $WEB_PATH/tmp
+    - /bin/cp -Rf $REPO_PATH/apps/web/.next/standalone/. $WEB_PATH/ 2>&1 | tee -a $LOG
+    - mkdir -p $WEB_PATH/apps/web/public
+    - /bin/cp -Rf $REPO_PATH/apps/web/public/. $WEB_PATH/apps/web/public/ 2>&1 | tee -a $LOG
+    - mkdir -p $WEB_PATH/apps/web/.next/static
+    - /bin/cp -Rf $REPO_PATH/apps/web/.next/static/. $WEB_PATH/apps/web/.next/static/ 2>&1 | tee -a $LOG
+    - ln -sf $WEB_PATH/apps/web/server.js $WEB_PATH/server.js 2>/dev/null || true
+    - touch $WEB_PATH/tmp/restart.txt
+
+    - echo "✅ Deploy finalizado!" | tee -a $LOG
+    - echo "=== DEPLOY COMICSTRUNK FINALIZADO $(date) ===" | tee -a $LOG

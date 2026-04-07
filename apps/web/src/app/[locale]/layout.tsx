@@ -5,6 +5,7 @@ import { AuthProvider } from '@/lib/auth/auth-provider';
 import { CartProvider } from '@/contexts/cart-context';
 import { NotificationProvider } from '@/contexts/notification-context';
 import { CookieConsentBanner } from '@/components/features/legal/cookie-consent-banner';
+import { QueryProvider } from '@/components/providers/query-provider';
 import '@/styles/globals.css';
 
 type LocaleLayoutProps = {
@@ -18,7 +19,6 @@ export default async function LocaleLayout({
 }: LocaleLayoutProps) {
   const { locale } = await params;
 
-  // Load messages for the requested locale
   const messages = (await import(`@/messages/${locale}.json`)).default;
 
   return (
@@ -29,14 +29,16 @@ export default async function LocaleLayout({
         enableSystem={false}
         disableTransitionOnChange
       >
-        <AuthProvider>
-          <CartProvider>
-            <NotificationProvider>
-              {children}
-              <CookieConsentBanner />
-            </NotificationProvider>
-          </CartProvider>
-        </AuthProvider>
+        <QueryProvider>
+          <AuthProvider>
+            <CartProvider>
+              <NotificationProvider>
+                {children}
+                <CookieConsentBanner />
+              </NotificationProvider>
+            </CartProvider>
+          </AuthProvider>
+        </QueryProvider>
         <Toaster
           position="bottom-right"
           richColors

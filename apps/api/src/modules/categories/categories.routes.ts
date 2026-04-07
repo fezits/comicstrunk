@@ -4,13 +4,14 @@ import { validate } from '../../shared/middleware/validate';
 import { authenticate } from '../../shared/middleware/authenticate';
 import { authorize } from '../../shared/middleware/authorize';
 import { sendSuccess } from '../../shared/utils/response';
+import { cachePublic } from '../../shared/middleware/cache-control';
 import * as categoriesService from './categories.service';
 import type { Request, Response, NextFunction } from 'express';
 
 const router = Router();
 
 // GET / — public, list all categories
-router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
+router.get('/', cachePublic(300), async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const categories = await categoriesService.listCategories();
     sendSuccess(res, categories);

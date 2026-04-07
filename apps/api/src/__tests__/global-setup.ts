@@ -117,6 +117,15 @@ async function cleanupTestData(prisma: PrismaClient) {
 
     // Delete all dependent records before deleting catalog entries
     await prisma.favorite.deleteMany({ where: { catalogEntryId: { in: orphanIds } } });
+    // Delete comment likes before comments
+    const orphanComments = await prisma.comment.findMany({
+      where: { catalogEntryId: { in: orphanIds } },
+      select: { id: true },
+    });
+    const orphanCommentIds = orphanComments.map((c) => c.id);
+    if (orphanCommentIds.length > 0) {
+      await prisma.commentLike.deleteMany({ where: { commentId: { in: orphanCommentIds } } });
+    }
     await prisma.comment.deleteMany({ where: { catalogEntryId: { in: orphanIds } } });
     await prisma.review.deleteMany({ where: { catalogEntryId: { in: orphanIds } } });
     await prisma.collectionItem.deleteMany({ where: { catalogEntryId: { in: orphanIds } } });
@@ -142,6 +151,8 @@ async function cleanupTestData(prisma: PrismaClient) {
   if (testUserIds.length > 0) {
     await prisma.passwordReset.deleteMany({ where: { userId: { in: testUserIds } } });
     await prisma.refreshToken.deleteMany({ where: { userId: { in: testUserIds } } });
+    await prisma.notificationPreference.deleteMany({ where: { userId: { in: testUserIds } } });
+    await prisma.notification.deleteMany({ where: { userId: { in: testUserIds } } });
   }
 
   // Clean up signup-test users

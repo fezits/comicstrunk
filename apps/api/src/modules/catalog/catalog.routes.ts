@@ -171,6 +171,43 @@ router.post(
   },
 );
 
+// GET /stats — catalog statistics (counts by source, covers, etc.)
+router.get(
+  '/stats',
+  authenticate,
+  authorize('ADMIN'),
+  async (_req: Request, res: Response, next: NextFunction) => {
+    try {
+      const stats = await catalogService.getCatalogStats();
+      sendSuccess(res, stats);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /by-source-key/:sourceKey/cover — upload cover by sourceKey (for sync)
+router.post(
+  '/by-source-key/:sourceKey/cover',
+  authenticate,
+  authorize('ADMIN'),
+  uploadSingle('cover'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (!req.file) {
+        throw new BadRequestError('No file provided');
+      }
+      const entry = await catalogService.uploadCoverBySourceKey(
+        req.params.sourceKey as string,
+        req.file.buffer,
+      );
+      sendSuccess(res, entry);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
 // GET /:id — public, only returns APPROVED entries
 router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {

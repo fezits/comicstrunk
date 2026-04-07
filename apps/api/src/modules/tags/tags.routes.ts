@@ -4,13 +4,14 @@ import { validate } from '../../shared/middleware/validate';
 import { authenticate } from '../../shared/middleware/authenticate';
 import { authorize } from '../../shared/middleware/authorize';
 import { sendSuccess } from '../../shared/utils/response';
+import { cachePublic } from '../../shared/middleware/cache-control';
 import * as tagsService from './tags.service';
 import type { Request, Response, NextFunction } from 'express';
 
 const router = Router();
 
 // GET / — public, list all tags
-router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
+router.get('/', cachePublic(300), async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const tags = await tagsService.listTags();
     sendSuccess(res, tags);

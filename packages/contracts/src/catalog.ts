@@ -75,6 +75,8 @@ export const catalogImportRowSchema = z.object({
 });
 
 // === JSON Import Schemas ===
+const sourceKeyRegex = /^(rika|panini):[a-zA-Z0-9_-]+$/;
+
 export const jsonImportRowSchema = z.object({
   id: z.string().min(1, 'External ID is required'),
   name: z.string().min(1, 'Name is required'),
@@ -85,12 +87,14 @@ export const jsonImportRowSchema = z.object({
   pubDate: z.string().optional(),
   pages: z.string().optional(),
   coverFile: z.string().optional(),
+  sourceKey: z.string().regex(sourceKeyRegex).optional(),
 });
 
 export const jsonImportOptionsSchema = z.object({
   defaultApprovalStatus: z.enum(['DRAFT', 'APPROVED']).default('APPROVED'),
   skipDuplicates: z.boolean().default(true),
   batchSize: z.number().int().min(10).max(200).default(50),
+  upsert: z.boolean().default(false),
 });
 
 // === Inferred Types ===

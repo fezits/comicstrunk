@@ -35,6 +35,7 @@ import { contactRoutes } from './modules/contact/contact.routes';
 import { legalRoutes } from './modules/legal/legal.routes';
 import { adminRoutes } from './modules/admin/admin.routes';
 import { lgpdRoutes } from './modules/lgpd/lgpd.routes';
+// sync module unified into catalog — see /catalog/import-json, /catalog/stats, /catalog/by-source-key/:sk/cover
 import { errorHandler } from './shared/middleware/error-handler';
 import { UPLOADS_PATH } from './shared/lib/cloudinary';
 import { registerCronJobs } from './shared/cron';
@@ -47,7 +48,7 @@ export function createApp(): Express {
   app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
   app.use(
     cors({
-      origin: process.env.WEB_URL || 'http://localhost:3000',
+      origin: (process.env.WEB_URL || 'http://localhost:3000').split(',').map(s => s.trim()),
       credentials: true,
     }),
   );
@@ -124,6 +125,7 @@ export function createApp(): Express {
   app.use('/api/v1/legal', legalRoutes);
   app.use('/api/v1/admin', adminRoutes);
   app.use('/api/v1/lgpd', lgpdRoutes);
+  // sync routes removed — unified into /catalog
 
   // Register cron jobs for background tasks
   registerCronJobs();

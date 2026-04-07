@@ -209,6 +209,21 @@ async function main() {
   });
   console.log(`  Admin user: ${admin.email} (${admin.id})`);
 
+  // Create sync service user
+  const syncPasswordHash = hashSync('SyncService2026!', 12);
+  const syncUser = await prisma.user.upsert({
+    where: { email: 'sync@comicstrunk.com' },
+    update: {},
+    create: {
+      email: 'sync@comicstrunk.com',
+      name: 'Sync Service',
+      passwordHash: syncPasswordHash,
+      role: UserRole.ADMIN,
+      acceptedTermsAt: new Date(),
+    },
+  });
+  console.log(`  Sync user: ${syncUser.email} (${syncUser.id})`);
+
   // Create default plan configs (FREE + BASIC for all billing intervals)
   const planConfigs = [
     {

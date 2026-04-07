@@ -24,6 +24,7 @@ export interface ImportRowError {
 export interface JsonImportResult {
   total: number;
   created: number;
+  updated: number;
   skipped: number;
   errors: ImportRowError[];
   seriesCreated: string[];
@@ -137,6 +138,19 @@ async function ensureLookups(
 
 // === Deduplication ===
 
+async function loadExistingSourceKeys(sourceKeys: string[]): Promise<Map<string, { id: string; coverPrice: any }>> {
+  if (sourceKeys.length === 0) return new Map();
+  const existing = await prisma.catalogEntry.findMany({
+    where: { sourceKey: { in: sourceKeys } },
+    select: { id: true, sourceKey: true, coverPrice: true },
+  });
+  const map = new Map<string, { id: string; coverPrice: any }>();
+  for (const e of existing) {
+    if (e.sourceKey) map.set(e.sourceKey, { id: e.id, coverPrice: e.coverPrice });
+  }
+  return map;
+}
+
 async function loadExistingBarcodes(barcodes: string[]): Promise<Set<string>> {
   if (barcodes.length === 0) return new Set();
   const existing = await prisma.catalogEntry.findMany({
@@ -172,6 +186,7 @@ export async function importFromJSON(
     defaultApprovalStatus: options?.defaultApprovalStatus ?? 'APPROVED',
     skipDuplicates: options?.skipDuplicates ?? true,
     batchSize: options?.batchSize ?? DEFAULT_BATCH_SIZE,
+    upsert: options?.upsert ?? false,
   };
 
   if (rows.length > MAX_IMPORT_ROWS) {
@@ -209,6 +224,7 @@ export async function importFromJSON(
     return {
       total: rows.length,
       created: 0,
+      updated: 0,
       skipped: 0,
       errors,
       seriesCreated: [],
@@ -229,15 +245,22 @@ export async function importFromJSON(
     validRows.map((r) => r.data),
   );
 
-  // Phase 3: Load existing barcodes for deduplication
+  // Phase 3: Load existing entries for deduplication
   const allBarcodes = validRows.map((r) => r.data.id).filter(Boolean);
   const existingBarcodes = opts.skipDuplicates
     ? await loadExistingBarcodes(allBarcodes)
     : new Set<string>();
 
+  // Load sourceKey map for upsert mode
+  const allSourceKeys = validRows.map((r) => r.data.sourceKey).filter(Boolean) as string[];
+  const existingBySourceKey = allSourceKeys.length > 0
+    ? await loadExistingSourceKeys(allSourceKeys)
+    : new Map<string, { id: string; coverPrice: any }>();
+
   // Phase 4: Batch import
   let created = 0;
   let skipped = 0;
+  let updated = 0;
   const batches = chunkArray(validRows, opts.batchSize);
 
   for (let batchIdx = 0; batchIdx < batches.length; batchIdx++) {
@@ -253,13 +276,44 @@ export async function importFromJSON(
 
     await prisma.$transaction(async (tx) => {
       for (const { index, data } of batch) {
-        // Skip duplicates
-        if (existingBarcodes.has(data.id)) {
-          skipped++;
-          continue;
-        }
-
         try {
+          // Check sourceKey-based dedup/upsert first
+          if (data.sourceKey) {
+            const existing = existingBySourceKey.get(data.sourceKey);
+            if (existing) {
+              if (opts.upsert) {
+                let didUpdate = false;
+                if (data.price != null) {
+                  const oldPrice = existing.coverPrice !== null ? parseFloat(String(existing.coverPrice)) : null;
+                  const newPrice = data.price;
+                  if (oldPrice === null || Math.abs(oldPrice - newPrice) > 0.01) {
+                    await tx.catalogEntry.update({
+                      where: { id: existing.id },
+                      data: { coverPrice: new Prisma.Decimal(newPrice) },
+                    });
+                    // Update in-memory map for subsequent rows
+                    existing.coverPrice = new Prisma.Decimal(newPrice);
+                    didUpdate = true;
+                  }
+                }
+                if (didUpdate) {
+                  updated++;
+                } else {
+                  skipped++;
+                }
+              } else {
+                skipped++;
+              }
+              continue;
+            }
+          }
+
+          // Barcode-based dedup (legacy) — skip if using sourceKey
+          if (!data.sourceKey && existingBarcodes.has(data.id)) {
+            skipped++;
+            continue;
+          }
+
           // Transform row
           const editionNumber = extractEditionNumber(data.name);
           const { year, month } = data.pubDate
@@ -277,7 +331,8 @@ export async function importFromJSON(
           const entry = await tx.catalogEntry.create({
             data: {
               title: data.name,
-              barcode: data.id,
+              barcode: data.sourceKey ? null : data.id,
+              sourceKey: data.sourceKey || null,
               publisher: data.publisher || null,
               seriesId,
               editionNumber,
@@ -306,7 +361,7 @@ export async function importFromJSON(
           const message = err instanceof Error ? err.message : 'Unknown error';
           errors.push({
             row: index,
-            externalId: data.id,
+            externalId: data.sourceKey || data.id,
             message,
           });
         }
@@ -318,12 +373,13 @@ export async function importFromJSON(
     phase: 'complete',
     current: validRows.length,
     total: validRows.length,
-    message: `Import complete: ${created} created, ${skipped} skipped, ${errors.length} errors`,
+    message: `Import complete: ${created} created, ${updated} updated, ${skipped} skipped, ${errors.length} errors`,
   });
 
   return {
     total: rows.length,
     created,
+    updated,
     skipped,
     errors,
     seriesCreated,
