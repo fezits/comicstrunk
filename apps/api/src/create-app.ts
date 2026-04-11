@@ -44,7 +44,10 @@ export function createApp(): Express {
 
   // Security
   app.set('trust proxy', 1); // Trust first proxy (Apache/Passenger)
-  app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+  app.use(helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    contentSecurityPolicy: false,
+  }));
   app.use(
     cors({
       origin: process.env.WEB_URL || 'http://localhost:3000',

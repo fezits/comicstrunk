@@ -8,6 +8,15 @@
             "command": "node .claude/hooks/gsd-check-update.js"
           }
         ]
+      },
+      {
+        "matcher": "startup|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CLAUDE_PLUGIN_ROOT=.superpowers \".superpowers/hooks/run-hook.cmd\" session-start"
+          }
+        ]
       }
     ]
   },
