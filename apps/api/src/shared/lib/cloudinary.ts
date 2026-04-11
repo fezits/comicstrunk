@@ -33,7 +33,8 @@ function ensureDir(dir: string) {
 }
 
 /** Base URL for serving local uploads (set by express.static in create-app) */
-const apiBaseUrl = process.env.API_BASE_URL || `http://localhost:${process.env.PORT || 3001}`;
+const apiBaseUrl = process.env.API_BASE_URL
+  || (process.env.WEB_URL ? process.env.WEB_URL.replace('://', '://api.') : `http://localhost:${process.env.PORT || 3001}`);
 
 export async function uploadImage(
   buffer: Buffer,

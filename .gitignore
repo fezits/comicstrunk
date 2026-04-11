@@ -1,6 +1,9 @@
 # Dependencies
 node_modules/
 
+# Superpowers plugin
+.superpowers/
+
 # Next.js
 .next/
 
