@@ -68,7 +68,7 @@ export function CatalogCard({ entry }: CatalogCardProps) {
         <div className="flex flex-col flex-1 px-3 py-2 overflow-hidden">
           {/* Star rating — centered */}
           <div className="flex justify-center mb-1">
-            <StarRating rating={entry.averageRating} count={entry.ratingCount} size="sm" />
+            <StarRating rating={Number(entry.averageRating) || 0} count={Number(entry.ratingCount) || 0} size="sm" />
           </div>
 
           {/* Title — fixed height for 2 lines */}

@@ -19,11 +19,13 @@ const sizeMap = {
 export function StarRating({ rating, count, size = 'md' }: StarRatingProps) {
   const t = useTranslations('catalog');
   const starSize = sizeMap[size];
-  const fullStars = Math.floor(rating);
-  const hasHalf = rating - fullStars >= 0.5;
+  const safeRating = Number(rating) || 0;
+  const safeCount = Number(count) || 0;
+  const fullStars = Math.floor(safeRating);
+  const hasHalf = safeRating - fullStars >= 0.5;
   const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
 
-  if (count === 0) {
+  if (safeCount === 0) {
     return (
       <div className="flex items-center gap-1">
         {Array.from({ length: 5 }).map((_, i) => (
@@ -50,9 +52,9 @@ export function StarRating({ rating, count, size = 'md' }: StarRatingProps) {
       {Array.from({ length: emptyStars }).map((_, i) => (
         <Star key={`empty-${i}`} className={cn(starSize, 'text-muted-foreground/30')} />
       ))}
-      <span className="text-sm ml-1">{Number(rating).toFixed(1)}</span>
+      <span className="text-sm ml-1">{safeRating.toFixed(1)}</span>
       <span className="text-xs text-muted-foreground">
-        ({count} {t('reviews')})
+        ({safeCount} {t('reviews')})
       </span>
     </div>
   );

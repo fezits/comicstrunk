@@ -13,10 +13,12 @@ interface HomepageCatalogHighlightsProps {
 }
 
 function MiniStarRating({ rating, count }: { rating: number; count: number }) {
-  const fullStars = Math.floor(rating);
-  const hasHalf = rating - fullStars >= 0.5;
+  const safeRating = Number(rating) || 0;
+  const safeCount = Number(count) || 0;
+  const fullStars = Math.floor(safeRating);
+  const hasHalf = safeRating - fullStars >= 0.5;
 
-  if (count === 0) {
+  if (safeCount === 0) {
     return (
       <div className="flex items-center gap-0.5">
         {Array.from({ length: 5 }).map((_, i) => (
@@ -42,7 +44,7 @@ function MiniStarRating({ rating, count }: { rating: number; count: number }) {
         />
       ))}
       <span className="text-xs text-muted-foreground ml-1">
-        {Number(rating).toFixed(1)}
+        {safeRating.toFixed(1)}
       </span>
     </div>
   );

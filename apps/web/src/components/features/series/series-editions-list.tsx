@@ -66,11 +66,11 @@ export function SeriesEditionsList({ editions }: SeriesEditionsListProps) {
 
           {/* Rating */}
           <div className="shrink-0 text-right">
-            {edition.ratingCount > 0 ? (
+            {Number(edition.ratingCount) > 0 ? (
               <div className="flex items-center gap-1 text-sm">
                 <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
                 <span>{(Number(edition.averageRating) || 0).toFixed(1)}</span>
-                <span className="text-muted-foreground">({edition.ratingCount})</span>
+                <span className="text-muted-foreground">({Number(edition.ratingCount)})</span>
               </div>
             ) : (
               <span className="text-xs text-muted-foreground">{t('noRatings')}</span>

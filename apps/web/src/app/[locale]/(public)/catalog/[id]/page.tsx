@@ -105,8 +105,8 @@ export default function CatalogDetailPage() {
         </div>
         <CatalogReviewList
           catalogEntryId={id}
-          averageRating={entry.averageRating}
-          ratingCount={entry.ratingCount}
+          averageRating={Number(entry.averageRating) || 0}
+          ratingCount={Number(entry.ratingCount) || 0}
         />
       </section>
 

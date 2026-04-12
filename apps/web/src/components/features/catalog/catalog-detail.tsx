@@ -123,7 +123,7 @@ export function CatalogDetail({ entry }: CatalogDetailProps) {
           <FavoriteButton catalogEntryId={entry.id} size="md" />
         </div>
 
-        <StarRating rating={entry.averageRating} count={entry.ratingCount} size="lg" />
+        <StarRating rating={Number(entry.averageRating) || 0} count={Number(entry.ratingCount) || 0} size="lg" />
 
         <div className="space-y-1.5">
           <DetailRow label={t('author')} value={entry.author} />

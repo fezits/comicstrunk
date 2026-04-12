@@ -28,7 +28,8 @@ export function StarRating({
   className,
 }: StarRatingProps) {
   const [hoverRating, setHoverRating] = useState(0);
-  const displayRating = interactive && hoverRating > 0 ? hoverRating : rating;
+  const safeRating = Number(rating) || 0;
+  const displayRating = interactive && hoverRating > 0 ? hoverRating : safeRating;
   const { icon: iconSize } = sizeMap[size];
 
   const fullStars = Math.floor(displayRating);
@@ -40,7 +41,7 @@ export function StarRating({
       <div
         className={cn('inline-flex items-center gap-0.5', className)}
         role="radiogroup"
-        aria-label={`Avaliacao: ${rating} de ${maxStars} estrelas`}
+        aria-label={`Avaliacao: ${safeRating} de ${maxStars} estrelas`}
       >
         {Array.from({ length: maxStars }).map((_, i) => {
           const starValue = i + 1;
@@ -50,7 +51,7 @@ export function StarRating({
               key={i}
               type="button"
               role="radio"
-              aria-checked={starValue === rating}
+              aria-checked={starValue === safeRating}
               aria-label={`${starValue} estrela${starValue > 1 ? 's' : ''}`}
               className="cursor-pointer p-0.5 transition-transform hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
               onClick={() => onChange?.(starValue)}
@@ -76,7 +77,7 @@ export function StarRating({
   return (
     <div
       className={cn('inline-flex items-center gap-0.5', className)}
-      aria-label={`Avaliacao: ${rating.toFixed(1)} de ${maxStars} estrelas`}
+      aria-label={`Avaliacao: ${safeRating.toFixed(1)} de ${maxStars} estrelas`}
     >
       {Array.from({ length: maxStars }).map((_, i) => {
         if (isFull(i)) {

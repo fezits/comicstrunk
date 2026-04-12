@@ -68,7 +68,7 @@ export function CatalogListItem({ entry }: CatalogListItemProps) {
           )}
 
           <div className="mt-1.5">
-            <StarRating rating={entry.averageRating} count={entry.ratingCount} size="sm" />
+            <StarRating rating={Number(entry.averageRating) || 0} count={Number(entry.ratingCount) || 0} size="sm" />
           </div>
         </div>
 
