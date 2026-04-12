@@ -126,4 +126,20 @@ router.patch(
   },
 );
 
+// PATCH /:id/unread — mark single notification as unread
+router.patch(
+  '/:id/unread',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const notification = await notificationsService.markAsUnread(
+        req.user!.userId,
+        req.params.id as string,
+      );
+      sendSuccess(res, notification);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
 export const notificationsRoutes: Router = router;

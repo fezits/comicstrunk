@@ -11,9 +11,11 @@ import {
   AlertTriangle,
   Crown,
   Bell,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { markAsRead } from '@/lib/api/notifications';
+import { markAsRead, markAsUnread } from '@/lib/api/notifications';
 import type { Notification } from '@/lib/api/notifications';
 import type { LucideIcon } from 'lucide-react';
 
@@ -51,14 +53,33 @@ function getTimeAgo(
 function getNavigationUrl(
   notification: Notification,
   locale: string,
-): string | null {
+): string {
   const metadata = notification.metadata;
-  if (!metadata) return null;
 
-  if (metadata.orderId) return `/${locale}/orders/${metadata.orderId}`;
-  if (metadata.catalogEntryId) return `/${locale}/catalog/${metadata.catalogEntryId}`;
+  switch (notification.type) {
+    case 'PAYMENT_CONFIRMED':
+    case 'SUBSCRIPTION_PAYMENT_FAILED':
+      return `/${locale}/payments/history`;
 
-  return null;
+    case 'ORDER_SHIPPED':
+    case 'ITEM_SOLD':
+      if (metadata?.orderId) return `/${locale}/orders/${metadata.orderId}`;
+      return `/${locale}/orders`;
+
+    case 'DISPUTE_OPENED':
+    case 'DISPUTE_RESPONDED':
+    case 'DISPUTE_RESOLVED':
+      if (metadata?.disputeId) return `/${locale}/disputes/${metadata.disputeId}`;
+      return `/${locale}/disputes`;
+
+    case 'WELCOME':
+      return `/${locale}/catalog`;
+
+    default:
+      if (metadata?.orderId) return `/${locale}/orders/${metadata.orderId}`;
+      if (metadata?.catalogEntryId) return `/${locale}/catalog/${metadata.catalogEntryId}`;
+      return `/${locale}/notifications`;
+  }
 }
 
 interface NotificationItemProps {
@@ -90,8 +111,20 @@ export function NotificationItem({
       onRead?.();
     }
 
-    if (url) {
-      router.push(url);
+    router.push(url);
+  };
+
+  const handleToggleRead = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      if (notification.isRead) {
+        await markAsUnread(notification.id);
+      } else {
+        await markAsRead(notification.id);
+      }
+      onRead?.();
+    } catch {
+      // Silently fail
     }
   };
 
@@ -138,7 +171,33 @@ export function NotificationItem({
         <span className="text-xs text-muted-foreground mt-1 block">{timeAgo}</span>
       </div>
 
-      {!notification.isRead && (
+      {!compact && (
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={handleToggleRead}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleToggleRead(e as unknown as React.MouseEvent);
+            }
+          }}
+          title={
+            notification.isRead
+              ? t('notifications.markAsUnread')
+              : t('notifications.markAsRead')
+          }
+          className="shrink-0 mt-1 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+        >
+          {notification.isRead ? (
+            <EyeOff className="h-4 w-4" />
+          ) : (
+            <Eye className="h-4 w-4" />
+          )}
+        </div>
+      )}
+
+      {compact && !notification.isRead && (
         <div className="shrink-0 mt-2">
           <div className="h-2 w-2 rounded-full bg-primary" />
         </div>

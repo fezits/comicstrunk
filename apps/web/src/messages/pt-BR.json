@@ -73,7 +73,11 @@
     },
     "signup": {
       "title": "Criar conta",
-      "subtitle": "Comece a organizar sua colecao"
+      "subtitle": "Comece a organizar sua coleção",
+      "acceptTermsPrefix": "Aceito os ",
+      "termsOfUse": "Termos de Uso",
+      "and": " e a ",
+      "privacyPolicy": "Política de Privacidade"
     },
     "forgotPassword": {
       "title": "Esqueceu a senha?",
@@ -82,6 +86,10 @@
     "resetPassword": {
       "title": "Redefinir senha",
       "subtitle": "Escolha uma nova senha"
+    },
+    "placeholders": {
+      "name": "Seu nome completo",
+      "email": "email@exemplo.com"
     },
     "labels": {
       "email": "E-mail",
@@ -94,7 +102,7 @@
     "buttons": {
       "login": "Entrar",
       "signup": "Criar conta",
-      "sendResetLink": "Enviar link de redefinicao",
+      "sendResetLink": "Enviar link de redefinição",
       "resetPassword": "Redefinir senha"
     },
     "links": {
@@ -194,7 +202,7 @@
     "showFilters": "Filtros",
     "hideFilters": "Ocultar filtros",
     "searchPlaceholder": "Buscar quadrinhos...",
-    "addToCollection": "Adicionar a colecao",
+    "addToCollection": "Adicionar à coleção",
     "favorite": "Favoritar",
     "trade": "Trocar",
     "releaseDate": "Data",
@@ -221,11 +229,12 @@
       "characters": "Personagens",
       "notFound": "Entrada nao encontrada",
       "notFoundDescription": "A entrada que voce esta procurando nao existe ou foi removida.",
-      "addToCollection": "Adicionar a Colecao",
+      "addToCollection": "Adicionar à Coleção",
       "addingToCollection": "Adicionando...",
-      "addedToCollection": "Na sua colecao",
+      "addedToCollection": "Adicionado à coleção",
       "addWithDetails": "Adicionar com detalhes",
-      "alreadyInCollection": "Este item ja esta na sua colecao"
+      "alreadyInCollection": "Já está na sua coleção",
+      "addToCollectionError": "Erro ao adicionar à coleção"
     }
   },
   "series": {
@@ -1040,6 +1049,8 @@
       "community": "Comunidade",
       "account": "Conta"
     },
-    "passwordResetRequired": "Obrigatorio por seguranca"
+    "passwordResetRequired": "Obrigatorio por seguranca",
+    "markAsRead": "Marcar como lida",
+    "markAsUnread": "Marcar como não lida"
   }
 }
