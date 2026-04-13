@@ -66,6 +66,39 @@ router.get(
   },
 );
 
+// === Admin recent entries schema ===
+
+const recentEntriesSchema = paginationSchema.extend({
+  source: z.enum(['sync_panini', 'sync_rika', 'manual', 'import']).optional(),
+  days: z.coerce.number().int().positive().max(365).default(7),
+});
+
+// GET /admin/recent — admin only, list recently added entries (MUST be before /admin/:id)
+router.get(
+  '/admin/recent',
+  authenticate,
+  authorize('ADMIN'),
+  validate(recentEntriesSchema, 'query'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { page, limit, source, days } = req.query as unknown as {
+        page: number;
+        limit: number;
+        source?: 'sync_panini' | 'sync_rika' | 'manual' | 'import';
+        days: number;
+      };
+      const result = await catalogService.getRecentEntries({ page, limit, source, days });
+      sendPaginated(res, result.data, {
+        page: result.page,
+        limit: result.limit,
+        total: result.total,
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
 // GET /admin/:id — admin only, get any entry regardless of approval status
 router.get(
   '/admin/:id',
@@ -202,39 +235,6 @@ router.post(
         req.file.buffer,
       );
       sendSuccess(res, entry);
-    } catch (err) {
-      next(err);
-    }
-  },
-);
-
-// === Admin recent entries schema ===
-
-const recentEntriesSchema = paginationSchema.extend({
-  source: z.enum(['sync_panini', 'sync_rika', 'manual', 'import']).optional(),
-  days: z.coerce.number().int().positive().max(365).default(7),
-});
-
-// GET /admin/recent — admin only, list recently added entries with optional source filter
-router.get(
-  '/admin/recent',
-  authenticate,
-  authorize('ADMIN'),
-  validate(recentEntriesSchema, 'query'),
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { page, limit, source, days } = req.query as unknown as {
-        page: number;
-        limit: number;
-        source?: 'sync_panini' | 'sync_rika' | 'manual' | 'import';
-        days: number;
-      };
-      const result = await catalogService.getRecentEntries({ page, limit, source, days });
-      sendPaginated(res, result.data, {
-        page: result.page,
-        limit: result.limit,
-        total: result.total,
-      });
     } catch (err) {
       next(err);
     }
