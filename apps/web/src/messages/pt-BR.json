@@ -34,6 +34,7 @@
     "notifications": "Notificacoes",
     "adminDashboard": "Painel Admin",
     "adminCatalog": "Catalogo",
+    "adminRecentCatalog": "Adições Recentes",
     "adminUsers": "Usuarios",
     "adminContent": "Conteudo",
     "adminCategories": "Categorias",
@@ -318,6 +319,22 @@
         "tags": "Tags",
         "characters": "Personagens",
         "create": "Criar"
+      },
+      "recent": {
+        "title": "Adições Recentes",
+        "subtitle": "Últimos gibis adicionados ao catálogo",
+        "allSources": "Todos",
+        "syncPanini": "Sync Panini",
+        "syncRika": "Sync Rika",
+        "manual": "Manual",
+        "import": "Importação",
+        "last7days": "Últimos 7 dias",
+        "last30days": "Últimos 30 dias",
+        "last90days": "Últimos 90 dias",
+        "allTime": "Todo período",
+        "addedBy": "Adicionado por",
+        "source": "Fonte",
+        "noEntries": "Nenhuma adição recente encontrada"
       }
     },
     "content": {

@@ -208,6 +208,39 @@ router.post(
   },
 );
 
+// === Admin recent entries schema ===
+
+const recentEntriesSchema = paginationSchema.extend({
+  source: z.enum(['sync_panini', 'sync_rika', 'manual', 'import']).optional(),
+  days: z.coerce.number().int().positive().max(365).default(7),
+});
+
+// GET /admin/recent — admin only, list recently added entries with optional source filter
+router.get(
+  '/admin/recent',
+  authenticate,
+  authorize('ADMIN'),
+  validate(recentEntriesSchema, 'query'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { page, limit, source, days } = req.query as unknown as {
+        page: number;
+        limit: number;
+        source?: 'sync_panini' | 'sync_rika' | 'manual' | 'import';
+        days: number;
+      };
+      const result = await catalogService.getRecentEntries({ page, limit, source, days });
+      sendPaginated(res, result.data, {
+        page: result.page,
+        limit: result.limit,
+        total: result.total,
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
 // GET /:id — public, only returns APPROVED entries
 router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {

@@ -1,7 +1,29 @@
 import apiClient from './client';
 import type { CatalogEntry, PaginationMeta } from './catalog';
 
+// === Types ===
+
+export interface RecentCatalogEntry {
+  id: string;
+  title: string;
+  publisher: string | null;
+  coverImageUrl: string | null;
+  source: string;
+  createdByName: string | null;
+  createdAt: string;
+}
+
 // === Admin Catalog API ===
+
+export async function getRecentCatalogEntries(params: {
+  page?: number;
+  limit?: number;
+  source?: string;
+  days?: number;
+}): Promise<{ data: RecentCatalogEntry[]; pagination: PaginationMeta }> {
+  const response = await apiClient.get('/catalog/admin/recent', { params });
+  return response.data;
+}
 
 export async function getAdminCatalogList(params: {
   page?: number;
