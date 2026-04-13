@@ -296,7 +296,6 @@ model CatalogEntry {
   publishMonth    Int?           @map("publish_month")
   pageCount       Int?           @map("page_count")
   coverFileName   String?        @map("cover_file_name")
-  sourceKey       String?        @unique @map("source_key")
   createdAt       DateTime       @default(now()) @map("created_at")
   updatedAt       DateTime       @updatedAt @map("updated_at")
 

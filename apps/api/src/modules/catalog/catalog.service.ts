@@ -466,6 +466,63 @@ export async function uploadCoverBySourceKey(sourceKey: string, buffer: Buffer) 
   return { id: updated.id, sourceKey, coverFileName, status: 'created' as const };
 }
 
+// === Derive source label from sourceKey ===
+
+function deriveSource(sourceKey: string | null): 'panini' | 'rika' | 'manual' | 'import' {
+  if (!sourceKey) return 'manual';
+  if (sourceKey.startsWith('panini:')) return 'panini';
+  if (sourceKey.startsWith('rika:')) return 'rika';
+  return 'import';
+}
+
+// === Recent Entries (admin) ===
+
+export async function getRecentEntries(params: {
+  page: number;
+  limit: number;
+  source?: 'sync_panini' | 'sync_rika' | 'manual' | 'import';
+  days: number;
+}) {
+  const { page, limit, source, days } = params;
+  const skip = (page - 1) * limit;
+
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
+
+  const where: Prisma.CatalogEntryWhereInput = {
+    createdAt: { gte: cutoff },
+  };
+
+  // Apply source filter based on sourceKey patterns
+  if (source === 'sync_panini') {
+    where.sourceKey = { startsWith: 'panini:' };
+  } else if (source === 'sync_rika') {
+    where.sourceKey = { startsWith: 'rika:' };
+  } else if (source === 'manual') {
+    where.sourceKey = null;
+  } else if (source === 'import') {
+    where.sourceKey = { not: null };
+  }
+
+  const [entries, total] = await Promise.all([
+    prisma.catalogEntry.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: catalogIncludes(),
+    }),
+    prisma.catalogEntry.count({ where }),
+  ]);
+
+  const data = entries.map((entry) => ({
+    ...resolveCover(entry),
+    source: deriveSource(entry.sourceKey),
+  }));
+
+  return { data, total, page, limit };
+}
+
 // === Catalog Stats ===
 
 export async function getCatalogStats() {

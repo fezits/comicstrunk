@@ -276,7 +276,28 @@ PassengerFriendlyErrorPages on
 
 ---
 
-## 9. Checklist pos-deploy
+## 9. Cron Job - Sync diario
+
+Configurar no **cPanel > Cron Jobs**:
+
+```
+Comando: /home/ferna5257/applications/api.comicstrunk.com/scripts/cron-sync.sh
+Horario: 0 4 * * * (4h da manha, todo dia)
+```
+
+O script executa em sequencia:
+1. `sync-catalog.ts` — sync incremental Panini+Rika (novos gibis + precos)
+2. `fetch-missing-covers.ts` — baixa capas faltantes
+3. `fix-missing-cover-files.js` — corrige entries com URL mas sem arquivo
+4. Resize capas > 500KB
+
+Log em `/home/ferna5257/logs/sync-catalog.log` (rotacao automatica 5 dias).
+
+Monitorar resultados em: **Admin > Catalogo > Adicoes Recentes** (`/admin/catalog/recent`)
+
+---
+
+## 10. Checklist pos-deploy
 
 ```bash
 # API respondendo
