@@ -1,11 +1,17 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { BookOpen, Plus, Repeat2 } from 'lucide-react';
+import { BookOpen, Check, Loader2, Plus, Repeat2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { AxiosError } from 'axios';
 
 import { StarRating } from './star-rating';
 import { FavoriteButton } from '@/components/features/favorites/favorite-button';
+import { useAuth } from '@/lib/auth/use-auth';
+import { addCollectionItem } from '@/lib/api/collection';
 import type { CatalogEntry } from '@/lib/api/catalog';
 
 interface CatalogCardProps {
@@ -15,6 +21,10 @@ interface CatalogCardProps {
 export function CatalogCard({ entry }: CatalogCardProps) {
   const locale = useLocale();
   const t = useTranslations('catalog');
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
+  const [added, setAdded] = useState(false);
+  const [adding, setAdding] = useState(false);
 
   return (
     <Link href={`/${locale}/catalog/${entry.id}`} className="block group">
@@ -36,14 +46,45 @@ export function CatalogCard({ entry }: CatalogCardProps) {
           {/* Action buttons — top-right */}
           <div className="absolute top-2 right-2 flex flex-col items-end space-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <button
-              className="w-8 h-8 flex items-center justify-center bg-primary hover:bg-primary/80 border-2 border-white rounded-full text-white transition"
-              onClick={(e) => {
+              className={`w-8 h-8 flex items-center justify-center border-2 border-white rounded-full text-white transition ${
+                added
+                  ? 'bg-green-600'
+                  : 'bg-primary hover:bg-primary/80'
+              }`}
+              onClick={async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                if (added || adding) return;
+                if (!isAuthenticated) {
+                  router.push(`/${locale}/login`);
+                  return;
+                }
+                setAdding(true);
+                try {
+                  await addCollectionItem({ catalogEntryId: entry.id });
+                  setAdded(true);
+                  toast.success(t('addedToCollection'));
+                } catch (error) {
+                  if (error instanceof AxiosError && error.response?.status === 409) {
+                    setAdded(true);
+                    toast.info(t('alreadyInCollection'));
+                  } else {
+                    toast.error(t('addToCollectionError'));
+                  }
+                } finally {
+                  setAdding(false);
+                }
               }}
+              disabled={adding || added}
               title={t('addToCollection')}
             >
-              <Plus className="h-4 w-4" />
+              {adding ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : added ? (
+                <Check className="h-4 w-4" />
+              ) : (
+                <Plus className="h-4 w-4" />
+              )}
             </button>
             <FavoriteButton
               catalogEntryId={entry.id}

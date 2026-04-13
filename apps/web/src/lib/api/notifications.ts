@@ -65,6 +65,11 @@ export async function markAsRead(notificationId: string): Promise<Notification> 
   return response.data.data;
 }
 
+export async function markAsUnread(notificationId: string): Promise<Notification> {
+  const response = await apiClient.patch(`/notifications/${notificationId}/unread`);
+  return response.data.data;
+}
+
 export async function markAllAsRead(): Promise<{ count: number }> {
   const response = await apiClient.patch('/notifications/read-all');
   return response.data.data;

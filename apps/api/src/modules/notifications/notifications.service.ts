@@ -130,6 +130,30 @@ export async function markAsRead(userId: string, notificationId: string) {
   });
 }
 
+// === Mark as Unread ===
+
+export async function markAsUnread(userId: string, notificationId: string) {
+  const notification = await prisma.notification.findUnique({
+    where: { id: notificationId },
+  });
+
+  if (!notification) {
+    throw new NotFoundError('Notification not found');
+  }
+
+  if (notification.userId !== userId) {
+    throw new ForbiddenError('You do not have access to this notification');
+  }
+
+  return prisma.notification.update({
+    where: { id: notificationId },
+    data: {
+      isRead: false,
+      readAt: null,
+    },
+  });
+}
+
 // === Mark All as Read ===
 
 export async function markAllAsRead(userId: string) {
