@@ -565,7 +565,10 @@
     "reservationExpired": "Reserva expirada",
     "removeItem": "Remover item",
     "itemRemoved": "Item removido do carrinho",
-    "cartCleared": "Carrinho limpo"
+    "cartCleared": "Carrinho limpo",
+    "pageTitle": "Meu Carrinho",
+    "continueShopping": "Continuar comprando",
+    "itemsInCart": "{count, plural, one {# item no carrinho} other {# itens no carrinho}}"
   },
   "checkout": {
     "title": "Checkout",
@@ -1069,5 +1072,40 @@
     "passwordResetRequired": "Obrigatorio por seguranca",
     "markAsRead": "Marcar como lida",
     "markAsUnread": "Marcar como não lida"
+  },
+  "profile": {
+    "title": "Meu Perfil",
+    "personalInfo": "Informacoes Pessoais",
+    "socialLinks": "Redes Sociais",
+    "name": "Nome",
+    "email": "E-mail",
+    "bio": "Bio",
+    "bioPlaceholder": "Conte um pouco sobre voce e sua colecao...",
+    "website": "Website",
+    "websitePlaceholder": "https://seusite.com",
+    "twitter": "Twitter / X",
+    "twitterPlaceholder": "seu_usuario",
+    "instagram": "Instagram",
+    "instagramPlaceholder": "seu_usuario",
+    "memberSince": "Membro desde",
+    "save": "Salvar Alteracoes",
+    "saving": "Salvando...",
+    "saved": "Perfil atualizado com sucesso",
+    "error": "Erro ao atualizar perfil",
+    "loadError": "Erro ao carregar perfil"
+  },
+  "settings": {
+    "title": "Configuracoes",
+    "subtitle": "Gerencie sua conta e preferencias",
+    "profile": "Perfil",
+    "profileDescription": "Nome, bio e redes sociais",
+    "notifications": "Notificacoes",
+    "notificationsDescription": "Preferencias de e-mail e alertas",
+    "subscription": "Assinatura",
+    "subscriptionDescription": "Seu plano e forma de pagamento",
+    "privacy": "Privacidade e Dados",
+    "privacyDescription": "LGPD, exportacao e exclusao de dados",
+    "addresses": "Enderecos",
+    "addressesDescription": "Enderecos de entrega salvos"
   }
 }

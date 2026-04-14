@@ -127,6 +127,7 @@ export const protectedRoutes = [
   '/payments/history',
   '/seller/banking',
   '/profile',
+  '/settings',
   '/subscription',
   '/notifications',
   '/notifications/preferences',
