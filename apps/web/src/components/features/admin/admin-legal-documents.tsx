@@ -58,11 +58,13 @@ function getTypeLabel(type: string): string {
 }
 
 function formatDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return '—';
   return new Intl.DateTimeFormat('pt-BR', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
-  }).format(new Date(dateStr));
+  }).format(date);
 }
 
 export function AdminLegalDocuments() {
@@ -192,7 +194,7 @@ export function AdminLegalDocuments() {
                   <TableHead>Versao</TableHead>
                   <TableHead>Data de Vigencia</TableHead>
                   <TableHead>Obrigatorio</TableHead>
-                  <TableHead>Atualizado em</TableHead>
+                  <TableHead>Criado em</TableHead>
                   <TableHead className="text-right">Acoes</TableHead>
                 </TableRow>
               </TableHeader>
@@ -206,7 +208,7 @@ export function AdminLegalDocuments() {
                       <Badge variant="outline">v{doc.version}</Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
-                      {formatDate(doc.effectiveDate)}
+                      {formatDate(doc.dateOfEffect)}
                     </TableCell>
                     <TableCell>
                       {doc.isMandatory ? (
@@ -219,7 +221,7 @@ export function AdminLegalDocuments() {
                       )}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
-                      {formatDate(doc.updatedAt)}
+                      {formatDate(doc.createdAt)}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button

@@ -8,9 +8,8 @@ export interface LegalDocument {
   version: number;
   content: string;
   isMandatory: boolean;
-  effectiveDate: string;
+  dateOfEffect: string;
   createdAt: string;
-  updatedAt: string;
 }
 
 export interface LegalDocumentHistory {
@@ -19,7 +18,7 @@ export interface LegalDocumentHistory {
   version: number;
   content: string;
   isMandatory: boolean;
-  effectiveDate: string;
+  dateOfEffect: string;
   createdAt: string;
 }
 
@@ -52,7 +51,12 @@ export async function createDocument(data: {
   isMandatory: boolean;
   effectiveDate: string;
 }): Promise<LegalDocument> {
-  const response = await apiClient.post('/legal/admin', data);
+  const response = await apiClient.post('/legal/admin', {
+    type: data.type,
+    content: data.content,
+    isMandatory: data.isMandatory,
+    dateOfEffect: data.effectiveDate,
+  });
   return response.data.data;
 }
 
