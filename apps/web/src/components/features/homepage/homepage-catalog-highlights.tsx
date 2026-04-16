@@ -74,7 +74,7 @@ export function HomepageCatalogHighlights({ title, items }: HomepageCatalogHighl
         {displayItems.map((item) => (
           <Link
             key={item.id}
-            href={`/${locale}/catalog/${item.id}`}
+            href={`/${locale}/catalog/${item.slug ?? item.id}`}
             className="block group"
           >
             <div className="bg-card text-card-foreground rounded-lg shadow-lg border border-border/50 dark:border-transparent hover:scale-[1.02] transition-transform duration-300 overflow-hidden">

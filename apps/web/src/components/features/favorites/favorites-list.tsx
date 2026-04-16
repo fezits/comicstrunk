@@ -181,7 +181,7 @@ function FavoriteCard({ favorite, locale, onToggle }: FavoriteCardProps) {
     <div className="group relative w-full flex flex-col bg-card text-card-foreground rounded-lg shadow-lg border border-border/50 dark:border-transparent hover:scale-[1.02] transition-all duration-300 overflow-hidden">
       {/* Cover image */}
       <Link
-        href={`/${locale}/catalog/${entry.id}`}
+        href={`/${locale}/catalog/${entry.slug ?? entry.id}`}
         className="relative aspect-[2/3] bg-muted overflow-hidden block"
       >
         {entry.coverImageUrl ? (
@@ -216,7 +216,7 @@ function FavoriteCard({ favorite, locale, onToggle }: FavoriteCardProps) {
         </div>
 
         {/* Title */}
-        <Link href={`/${locale}/catalog/${entry.id}`}>
+        <Link href={`/${locale}/catalog/${entry.slug ?? entry.id}`}>
           <h3 className="font-bold text-sm line-clamp-2 h-10 mb-1 hover:text-primary transition-colors">
             {entry.title}
           </h3>

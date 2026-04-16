@@ -29,10 +29,10 @@ router.get(
   },
 );
 
-// GET /:id — public, get series detail with approved editions
-router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
+// GET /:idOrSlug — public, accepts CUID or slug, get series detail with approved editions
+router.get('/:idOrSlug', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const series = await seriesService.getSeriesById(req.params.id as string);
+    const series = await seriesService.getSeriesByIdOrSlug(req.params.idOrSlug as string);
     sendSuccess(res, series);
   } catch (err) {
     next(err);

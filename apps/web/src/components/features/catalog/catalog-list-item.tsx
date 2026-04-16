@@ -16,7 +16,7 @@ export function CatalogListItem({ entry }: CatalogListItemProps) {
   const t = useTranslations('catalog');
 
   return (
-    <Link href={`/${locale}/catalog/${entry.id}`} className="block group">
+    <Link href={`/${locale}/catalog/${entry.slug ?? entry.id}`} className="block group">
       <div className="relative flex bg-card text-card-foreground p-4 rounded-lg shadow-md border border-border/50 dark:border-transparent hover:scale-[1.02] cursor-pointer transition-transform duration-300">
         {/* Cover */}
         <div className="w-24 h-32 shrink-0 mr-4 rounded overflow-hidden bg-muted">

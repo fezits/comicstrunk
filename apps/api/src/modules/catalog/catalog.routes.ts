@@ -241,11 +241,11 @@ router.post(
   },
 );
 
-// GET /:id — public, only returns APPROVED entries
-router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
+// GET /:idOrSlug — public, accepts CUID or slug, only returns APPROVED entries
+router.get('/:idOrSlug', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const entry = await catalogService.getCatalogEntryById(
-      req.params.id as string,
+    const entry = await catalogService.getCatalogEntryByIdOrSlug(
+      req.params.idOrSlug as string,
       true,
     );
     sendSuccess(res, entry);

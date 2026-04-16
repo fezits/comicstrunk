@@ -5,6 +5,7 @@ import { prisma } from '../../shared/lib/prisma';
 import { uploadImage, deleteImage, localCoverUrl, LOCAL_API_BASE_URL } from '../../shared/lib/cloudinary';
 import { parseCSV, generateCSV } from '../../shared/lib/csv';
 import { BadRequestError, NotFoundError } from '../../shared/utils/api-error';
+import { uniqueSlug } from '../../shared/utils/slug';
 import { catalogImportRowSchema } from '@comicstrunk/contracts';
 import type {
   CreateCatalogEntryInput,
@@ -59,16 +60,24 @@ function catalogIncludes() {
   };
 }
 
+// === Helpers ===
+
+function isCuid(str: string): boolean {
+  return /^c[a-z0-9]{24}$/.test(str);
+}
+
 // === CRUD Operations ===
 
 export async function createCatalogEntry(
   data: CreateCatalogEntryInput & { createdById: string },
 ) {
   const { categoryIds, tagIds, characterIds, ...scalarData } = data;
+  const slug = await uniqueSlug(scalarData.title, 'catalogEntry');
 
   const entry = await prisma.catalogEntry.create({
     data: {
       ...scalarData,
+      slug,
       categories: categoryIds?.length
         ? { create: categoryIds.map((id) => ({ categoryId: id })) }
         : undefined,
@@ -88,6 +97,25 @@ export async function createCatalogEntry(
 export async function getCatalogEntryById(id: string, publicOnly = true) {
   const entry = await prisma.catalogEntry.findUnique({
     where: { id },
+    include: catalogIncludes(),
+  });
+
+  if (!entry) {
+    throw new NotFoundError('Catalog entry not found');
+  }
+
+  if (publicOnly && entry.approvalStatus !== 'APPROVED') {
+    throw new NotFoundError('Catalog entry not found');
+  }
+
+  return resolveCover(entry);
+}
+
+export async function getCatalogEntryByIdOrSlug(idOrSlug: string, publicOnly = true) {
+  const where = isCuid(idOrSlug) ? { id: idOrSlug } : { slug: idOrSlug };
+
+  const entry = await prisma.catalogEntry.findFirst({
+    where,
     include: catalogIncludes(),
   });
 

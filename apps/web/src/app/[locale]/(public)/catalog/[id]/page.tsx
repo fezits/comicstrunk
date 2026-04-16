@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { ArrowLeft, Star } from 'lucide-react';
@@ -14,12 +14,17 @@ import { CatalogReviewList } from '@/components/features/reviews/catalog-review-
 import { CommentThread } from '@/components/features/comments/comment-thread';
 import { getCatalogEntryById, type CatalogEntry } from '@/lib/api/catalog';
 
+function isCuid(str: string): boolean {
+  return /^c[a-z0-9]{24}$/.test(str);
+}
+
 export default function CatalogDetailPage() {
   const t = useTranslations('catalog');
   const tReviews = useTranslations('reviews');
   const locale = useLocale();
   const params = useParams();
-  const id = params.id as string;
+  const router = useRouter();
+  const idOrSlug = params.id as string;
 
   const [entry, setEntry] = useState<CatalogEntry | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,8 +37,15 @@ export default function CatalogDetailPage() {
       setLoading(true);
       setNotFound(false);
       try {
-        const data = await getCatalogEntryById(id);
-        if (!cancelled) setEntry(data);
+        const data = await getCatalogEntryById(idOrSlug);
+        if (!cancelled) {
+          // Redirect CUID URLs to slug URLs (301-equivalent on client)
+          if (isCuid(idOrSlug) && data.slug) {
+            router.replace(`/${locale}/catalog/${data.slug}`);
+            return;
+          }
+          setEntry(data);
+        }
       } catch (err: unknown) {
         if (!cancelled) {
           const status = (err as { response?: { status?: number } })?.response?.status;
@@ -48,7 +60,7 @@ export default function CatalogDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [idOrSlug, locale, router]);
 
   if (loading) {
     return (
@@ -104,7 +116,7 @@ export default function CatalogDetailPage() {
           <h2 className="text-xl font-semibold">{tReviews('title')}</h2>
         </div>
         <CatalogReviewList
-          catalogEntryId={id}
+          catalogEntryId={entry.id}
           averageRating={entry.averageRating}
           ratingCount={entry.ratingCount}
         />
@@ -114,7 +126,7 @@ export default function CatalogDetailPage() {
 
       {/* Comments Section */}
       <section id="comments">
-        <CommentThread catalogEntryId={id} />
+        <CommentThread catalogEntryId={entry.id} />
       </section>
     </div>
   );

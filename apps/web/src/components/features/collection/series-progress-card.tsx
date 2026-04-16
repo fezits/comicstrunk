@@ -126,7 +126,7 @@ export function SeriesProgressCard({ progress }: SeriesProgressCardProps) {
                 {missingEditions.map((edition) => (
                   <Link
                     key={edition.id}
-                    href={`/${locale}/catalog/${edition.id}`}
+                    href={`/${locale}/catalog/${edition.slug ?? edition.id}`}
                     className="flex items-center gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors text-sm group"
                   >
                     <div className="w-8 h-11 bg-muted rounded overflow-hidden flex-shrink-0 flex items-center justify-center">

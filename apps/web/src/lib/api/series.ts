@@ -5,6 +5,7 @@ import apiClient from './client';
 export interface Series {
   id: string;
   title: string;
+  slug: string | null;
   description: string | null;
   totalEditions: number | null;
   _count?: { catalogEntries: number };
@@ -14,6 +15,7 @@ export interface Series {
 export interface CatalogEdition {
   id: string;
   title: string;
+  slug: string | null;
   volumeNumber: number | null;
   editionNumber: number | null;
   coverImageUrl: string | null;

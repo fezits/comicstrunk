@@ -275,6 +275,7 @@ model PasswordReset {
 model CatalogEntry {
   id              String         @id @default(cuid())
   title           String
+  slug            String?        @unique
   author          String?
   publisher       String?
   imprint         String?
@@ -327,6 +328,7 @@ model CatalogEntry {
 model Series {
   id            String   @id @default(cuid())
   title         String
+  slug          String?  @unique
   description   String?  @db.Text
   totalEditions Int      @map("total_editions")
   createdAt     DateTime @default(now()) @map("created_at")

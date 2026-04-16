@@ -28,7 +28,7 @@ export function SeriesEditionsList({ editions }: SeriesEditionsListProps) {
       {editions.map((edition) => (
         <Link
           key={edition.id}
-          href={`/${locale}/catalog/${edition.id}`}
+          href={`/${locale}/catalog/${edition.slug ?? edition.id}`}
           className="flex items-center gap-4 rounded-lg border p-3 transition-colors hover:bg-accent/50"
         >
           {/* Cover thumbnail */}

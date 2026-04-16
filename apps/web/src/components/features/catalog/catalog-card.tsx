@@ -27,7 +27,7 @@ export function CatalogCard({ entry }: CatalogCardProps) {
   const [adding, setAdding] = useState(false);
 
   return (
-    <Link href={`/${locale}/catalog/${entry.id}`} className="block group">
+    <Link href={`/${locale}/catalog/${entry.slug ?? entry.id}`} className="block group">
       <div className="w-full flex flex-col bg-card text-card-foreground rounded-lg shadow-lg border border-border/50 dark:border-transparent hover:scale-[1.02] transition-transform duration-300 overflow-hidden">
         {/* Cover image */}
         <div className="relative aspect-[2/3] bg-muted overflow-hidden">

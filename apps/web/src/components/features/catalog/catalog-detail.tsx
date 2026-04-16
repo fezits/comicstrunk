@@ -133,7 +133,7 @@ export function CatalogDetail({ entry }: CatalogDetailProps) {
             <div className="flex gap-2 text-sm">
               <span className="text-muted-foreground shrink-0">{t('series')}:</span>
               <Link
-                href={`/${locale}/series/${entry.series!.id}`}
+                href={`/${locale}/series/${entry.series!.slug ?? entry.series!.id}`}
                 className="text-primary hover:underline"
               >
                 {seriesInfo}
