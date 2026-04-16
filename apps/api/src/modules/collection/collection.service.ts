@@ -388,6 +388,7 @@ export async function getMissingEditions(userId: string, seriesId: string) {
     select: {
       id: true,
       title: true,
+      slug: true,
       editionNumber: true,
       volumeNumber: true,
       coverImageUrl: true,

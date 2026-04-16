@@ -53,6 +53,7 @@ export async function getUserFavorites(userId: string, page: number, limit: numb
           select: {
             id: true,
             title: true,
+            slug: true,
             author: true,
             publisher: true,
             coverImageUrl: true,
@@ -62,6 +63,7 @@ export async function getUserFavorites(userId: string, page: number, limit: numb
               select: {
                 id: true,
                 title: true,
+                slug: true,
               },
             },
           },

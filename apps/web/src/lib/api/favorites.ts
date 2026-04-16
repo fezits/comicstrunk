@@ -20,6 +20,7 @@ export interface FavoriteItem {
     CatalogEntry,
     | 'id'
     | 'title'
+    | 'slug'
     | 'author'
     | 'publisher'
     | 'coverImageUrl'

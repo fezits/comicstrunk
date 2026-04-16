@@ -153,6 +153,7 @@ const dealSelect = {
 const catalogSelect = {
   id: true,
   title: true,
+  slug: true,
   coverImageUrl: true,
   averageRating: true,
   ratingCount: true,

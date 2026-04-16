@@ -34,6 +34,7 @@ export interface HomepageSectionItem {
   expiresAt?: string | null;
   store?: { name: string; logoUrl: string | null };
   // Catalog fields
+  slug?: string | null;
   coverUrl?: string | null;
   seriesName?: string | null;
   averageRating?: number;

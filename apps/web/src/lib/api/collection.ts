@@ -166,6 +166,7 @@ export async function importCollection(
 export interface MissingEdition {
   id: string;
   title: string;
+  slug: string | null;
   editionNumber: number | null;
   volumeNumber: number | null;
   coverImageUrl: string | null;
