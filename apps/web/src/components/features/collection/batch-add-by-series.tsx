@@ -66,7 +66,7 @@ export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
     const timer = setTimeout(async () => {
       setSearching(true);
       try {
-        const result = await getSeries({ title: searchQuery, limit: 10 });
+        const result = await getSeries({ title: searchQuery, limit: 50 });
         setSeriesResults(result.data);
       } catch {
         // ignore
