@@ -28,7 +28,7 @@
     "signup": "Cadastrar",
     "logout": "Sair",
     "profile": "Perfil",
-    "sériesProgress": "Progresso de Séries",
+    "seriesProgress": "Progresso de Séries",
     "favorites": "Favoritos",
     "cart": "Carrinho",
     "myOrders": "Meus Pedidos",
@@ -39,7 +39,7 @@
     "adminUsers": "Usuarios",
     "adminContent": "Conteudo",
     "adminCategories": "Categorias",
-    "adminSéries": "Séries",
+    "adminSeries": "Séries",
     "adminTags": "Tags",
     "adminCharacters": "Personagens",
     "paymentHistory": "Histórico de Pagamentos",
@@ -181,8 +181,8 @@
     "searchPublisher": "Buscar por editora...",
     "searchCharacter": "Buscar personagem...",
     "filters": "Filtros",
-    "séries": "Série",
-    "allSéries": "Todas as séries",
+    "series": "Série",
+    "allSeries": "Todas as séries",
     "categories": "Categorias",
     "characters": "Personagens",
     "yearRange": "Periodo",
@@ -223,7 +223,7 @@
       "imprint": "Selo",
       "barcode": "Código de barras",
       "isbn": "ISBN",
-      "séries": "Série",
+      "series": "Série",
       "volume": "Volume",
       "edition": "Edição",
       "categories": "Categorias",
@@ -239,7 +239,7 @@
       "addToCollectionError": "Erro ao adicionar à coleção"
     }
   },
-  "séries": {
+  "series": {
     "title": "Séries",
     "subtitle": "Explore as séries de quadrinhos do catálogo",
     "searchPlaceholder": "Buscar séries...",
@@ -259,7 +259,7 @@
       "catalogProgressUnknown": "{count} edições no catálogo",
       "notFound": "Série não encontrada",
       "notFoundDescription": "A série que você esta procurando não existe ou foi removida.",
-      "backToSéries": "Voltar para Séries",
+      "backToSeries": "Voltar para Séries",
       "noRatings": "Sem avaliações",
       "rating": "{rating} ({count})"
     }
@@ -312,8 +312,8 @@
         "barcode": "Código de barras",
         "isbn": "ISBN",
         "description": "Descrição",
-        "séries": "Série",
-        "noSéries": "Nenhuma série",
+        "series": "Série",
+        "noSeries": "Nenhuma série",
         "volume": "Volume",
         "edition": "Edição",
         "categories": "Categorias",
@@ -340,8 +340,8 @@
     },
     "content": {
       "title": "Gestao de Conteudo",
-      "séries": "Séries",
-      "sériesDesc": "Gerenciar séries de quadrinhos e edições",
+      "series": "Séries",
+      "seriesDesc": "Gerenciar séries de quadrinhos e edições",
       "categories": "Categorias",
       "categoriesDesc": "Gerenciar categorias do catálogo",
       "tags": "Tags",
@@ -372,7 +372,7 @@
     "addItem": "Adicionar Item",
     "import": "Importar",
     "export": "Exportar",
-    "sériesProgressLink": "Progresso de Séries",
+    "seriesProgressLink": "Progresso de Séries",
     "filters": "Filtros",
     "clearFilters": "Limpar filtros",
     "noItems": "Sua coleção esta vazia. Comece adicionando quadrinhos do catálogo.",
@@ -453,7 +453,7 @@
     "detail": {
       "author": "Autor",
       "publisher": "Editora",
-      "séries": "Série",
+      "series": "Série",
       "editInfo": "Editar informações",
       "collectionInfo": "Informações da Coleção",
       "description": "Descrição"
@@ -478,7 +478,7 @@
     "photoRemoved": "Foto removida!",
     "photoError": "Erro ao gerenciar foto",
     "maxPhotos": "Maximo de {limit} fotos por item",
-    "sériesProgress": {
+    "seriesProgress": {
       "title": "Progresso de Séries",
       "subtitle": "Acompanhe o progresso da sua coleção por série",
       "backToCollection": "Voltar a coleção",
@@ -1076,9 +1076,9 @@
   },
   "batchAdd": {
     "title": "Adicionar em Lote",
-    "tabSéries": "Por Série",
+    "tabSeries": "Por Série",
     "tabQuick": "Busca Rápida",
-    "searchSéries": "Buscar série...",
+    "searchSeries": "Buscar série...",
     "searchCatalog": "Buscar gibi por título...",
     "selectAll": "Selecionar todos",
     "clearSelection": "Limpar",
