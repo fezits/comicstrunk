@@ -15,7 +15,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { getSeries, getSeriesById, type Series, type SeriesDetail } from '@/lib/api/series';
+import { getSeries, getSeriesById, type Series, type SeriesDetail, type CatalogEdition } from '@/lib/api/series';
+
+function extractNumber(edition: CatalogEdition): string {
+  if (edition.editionNumber != null) return String(edition.editionNumber);
+  if (edition.volumeNumber != null) return String(edition.volumeNumber);
+  // Try to extract number from title (e.g. "Batman # 43" -> "43")
+  const match = edition.title.match(/#\s*(\d+)/);
+  if (match) return match[1];
+  const matchVol = edition.title.match(/Vol\.?\s*(\d+)/i);
+  if (matchVol) return matchVol[1];
+  return '?';
+}
 import { batchAddItems, getCollectionStats } from '@/lib/api/collection';
 
 interface BatchAddBySeriesProps {
@@ -260,7 +271,7 @@ export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
                       />
                     ) : (
                       <span className="text-xs text-muted-foreground">
-                        #{edition.editionNumber ?? '?'}
+                        #{extractNumber(edition)}
                       </span>
                     )}
                   </div>
@@ -281,7 +292,7 @@ export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
 
                   {/* Edition number */}
                   <p className="text-center text-[10px] py-0.5 truncate px-1">
-                    #{edition.editionNumber ?? edition.volumeNumber ?? '?'}
+                    #{extractNumber(edition)}
                   </p>
                 </button>
               );
