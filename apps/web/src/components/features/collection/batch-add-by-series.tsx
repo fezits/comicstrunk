@@ -99,6 +99,16 @@ export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
       );
 
       setOwnedIds(owned);
+
+      // Sort editions by number ascending
+      if (detail.catalogEntries) {
+        detail.catalogEntries.sort((a, b) => {
+          const numA = parseInt(extractNumber(a), 10) || 9999;
+          const numB = parseInt(extractNumber(b), 10) || 9999;
+          return numA - numB;
+        });
+      }
+
       setSelectedSeries(detail);
     } catch {
       toast.error('Erro ao carregar serie');
