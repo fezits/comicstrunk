@@ -8,8 +8,17 @@ import { toast } from 'sonner';
 import { Plus, Download, Upload, SlidersHorizontal, BarChart3 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { ViewToggle, type ViewMode } from '@/components/ui/view-toggle';
 import { CollectionItemCard } from '@/components/features/collection/collection-item-card';
 import { CollectionItemCompact } from '@/components/features/collection/collection-item-compact';
@@ -77,6 +86,9 @@ export default function CollectionPage() {
   const [error, setError] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [saleDialogOpen, setSaleDialogOpen] = useState(false);
+  const [saleItemId, setSaleItemId] = useState<string | null>(null);
+  const [salePrice, setSalePrice] = useState('');
   const [exporting, setExporting] = useState(false);
 
   const filters = parseFiltersFromParams(searchParams);
@@ -143,11 +155,38 @@ export default function CollectionPage() {
   const handleToggleSale = async (id: string) => {
     const item = items.find((i) => i.id === id);
     if (!item) return;
+
+    if (item.isForSale) {
+      // Remove from sale — no price needed
+      try {
+        const updated = await markForSale(id, { isForSale: false });
+        setItems((prev) => prev.map((i) => (i.id === id ? updated : i)));
+        toast.success(t('removedFromSale'));
+        getCollectionStats().then(setStats).catch(() => {});
+      } catch {
+        toast.error(tCommon('error'));
+      }
+    } else {
+      // Mark for sale — need to ask for price
+      setSaleItemId(id);
+      setSalePrice('');
+      setSaleDialogOpen(true);
+    }
+  };
+
+  const handleConfirmSale = async () => {
+    if (!saleItemId || !salePrice) return;
+    const price = parseFloat(salePrice.replace(',', '.'));
+    if (isNaN(price) || price <= 0) {
+      toast.error('Informe um preço válido');
+      return;
+    }
     try {
-      const updated = await markForSale(id, { isForSale: !item.isForSale });
-      setItems((prev) => prev.map((i) => (i.id === id ? updated : i)));
-      toast.success(updated.isForSale ? t('markedForSale') : t('removedFromSale'));
+      const updated = await markForSale(saleItemId, { isForSale: true, salePrice: price });
+      setItems((prev) => prev.map((i) => (i.id === saleItemId ? updated : i)));
+      toast.success(t('markedForSale'));
       getCollectionStats().then(setStats).catch(() => {});
+      setSaleDialogOpen(false);
     } catch {
       toast.error(tCommon('error'));
     }
@@ -323,6 +362,39 @@ export default function CollectionPage() {
           )}
         </div>
       </div>
+
+      {/* Sale price dialog */}
+      <Dialog open={saleDialogOpen} onOpenChange={setSaleDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t('markForSale')}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="sale-price">Preço de venda (R$)</Label>
+              <Input
+                id="sale-price"
+                type="number"
+                step="0.01"
+                min="0.01"
+                placeholder="29.90"
+                value={salePrice}
+                onChange={(e) => setSalePrice(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleConfirmSale()}
+                autoFocus
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSaleDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleConfirmSale} disabled={!salePrice}>
+              Colocar à venda
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
