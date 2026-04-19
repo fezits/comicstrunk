@@ -81,7 +81,7 @@ export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
       // Check which editions the user already owns
       const { default: apiClient } = await import('@/lib/api/client');
       const resp = await apiClient.get('/collection', {
-        params: { seriesId: series.id, limit: 500 },
+        params: { seriesId: series.id, limit: 100 },
       });
       const owned = new Set<string>(
         (resp.data.data || []).map((item: { catalogEntryId: string }) => item.catalogEntryId),
