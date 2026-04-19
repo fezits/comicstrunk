@@ -16,8 +16,8 @@ export const itemConditionSchema = z.enum(['NEW', 'VERY_GOOD', 'GOOD', 'FAIR', '
 // === Plan Limits ===
 
 export const COLLECTION_LIMITS = {
-  FREE: 50,
-  BASIC: 200,
+  FREE: 1000,
+  BASIC: 5000,
 } as const;
 
 // === Collection Item Schemas ===
