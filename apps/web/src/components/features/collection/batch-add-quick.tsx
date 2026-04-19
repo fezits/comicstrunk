@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { searchCatalog, type CatalogEntry } from '@/lib/api/catalog';
 import { batchAddItems } from '@/lib/api/collection';
+
+const PAGE_SIZE = 30;
 
 interface BatchAddQuickProps {
   onAdded: (count: number) => void;
@@ -23,21 +25,32 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [results, setResults] = useState<CatalogEntry[]>([]);
   const [searching, setSearching] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [totalResults, setTotalResults] = useState(0);
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
   const [addingId, setAddingId] = useState<string | null>(null);
+  const activeQuery = useRef('');
 
-  // Debounced search
+  // Debounced search (resets to page 1)
   useEffect(() => {
     if (!searchQuery.trim() || searchQuery.length < 2) {
       setResults([]);
+      setHasMore(false);
+      setTotalResults(0);
       return;
     }
 
     const timer = setTimeout(async () => {
       setSearching(true);
+      setPage(1);
+      activeQuery.current = searchQuery;
       try {
-        const result = await searchCatalog({ title: searchQuery, limit: 15 });
+        const result = await searchCatalog({ title: searchQuery, limit: PAGE_SIZE, page: 1 });
         setResults(result.data);
+        setTotalResults(result.pagination.total);
+        setHasMore(result.pagination.page < result.pagination.totalPages);
       } catch {
         // ignore
       } finally {
@@ -47,6 +60,22 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
 
     return () => clearTimeout(timer);
   }, [searchQuery]);
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    const nextPage = page + 1;
+    try {
+      const result = await searchCatalog({ title: activeQuery.current, limit: PAGE_SIZE, page: nextPage });
+      setResults((prev) => [...prev, ...result.data]);
+      setPage(nextPage);
+      setHasMore(result.pagination.page < result.pagination.totalPages);
+    } catch {
+      // ignore
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, hasMore, page]);
 
   const handleQuickAdd = useCallback(async (entry: CatalogEntry) => {
     setAddingId(entry.id);
@@ -99,6 +128,13 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
 
       {!searching && results.length === 0 && searchQuery.length >= 2 && (
         <p className="text-center text-muted-foreground py-8">{t('noResults')}</p>
+      )}
+
+      {/* Results count */}
+      {results.length > 0 && (
+        <p className="text-xs text-muted-foreground">
+          Mostrando {results.length} de {totalResults} resultados
+        </p>
       )}
 
       {/* Results list */}
@@ -167,6 +203,22 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
           );
         })}
       </div>
+
+      {/* Load more */}
+      {hasMore && (
+        <div className="flex justify-center pt-2">
+          <Button variant="outline" size="sm" onClick={loadMore} disabled={loadingMore}>
+            {loadingMore ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Carregando...
+              </>
+            ) : (
+              `Carregar mais (${results.length} de ${totalResults})`
+            )}
+          </Button>
+        </div>
+      )}
 
       {/* Session counter */}
       {sessionCount > 0 && (
