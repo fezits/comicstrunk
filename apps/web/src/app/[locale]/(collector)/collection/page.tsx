@@ -10,7 +10,10 @@ import { Plus, Download, Upload, SlidersHorizontal, BarChart3 } from 'lucide-rea
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { ViewToggle, type ViewMode } from '@/components/ui/view-toggle';
 import { CollectionItemCard } from '@/components/features/collection/collection-item-card';
+import { CollectionItemCompact } from '@/components/features/collection/collection-item-compact';
+import { CollectionItemList } from '@/components/features/collection/collection-item-list';
 import { CollectionFilters } from '@/components/features/collection/collection-filters';
 import { CollectionStats } from '@/components/features/collection/collection-stats';
 import {
@@ -73,6 +76,7 @@ export default function CollectionPage() {
   const [statsLoading, setStatsLoading] = useState(true);
   const [error, setError] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [exporting, setExporting] = useState(false);
 
   const filters = parseFiltersFromParams(searchParams);
@@ -204,6 +208,8 @@ export default function CollectionPage() {
             </Link>
           </Button>
 
+          <ViewToggle value={viewMode} onChange={setViewMode} />
+
           {/* Mobile filter toggle */}
           <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
             <SheetTrigger asChild>
@@ -255,16 +261,39 @@ export default function CollectionPage() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {items.map((item) => (
-                  <CollectionItemCard
-                    key={item.id}
-                    item={item}
-                    onToggleRead={handleToggleRead}
-                    onToggleSale={handleToggleSale}
-                  />
-                ))}
-              </div>
+              {viewMode === 'grid' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {items.map((item) => (
+                    <CollectionItemCard
+                      key={item.id}
+                      item={item}
+                      onToggleRead={handleToggleRead}
+                      onToggleSale={handleToggleSale}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {viewMode === 'compact' && (
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2">
+                  {items.map((item) => (
+                    <CollectionItemCompact key={item.id} item={item} />
+                  ))}
+                </div>
+              )}
+
+              {viewMode === 'list' && (
+                <div className="flex flex-col gap-2">
+                  {items.map((item) => (
+                    <CollectionItemList
+                      key={item.id}
+                      item={item}
+                      onToggleRead={handleToggleRead}
+                      onToggleSale={handleToggleSale}
+                    />
+                  ))}
+                </div>
+              )}
 
               {/* Pagination */}
               {pagination && pagination.totalPages > 1 && (
