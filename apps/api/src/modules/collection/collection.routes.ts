@@ -157,6 +157,34 @@ router.post(
   },
 );
 
+// POST /batch — add multiple items at once
+router.post(
+  '/batch',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { catalogEntryIds, condition, isRead } = req.body;
+
+      if (!Array.isArray(catalogEntryIds) || catalogEntryIds.length === 0) {
+        throw new BadRequestError('catalogEntryIds must be a non-empty array');
+      }
+
+      if (catalogEntryIds.length > 200) {
+        throw new BadRequestError('Maximum 200 items per batch');
+      }
+
+      const result = await collectionService.batchAddItems(req.user!.userId, {
+        catalogEntryIds,
+        condition: condition || 'VERY_GOOD',
+        isRead: isRead ?? false,
+      });
+
+      sendSuccess(res, result, 201);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
 // ============================================================================
 // Item-specific routes (/:id)
 // Photo routes MUST be defined BEFORE GET /:id to prevent path collision.

@@ -177,6 +177,26 @@ export async function getMissingEditions(seriesId: string): Promise<MissingEditi
   return response.data.data;
 }
 
+// === Batch Add ===
+
+export interface BatchAddInput {
+  catalogEntryIds: string[];
+  condition: string;
+  isRead: boolean;
+}
+
+export interface BatchAddResult {
+  added: number;
+  skipped: number;
+  skippedIds: string[];
+  total: number;
+}
+
+export async function batchAddItems(data: BatchAddInput): Promise<BatchAddResult> {
+  const response = await apiClient.post('/collection/batch', data);
+  return response.data.data;
+}
+
 export async function getCSVTemplate(): Promise<void> {
   const response = await apiClient.get('/collection/csv-template', {
     responseType: 'blob',

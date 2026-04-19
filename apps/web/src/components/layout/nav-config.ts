@@ -25,6 +25,7 @@ import {
   FileCheck,
   Mail,
   Clock,
+  ListPlus,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -59,6 +60,7 @@ export const navGroups: NavGroup[] = [
     requiresAuth: true,
     items: [
       { titleKey: 'nav.collection', href: '/collection', icon: BookOpen },
+      { titleKey: 'nav.batchAdd', href: '/collection/add-batch', icon: ListPlus },
       { titleKey: 'nav.seriesProgress', href: '/collection/series-progress', icon: BarChart3 },
       { titleKey: 'nav.favorites', href: '/favorites', icon: Heart },
     ],
@@ -120,6 +122,7 @@ export const navGroups: NavGroup[] = [
  */
 export const protectedRoutes = [
   '/collection',
+  '/collection/add-batch',
   '/collection/series-progress',
   '/favorites',
   '/cart',

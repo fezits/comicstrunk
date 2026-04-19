@@ -112,6 +112,78 @@ export async function addItem(userId: string, data: CreateCollectionItemInput) {
   });
 }
 
+// === Batch Add ===
+
+export interface BatchAddInput {
+  catalogEntryIds: string[];
+  condition: string;
+  isRead: boolean;
+}
+
+export interface BatchAddResult {
+  added: number;
+  skipped: number;
+  skippedIds: string[];
+  total: number;
+}
+
+export async function batchAddItems(
+  userId: string,
+  data: BatchAddInput,
+): Promise<BatchAddResult> {
+  return prisma.$transaction(async (tx) => {
+    // 1. Find which entries the user already has
+    const existing = await tx.collectionItem.findMany({
+      where: { userId, catalogEntryId: { in: data.catalogEntryIds } },
+      select: { catalogEntryId: true },
+    });
+    const existingIds = new Set(existing.map((e) => e.catalogEntryId));
+
+    // 2. Filter to only new entries
+    const newIds = data.catalogEntryIds.filter((id) => !existingIds.has(id));
+
+    if (newIds.length === 0) {
+      return { added: 0, skipped: data.catalogEntryIds.length, skippedIds: data.catalogEntryIds, total: data.catalogEntryIds.length };
+    }
+
+    // 3. Verify all catalog entries exist and are approved
+    const validEntries = await tx.catalogEntry.findMany({
+      where: { id: { in: newIds }, approvalStatus: 'APPROVED' },
+      select: { id: true },
+    });
+    const validIds = new Set(validEntries.map((e) => e.id));
+    const toAdd = newIds.filter((id) => validIds.has(id));
+
+    if (toAdd.length === 0) {
+      return { added: 0, skipped: data.catalogEntryIds.length, skippedIds: data.catalogEntryIds, total: data.catalogEntryIds.length };
+    }
+
+    // 4. Check plan limit for all items at once
+    await checkPlanLimit(tx, userId, toAdd.length);
+
+    // 5. Create all items in one batch
+    await tx.collectionItem.createMany({
+      data: toAdd.map((catalogEntryId) => ({
+        userId,
+        catalogEntryId,
+        quantity: 1,
+        condition: (data.condition || 'VERY_GOOD') as 'NEW' | 'VERY_GOOD' | 'GOOD' | 'FAIR' | 'POOR',
+        isRead: data.isRead ?? false,
+        readAt: data.isRead ? new Date() : null,
+      })),
+    });
+
+    const skippedIds = data.catalogEntryIds.filter((id) => !validIds.has(id) || existingIds.has(id));
+
+    return {
+      added: toAdd.length,
+      skipped: data.catalogEntryIds.length - toAdd.length,
+      skippedIds,
+      total: data.catalogEntryIds.length,
+    };
+  });
+}
+
 export async function updateItem(userId: string, itemId: string, data: UpdateCollectionItemInput) {
   const item = await prisma.collectionItem.findUnique({ where: { id: itemId } });
 
