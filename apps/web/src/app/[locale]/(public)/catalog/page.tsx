@@ -35,6 +35,8 @@ import {
 } from '@/lib/api/catalog';
 import { getCategories, getCharacters, type Category, type Character } from '@/lib/api/taxonomy';
 import { getSeries, type Series } from '@/lib/api/series';
+import { getCollectionItems } from '@/lib/api/collection';
+import { useAuth } from '@/lib/auth/use-auth';
 
 const LIMIT = 20;
 
@@ -92,6 +94,19 @@ export default function CatalogPage() {
   const [view, setView] = useState<ViewMode>('grid');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [ownedIds, setOwnedIds] = useState<Set<string>>(new Set());
+  const { isAuthenticated } = useAuth();
+
+  // Load user's collection IDs to show "Tenho" badge
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    getCollectionItems({ limit: 100 })
+      .then((res) => {
+        const ids = new Set<string>(res.data.map((item: { catalogEntryId: string }) => item.catalogEntryId));
+        setOwnedIds(ids);
+      })
+      .catch(() => {});
+  }, [isAuthenticated]);
 
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -421,7 +436,7 @@ export default function CatalogPage() {
             {view === 'grid' ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                 {entries.map((entry) => (
-                  <CatalogCard key={entry.id} entry={entry} />
+                  <CatalogCard key={entry.id} entry={entry} isOwned={ownedIds.has(entry.id)} />
                 ))}
               </div>
             ) : (

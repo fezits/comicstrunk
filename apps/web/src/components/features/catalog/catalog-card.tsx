@@ -16,14 +16,15 @@ import type { CatalogEntry } from '@/lib/api/catalog';
 
 interface CatalogCardProps {
   entry: CatalogEntry;
+  isOwned?: boolean;
 }
 
-export function CatalogCard({ entry }: CatalogCardProps) {
+export function CatalogCard({ entry, isOwned = false }: CatalogCardProps) {
   const locale = useLocale();
   const t = useTranslations('catalog');
   const router = useRouter();
   const { isAuthenticated } = useAuth();
-  const [added, setAdded] = useState(false);
+  const [added, setAdded] = useState(isOwned);
   const [adding, setAdding] = useState(false);
 
   return (
@@ -40,6 +41,14 @@ export function CatalogCard({ entry }: CatalogCardProps) {
           ) : (
             <div className="h-full w-full flex items-center justify-center bg-primary/5 dark:bg-muted">
               <BookOpen className="h-16 w-16 text-primary/20" />
+            </div>
+          )}
+
+          {/* Owned badge — always visible */}
+          {added && (
+            <div className="absolute top-2 left-2 bg-green-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow">
+              <Check className="h-3 w-3" />
+              Tenho
             </div>
           )}
 
