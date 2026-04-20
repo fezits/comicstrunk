@@ -170,6 +170,13 @@ Key field: `sourceKey` (format: `rika:{id}` or `panini:{sku}`) — used for dedu
 - Generate list for user approval before bulk imports
 - Create backup before any mass DB operation
 
+**Image rules:**
+- ALL cover images MUST be compressed before storing: max 600px width, JPEG quality 80
+- `downloadCover()` in `sync-catalog.ts` uses sharp for compression automatically
+- Cron job also runs `mogrify -resize 600x> -quality 80` on images > 500KB
+- Skip Rika placeholder images (42169 bytes / hash `37eadb1f86601aa2aff6e288a03a8fd9`)
+- Never store external "IMAGEM INDISPONIVEL" images — set `cover_image_url = NULL` instead
+
 ## PIX Payment
 
 Static PIX via `pix-utils` library — generates BR Code + QR code locally without intermediary. Mercado Pago as optional fallback. Admin confirms payment manually via `/admin/payments`.

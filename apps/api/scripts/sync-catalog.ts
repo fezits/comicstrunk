@@ -56,7 +56,22 @@ async function downloadCover(url: string, filename: string): Promise<boolean> {
     const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
     if (!res.ok) return false;
     const buffer = Buffer.from(await res.arrayBuffer());
-    fs.writeFileSync(filepath, buffer);
+
+    // Skip placeholder images (Rika "IMAGEM INDISPONIVEL" = 42169 bytes)
+    if (buffer.length === 42169) return false;
+
+    // Compress: resize to max 600px width, JPEG quality 80
+    try {
+      const sharp = (await import('sharp')).default;
+      await sharp(buffer)
+        .resize(600, null, { withoutEnlargement: true })
+        .jpeg({ quality: 80 })
+        .toFile(filepath);
+    } catch {
+      // sharp not available, save raw
+      fs.writeFileSync(filepath, buffer);
+    }
+
     return true;
   } catch {
     return false;
