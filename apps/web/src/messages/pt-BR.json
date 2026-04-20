@@ -445,8 +445,8 @@
     },
     "updateSuccess": "Item atualizado com sucesso",
     "updateError": "Erro ao atualizar item",
-    "deleteSuccess": "Item excluido da coleção",
-    "deleteError": "Erro ao excluir item",
+    "deleteSuccess": "Item removido da coleção",
+    "deleteError": "Erro ao remover item",
     "notFound": "Item não encontrado",
     "notFoundDescription": "O item que você esta procurando não existe ou foi removido.",
     "backToCollection": "Voltar a coleção",
@@ -465,8 +465,8 @@
       "confirm": "Colocar a venda"
     },
     "deleteDialog": {
-      "title": "Excluir item da coleção",
-      "description": "Tem certeza que deseja excluir este item? Esta acao não pode ser desfeita."
+      "title": "Remover da minha coleção",
+      "description": "Tem certeza que deseja remover este item da sua coleção?"
     },
     "planLimitMessage": "Limite do plano atingido",
     "planLimitUpgrade": "Você atingiu o limite de itens do seu plano. Faca upgrade para o plano BASIC para adicionar ate 200 itens.",
