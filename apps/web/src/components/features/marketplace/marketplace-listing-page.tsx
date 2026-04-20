@@ -351,7 +351,7 @@ export function MarketplaceListingPage() {
                   variant="ghost"
                   size="sm"
                   className="h-7 text-xs text-muted-foreground hover:text-foreground"
-                  onClick={() => handleFiltersChange({ page: 1, limit: LIMIT })}
+                  onClick={() => handleFiltersChange({ page: 1, limit: DEFAULT_LIMIT })}
                 >
                   {t('clearFilters')}
                 </Button>
@@ -409,7 +409,7 @@ export function MarketplaceListingPage() {
               variant="default"
               size="sm"
               className="gap-2"
-              onClick={() => handleFiltersChange({ page: 1, limit: LIMIT })}
+              onClick={() => handleFiltersChange({ page: 1, limit: DEFAULT_LIMIT })}
             >
               {t('clearFilters')}
             </Button>
