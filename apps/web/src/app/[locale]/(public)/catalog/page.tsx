@@ -37,8 +37,9 @@ import { getCategories, getCharacters, type Category, type Character } from '@/l
 import { getSeries, type Series } from '@/lib/api/series';
 import { getCollectionItems } from '@/lib/api/collection';
 import { useAuth } from '@/lib/auth/use-auth';
+import { PageSizeSelect } from '@/components/ui/page-size-select';
 
-const LIMIT = 20;
+const DEFAULT_LIMIT = 20;
 
 type ViewMode = 'grid' | 'list';
 
@@ -54,7 +55,7 @@ function parseFiltersFromParams(sp: URLSearchParams): CatalogSearchParams {
     sortBy: (sp.get('sortBy') as CatalogSearchParams['sortBy']) || undefined,
     sortOrder: (sp.get('sortOrder') as 'asc' | 'desc') || undefined,
     page: sp.get('page') ? Number(sp.get('page')) : 1,
-    limit: LIMIT,
+    limit: sp.get('limit') ? Number(sp.get('limit')) : DEFAULT_LIMIT,
   };
 }
 
@@ -70,6 +71,7 @@ function filtersToParams(f: CatalogSearchParams): string {
   if (f.sortBy && f.sortBy !== 'createdAt') p.set('sortBy', f.sortBy);
   if (f.sortOrder && f.sortOrder !== 'desc') p.set('sortOrder', f.sortOrder);
   if (f.page && f.page > 1) p.set('page', String(f.page));
+  if (f.limit && f.limit !== DEFAULT_LIMIT) p.set('limit', String(f.limit));
   return p.toString();
 }
 
@@ -278,6 +280,14 @@ export default function CatalogPage() {
               {pagination.total} {t('comics')}
             </span>
           )}
+
+          <PageSizeSelect
+            value={filters.limit || DEFAULT_LIMIT}
+            onChange={(size) => {
+              const newParams = filtersToParams({ ...filters, limit: size, page: 1 });
+              router.push(`${pathname}${newParams ? '?' + newParams : ''}`);
+            }}
+          />
         </div>
 
         {/* Show/hide filters — desktop */}

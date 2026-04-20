@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Plus, Download, Upload, SlidersHorizontal, BarChart3 } from 'lucide-react';
+import { PageSizeSelect } from '@/components/ui/page-size-select';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,7 +38,7 @@ import {
 } from '@/lib/api/collection';
 import type { PaginationMeta } from '@/lib/api/catalog';
 
-const LIMIT = 20;
+const DEFAULT_LIMIT = 20;
 
 function parseFiltersFromParams(sp: URLSearchParams): CollectionSearchParams {
   const isReadParam = sp.get('isRead');
@@ -53,7 +54,7 @@ function parseFiltersFromParams(sp: URLSearchParams): CollectionSearchParams {
     sortBy: (sp.get('sortBy') as CollectionSearchParams['sortBy']) || undefined,
     sortOrder: (sp.get('sortOrder') as 'asc' | 'desc') || undefined,
     page: sp.get('page') ? Number(sp.get('page')) : 1,
-    limit: LIMIT,
+    limit: sp.get('limit') ? Number(sp.get('limit')) : DEFAULT_LIMIT,
   };
 }
 
@@ -67,6 +68,7 @@ function filtersToParams(f: CollectionSearchParams): string {
   if (f.sortBy && f.sortBy !== 'createdAt') p.set('sortBy', f.sortBy);
   if (f.sortOrder && f.sortOrder !== 'desc') p.set('sortOrder', f.sortOrder);
   if (f.page && f.page > 1) p.set('page', String(f.page));
+  if (f.limit && f.limit !== DEFAULT_LIMIT) p.set('limit', String(f.limit));
   return p.toString();
 }
 
@@ -248,6 +250,14 @@ export default function CollectionPage() {
           </Button>
 
           <ViewToggle value={viewMode} onChange={setViewMode} />
+
+          <PageSizeSelect
+            value={filters.limit || DEFAULT_LIMIT}
+            onChange={(size) => {
+              const newParams = filtersToParams({ ...filters, limit: size, page: 1 });
+              router.push(`${pathname}${newParams ? '?' + newParams : ''}`);
+            }}
+          />
 
           {/* Mobile filter toggle */}
           <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>

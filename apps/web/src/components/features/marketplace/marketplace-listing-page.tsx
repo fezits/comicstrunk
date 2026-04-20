@@ -33,9 +33,10 @@ import {
 } from '@/lib/api/marketplace';
 import { addToCart } from '@/lib/api/cart';
 import { useAuth } from '@/lib/auth/use-auth';
+import { PageSizeSelect } from '@/components/ui/page-size-select';
 import type { PaginationMeta } from '@/lib/api/catalog';
 
-const LIMIT = 20;
+const DEFAULT_LIMIT = 20;
 
 type ViewMode = 'grid' | 'list';
 
@@ -51,7 +52,7 @@ function parseFiltersFromParams(sp: URLSearchParams): MarketplaceSearchParams {
     sortBy: (sp.get('sortBy') as MarketplaceSearchParams['sortBy']) || undefined,
     sortOrder: (sp.get('sortOrder') as 'asc' | 'desc') || undefined,
     page: sp.get('page') ? Number(sp.get('page')) : 1,
-    limit: LIMIT,
+    limit: sp.get('limit') ? Number(sp.get('limit')) : DEFAULT_LIMIT,
   };
 }
 
@@ -67,6 +68,7 @@ function filtersToParams(f: MarketplaceSearchParams): string {
   if (f.sortBy && f.sortBy !== 'newest') p.set('sortBy', f.sortBy);
   if (f.sortOrder && f.sortOrder !== 'desc') p.set('sortOrder', f.sortOrder);
   if (f.page && f.page > 1) p.set('page', String(f.page));
+  if (f.limit && f.limit !== DEFAULT_LIMIT) p.set('limit', String(f.limit));
   return p.toString();
 }
 
@@ -256,6 +258,14 @@ export function MarketplaceListingPage() {
               {pagination.total} {t('items')}
             </span>
           )}
+
+          <PageSizeSelect
+            value={filters.limit || DEFAULT_LIMIT}
+            onChange={(size) => {
+              const newParams = filtersToParams({ ...filters, limit: size, page: 1 });
+              router.push(`${pathname}${newParams ? '?' + newParams : ''}`);
+            }}
+          />
         </div>
 
         {/* Show/hide filters - desktop */}

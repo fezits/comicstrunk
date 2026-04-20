@@ -2,6 +2,8 @@
 
 Plataforma brasileira para colecionadores de quadrinhos (gibis, HQs, mangás). Combina gestão de coleção, marketplace peer-to-peer e comunidade em um único lugar.
 
+**Produção:** [comicstrunk.com](https://comicstrunk.com)
+
 ## Stack
 
 | Camada | Tecnologia |
@@ -9,6 +11,7 @@ Plataforma brasileira para colecionadores de quadrinhos (gibis, HQs, mangás). C
 | **Frontend** | Next.js 15, React 19, Tailwind CSS, shadcn/ui, next-intl |
 | **Backend** | Express, Node.js, Prisma ORM, MySQL |
 | **Contratos** | Zod schemas + TypeScript types (pacote compartilhado) |
+| **Pagamentos** | PIX estático (pix-utils), Stripe (assinaturas) |
 | **Monorepo** | pnpm 9.15 workspaces + Turborepo |
 | **Deploy** | cPanel com Passenger (API + Web separados) |
 
@@ -19,79 +22,99 @@ apps/api/          Express backend (porta 3001)
 apps/web/          Next.js frontend (porta 3000)
 packages/contracts Schemas Zod + tipos TypeScript compartilhados
 docs/              Documentação (PRD, deploy, sync, planos)
-e2e/               Testes E2E com Playwright
+scripts/           Deploy, scraping, importação, testes
 ```
 
-## Funcionalidades Implementadas
+## Setup Local
+
+```bash
+# Pré-requisitos: Node.js 20+, Docker Desktop (para MySQL)
+
+# 1. Instalar dependências
+corepack pnpm install
+
+# 2. Subir MySQL
+docker start comicstrunk-mysql
+
+# 3. Configurar ambiente
+cp apps/api/.env.example apps/api/.env
+
+# 4. Aplicar migrations
+corepack pnpm --filter api db:migrate
+
+# 5. Iniciar dev
+corepack pnpm dev
+```
+
+**Nota Windows:** `pnpm` não está no PATH. Sempre usar `corepack pnpm`.
+
+## Catálogo
+
+34k+ gibis de múltiplas fontes, 6.2k+ séries, URLs com slugs SEO-friendly.
+
+| Fonte | Categorias | Gibis |
+|-------|-----------|-------|
+| Rika (VTEX API) | Super-heróis, Mangás | ~27k |
+| Panini (GraphQL) | Marvel, DC, Mangás | ~7k |
+
+Busca combina título e editora no mesmo campo (ex: "dragon ball conrad").
+
+## Funcionalidades
 
 | Fase | Funcionalidade |
 |------|---------------|
 | 1 | Infraestrutura, auth JWT (access + refresh), perfil com links sociais |
-| 2 | Catálogo curado com aprovação editorial, taxonomia (séries, categorias, tags, personagens), busca com filtros |
-| 3 | Coleção pessoal, status de leitura, progresso de séries, import/export CSV, limites por plano |
-| 4 | Marketplace, carrinho com reserva 24h, pedidos com snapshot de preços, comissões, envio com tracking |
-| 5 | Pagamento PIX (Mercado Pago), webhooks idempotentes, histórico de pagamentos, dados bancários |
-| 6 | Assinaturas FREE/BASIC (Stripe), downgrade automático, enforcement de limites |
-| 7 | Reviews, comentários, favoritos, notificações in-app, emails transacionais (Resend) |
-| 8 | Disputas com mediação admin, evidências, reembolso, retenção de repasse |
-| 9 | Ofertas de afiliados, click tracking, homepage configurável, analytics |
-| 10 | Admin unificado, documentos legais, LGPD, formulário de contato |
-| Sync | Importação de catálogo via API remota (Rika VTEX + Panini GraphQL), sync incremental |
-
-## Módulos da API
-
-29 módulos em `apps/api/src/modules/`:
-admin, auth, banking, cart, catalog, categories, characters, collection, comments, commission, contact, deals, disputes, favorites, homepage, legal, lgpd, marketplace, notifications, orders, payments, reviews, series, shipping, subscriptions, sync, tags, users
-
-## Rotas do Frontend
-
-69 páginas organizadas em grupos:
-- **(admin)** — Painel admin (catálogo, usuários, comissões, deals, disputas, legal, LGPD, pagamentos, assinaturas)
-- **(auth)** — Login, cadastro, recuperação de senha
-- **(collector)** — Coleção, favoritos, notificações, assinatura, endereços, pagamentos
-- **(orders)** — Pedidos e disputas do comprador
-- **(public)** — Catálogo, marketplace, séries, deals, contato, políticas
-- **(seller)** — Dashboard do vendedor, pedidos, dados bancários, disputas
+| 2 | Catálogo com slugs, aprovação editorial, taxonomia, busca por título + editora |
+| 3 | Coleção pessoal, adicionar em lote (por série + busca rápida), 3 modos de visualização, limites por plano (FREE: 1000, BASIC: 5000) |
+| 4 | Marketplace, carrinho com reserva, pedidos, comissões 10%, envio com tracking |
+| 5 | Pagamento PIX estático (pix-utils, sem intermediário), confirmação manual pelo admin |
+| 6 | Assinaturas FREE/BASIC (Stripe), downgrade automático |
+| 7 | Reviews, comentários, favoritos, notificações in-app, emails (Resend) |
+| 8 | Disputas com mediação admin, evidências, reembolso |
+| 9 | Ofertas de afiliados, click tracking, homepage configurável |
+| 10 | Admin unificado, documentos legais, LGPD, contato |
+| SEO | Slugs em catálogo e séries, favicon, redirect 301 de CUID para slug |
 
 ## Comandos
 
 ```bash
 # Desenvolvimento
-pnpm dev                # API (3001) + Web (3000)
-pnpm build              # Build completo (contracts → API → Web)
-pnpm lint               # Lint em todos os pacotes
-pnpm type-check         # TypeScript check
+corepack pnpm dev                # API (3001) + Web (3000)
+corepack pnpm build              # Build completo (contracts → API → Web)
+corepack pnpm lint               # Lint em todos os pacotes
+corepack pnpm type-check         # TypeScript check
 
 # API
-pnpm --filter api dev
-pnpm --filter api db:migrate
-pnpm --filter api db:seed
-pnpm --filter api db:studio
+corepack pnpm --filter api dev
+corepack pnpm --filter api db:migrate
+corepack pnpm --filter api db:seed
+corepack pnpm --filter api db:studio
 
 # Web
-pnpm --filter web dev
-pnpm --filter web build
+corepack pnpm --filter web dev
+corepack pnpm --filter web build
 
 # Sync de catálogo
 cd apps/api
 npx tsx scripts/sync-catalog.ts              # Incremental
-npx tsx scripts/sync-catalog.ts --dry-run    # Simulação
 npx tsx scripts/sync-catalog.ts --full       # Varredura completa
 ```
 
 ## Deploy
 
+Guia completo em [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+
+**Regra principal:** nunca rodar `pnpm install` ou `next build` no servidor (1GB RAM compartilhada). Todo build é local.
+
 ```bash
-./scripts/deploy-api.sh    # Build + copy + restart Passenger
-./scripts/deploy-web.sh    # Build standalone + sync to cPanel
-./scripts/backup-db.sh     # Backup MySQL com rotação
+./scripts/deploy.sh api    # Build + copy + restart
 ```
 
-Ver [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) para detalhes.
+Web deploy é manual (ver docs) — requer substituição do server.js por versão custom que serve arquivos estáticos.
 
 ## Documentação
 
-- [PRD](docs/PRD.md) — Requisitos do produto
-- [Deployment](docs/DEPLOYMENT.md) — Deploy no cPanel
-- [Sync de Catálogo](docs/SYNC-CATALOG.md) — Importação Rika/Panini
-- [Sync API Remoto](docs/planos/sync-api-remoto.md) — Endpoints de sync via HTTP
+- [CLAUDE.md](CLAUDE.md) — Guia para Claude Code / AI assistants
+- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — Deploy passo a passo no cPanel
+- [docs/SYNC-CATALOG.md](docs/SYNC-CATALOG.md) — Importação de catálogo (Rika + Panini)
+- [docs/PRD.md](docs/PRD.md) — Requisitos do produto
