@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { BookOpen, Plus, Check } from 'lucide-react';
+import { BookOpen, Plus, Check, Trash2, Loader2 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { StarRating } from './star-rating';
 import { FavoriteButton } from '@/components/features/favorites/favorite-button';
 import { useAuth } from '@/lib/auth/use-auth';
-import { addCollectionItem } from '@/lib/api/collection';
+import { addCollectionItem, getCollectionItems, deleteCollectionItem } from '@/lib/api/collection';
 import type { CatalogEntry } from '@/lib/api/catalog';
 
 interface CatalogDetailProps {
@@ -39,6 +39,22 @@ export function CatalogDetail({ entry }: CatalogDetailProps) {
 
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
+  const [collectionItemId, setCollectionItemId] = useState<string | null>(null);
+  const [removing, setRemoving] = useState(false);
+
+  // Check if user already owns this entry
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    getCollectionItems({ limit: 100 })
+      .then((res) => {
+        const item = res.data.find((i: { catalogEntryId: string }) => i.catalogEntryId === entry.id);
+        if (item) {
+          setAdded(true);
+          setCollectionItemId(item.id);
+        }
+      })
+      .catch(() => {});
+  }, [isAuthenticated, entry.id]);
 
   const categories = entry.categories.map((c) => c.category);
   const tags = entry.tags.map((tg) => tg.tag);
@@ -57,13 +73,13 @@ export function CatalogDetail({ entry }: CatalogDetailProps) {
   const handleAddToCollection = async () => {
     setAdding(true);
     try {
-      await addCollectionItem({ catalogEntryId: entry.id });
+      const item = await addCollectionItem({ catalogEntryId: entry.id });
       setAdded(true);
+      setCollectionItemId(item.id);
       toast.success(tCollection('addSuccess'));
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status;
       if (status === 409) {
-        // Already in collection
         setAdded(true);
         toast.info(t('alreadyInCollection'));
       } else {
@@ -71,6 +87,21 @@ export function CatalogDetail({ entry }: CatalogDetailProps) {
       }
     } finally {
       setAdding(false);
+    }
+  };
+
+  const handleRemoveFromCollection = async () => {
+    if (!collectionItemId) return;
+    setRemoving(true);
+    try {
+      await deleteCollectionItem(collectionItemId);
+      setAdded(false);
+      setCollectionItemId(null);
+      toast.success(tCollection('deleteSuccess'));
+    } catch {
+      toast.error(tCollection('deleteError'));
+    } finally {
+      setRemoving(false);
     }
   };
 
@@ -92,26 +123,44 @@ export function CatalogDetail({ entry }: CatalogDetailProps) {
 
         {/* Add to Collection button below cover */}
         {isAuthenticated && (
-          <div className="mt-4">
+          <div className="mt-4 space-y-1">
             {added ? (
-              <Button variant="outline" className="w-full" disabled>
-                <Check className="h-4 w-4 mr-2" />
-                {t('addedToCollection')}
-              </Button>
+              <>
+                <Button variant="outline" className="w-full text-green-500 border-green-500/30" disabled>
+                  <Check className="h-4 w-4 mr-2" />
+                  {t('addedToCollection')}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-xs text-destructive hover:text-destructive"
+                  onClick={handleRemoveFromCollection}
+                  disabled={removing}
+                >
+                  {removing ? (
+                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-3 w-3 mr-1" />
+                  )}
+                  {removing ? 'Removendo...' : 'Remover da coleção'}
+                </Button>
+              </>
             ) : (
-              <Button className="w-full" onClick={handleAddToCollection} disabled={adding}>
-                <Plus className="h-4 w-4 mr-2" />
-                {adding ? t('addingToCollection') : t('addToCollection')}
-              </Button>
+              <>
+                <Button className="w-full" onClick={handleAddToCollection} disabled={adding}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  {adding ? t('addingToCollection') : t('addToCollection')}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-xs"
+                  onClick={() => router.push(`/${locale}/collection/add?catalogEntryId=${entry.id}`)}
+                >
+                  {t('addWithDetails')}
+                </Button>
+              </>
             )}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full mt-1 text-xs"
-              onClick={() => router.push(`/${locale}/collection/add?catalogEntryId=${entry.id}`)}
-            >
-              {t('addWithDetails')}
-            </Button>
           </div>
         )}
       </div>
