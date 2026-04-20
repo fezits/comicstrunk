@@ -271,14 +271,21 @@ export async function searchCatalog(filters: CatalogSearchInput) {
   };
 
   if (filters.title) {
-    // Split search query into words and require ALL words to be present in the title
-    // This allows "Batman Vigilantes" to match "Batman: Vigilantes de Gotham"
+    // Split search query into words and require ALL words to be present
+    // Each word can match in title OR publisher
+    // This allows "dragon ball conrad" to find Dragon Ball from Conrad publisher
     const words = filters.title.trim().split(/\s+/).filter(w => w.length > 0);
     if (words.length === 1) {
-      where.title = { contains: words[0] };
+      where.OR = [
+        { title: { contains: words[0] } },
+        { publisher: { contains: words[0] } },
+      ];
     } else if (words.length > 1) {
       where.AND = words.map(word => ({
-        title: { contains: word },
+        OR: [
+          { title: { contains: word } },
+          { publisher: { contains: word } },
+        ],
       }));
     }
   }
