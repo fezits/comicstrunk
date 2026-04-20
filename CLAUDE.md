@@ -142,17 +142,20 @@ cPanel Passenger deployment via scripts in `scripts/`. Full guide: `docs/DEPLOYM
 **CRITICAL RULES:**
 1. **NEVER run `pnpm install`, `npm install` or `next build` on the production server.** Server has 1GB shared RAM. Always build locally.
 2. **ALWAYS confirm with the user before any production operation** — show exact command, explain impact, ask permission.
-3. Deploy scripts: `./scripts/deploy.sh api` and manual web deploy steps in `docs/DEPLOYMENT.md`.
-4. Web build MUST include: `NEXT_PUBLIC_API_URL=https://api.comicstrunk.com/api/v1`
-5. **ALWAYS replace server.js after `fix-standalone.js`** — the generated server.js doesn't serve static files. The custom server.js in `docs/DEPLOYMENT.md` section 3 handles `/_next/static/`, `public/`, and `decodeURIComponent` for `[locale]` paths. Uses `fs.statSync().isFile()` to avoid EISDIR errors.
+3. **ALWAYS follow the pre-deploy checklist** in `docs/DEPLOYMENT.md` section 0 before every deploy.
+4. **ALWAYS test in production after deploy** — check HTTP status of homepage, catalog, collection, marketplace, and static CSS. Only communicate success after all tests pass.
+5. **NEVER say "pronto" or "deployed" without testing first.**
 
 **Web deploy steps (in order):**
-1. Build: `CI=true NEXT_PUBLIC_API_URL=https://api.comicstrunk.com/api/v1 corepack pnpm --filter web build`
-2. Fix standalone: `node scripts/fix-standalone.js`
-3. Copy build files into standalone (BUILD_ID, server/, static/, manifests)
-4. **Replace server.js** with custom version from docs/DEPLOYMENT.md section 3
-5. Send via tar+ssh
-6. Symlink + restart
+1. Build contracts: `corepack pnpm --filter contracts build`
+2. Build web: `CI=true NEXT_PUBLIC_API_URL=https://api.comicstrunk.com/api/v1 corepack pnpm --filter web build` — verify "Compiled successfully" and NO "Type error"
+3. Fix standalone: `node scripts/fix-standalone.js`
+4. Copy build files into standalone (BUILD_ID, server/, static/, manifests, **required-server-files.json**)
+5. **Verify `required-server-files.json` exists** in standalone — if missing, deploy will 503
+6. **Replace server.js** with custom version from `docs/DEPLOYMENT.md` section 3 — verify first line is `const path = require("path")`
+7. Send via tar+ssh
+8. Symlink + restart (use `kill -9` if EADDRINUSE)
+9. **Test all pages** — homepage, catalog, CSS, marketplace. If ANY returns non-200, investigate logs before communicating
 
 ## Catalog Sync & Import
 

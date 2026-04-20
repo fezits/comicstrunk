@@ -18,6 +18,77 @@
 
 ---
 
+## 0. Pre-deploy — Checklist OBRIGATORIO
+
+Antes de QUALQUER deploy, seguir estes passos na ordem:
+
+### 0.1 Build local sem erros
+
+```bash
+cd /d/Projetos/comicstrunk
+
+# Contracts (sempre primeiro)
+corepack pnpm --filter contracts build
+
+# API (se mudou backend)
+corepack pnpm --filter api build
+# VERIFICAR: saida deve terminar com "> tsc" sem erros
+
+# Web (se mudou frontend)
+CI=true NEXT_PUBLIC_API_URL=https://api.comicstrunk.com/api/v1 corepack pnpm --filter web build
+# VERIFICAR: deve ter "✓ Compiled successfully"
+# IGNORAR: erro EPERM symlink no final (Windows)
+# NAO IGNORAR: "Type error:", "error TS" — corrigir antes de continuar
+```
+
+### 0.2 Verificar arquivos criticos (Web deploy)
+
+```bash
+# Apos fix-standalone.js + copiar build files:
+ls apps/web/.next/standalone/apps/web/.next/required-server-files.json
+# DEVE existir. Se nao existir, o deploy vai dar 503.
+
+# server.js deve ser o CUSTOM (nao o gerado pelo fix-standalone.js)
+head -1 apps/web/.next/standalone/apps/web/server.js
+# DEVE comecar com: const path = require("path");
+# Se comecar com: process.env.__NEXT_PRIVATE_STANDALONE_CONFIG — ERRADO, substituir
+```
+
+### 0.3 Pos-deploy — Verificar ANTES de comunicar sucesso
+
+```bash
+# Homepage
+curl -s -o /dev/null -w "%{http_code}" https://comicstrunk.com/pt-BR
+# DEVE retornar 200
+
+# Catalogo
+curl -s -o /dev/null -w "%{http_code}" https://comicstrunk.com/pt-BR/catalog
+# DEVE retornar 200
+
+# CSS estatico
+CSS=$(curl -s https://comicstrunk.com/pt-BR | grep -o '_next/static/[^"]*\.css' | head -1)
+curl -s -o /dev/null -w "%{http_code}" "https://comicstrunk.com/$CSS"
+# DEVE retornar 200
+
+# API (se deployou API)
+curl -s https://api.comicstrunk.com/api/v1/catalog?limit=1 | head -c 50
+# DEVE retornar JSON com "success":true
+```
+
+**Se qualquer teste falhar:** verificar logs (`stdout.log`) e corrigir ANTES de dizer que esta pronto.
+
+```bash
+# Ver logs
+ssh ferna5257@server34.integrator.com.br "tail -20 /home/ferna5257/applications/comicstrunk.com/stdout.log"
+
+# Erros comuns:
+# - ENOENT required-server-files.json → build files nao copiados (passo 0.2)
+# - EADDRINUSE → kill -9 $(lsof -ti:51730) e restart
+# - Cannot find module → fix-standalone.js nao rodou ou node_modules vazio
+```
+
+---
+
 ## 1. Deploy da API
 
 ### Comando rapido
@@ -122,7 +193,9 @@ NEXT_PUBLIC_API_URL=https://api.comicstrunk.com/api/v1
 
 ## 3. server.js custom do Web
 
-O Next.js standalone nao serve arquivos estaticos (`/_next/static/`). O server.js custom resolve isso. Deve ser colocado em `apps/web/.next/standalone/apps/web/server.js` antes do envio.
+O Next.js standalone nao serve arquivos estaticos (`/_next/static/`). O server.js custom resolve isso. Deve ser colocado em `apps/web/.next/standalone/apps/web/server.js` **DEPOIS** de `fix-standalone.js` e **ANTES** de enviar ao servidor.
+
+**IMPORTANTE:** O `fix-standalone.js` gera um server.js basico que NAO serve estaticos. SEMPRE substituir pelo codigo abaixo.
 
 ```javascript
 const path = require("path");
@@ -158,7 +231,12 @@ const MIME = {
 };
 
 function serveStatic(filePath, res) {
-  if (!fs.existsSync(filePath)) return false;
+  try {
+    const stat = fs.statSync(filePath);
+    if (!stat.isFile()) return false;
+  } catch {
+    return false;
+  }
   const ext = path.extname(filePath);
   res.setHeader("Content-Type", MIME[ext] || "application/octet-stream");
   res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
@@ -166,10 +244,22 @@ function serveStatic(filePath, res) {
   return true;
 }
 
+// Block malicious scanners (PHP, WordPress, shells)
+const BLOCKED_EXTENSIONS = /\.(php|asp|aspx|jsp|cgi|shtml|env)$/i;
+const BLOCKED_PATHS = /^\/(wp-|wordpress|xmlrpc|wlwmanifest|\.git|\.env)/i;
+
 createServer(async (req, res) => {
   try {
     const parsedUrl = parse(req.url, true);
     const pathname = decodeURIComponent(parsedUrl.pathname);
+
+    // Reject scanner/bot requests silently
+    if (BLOCKED_EXTENSIONS.test(pathname) || BLOCKED_PATHS.test(pathname)) {
+      res.statusCode = 403;
+      res.end();
+      return;
+    }
+
     if (pathname.startsWith("/_next/static/")) {
       const rel = pathname.replace("/_next/static/", "");
       if (serveStatic(path.join(staticDir, rel), res)) return;
