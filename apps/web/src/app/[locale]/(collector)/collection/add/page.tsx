@@ -210,7 +210,7 @@ export default function AddCollectionItemPage() {
               <Input
                 ref={fileInputRef}
                 type="file"
-                accept=".csv"
+                accept=".csv,.xlsx"
                 onChange={(e) => setImportFile(e.target.files?.[0] ?? null)}
               />
             </div>

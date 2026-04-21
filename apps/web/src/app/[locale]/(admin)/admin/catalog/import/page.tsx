@@ -68,7 +68,7 @@ export default function CatalogImportPage() {
         <Input
           ref={fileRef}
           type="file"
-          accept=".csv"
+          accept=".csv,.xlsx"
           className="max-w-xs mx-auto"
           onChange={(e) => {
             setFile(e.target.files?.[0] ?? null);

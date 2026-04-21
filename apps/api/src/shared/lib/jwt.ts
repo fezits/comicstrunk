@@ -30,7 +30,7 @@ export interface RefreshTokenPayload {
 export function signAccessToken(payload: AccessTokenPayload): string {
   return jwt.sign(payload, JWT_ACCESS_SECRET, {
     algorithm: 'HS256',
-    expiresIn: '15m',
+    expiresIn: '1h',
   });
 }
 

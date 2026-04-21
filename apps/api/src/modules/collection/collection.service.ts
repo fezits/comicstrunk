@@ -2,6 +2,7 @@ import { Prisma, type PrismaClient } from '@prisma/client';
 import { prisma } from '../../shared/lib/prisma';
 import { parseCSV, generateCSV } from '../../shared/lib/csv';
 import { uploadImage, deleteImage, resolveCoverUrl } from '../../shared/lib/cloudinary';
+import { parseXLSX, generateXLSX, generateCollectionTemplate, COLLECTION_FIELD_MAP, COLLECTION_REVERSE } from '../../shared/lib/xlsx';
 import { BadRequestError, NotFoundError, ConflictError } from '../../shared/utils/api-error';
 import { collectionImportRowSchema, COLLECTION_LIMITS } from '@comicstrunk/contracts';
 import type {
@@ -568,15 +569,22 @@ export async function removePhoto(userId: string, itemId: string, photoIndex: nu
 
 const MAX_IMPORT_ROWS = 500;
 
-export async function importCSV(userId: string, buffer: Buffer) {
-  const { data: rows } = parseCSV<Record<string, string>>(buffer);
+export async function importCSV(userId: string, buffer: Buffer, filename?: string) {
+  const isXlsx = filename?.endsWith('.xlsx') || buffer[0] === 0x50;
+  let rows: Record<string, string>[];
+
+  if (isXlsx) {
+    rows = await parseXLSX(buffer, COLLECTION_FIELD_MAP);
+  } else {
+    rows = parseCSV<Record<string, string>>(buffer).data;
+  }
 
   if (rows.length === 0) {
-    throw new BadRequestError('CSV file is empty');
+    throw new BadRequestError('Arquivo vazio');
   }
 
   if (rows.length > MAX_IMPORT_ROWS) {
-    throw new BadRequestError(`CSV exceeds maximum of ${MAX_IMPORT_ROWS} rows`);
+    throw new BadRequestError(`Arquivo excede o máximo de ${MAX_IMPORT_ROWS} linhas`);
   }
 
   return prisma.$transaction(async (tx) => {
@@ -689,7 +697,47 @@ export async function exportCSV(userId: string) {
   return generateCSV(rows);
 }
 
-// === CSV Template ===
+/** Export collection as XLSX with friendly pt-BR headers */
+export async function exportXLSX(userId: string) {
+  const items = await prisma.collectionItem.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+    include: {
+      catalogEntry: {
+        select: {
+          title: true,
+          author: true,
+          publisher: true,
+          series: { select: { title: true } },
+          volumeNumber: true,
+          editionNumber: true,
+        },
+      },
+    },
+  });
+
+  const rows = items.map((item) => ({
+    catalogEntryTitle: item.catalogEntry.title,
+    quantity: item.quantity,
+    pricePaid: item.pricePaid ? Number(item.pricePaid) : '',
+    condition: item.condition,
+    notes: item.notes || '',
+    isRead: item.isRead,
+    isForSale: item.isForSale,
+    salePrice: item.salePrice ? Number(item.salePrice) : '',
+  }));
+
+  return generateXLSX(rows, COLLECTION_FIELD_MAP, COLLECTION_REVERSE, {
+    sheetName: 'Minha Coleção',
+    dropdowns: {
+      'Estado': ['Novo', 'Muito Bom', 'Bom', 'Regular', 'Ruim'],
+      'Já Leu?': ['Sim', 'Não'],
+      'À Venda?': ['Sim', 'Não'],
+    },
+  });
+}
+
+// === Templates ===
 
 export function getCSVTemplate() {
   return generateCSV([
@@ -702,4 +750,9 @@ export function getCSVTemplate() {
       isRead: 'false',
     },
   ]);
+}
+
+/** XLSX template with examples and instructions */
+export async function getXLSXTemplate() {
+  return generateCollectionTemplate();
 }

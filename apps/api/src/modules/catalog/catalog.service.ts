@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '../../shared/lib/prisma';
 import { uploadImage, deleteImage, localCoverUrl, LOCAL_API_BASE_URL } from '../../shared/lib/cloudinary';
 import { parseCSV, generateCSV } from '../../shared/lib/csv';
+import { parseXLSX, generateXLSX, generateCatalogTemplate, CATALOG_FIELD_MAP, CATALOG_REVERSE } from '../../shared/lib/xlsx';
 import { BadRequestError, NotFoundError } from '../../shared/utils/api-error';
 import { uniqueSlug } from '../../shared/utils/slug';
 import { catalogImportRowSchema } from '@comicstrunk/contracts';
@@ -381,11 +382,19 @@ export async function listCatalogEntries(params: {
 
 const MAX_IMPORT_ROWS = 1000;
 
-export async function importFromCSV(buffer: Buffer, adminId: string) {
-  const { data: rows } = parseCSV<Record<string, string>>(buffer);
+export async function importFromCSV(buffer: Buffer, adminId: string, filename?: string) {
+  // Detect format: XLSX or CSV
+  const isXlsx = filename?.endsWith('.xlsx') || buffer[0] === 0x50; // PK zip magic byte
+  let rows: Record<string, string>[];
+
+  if (isXlsx) {
+    rows = await parseXLSX(buffer, CATALOG_FIELD_MAP);
+  } else {
+    rows = parseCSV<Record<string, string>>(buffer).data;
+  }
 
   if (rows.length > MAX_IMPORT_ROWS) {
-    throw new BadRequestError(`CSV exceeds maximum of ${MAX_IMPORT_ROWS} rows`);
+    throw new BadRequestError(`Arquivo excede o máximo de ${MAX_IMPORT_ROWS} linhas`);
   }
 
   const errors: Array<{ row: number; message: string }> = [];
@@ -447,6 +456,48 @@ export async function importFromCSV(buffer: Buffer, adminId: string) {
   return { created, errors, total: rows.length };
 }
 
+export async function exportToXLSX() {
+  const entries = await prisma.catalogEntry.findMany({
+    where: { approvalStatus: 'APPROVED' },
+    orderBy: { title: 'asc' },
+    include: {
+      series: true,
+      categories: { include: { category: true } },
+      tags: { include: { tag: true } },
+      characters: { include: { character: true } },
+    },
+  });
+
+  const rows = entries.map((entry) => ({
+    title: entry.title,
+    author: entry.author || '',
+    publisher: entry.publisher || '',
+    imprint: entry.imprint || '',
+    seriesTitle: entry.series?.title || '',
+    volumeNumber: entry.volumeNumber ?? '',
+    editionNumber: entry.editionNumber ?? '',
+    isbn: entry.isbn || '',
+    barcode: entry.barcode || '',
+    coverPrice: entry.coverPrice ? Number(entry.coverPrice) : '',
+    publishYear: entry.publishYear ?? '',
+    publishMonth: entry.publishMonth ?? '',
+    pageCount: entry.pageCount ?? '',
+    description: entry.description || '',
+    categories: entry.categories.map((c) => c.category.name).join('; '),
+    tags: entry.tags.map((t) => t.tag.name).join('; '),
+    characters: entry.characters.map((ch) => ch.character.name).join('; '),
+    coverUrl: entry.coverImageUrl || '',
+  }));
+
+  return generateXLSX(rows, CATALOG_FIELD_MAP, CATALOG_REVERSE, { sheetName: 'Catálogo' });
+}
+
+/** Generate empty XLSX template with examples */
+export async function getCatalogXlsxTemplate() {
+  return generateCatalogTemplate();
+}
+
+/** Legacy CSV export (kept for backward compatibility) */
 export async function exportToCSV() {
   const entries = await prisma.catalogEntry.findMany({
     where: { approvalStatus: 'APPROVED' },

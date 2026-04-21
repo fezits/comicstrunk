@@ -145,7 +145,7 @@ export async function exportCollection(): Promise<void> {
   const url = window.URL.createObjectURL(new Blob([response.data]));
   const link = document.createElement('a');
   link.href = url;
-  link.setAttribute('download', 'collection-export.csv');
+  link.setAttribute('download', `colecao-${Date.now()}.xlsx`);
   document.body.appendChild(link);
   link.click();
   link.remove();
@@ -198,13 +198,13 @@ export async function batchAddItems(data: BatchAddInput): Promise<BatchAddResult
 }
 
 export async function getCSVTemplate(): Promise<void> {
-  const response = await apiClient.get('/collection/csv-template', {
+  const response = await apiClient.get('/collection/template', {
     responseType: 'blob',
   });
   const url = window.URL.createObjectURL(new Blob([response.data]));
   const link = document.createElement('a');
   link.href = url;
-  link.setAttribute('download', 'collection-template.csv');
+  link.setAttribute('download', 'template-colecao.xlsx');
   document.body.appendChild(link);
   link.click();
   link.remove();
