@@ -5,6 +5,7 @@ import {
   ConflictError,
   ForbiddenError,
 } from '../../shared/utils/api-error';
+import { resolveCoverUrl } from '../../shared/lib/cloudinary';
 
 // === Constants ===
 
@@ -22,6 +23,7 @@ function cartItemIncludes() {
             id: true,
             title: true,
             coverImageUrl: true,
+            coverFileName: true,
           },
         },
         user: {
@@ -35,10 +37,25 @@ function cartItemIncludes() {
   };
 }
 
+/** Resolve cover URLs for the catalog entry nested inside a cart item's collectionItem */
+function resolveCartItemCovers<T extends {
+  collectionItem: { catalogEntry: { coverImageUrl: string | null; coverFileName?: string | null } } | null;
+  [key: string]: unknown;
+}>(item: T): T {
+  if (!item.collectionItem?.catalogEntry) return item;
+  return {
+    ...item,
+    collectionItem: {
+      ...item.collectionItem,
+      catalogEntry: resolveCoverUrl(item.collectionItem.catalogEntry),
+    },
+  };
+}
+
 // === Add to Cart with Atomic Reservation (CART-01, CART-02, CART-06, CART-07) ===
 
 export async function addToCart(userId: string, collectionItemId: string) {
-  return prisma.$transaction(async (tx) => {
+  const cartItem = await prisma.$transaction(async (tx) => {
     // 1. Find the collection item (include user for ownership check)
     const item = await tx.collectionItem.findUnique({
       where: { id: collectionItemId },
@@ -99,6 +116,8 @@ export async function addToCart(userId: string, collectionItemId: string) {
 
     return cartItem;
   });
+
+  return resolveCartItemCovers(cartItem);
 }
 
 // === Get Cart (CART-03, CART-04) ===
@@ -115,9 +134,9 @@ export async function getCart(userId: string) {
     orderBy: { createdAt: 'desc' },
   });
 
-  // Add remaining time info
+  // Add remaining time info and resolve cover URLs
   return items.map((item) => ({
-    ...item,
+    ...resolveCartItemCovers(item),
     remainingMs: item.expiresAt.getTime() - now.getTime(),
   }));
 }

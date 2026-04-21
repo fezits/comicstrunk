@@ -1,7 +1,7 @@
 import { Prisma, type PrismaClient } from '@prisma/client';
 import { prisma } from '../../shared/lib/prisma';
 import { parseCSV, generateCSV } from '../../shared/lib/csv';
-import { uploadImage, deleteImage } from '../../shared/lib/cloudinary';
+import { uploadImage, deleteImage, resolveCoverUrl } from '../../shared/lib/cloudinary';
 import { BadRequestError, NotFoundError, ConflictError } from '../../shared/utils/api-error';
 import { collectionImportRowSchema, COLLECTION_LIMITS } from '@comicstrunk/contracts';
 import type {
@@ -30,6 +30,7 @@ function collectionIncludes() {
         author: true,
         publisher: true,
         coverImageUrl: true,
+        coverFileName: true,
         seriesId: true,
         volumeNumber: true,
         editionNumber: true,
@@ -279,7 +280,7 @@ export async function getItems(userId: string, filters: CollectionSearchInput) {
   };
   const orderBy = sortFieldMap[sortBy] || { createdAt: 'desc' };
 
-  const [data, total] = await Promise.all([
+  const [rawData, total] = await Promise.all([
     prisma.collectionItem.findMany({
       where,
       skip,
@@ -289,6 +290,11 @@ export async function getItems(userId: string, filters: CollectionSearchInput) {
     }),
     prisma.collectionItem.count({ where }),
   ]);
+
+  const data = rawData.map(item => ({
+    ...item,
+    catalogEntry: item.catalogEntry ? resolveCoverUrl(item.catalogEntry) : item.catalogEntry,
+  }));
 
   return { data, total, page, limit };
 }
@@ -307,7 +313,7 @@ export async function getItem(userId: string, itemId: string) {
     throw new NotFoundError('Collection item not found');
   }
 
-  return item;
+  return { ...item, catalogEntry: item.catalogEntry ? resolveCoverUrl(item.catalogEntry) : item.catalogEntry };
 }
 
 // === Toggle Read ===
@@ -470,6 +476,7 @@ export async function getMissingEditions(userId: string, seriesId: string) {
       editionNumber: true,
       volumeNumber: true,
       coverImageUrl: true,
+      coverFileName: true,
     },
     orderBy: { editionNumber: 'asc' },
   });
@@ -486,7 +493,7 @@ export async function getMissingEditions(userId: string, seriesId: string) {
   const ownedIds = new Set(ownedItems.map((i) => i.catalogEntryId));
 
   // Return editions NOT in the user's collection
-  return allEditions.filter((e) => !ownedIds.has(e.id));
+  return allEditions.filter((e) => !ownedIds.has(e.id)).map(resolveCoverUrl);
 }
 
 // === Photo Management ===

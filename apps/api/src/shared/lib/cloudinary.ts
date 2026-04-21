@@ -157,3 +157,22 @@ export function localCoverUrl(filename: string, folder = 'covers'): string {
 
 /** The base URL used for local uploads — allows callers to detect stale URLs */
 export const LOCAL_API_BASE_URL = apiBaseUrl;
+
+/**
+ * Resolve coverImageUrl for any object that has coverImageUrl + coverFileName.
+ * Use this in all service modules that return catalog entry data.
+ * Priority: coverFileName → R2/local URL, /uploads/ URL → rewrite, external → as-is
+ */
+export function resolveCoverUrl<T extends { coverImageUrl: string | null; coverFileName?: string | null }>(
+  entry: T,
+): T {
+  if (entry.coverFileName) {
+    return { ...entry, coverImageUrl: localCoverUrl(entry.coverFileName) };
+  }
+  const url = entry.coverImageUrl;
+  if (url && url.includes('/uploads/')) {
+    const filename = url.split('/').pop();
+    if (filename) return { ...entry, coverImageUrl: localCoverUrl(filename) };
+  }
+  return entry;
+}

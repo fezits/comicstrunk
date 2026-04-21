@@ -1,4 +1,5 @@
 import { prisma } from '../../shared/lib/prisma';
+import { resolveCoverUrl } from '../../shared/lib/cloudinary';
 import { BadRequestError, NotFoundError } from '../../shared/utils/api-error';
 import { uniqueSlug } from '../../shared/utils/slug';
 import type { CreateSeriesInput, UpdateSeriesInput, SeriesSearchInput } from '@comicstrunk/contracts';
@@ -50,6 +51,7 @@ export async function getSeriesById(id: string) {
           volumeNumber: true,
           editionNumber: true,
           coverImageUrl: true,
+          coverFileName: true,
           author: true,
           publisher: true,
           averageRating: true,
@@ -63,7 +65,7 @@ export async function getSeriesById(id: string) {
     throw new NotFoundError('Series not found');
   }
 
-  return series;
+  return { ...series, catalogEntries: series.catalogEntries.map(resolveCoverUrl) };
 }
 
 // === Get Series by ID or Slug ===
@@ -84,6 +86,7 @@ export async function getSeriesByIdOrSlug(idOrSlug: string) {
           volumeNumber: true,
           editionNumber: true,
           coverImageUrl: true,
+          coverFileName: true,
           author: true,
           publisher: true,
           averageRating: true,
@@ -97,7 +100,7 @@ export async function getSeriesByIdOrSlug(idOrSlug: string) {
     throw new NotFoundError('Series not found');
   }
 
-  return series;
+  return { ...series, catalogEntries: series.catalogEntries.map(resolveCoverUrl) };
 }
 
 // === Create Series ===

@@ -10,6 +10,7 @@ import {
 } from '../../shared/utils/api-error';
 import { createNotification } from '../notifications/notifications.service';
 import { sendOrderShippedEmail, sendItemSoldEmail } from '../notifications/email.service';
+import { resolveCoverUrl } from '../../shared/lib/cloudinary';
 
 // === Batch commission rate lookup (avoids N+1 on commissionConfig table) ===
 
@@ -44,12 +45,37 @@ function orderIncludes() {
                 id: true,
                 title: true,
                 coverImageUrl: true,
+                coverFileName: true,
               },
             },
           },
         },
       },
     },
+  };
+}
+
+/** Resolve cover URLs for all catalog entries nested inside an order's orderItems */
+function resolveOrderCovers<T extends {
+  orderItems: Array<{
+    collectionItem: { catalogEntry: { coverImageUrl: string | null; coverFileName?: string | null } } | null;
+    [key: string]: unknown;
+  }>;
+  [key: string]: unknown;
+}>(order: T): T {
+  return {
+    ...order,
+    orderItems: order.orderItems.map((item) => ({
+      ...item,
+      collectionItem: item.collectionItem
+        ? {
+            ...item.collectionItem,
+            catalogEntry: item.collectionItem.catalogEntry
+              ? resolveCoverUrl(item.collectionItem.catalogEntry)
+              : item.collectionItem.catalogEntry,
+          }
+        : item.collectionItem,
+    })),
   };
 }
 
@@ -243,7 +269,7 @@ export async function createOrder(buyerId: string, shippingAddressId: string) {
     }
   })();
 
-  return order;
+  return resolveOrderCovers(order);
 }
 
 // === Get Order by ID ===
@@ -266,7 +292,7 @@ export async function getOrder(userId: string, orderId: string) {
     throw new ForbiddenError('You do not have access to this order');
   }
 
-  return order;
+  return resolveOrderCovers(order);
 }
 
 // === Get Order by Number ===
@@ -288,7 +314,7 @@ export async function getOrderByNumber(userId: string, orderNumber: string) {
     throw new ForbiddenError('You do not have access to this order');
   }
 
-  return order;
+  return resolveOrderCovers(order);
 }
 
 // === List Buyer Orders ===
@@ -304,7 +330,7 @@ export async function listBuyerOrders(
     where.status = status;
   }
 
-  const [orders, total] = await Promise.all([
+  const [rawOrders, total] = await Promise.all([
     prisma.order.findMany({
       where,
       include: {
@@ -317,6 +343,7 @@ export async function listBuyerOrders(
                     id: true,
                     title: true,
                     coverImageUrl: true,
+                    coverFileName: true,
                   },
                 },
               },
@@ -330,6 +357,8 @@ export async function listBuyerOrders(
     }),
     prisma.order.count({ where }),
   ]);
+
+  const orders = rawOrders.map(resolveOrderCovers);
 
   return { orders, total, page, limit };
 }
@@ -352,7 +381,7 @@ export async function listSellerOrders(
     where.status = status;
   }
 
-  const [orders, total] = await Promise.all([
+  const [rawOrders, total] = await Promise.all([
     prisma.order.findMany({
       where,
       include: {
@@ -366,6 +395,7 @@ export async function listSellerOrders(
                     id: true,
                     title: true,
                     coverImageUrl: true,
+                    coverFileName: true,
                   },
                 },
               },
@@ -379,6 +409,8 @@ export async function listSellerOrders(
     }),
     prisma.order.count({ where }),
   ]);
+
+  const orders = rawOrders.map(resolveOrderCovers);
 
   return { orders, total, page, limit };
 }
@@ -555,10 +587,12 @@ export async function cancelOrder(userId: string, orderId: string) {
   });
 
   // Return updated order
-  return prisma.order.findUnique({
+  const updated = await prisma.order.findUnique({
     where: { id: orderId },
     include: orderIncludes(),
   });
+
+  return updated ? resolveOrderCovers(updated) : null;
 }
 
 // === Helper: Sync Order Status from Items ===
