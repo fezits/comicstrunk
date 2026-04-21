@@ -1,4 +1,5 @@
 import { prisma } from '../../shared/lib/prisma';
+import { localCoverUrl } from '../../shared/lib/cloudinary';
 import { NotFoundError } from '../../shared/utils/api-error';
 import type { CreateHomepageSectionInput, UpdateHomepageSectionInput } from '@comicstrunk/contracts';
 
@@ -155,6 +156,7 @@ const catalogSelect = {
   title: true,
   slug: true,
   coverImageUrl: true,
+  coverFileName: true,
   averageRating: true,
   ratingCount: true,
   author: true,
@@ -207,19 +209,38 @@ async function resolveBannerCarousel(refs: ContentRefs) {
  * - Fallback: top 8 approved catalog entries by rating
  */
 async function resolveCatalogHighlights(refs: ContentRefs) {
+  let entries;
+
   if (refs.catalogIds?.length) {
-    return prisma.catalogEntry.findMany({
+    entries = await prisma.catalogEntry.findMany({
       where: { id: { in: refs.catalogIds }, approvalStatus: 'APPROVED' },
+      select: catalogSelect,
+    });
+  } else {
+    // Fallback: top 8 by average rating
+    entries = await prisma.catalogEntry.findMany({
+      where: { approvalStatus: 'APPROVED' },
+      orderBy: [{ averageRating: 'desc' }, { ratingCount: 'desc' }],
+      take: 8,
       select: catalogSelect,
     });
   }
 
-  // Fallback: top 8 by average rating
-  return prisma.catalogEntry.findMany({
-    where: { approvalStatus: 'APPROVED' },
-    orderBy: [{ averageRating: 'desc' }, { ratingCount: 'desc' }],
-    take: 8,
-    select: catalogSelect,
+  // Map to frontend-expected shape (resolve cover URL + convert Decimal)
+  return entries.map((e) => {
+    let coverUrl = e.coverImageUrl;
+    if (!coverUrl && e.coverFileName) {
+      coverUrl = localCoverUrl(e.coverFileName);
+    }
+    return {
+      id: e.id,
+      title: e.title,
+      slug: e.slug,
+      coverUrl,
+      seriesName: e.series?.title ?? null,
+      averageRating: Number(e.averageRating),
+      ratingCount: e.ratingCount,
+    };
   });
 }
 
