@@ -228,9 +228,17 @@ async function resolveCatalogHighlights(refs: ContentRefs) {
 
   // Map to frontend-expected shape (resolve cover URL + convert Decimal)
   return entries.map((e) => {
-    let coverUrl = e.coverImageUrl;
-    if (!coverUrl && e.coverFileName) {
+    // coverFileName always wins — points to R2 or local
+    let coverUrl: string | null = null;
+    if (e.coverFileName) {
       coverUrl = localCoverUrl(e.coverFileName);
+    } else if (e.coverImageUrl && !e.coverImageUrl.includes('/uploads/')) {
+      // External URL (Open Library, etc.) — use as-is
+      coverUrl = e.coverImageUrl;
+    } else if (e.coverImageUrl && e.coverImageUrl.includes('/uploads/')) {
+      // Old server URL — extract filename and rebuild
+      const filename = e.coverImageUrl.split('/').pop();
+      coverUrl = filename ? localCoverUrl(filename) : null;
     }
     return {
       id: e.id,
