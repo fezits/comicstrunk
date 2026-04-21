@@ -82,13 +82,19 @@ export async function addItem(userId: string, data: CreateCollectionItemInput) {
       throw new NotFoundError('Catalog entry not found or not approved');
     }
 
-    // Check for duplicate (same user + same catalog entry)
+    // If user already has this item, increment quantity instead of erroring
     const existing = await tx.collectionItem.findFirst({
       where: { userId, catalogEntryId: data.catalogEntryId },
+      include: collectionIncludes(),
     });
 
     if (existing) {
-      throw new ConflictError('This item is already in your collection');
+      const updated = await tx.collectionItem.update({
+        where: { id: existing.id },
+        data: { quantity: existing.quantity + (data.quantity ?? 1) },
+        include: collectionIncludes(),
+      });
+      return updated;
     }
 
     // Check plan limit atomically within the transaction

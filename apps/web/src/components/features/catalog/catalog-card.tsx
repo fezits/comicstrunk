@@ -63,7 +63,7 @@ export function CatalogCard({ entry, isOwned = false }: CatalogCardProps) {
               onClick={async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                if (added || adding) return;
+                if (adding) return;
                 if (!isAuthenticated) {
                   router.push(`/${locale}/login`);
                   return;
@@ -74,17 +74,12 @@ export function CatalogCard({ entry, isOwned = false }: CatalogCardProps) {
                   setAdded(true);
                   toast.success(t('addedToCollection'));
                 } catch (error) {
-                  if (error instanceof AxiosError && error.response?.status === 409) {
-                    setAdded(true);
-                    toast.info(t('alreadyInCollection'));
-                  } else {
-                    toast.error(t('addToCollectionError'));
-                  }
+                  toast.error(t('addToCollectionError'));
                 } finally {
                   setAdding(false);
                 }
               }}
-              disabled={adding || added}
+              disabled={adding}
               title={t('addToCollection')}
             >
               {adding ? (

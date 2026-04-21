@@ -78,13 +78,7 @@ export function CatalogDetail({ entry }: CatalogDetailProps) {
       setCollectionItemId(item.id);
       toast.success(tCollection('addSuccess'));
     } catch (err: unknown) {
-      const status = (err as { response?: { status?: number } })?.response?.status;
-      if (status === 409) {
-        setAdded(true);
-        toast.info(t('alreadyInCollection'));
-      } else {
-        toast.error(tCollection('addError'));
-      }
+      toast.error(tCollection('addError'));
     } finally {
       setAdding(false);
     }
