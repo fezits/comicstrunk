@@ -36,15 +36,24 @@ function resolveCover<T extends { coverImageUrl: string | null; coverFileName: s
   entry: T,
 ): T {
   const url = entry.coverImageUrl;
+
+  // Has coverFileName — always build URL from it (R2 or local)
+  if (entry.coverFileName) {
+    return { ...entry, coverImageUrl: localCoverUrl(entry.coverFileName) };
+  }
+
   // URL from old server (different host/port) — extract filename and rebuild
   if (url && !url.startsWith(LOCAL_API_BASE_URL) && url.includes('/uploads/')) {
     const filename = url.split('/').pop();
     if (filename) return { ...entry, coverImageUrl: localCoverUrl(filename) };
   }
-  // No URL but has local filename — build URL
-  if (!url && entry.coverFileName) {
-    return { ...entry, coverImageUrl: localCoverUrl(entry.coverFileName) };
+
+  // Local server URL — rebuild to use R2 if configured
+  if (url && url.startsWith(LOCAL_API_BASE_URL) && url.includes('/uploads/')) {
+    const filename = url.split('/').pop();
+    if (filename) return { ...entry, coverImageUrl: localCoverUrl(filename) };
   }
+
   return entry;
 }
 
@@ -481,12 +490,23 @@ export async function uploadCoverBySourceKey(sourceKey: string, buffer: Buffer) 
 
   // Build filename from sourceKey: rika:123 → rika-123.jpg
   const coverFileName = sourceKey.replace(':', '-') + '.jpg';
+
+  // Try R2 upload first, fallback to local filesystem
+  const { url } = await uploadImage(buffer, 'covers');
+  if (url.includes('covers.comicstrunk.com') || url.includes('r2.cloudflarestorage')) {
+    // R2 upload — store the full URL
+    const updated = await prisma.catalogEntry.update({
+      where: { id: entry.id },
+      data: { coverFileName, coverImageUrl: url },
+    });
+    return { id: updated.id, sourceKey, coverFileName, status: 'created' as const };
+  }
+
+  // Local filesystem fallback
   const coversDir = path.resolve(__dirname, '..', '..', '..', 'uploads', 'covers');
   if (!fs.existsSync(coversDir)) fs.mkdirSync(coversDir, { recursive: true });
 
   const coverPath = path.join(coversDir, coverFileName);
-
-  // Check if already exists
   if (fs.existsSync(coverPath)) {
     return { id: entry.id, sourceKey, coverFileName, status: 'already_exists' as const };
   }
