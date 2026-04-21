@@ -49,6 +49,7 @@ export function Header() {
               href={`/${locale}`}
               className="flex items-center gap-2 text-white font-bold text-lg hover:opacity-90 transition-opacity"
             >
+              <img src="/logo-header.png" alt="Comics Trunk" className="h-8 w-auto" />
               <span className="text-xl">{t('common.appName')}</span>
             </Link>
           </div>

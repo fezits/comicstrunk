@@ -28,11 +28,8 @@ function HeroSection() {
       />
 
       <div className="relative px-6 py-10 md:px-12 md:py-14 flex flex-col items-center text-center">
-        <div className="flex items-center gap-3 mb-3">
-          <BookOpen className="h-8 w-8 md:h-10 md:w-10 text-primary" />
-          <h1 className="text-2xl md:text-4xl font-bold tracking-tight">
-            Comics Trunk
-          </h1>
+        <div className="flex flex-col items-center gap-3 mb-3">
+          <img src="/logo-400.png" alt="Comics Trunk" className="h-24 md:h-32 w-auto" />
         </div>
 
         <p className="text-muted-foreground text-sm md:text-base max-w-2xl mb-6">
