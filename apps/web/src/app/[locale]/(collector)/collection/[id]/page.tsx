@@ -399,9 +399,40 @@ export default function CollectionItemDetailPage() {
               <h2 className="text-lg font-semibold">{t('detail.collectionInfo')}</h2>
 
               <div className="space-y-2">
-                <div className="flex gap-2 text-sm">
+                <div className="flex gap-2 text-sm items-center">
                   <span className="text-muted-foreground shrink-0">{t('form.quantity')}:</span>
-                  <span>{item.quantity}</span>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-6 w-6"
+                      disabled={item.quantity <= 1}
+                      onClick={async () => {
+                        const newQty = item.quantity - 1;
+                        if (newQty < 1) return;
+                        try {
+                          const updated = await updateCollectionItem(item.id, { quantity: newQty });
+                          setItem(updated);
+                        } catch { toast.error(t('updateError')); }
+                      }}
+                    >
+                      <span className="text-xs font-bold">−</span>
+                    </Button>
+                    <span className="min-w-[2rem] text-center font-semibold">{item.quantity}</span>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={async () => {
+                        try {
+                          const updated = await updateCollectionItem(item.id, { quantity: item.quantity + 1 });
+                          setItem(updated);
+                        } catch { toast.error(t('updateError')); }
+                      }}
+                    >
+                      <span className="text-xs font-bold">+</span>
+                    </Button>
+                  </div>
                 </div>
                 {item.pricePaid != null && (
                   <div className="flex gap-2 text-sm">
