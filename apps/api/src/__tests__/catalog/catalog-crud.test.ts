@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { PrismaClient } from '@prisma/client';
 import { request, loginAs, TEST_ADMIN, TEST_USER } from '../setup';
+import { TEST_PREFIX } from '../global-setup';
 
 const prisma = new PrismaClient();
 
@@ -43,7 +44,7 @@ beforeAll(async () => {
     const res = await request
       .post('/api/v1/series')
       .set('Authorization', `Bearer ${adminToken}`)
-      .send({ title: 'Catalog Test Series', totalEditions: 10 });
+      .send({ title: `${TEST_PREFIX}Catalog Test Series`, totalEditions: 10 });
     testSeriesId = res.body.data.id;
     createdTaxonomyIds.series.push(testSeriesId);
   }
@@ -55,7 +56,7 @@ beforeAll(async () => {
     const res = await request
       .post('/api/v1/categories')
       .set('Authorization', `Bearer ${adminToken}`)
-      .send({ name: 'Catalog Test Category' });
+      .send({ name: `${TEST_PREFIX}Catalog Test Category` });
     testCategoryId = res.body.data.id;
     createdTaxonomyIds.categories.push(testCategoryId);
   }
@@ -67,7 +68,7 @@ beforeAll(async () => {
     const res = await request
       .post('/api/v1/tags')
       .set('Authorization', `Bearer ${adminToken}`)
-      .send({ name: 'Catalog Test Tag' });
+      .send({ name: `${TEST_PREFIX}Catalog Test Tag` });
     testTagId = res.body.data.id;
     createdTaxonomyIds.tags.push(testTagId);
   }
@@ -79,7 +80,7 @@ beforeAll(async () => {
     const res = await request
       .post('/api/v1/characters')
       .set('Authorization', `Bearer ${adminToken}`)
-      .send({ name: 'Catalog Test Character' });
+      .send({ name: `${TEST_PREFIX}Catalog Test Character` });
     testCharacterId = res.body.data.id;
     createdTaxonomyIds.characters.push(testCharacterId);
   }
@@ -118,7 +119,7 @@ describe('Catalog CRUD API', () => {
         .post('/api/v1/catalog')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
-          title: `Dragon Ball Vol. 1 ${Date.now()}`,
+          title: `${TEST_PREFIX}Dragon Ball Vol. 1 ${Date.now()}`,
           author: 'Akira Toriyama',
           publisher: 'Panini',
           imprint: 'Manga',
@@ -135,7 +136,7 @@ describe('Catalog CRUD API', () => {
         .expect(201);
 
       expect(res.body.success).toBe(true);
-      expect(res.body.data.title).toContain('Dragon Ball Vol. 1');
+      expect(res.body.data.title).toContain(`${TEST_PREFIX}Dragon Ball Vol. 1`);
       expect(res.body.data.author).toBe('Akira Toriyama');
       expect(res.body.data.publisher).toBe('Panini');
       expect(res.body.data.approvalStatus).toBe('DRAFT');
@@ -147,10 +148,10 @@ describe('Catalog CRUD API', () => {
       const res = await request
         .post('/api/v1/catalog')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ title: `Minimal ${Date.now()}` })
+        .send({ title: `${TEST_PREFIX}Minimal ${Date.now()}` })
         .expect(201);
 
-      expect(res.body.data.title).toContain('Minimal');
+      expect(res.body.data.title).toContain(`${TEST_PREFIX}Minimal`);
       expect(res.body.data.approvalStatus).toBe('DRAFT');
       createdEntryIds.push(res.body.data.id);
     });
@@ -159,14 +160,14 @@ describe('Catalog CRUD API', () => {
       await request
         .post('/api/v1/catalog')
         .set('Authorization', `Bearer ${userToken}`)
-        .send({ title: 'Should Fail' })
+        .send({ title: `${TEST_PREFIX}Should Fail` })
         .expect(403);
     });
 
     it('unauthenticated cannot create', async () => {
       await request
         .post('/api/v1/catalog')
-        .send({ title: 'No Auth' })
+        .send({ title: `${TEST_PREFIX}No Auth` })
         .expect(401);
     });
 
@@ -232,10 +233,10 @@ describe('Catalog CRUD API', () => {
       const res = await request
         .put(`/api/v1/catalog/${createdEntryIds[0]}`)
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ title: `Updated Entry ${Date.now()}`, author: 'Toriyama' })
+        .send({ title: `${TEST_PREFIX}Updated Entry ${Date.now()}`, author: 'Toriyama' })
         .expect(200);
 
-      expect(res.body.data.title).toContain('Updated Entry');
+      expect(res.body.data.title).toContain(`${TEST_PREFIX}Updated Entry`);
       expect(res.body.data.author).toBe('Toriyama');
     });
 
@@ -243,7 +244,7 @@ describe('Catalog CRUD API', () => {
       await request
         .put(`/api/v1/catalog/${createdEntryIds[0]}`)
         .set('Authorization', `Bearer ${userToken}`)
-        .send({ title: 'Should Fail' })
+        .send({ title: `${TEST_PREFIX}Should Fail` })
         .expect(403);
     });
 
@@ -251,7 +252,7 @@ describe('Catalog CRUD API', () => {
       await request
         .put('/api/v1/catalog/nonexistent-id-xyz')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ title: 'No Entry' })
+        .send({ title: `${TEST_PREFIX}No Entry` })
         .expect(404);
     });
   });
@@ -265,7 +266,7 @@ describe('Catalog CRUD API', () => {
       const res = await request
         .post('/api/v1/catalog')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ title: `Workflow ${Date.now()}`, author: 'Test Author' })
+        .send({ title: `${TEST_PREFIX}Workflow ${Date.now()}`, author: 'Test Author' })
         .expect(201);
 
       workflowEntryId = res.body.data.id;
@@ -298,7 +299,7 @@ describe('Catalog CRUD API', () => {
         (e: { id: string }) => e.id === workflowEntryId,
       );
       expect(found).toBeDefined();
-      expect(found.title).toContain('Workflow');
+      expect(found.title).toContain(`${TEST_PREFIX}Workflow`);
     });
   });
 
@@ -309,7 +310,7 @@ describe('Catalog CRUD API', () => {
       const createRes = await request
         .post('/api/v1/catalog')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ title: `Reject ${Date.now()}` })
+        .send({ title: `${TEST_PREFIX}Reject ${Date.now()}` })
         .expect(201);
 
       rejectEntryId = createRes.body.data.id;
@@ -358,10 +359,10 @@ describe('Catalog CRUD API', () => {
     });
 
     it('supports search by title', async () => {
-      const res = await request.get('/api/v1/catalog?search=Workflow').expect(200);
+      const res = await request.get(`/api/v1/catalog?search=${TEST_PREFIX}Workflow`).expect(200);
 
       if (res.body.data.length > 0) {
-        expect(res.body.data[0].title).toContain('Workflow');
+        expect(res.body.data[0].title).toContain(`${TEST_PREFIX}Workflow`);
       }
     });
 
@@ -399,7 +400,7 @@ describe('Catalog CRUD API', () => {
       const createRes = await request
         .post('/api/v1/catalog')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ title: `To Delete ${Date.now()}` })
+        .send({ title: `${TEST_PREFIX}To Delete ${Date.now()}` })
         .expect(201);
 
       await request

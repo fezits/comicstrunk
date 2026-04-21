@@ -78,59 +78,55 @@ Plans:
   3. A user can see their series progress — "15 of 42 editions" — and a dedicated page shows all their series with progress bars and a list of missing editions that links to catalog search
   4. A user on the FREE plan cannot add more than 50 copies and sees a clear message with an upgrade suggestion when they hit the limit; a BASIC user can add up to 200
   5. A user can download a CSV template, fill it, import it to populate their collection with error reporting for invalid rows, and export their collection to CSV
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 03-01: Collection API — add/edit/remove copy endpoints, read status with date, atomic collection limit enforcement (UPDATE ... WHERE count < limit), plan-based limit lookup, condition grading, personal notes, photo upload (Cloudinary)
-- [ ] 03-02: Series progress API — series progress calculation endpoint (owned vs. total editions), missing editions list, link data to catalog entries
-- [ ] 03-03: Collection CSV API — downloadable template endpoint, CSV import with row-by-row validation and error report, CSV export
-- [ ] 03-04: Collection UI — collection page (list view with cover thumbnails, condition badges, read status), add-to-collection modal on catalog entry page, edit/remove actions, photo upload
-- [ ] 03-05: Series progress UI — series progress page with progress bars per series, missing editions panel, links from missing editions to catalog/marketplace search
-- [ ] 03-06: Collection CSV UI — import flow (template download, file upload, error report display), export button, plan limit reached state with upgrade CTA
+- [x] 03-01-PLAN.md — Collection API: CRUD, read/sale status, CSV import/export, series progress, plan limits
+- [x] 03-02-PLAN.md — Collection UI polish: add-to-collection on catalog detail, missing editions on series progress
+- [ ] 03-03-PLAN.md — Gap closure: API source sync (missing-editions endpoint, photo upload routes/service, atomic $transaction) (Wave 1)
+- [ ] 03-04-PLAN.md — Gap closure: Frontend plan limit UX + photo upload UI (Wave 2)
 
 ### Phase 4: Marketplace and Orders
 **Goal**: Sellers can list copies for sale and buyers can discover them, add them to a cart with a 24-hour reservation, and create an order — with price, commission, and seller-net amounts all permanently snapshotted at order creation
 **Depends on**: Phase 3
-**Requirements**: CART-01, CART-02, CART-03, CART-04, CART-05, CART-06, CART-07, CART-08, ORDR-01, ORDR-02, ORDR-03, ORDR-04, ORDR-05, ORDR-06, ORDR-07, ORDR-08, SHIP-01, SHIP-02, SHIP-03, SHIP-04, SHIP-05, COMM-01, COMM-02, COMM-03, COMM-04, COMM-05
+**Requirements**: CART-01, CART-02, CART-03, CART-04, CART-05, CART-06, CART-07, CART-08, ORDR-01, ORDR-02, ORDR-03, ORDR-04, ORDR-05, ORDR-06, ORDR-07, SHIP-01, SHIP-02, SHIP-03, SHIP-04, COMM-01, COMM-02, COMM-03, COMM-04, COMM-05
 **Success Criteria** (what must be TRUE):
   1. A seller can mark a copy as for sale with a price and immediately sees the commission amount and net payout in BRL in real time; the listing appears in marketplace search
   2. A buyer can add a copy to their cart, see the 24-hour reservation countdown, and cannot add a copy already reserved by another buyer or listed by themselves
   3. A buyer can manage multiple delivery addresses and select one during checkout; the order is created with a unique identifier and all prices/commission/seller-net permanently snapshotted
   4. An order containing items from multiple sellers shows each item's shipping tracking separately; each item has its own status in the PENDING → PAID → PROCESSING → SHIPPED → DELIVERED → COMPLETED flow
   5. A seller can enter a tracking code and carrier for a shipped item; items not shipped within 7 days are automatically cancelled
-**Plans**: TBD
+**Plans**: 7 plans
 
 Plans:
-- [ ] 04-01: Cart API — atomic cart reservation (UPDATE ... WHERE status = 'available', check affectedRows === 1), 24h expiry, max 50 items, session persistence, self-purchase prevention, expiry release cron, 7-day abandoned cart cleanup cron
-- [ ] 04-02: Order API — order creation with unique identifier generation (ORD-YYYYMMDD-XXXXXX), price snapshot, commission snapshot (rate from seller's current plan), seller-net snapshot as NOT NULL columns; multi-seller order splitting; order status state machine
-- [ ] 04-03: Shipping and address API — address CRUD (multiple addresses, default selection), admin-configurable shipping methods, seller tracking code update endpoint, shipping status notifications trigger, auto-cancel cron for unshipped items after 7 days
-- [ ] 04-04: Commission API — commission rate lookup by seller plan (FREE: 10%, BASIC: 8%), admin rate configuration with min/max, real-time net amount calculation endpoint
-- [ ] 04-05: Marketplace UI — marketplace listing page (search, filter by condition/price/publisher/character), seller profile public page, listing detail page with commission transparency display
-- [ ] 04-06: Cart and checkout UI — cart sidebar/page with reservation countdown, multi-seller grouping, address selection at checkout, order summary with price + commission + seller-net per item
-- [ ] 04-07: Order management UI — buyer order history page, order detail page (status timeline, per-item tracking), seller dashboard orders page, seller tracking code entry form
+- [ ] 04-01-PLAN.md — Contracts schemas + commission API + cron infrastructure + utilities (Wave 1)
+- [ ] 04-02-PLAN.md — Cart API: atomic reservation, 24h expiry, self-purchase prevention, 50-item limit (Wave 2)
+- [ ] 04-03-PLAN.md — Shipping/address API: address CRUD, shipping methods, seller tracking (Wave 2)
+- [ ] 04-04-PLAN.md — Order API: creation from cart with snapshots, state machine, cancellation (Wave 3)
+- [ ] 04-05-PLAN.md — Marketplace UI: browse, listing detail, seller profile, API clients (Wave 3)
+- [ ] 04-06-PLAN.md — Cart + checkout UI: sidebar with countdown, address selection, order creation (Wave 4)
+- [ ] 04-07-PLAN.md — Order management UI: buyer/seller dashboards, status timeline, tracking form (Wave 4)
 
 ### Phase 5: Payments and Commissions
 **Goal**: Buyers can pay for orders with PIX (QR code and copia-e-cola), payment status is confirmed automatically via webhook with idempotency protection, and sellers have a clear view of their payouts pending admin processing
 **Depends on**: Phase 4
-**Requirements**: PYMT-01, PYMT-02, PYMT-03, PYMT-04, PYMT-05, PYMT-06, PYMT-07, PYMT-08, COMM-06, BANK-01, BANK-02, BANK-03
+**Requirements**: ORDR-08, PYMT-01, PYMT-02, PYMT-03, PYMT-04, PYMT-05, PYMT-06, PYMT-07, PYMT-08, COMM-06, BANK-01, BANK-02, BANK-03
 **Success Criteria** (what must be TRUE):
   1. A buyer at checkout sees a PIX QR code and copia-e-cola string; after paying in their banking app, the order status updates to Paid automatically within minutes
   2. The same PIX webhook event delivered twice by Mercado Pago does not create duplicate commissions, emails, or status transitions — the idempotency guard blocks the duplicate silently
   3. An admin can manually confirm a PIX payment from the admin payment dashboard when auto-verification has not triggered
   4. A user can view their complete payment history with amounts, dates, and order references
   5. A seller can register a bank account (bank, branch, account, CPF, holder, account type) and admin can view all sellers' bank data for payout processing
-**Plans**: TBD
+**Plans**: 7 plans
 
 Plans:
-- [ ] 05-01: PIX payment API — Mercado Pago v2 SDK integration, QR code generation aligned with cart reservation TTL (MIN(remaining_cart_time - 5min, 30min)), copia-e-cola string, PIX expiry set to match cart reservation
-- [ ] 05-02: Webhook handler — idempotency table (webhook_events with unique constraint on provider + event_id), PIX payment confirmation flow, order status transition to PAID, commission recording, duplicate event silent discard
-- [ ] 05-03: Payment management API — admin manual payment approval endpoint, refund endpoint (total and partial), payment history endpoint, admin payment dashboard data endpoint
-- [ ] 05-04: Seller banking API — bank account CRUD (multiple accounts, primary flag), admin view endpoint for payout processing, BANK-01/02/03 fields
-- [ ] 05-05: Commission reporting API — admin commission dashboard data: totals by period, by plan, transaction list export
-- [ ] 05-06: PIX payment UI — checkout PIX page with QR code display, copia-e-cola copy button, countdown timer (aligned with QR expiry), status polling (every 5s), success/failure states
-- [ ] 05-07: Payment history UI — user payment history page, order-linked receipts, payment status badges
-- [ ] 05-08: Admin payments UI — admin payment dashboard (pending approvals, manual confirm/reject), commission dashboard (totals by period, by plan, transaction list), sellers with pending payouts, seller bank data view
-- [ ] 05-09: Seller banking UI — seller bank account registration form, multiple accounts list, primary account selection
+- [ ] 05-01-PLAN.md — PIX payment API: Mercado Pago v2 SDK integration, contracts schemas, webhook handler with idempotency, QR code generation, PIX expiry alignment (Wave 1)
+- [ ] 05-02-PLAN.md — Seller banking API: bank account CRUD with CPF validation, primary flag management, admin view endpoint (Wave 1)
+- [ ] 05-03-PLAN.md — Payment management + commission reporting API: admin approval/reject, refunds, payment history, pending list, commission dashboard aggregation (Wave 2)
+- [ ] 05-04-PLAN.md — PIX payment UI: checkout PIX page with QR code, copia-e-cola, countdown timer, status polling, success/failure states (Wave 3)
+- [ ] 05-05-PLAN.md — Payment history + seller banking UI: user payment history page, bank account CRUD form, CPF masking, primary flag management (Wave 3)
+- [ ] 05-06-PLAN.md — Admin payments UI: payment dashboard (pending approvals, all payments), commission dashboard (period selector, totals), admin banking view (Wave 3)
+- [ ] 05-07-PLAN.md — Integration: checkout redirect to payment page, order detail payment section, navigation updates for Phase 5 pages (Wave 4)
 
 ### Phase 6: Subscriptions
 **Goal**: Users can subscribe to the BASIC paid plan via Stripe, enjoy higher collection limits and lower commission rates, and the system automatically enforces plan rules and downgrades accounts when payments lapse
@@ -142,36 +138,36 @@ Plans:
   3. A subscriber whose Stripe payment fails receives a notification and, after Stripe's final retry, is automatically downgraded to FREE — their existing collection entries above 50 are preserved but no new additions are allowed
   4. An admin can configure plan prices, trial period length, and activate/deactivate plans; commission rates per plan are configurable in admin
   5. A user can manage their subscription (view status, cancel, see next billing date) from their account settings
-**Plans**: TBD
+**Plans**: 6 plans
 
 Plans:
-- [ ] 06-01: Subscription API — Stripe Checkout Session creation for BASIC plan, configurable billing intervals (monthly/quarterly/semi-annual/annual), trial period support, plan activation/deactivation, admin plan price configuration
-- [ ] 06-02: Stripe webhook handler — checkout.session.completed, customer.subscription.updated, customer.subscription.deleted events with idempotency guard (reuse webhook_events pattern from Phase 5); end-of-period downgrade scheduling; payment failure notification trigger
-- [ ] 06-03: Subscription enforcement — daily reconciliation background worker (node-cron) cross-checks Stripe subscription status against local plan, auto-downgrades expired/failed subscriptions; collection limit re-enforcement on downgrade (block adds, preserve existing)
-- [ ] 06-04: Admin subscription management API — admin approve/activate subscription changes endpoint, commission rate per-plan configuration (reuses COMM-03 admin endpoint from Phase 4), plan CRUD
-- [ ] 06-05: Subscription UI — upgrade flow (plan comparison page, Stripe Checkout redirect, success/cancel return pages), Stripe Customer Portal integration for self-service management, subscription status display in account settings
-- [ ] 06-06: Admin subscription management UI — plan management panel (create/edit/deactivate plans, set prices and trial period), commission rate configuration UI with impact preview
+- [ ] 06-01-PLAN.md — Subscription API: Stripe SDK lib, contracts schemas, PlanConfig migration + seed, checkout/portal/status/cancel endpoints (Wave 1)
+- [ ] 06-02-PLAN.md — Stripe webhook handler: raw body middleware, checkout.session.completed, subscription.updated/deleted, payment failure, idempotency guard (Wave 1)
+- [ ] 06-03-PLAN.md — Subscription enforcement: daily reconciliation cron, TRIALING status in collection/commission checks, auto-downgrade safety net (Wave 2)
+- [ ] 06-04-PLAN.md — Admin subscription API: subscription list with filters, manual activation, plan config CRUD (Wave 2)
+- [ ] 06-05-PLAN.md — Subscription UI: plan comparison, Stripe Checkout redirect, success/cancel pages, status card, Customer Portal link (Wave 3)
+- [ ] 06-06-PLAN.md — Admin subscription UI: subscription list page, plan management with commission impact preview (Wave 3)
 
 ### Phase 7: Community and Notifications
 **Goal**: Users can engage with the catalog through reviews, comments, and favorites; buyers and sellers can rate each other after transactions; and the platform communicates proactively via in-app notifications and transactional emails
 **Depends on**: Phase 5
-**Requirements**: SOCL-01, SOCL-02, SOCL-03, SOCL-04, SOCL-05, SOCL-06, SOCL-07, NOTF-01, NOTF-02, NOTF-03, NOTF-04, NOTF-05, NOTF-06, NOTF-07, NOTF-08, NOTF-09
+**Requirements**: SHIP-05, SOCL-01, SOCL-02, SOCL-03, SOCL-04, SOCL-05, SOCL-06, SOCL-07, NOTF-01, NOTF-02, NOTF-03, NOTF-04, NOTF-05, NOTF-06, NOTF-07, NOTF-08, NOTF-09
 **Success Criteria** (what must be TRUE):
   1. A logged-in user can write a 1-5 star review with text on a catalog entry, edit it later, and see the updated average rating reflected on the entry; a buyer can rate a seller only after a completed order
   2. A user can comment on a catalog entry, reply to a comment (one nesting level), and like any comment; they can favorite a catalog entry and access all favorites from their profile
   3. The notification bell icon shows an unread count badge; clicking it reveals a dropdown of recent notifications; a full notifications page shows all history with mark-as-read
   4. After key events, the affected user receives an email: welcome on signup, payment confirmed on order paid, shipping update when tracking code is added, sale alert when their copy sells, and password reset link on request — all emails are responsive and branded
   5. A user can enable or disable each notification type (payment, shipping, sale, etc.) from their notification preferences page
-**Plans**: TBD
+**Plans**: 7 plans
 
 Plans:
-- [ ] 07-01: Reviews and ratings API — catalog review CRUD (one per user per catalog, edit own, 1-5 stars + text), seller review creation (post-purchase gate, one per transaction), average rating aggregation for catalog and seller profile
-- [ ] 07-02: Comments and favorites API — catalog comment CRUD (one nesting level of replies), comment likes (toggle), favorites CRUD (add/remove catalog entry, list favorites)
-- [ ] 07-03: Notification system API — notification creation service (called by other modules on events), in-app notification endpoints (unread count, dropdown list, full page, mark read), notification preferences CRUD
-- [ ] 07-04: Transactional email service — Resend SDK integration, email templates (welcome, payment confirmed, order shipped, item sold, password reset) with responsive layout and PT-BR branding, notification preference gate before send
-- [ ] 07-05: Reviews and comments UI — review form on catalog entry page, star rating component, review list, edit review flow, comment thread with nested replies, like button, seller profile page with rating history
-- [ ] 07-06: Favorites UI — favorite button on catalog entry cards and detail pages, favorites list page
-- [ ] 07-07: Notification UI — bell icon in navbar with unread badge (polling every 30–60s), notification dropdown (recent 5), full notifications page, mark-as-read interaction, notification preferences settings page
+- [ ] 07-01-PLAN.md — Reviews and ratings API: contracts schemas, catalog review CRUD (one per user per catalog, edit own, 1-5 stars + text), seller review creation (post-purchase gate via order COMPLETED status, one per transaction), average rating aggregation for catalog entries and seller profiles (Wave 1)
+- [ ] 07-02-PLAN.md — Comments and favorites API: contracts schemas, catalog comment CRUD (one nesting level of replies enforced at app layer), comment likes toggle with likesCount sync, favorites toggle/list/check endpoints (Wave 1)
+- [ ] 07-03-PLAN.md — Notification system API: contracts schemas, reusable createNotification() service with preference gate, in-app notification endpoints (list, unread count, mark read, mark all read), notification preferences CRUD, hooks into auth/order/shipping flows (Wave 1)
+- [ ] 07-04-PLAN.md — Transactional email service: Resend SDK abstraction (shared/lib/resend.ts), 5 responsive email templates in PT-BR (welcome, payment confirmed, order shipped, item sold, password reset), preference gate before send, graceful degradation without credentials (Wave 2)
+- [ ] 07-05-PLAN.md — Reviews and comments UI: reusable star rating component (display + input), catalog review form (create/edit/delete), review list with average, comment thread with nested replies, like button with optimistic update, seller rating summary, catalog detail page integration (Wave 3)
+- [ ] 07-06-PLAN.md — Favorites UI: favorite button (heart toggle) on catalog cards and detail pages, favorites list page at /favorites with pagination, optimistic toggle, auth redirect (Wave 3)
+- [ ] 07-07-PLAN.md — Notification UI: bell icon in header with unread badge, notification dropdown (recent 5), full notifications page with filters and mark-as-read, notification preferences settings with per-type toggles, 30-second polling context provider (Wave 3)
 
 ### Phase 8: Disputes
 **Goal**: Buyers have a protected dispute channel when orders go wrong — they can open a dispute with evidence, sellers can respond, and admins mediate with a logged decision — giving the platform a trust foundation that generic Brazilian marketplaces lack
@@ -242,13 +238,18 @@ Note: Phase 7 (Community) and Phase 8 (Disputes) both depend on Phase 5 (Payment
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation and Infrastructure | 7/8 | In Progress | - |
-| 2. Catalog and Taxonomy | 0/7 | Planned | - |
-| 3. Collection Management | 0/6 | Not started | - |
-| 4. Marketplace and Orders | 0/7 | Not started | - |
-| 5. Payments and Commissions | 0/9 | Not started | - |
-| 6. Subscriptions | 0/6 | Not started | - |
-| 7. Community and Notifications | 0/7 | Not started | - |
-| 8. Disputes | 0/5 | Not started | - |
-| 9. Affiliate Deals and Homepage | 0/6 | Not started | - |
-| 10. Admin Panel, Legal, and Production Hardening | 0/8 | Not started | - |
+| 1. Foundation and Infrastructure | 7/8 | Complete* | 2026-02-22 |
+| 2. Catalog and Taxonomy | 7/7 | Complete | 2026-02-23 |
+| 3. Collection Management | 4/4 | Complete | 2026-02-23 |
+| 4. Marketplace and Orders | 7/7 | Complete | 2026-02-27 |
+| 5. Payments and Commissions | 7/7 | Complete | 2026-02-27 |
+| 6. Subscriptions | 6/6 | Complete | 2026-02-27 |
+| 7. Community and Notifications | 7/7 | Complete | 2026-03-15 |
+| 8. Disputes | 5/5 | Complete | 2026-03-15 |
+| 9. Affiliate Deals and Homepage | 6/6 | Complete | 2026-03-15 |
+| 10. Admin Panel, Legal, and Production Hardening | 8/8 | Complete | 2026-03-15 |
+
+*Phase 1 plan 01-03 (cPanel deploy validation) deferred — scripts ready, awaiting hosting setup.
+
+**Post-MVP (feat/sync-api-remoto):**
+- JSON bulk import, remote sync API, Panini browser fallback, E2E tests, sync unified into catalog module

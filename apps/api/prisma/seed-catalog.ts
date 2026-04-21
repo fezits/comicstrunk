@@ -81,6 +81,10 @@ interface CatalogSeedEntry {
   seriesTitle: string;
   volumeNumber: number;
   editionNumber: number;
+  coverPrice?: number;
+  publishYear?: number;
+  publishMonth?: number;
+  pageCount?: number;
   categoryNames: string[];
   tagNames: string[];
   characterNames: string[];
@@ -99,6 +103,10 @@ const CATALOG_ENTRIES: CatalogSeedEntry[] = [
     seriesTitle: 'Dragon Ball',
     volumeNumber: 1,
     editionNumber: 1,
+    coverPrice: 29.90,
+    publishYear: 2001,
+    publishMonth: 3,
+    pageCount: 192,
     categoryNames: ['Manga', 'Aventura'],
     tagNames: ['Shonen', 'Action', 'Classic'],
     characterNames: ['Goku'],
@@ -273,8 +281,8 @@ export async function seedCatalog(adminId: string) {
   for (const cat of CATEGORIES) {
     const slug = await uniqueSlug(cat.name, 'category');
     const record = await prisma.category.upsert({
-      where: { slug },
-      update: { name: cat.name, description: cat.description },
+      where: { name: cat.name },
+      update: { description: cat.description },
       create: { name: cat.name, slug, description: cat.description },
     });
     categoryMap.set(cat.name, record.id);
@@ -286,8 +294,8 @@ export async function seedCatalog(adminId: string) {
   for (const tag of TAGS) {
     const slug = await uniqueSlug(tag.name, 'tag');
     const record = await prisma.tag.upsert({
-      where: { slug },
-      update: { name: tag.name },
+      where: { name: tag.name },
+      update: {},
       create: { name: tag.name, slug },
     });
     tagMap.set(tag.name, record.id);
@@ -297,13 +305,16 @@ export async function seedCatalog(adminId: string) {
   // --- Characters ---
   const characterMap = new Map<string, string>();
   for (const char of CHARACTERS) {
-    const slug = await uniqueSlug(char.name, 'character');
-    const record = await prisma.character.upsert({
-      where: { slug },
-      update: { name: char.name, description: char.description },
-      create: { name: char.name, slug, description: char.description },
-    });
-    characterMap.set(char.name, record.id);
+    const existing = await prisma.character.findFirst({ where: { name: char.name } });
+    if (existing) {
+      characterMap.set(char.name, existing.id);
+    } else {
+      const slug = await uniqueSlug(char.name, 'character');
+      const record = await prisma.character.create({
+        data: { name: char.name, slug, description: char.description },
+      });
+      characterMap.set(char.name, record.id);
+    }
   }
   console.log(`    Characters: ${characterMap.size} created`);
 
@@ -345,6 +356,10 @@ export async function seedCatalog(adminId: string) {
         seriesId: sId,
         volumeNumber: entry.volumeNumber,
         editionNumber: entry.editionNumber,
+        coverPrice: entry.coverPrice ?? null,
+        publishYear: entry.publishYear ?? null,
+        publishMonth: entry.publishMonth ?? null,
+        pageCount: entry.pageCount ?? null,
         approvalStatus: ApprovalStatus.APPROVED,
         createdById: adminId,
       },

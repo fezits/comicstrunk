@@ -16,9 +16,11 @@ const router = Router();
 
 // === Rate limiters ===
 
+const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
+
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 requests per window per IP
+  max: isDev ? 200 : 5, // generous in dev for e2e tests, strict in production
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, error: { message: 'Too many login attempts, please try again later' } },
@@ -27,7 +29,7 @@ const loginLimiter = rateLimit({
 
 const passwordResetLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 3, // 3 requests per window per IP
+  max: isDev ? 50 : 3, // generous in dev for e2e tests, strict in production
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, error: { message: 'Too many password reset attempts, please try again later' } },
@@ -40,7 +42,7 @@ const REFRESH_COOKIE_NAME = 'refreshToken';
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: 'strict' as const,
+  sameSite: 'lax' as const,
   path: '/api/v1/auth/refresh',
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
@@ -113,7 +115,7 @@ router.post(
       res.clearCookie(REFRESH_COOKIE_NAME, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict' as const,
+        sameSite: 'lax' as const,
         path: '/api/v1/auth/refresh',
       });
       sendSuccess(res, { message: 'Logged out successfully' });

@@ -5,6 +5,12 @@ import { PrismaClient, PlanType, BillingInterval, UserRole } from '@prisma/clien
 import { hashSync } from 'bcryptjs';
 import slugify from 'slugify';
 
+// ============================================================================
+// TEST DATA PREFIX — all test-created taxonomy/series use this prefix so
+// cleanup can target ONLY test data without wiping seed/production data.
+// ============================================================================
+export const TEST_PREFIX = '_test_';
+
 const TEST_USERS = [
   {
     email: 'admin@comicstrunk.com',
@@ -37,60 +43,135 @@ const TEST_USERS = [
 ];
 
 const TEST_CATEGORIES = [
-  { name: 'Manga', description: 'Quadrinhos japoneses' },
-  { name: 'Superhero', description: 'Quadrinhos de super-herois' },
-  { name: 'Indie', description: 'Quadrinhos independentes' },
+  { name: `${TEST_PREFIX}Manga`, description: 'Quadrinhos japoneses (test)' },
+  { name: `${TEST_PREFIX}Superhero`, description: 'Quadrinhos de super-herois (test)' },
+  { name: `${TEST_PREFIX}Indie`, description: 'Quadrinhos independentes (test)' },
 ];
 
 const TEST_TAGS = [
-  { name: 'Shonen' },
-  { name: 'Action' },
-  { name: 'Classic' },
+  { name: `${TEST_PREFIX}Shonen` },
+  { name: `${TEST_PREFIX}Action` },
+  { name: `${TEST_PREFIX}Classic` },
 ];
 
 const TEST_CHARACTERS = [
-  { name: 'Goku', description: 'Protagonista de Dragon Ball' },
-  { name: 'Batman', description: 'O Cavaleiro das Trevas' },
-  { name: 'Luffy', description: 'Capitao dos Chapeu de Palha' },
+  { name: `${TEST_PREFIX}Goku`, description: 'Protagonista de Dragon Ball (test)' },
+  { name: `${TEST_PREFIX}Batman`, description: 'O Cavaleiro das Trevas (test)' },
+  { name: `${TEST_PREFIX}Luffy`, description: 'Capitao dos Chapeu de Palha (test)' },
 ];
 
 const TEST_SERIES = [
-  { title: 'Dragon Ball', description: 'Serie classica de Akira Toriyama', totalEditions: 42 },
-  { title: 'One Piece', description: 'A maior aventura pirata', totalEditions: 105 },
-  { title: 'Batman: O Cavaleiro das Trevas', description: 'Serie iconica da DC', totalEditions: 4 },
+  { title: `${TEST_PREFIX}Dragon Ball`, description: 'Serie classica (test)', totalEditions: 42 },
+  { title: `${TEST_PREFIX}One Piece`, description: 'A maior aventura pirata (test)', totalEditions: 105 },
+  { title: `${TEST_PREFIX}Batman`, description: 'Serie iconica da DC (test)', totalEditions: 4 },
 ];
+
+/**
+ * Clean up ONLY test-created data. Never touches seed data.
+ * Identifies test data by the _test_ prefix in names/titles.
+ */
+async function cleanupTestData(prisma: PrismaClient) {
+  // Find test catalog entries (linked to test series)
+  const testSeries = await prisma.series.findMany({
+    where: { title: { startsWith: TEST_PREFIX } },
+    select: { id: true },
+  });
+  const testSeriesIds = testSeries.map((s) => s.id);
+
+  if (testSeriesIds.length > 0) {
+    const testEntries = await prisma.catalogEntry.findMany({
+      where: { seriesId: { in: testSeriesIds } },
+      select: { id: true },
+    });
+    const testEntryIds = testEntries.map((e) => e.id);
+
+    if (testEntryIds.length > 0) {
+      await prisma.catalogCharacter.deleteMany({ where: { catalogEntryId: { in: testEntryIds } } });
+      await prisma.catalogTag.deleteMany({ where: { catalogEntryId: { in: testEntryIds } } });
+      await prisma.catalogCategory.deleteMany({ where: { catalogEntryId: { in: testEntryIds } } });
+      await prisma.catalogEntry.deleteMany({ where: { id: { in: testEntryIds } } });
+    }
+
+    await prisma.series.deleteMany({ where: { id: { in: testSeriesIds } } });
+  }
+
+  // Also clean orphan catalog entries created directly by tests (with _test_ title prefix)
+  const orphanTestEntries = await prisma.catalogEntry.findMany({
+    where: { title: { startsWith: TEST_PREFIX } },
+    select: { id: true },
+  });
+  const orphanIds = orphanTestEntries.map((e) => e.id);
+  if (orphanIds.length > 0) {
+    // Find collection items linked to these catalog entries
+    const orphanCollItems = await prisma.collectionItem.findMany({
+      where: { catalogEntryId: { in: orphanIds } },
+      select: { id: true },
+    });
+    const orphanCollItemIds = orphanCollItems.map((c) => c.id);
+
+    // Delete cart items and order items that reference these collection items
+    if (orphanCollItemIds.length > 0) {
+      await prisma.cartItem.deleteMany({ where: { collectionItemId: { in: orphanCollItemIds } } });
+      await prisma.orderItem.deleteMany({ where: { collectionItemId: { in: orphanCollItemIds } } });
+    }
+
+    // Delete all dependent records before deleting catalog entries
+    await prisma.favorite.deleteMany({ where: { catalogEntryId: { in: orphanIds } } });
+    // Delete comment likes before comments
+    const orphanComments = await prisma.comment.findMany({
+      where: { catalogEntryId: { in: orphanIds } },
+      select: { id: true },
+    });
+    const orphanCommentIds = orphanComments.map((c) => c.id);
+    if (orphanCommentIds.length > 0) {
+      await prisma.commentLike.deleteMany({ where: { commentId: { in: orphanCommentIds } } });
+    }
+    await prisma.comment.deleteMany({ where: { catalogEntryId: { in: orphanIds } } });
+    await prisma.review.deleteMany({ where: { catalogEntryId: { in: orphanIds } } });
+    await prisma.collectionItem.deleteMany({ where: { catalogEntryId: { in: orphanIds } } });
+    await prisma.catalogCharacter.deleteMany({ where: { catalogEntryId: { in: orphanIds } } });
+    await prisma.catalogTag.deleteMany({ where: { catalogEntryId: { in: orphanIds } } });
+    await prisma.catalogCategory.deleteMany({ where: { catalogEntryId: { in: orphanIds } } });
+    await prisma.catalogEntry.deleteMany({ where: { id: { in: orphanIds } } });
+  }
+
+  // Clean test taxonomy by prefix
+  await prisma.category.deleteMany({ where: { name: { startsWith: TEST_PREFIX } } });
+  await prisma.tag.deleteMany({ where: { name: { startsWith: TEST_PREFIX } } });
+  await prisma.character.deleteMany({ where: { name: { startsWith: TEST_PREFIX } } });
+
+  // Clean password resets and refresh tokens for test users only
+  const testEmails = TEST_USERS.map((u) => u.email);
+  const testUsers = await prisma.user.findMany({
+    where: { email: { in: testEmails } },
+    select: { id: true },
+  });
+  const testUserIds = testUsers.map((u) => u.id);
+
+  if (testUserIds.length > 0) {
+    await prisma.passwordReset.deleteMany({ where: { userId: { in: testUserIds } } });
+    await prisma.refreshToken.deleteMany({ where: { userId: { in: testUserIds } } });
+    await prisma.notificationPreference.deleteMany({ where: { userId: { in: testUserIds } } });
+    await prisma.notification.deleteMany({ where: { userId: { in: testUserIds } } });
+  }
+
+  // Clean up signup-test users
+  await prisma.refreshToken.deleteMany({
+    where: { user: { email: { contains: '@test-signup' } } },
+  });
+  await prisma.user.deleteMany({
+    where: { email: { contains: '@test-signup' } },
+  });
+}
 
 export async function setup() {
   const prisma = new PrismaClient();
 
   try {
-    // Clean up test data in reverse dependency order
-    await prisma.catalogCharacter.deleteMany({});
-    await prisma.catalogTag.deleteMany({});
-    await prisma.catalogCategory.deleteMany({});
-    await prisma.catalogEntry.deleteMany({});
-    await prisma.series.deleteMany({});
-    await prisma.category.deleteMany({});
-    await prisma.tag.deleteMany({});
-    await prisma.character.deleteMany({});
-    await prisma.passwordReset.deleteMany({});
-    await prisma.refreshToken.deleteMany({});
+    // Clean up ONLY test data — seed/production data is preserved
+    await cleanupTestData(prisma);
 
-    // Delete test users (the ones we'll seed)
-    for (const u of TEST_USERS) {
-      await prisma.user.deleteMany({ where: { email: u.email } });
-    }
-
-    // Also clean up any users created during tests
-    await prisma.user.deleteMany({
-      where: {
-        email: {
-          contains: '@test-signup',
-        },
-      },
-    });
-
-    // Seed test users — ALWAYS reset password hash so password-reset test doesn't break login
+    // Seed test users — upsert so we don't conflict with seed admin
     for (const u of TEST_USERS) {
       await prisma.user.upsert({
         where: { email: u.email },
@@ -142,7 +223,7 @@ export async function setup() {
       },
     });
 
-    // Seed categories
+    // Seed test categories (prefixed — won't collide with seed data)
     for (const cat of TEST_CATEGORIES) {
       const slug = slugify(cat.name, { lower: true, strict: true });
       await prisma.category.upsert({
@@ -152,7 +233,7 @@ export async function setup() {
       });
     }
 
-    // Seed tags
+    // Seed test tags (prefixed)
     for (const tag of TEST_TAGS) {
       const slug = slugify(tag.name, { lower: true, strict: true });
       await prisma.tag.upsert({
@@ -162,7 +243,7 @@ export async function setup() {
       });
     }
 
-    // Seed characters
+    // Seed test characters (prefixed)
     for (const char of TEST_CHARACTERS) {
       const slug = slugify(char.name, { lower: true, strict: true });
       await prisma.character.upsert({
@@ -172,9 +253,8 @@ export async function setup() {
       });
     }
 
-    // Seed series (no unique constraint, so delete + create)
+    // Seed test series (prefixed)
     for (const s of TEST_SERIES) {
-      // Check if exists by title to avoid duplicates
       const existing = await prisma.series.findFirst({ where: { title: s.title } });
       if (!existing) {
         await prisma.series.create({
@@ -187,7 +267,7 @@ export async function setup() {
       }
     }
 
-    console.log('Test database seeded successfully (users + taxonomy + series)');
+    console.log('Test database seeded (test-only data with _test_ prefix, seed data preserved)');
   } catch (error) {
     console.error('Failed to seed test database:', error);
     throw error;
@@ -200,28 +280,10 @@ export async function teardown() {
   const prisma = new PrismaClient();
 
   try {
-    // Clean up test-created data in reverse dependency order
-    await prisma.catalogCharacter.deleteMany({});
-    await prisma.catalogTag.deleteMany({});
-    await prisma.catalogCategory.deleteMany({});
-    await prisma.catalogEntry.deleteMany({});
-    await prisma.series.deleteMany({});
-    await prisma.category.deleteMany({});
-    await prisma.tag.deleteMany({});
-    await prisma.character.deleteMany({});
-    await prisma.passwordReset.deleteMany({});
-    await prisma.refreshToken.deleteMany({});
+    // Clean up ONLY test data — seed/production data is preserved
+    await cleanupTestData(prisma);
 
-    // Clean up signup test users
-    await prisma.user.deleteMany({
-      where: {
-        email: {
-          contains: '@test-signup',
-        },
-      },
-    });
-
-    console.log('Test database cleaned up');
+    console.log('Test database cleaned up (seed data preserved)');
   } catch (error) {
     console.error('Failed to clean up test database:', error);
   } finally {

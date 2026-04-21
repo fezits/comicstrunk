@@ -16,8 +16,8 @@ export const itemConditionSchema = z.enum(['NEW', 'VERY_GOOD', 'GOOD', 'FAIR', '
 // === Plan Limits ===
 
 export const COLLECTION_LIMITS = {
-  FREE: 50,
-  BASIC: 200,
+  FREE: 1000,
+  BASIC: 5000,
 } as const;
 
 // === Collection Item Schemas ===
@@ -80,6 +80,12 @@ export const collectionImportRowSchema = z.object({
   isRead: z.preprocess((val) => val === 'true' || val === '1', z.boolean().default(false)),
 });
 
+// === Missing Editions Schema ===
+
+export const missingEditionsQuerySchema = z.object({
+  seriesId: z.string().cuid(),
+});
+
 // === Inferred Types ===
 
 export type CreateCollectionItemInput = z.infer<typeof createCollectionItemSchema>;
@@ -88,3 +94,4 @@ export type MarkForSaleInput = z.infer<typeof markForSaleSchema>;
 export type MarkAsReadInput = z.infer<typeof markAsReadSchema>;
 export type CollectionSearchInput = z.infer<typeof collectionSearchSchema>;
 export type CollectionImportRow = z.infer<typeof collectionImportRowSchema>;
+export type MissingEditionsQuery = z.infer<typeof missingEditionsQuerySchema>;

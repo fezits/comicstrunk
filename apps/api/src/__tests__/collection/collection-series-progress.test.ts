@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { PrismaClient } from '@prisma/client';
 import { request, loginAs, TEST_ADMIN, TEST_USER } from '../setup';
+import { TEST_PREFIX } from '../global-setup';
 
 const prisma = new PrismaClient();
 
@@ -23,7 +24,7 @@ beforeAll(async () => {
   const series1Res = await request
     .post('/api/v1/series')
     .set('Authorization', `Bearer ${adminToken}`)
-    .send({ title: `Progress Series A ${Date.now()}`, totalEditions: 10 })
+    .send({ title: `${TEST_PREFIX}Progress Series A ${Date.now()}`, totalEditions: 10 })
     .expect(201);
   seriesId1 = series1Res.body.data.id;
   createdSeriesIds.push(seriesId1);
@@ -31,7 +32,7 @@ beforeAll(async () => {
   const series2Res = await request
     .post('/api/v1/series')
     .set('Authorization', `Bearer ${adminToken}`)
-    .send({ title: `Progress Series B ${Date.now()}`, totalEditions: 5 })
+    .send({ title: `${TEST_PREFIX}Progress Series B ${Date.now()}`, totalEditions: 5 })
     .expect(201);
   seriesId2 = series2Res.body.data.id;
   createdSeriesIds.push(seriesId2);
@@ -42,7 +43,7 @@ beforeAll(async () => {
       .post('/api/v1/catalog')
       .set('Authorization', `Bearer ${adminToken}`)
       .send({
-        title: `Progress A Ed ${i} ${Date.now()}`,
+        title: `${TEST_PREFIX}Progress A Ed ${i} ${Date.now()}`,
         seriesId: seriesId1,
         editionNumber: i,
       })
@@ -68,7 +69,7 @@ beforeAll(async () => {
       .post('/api/v1/catalog')
       .set('Authorization', `Bearer ${adminToken}`)
       .send({
-        title: `Progress B Ed ${i} ${Date.now()}`,
+        title: `${TEST_PREFIX}Progress B Ed ${i} ${Date.now()}`,
         seriesId: seriesId2,
         editionNumber: i,
       })
@@ -155,7 +156,7 @@ describe('Collection Series Progress API', () => {
       expect(series1.collected).toBe(3);
       expect(series1.totalEditions).toBe(10);
       expect(series1.percentage).toBe(30);
-      expect(series1.seriesTitle).toContain('Progress Series A');
+      expect(series1.seriesTitle).toContain(`${TEST_PREFIX}Progress Series A`);
     });
 
     it('series 2 shows 2 collected out of 5 (40%)', async () => {
@@ -172,7 +173,7 @@ describe('Collection Series Progress API', () => {
       expect(series2.collected).toBe(2);
       expect(series2.totalEditions).toBe(5);
       expect(series2.percentage).toBe(40);
-      expect(series2.seriesTitle).toContain('Progress Series B');
+      expect(series2.seriesTitle).toContain(`${TEST_PREFIX}Progress Series B`);
     });
 
     it('filters by seriesId to show only one series', async () => {
@@ -205,7 +206,7 @@ describe('Collection Series Progress API', () => {
       const emptySeriesRes = await request
         .post('/api/v1/series')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ title: `Empty Series ${Date.now()}`, totalEditions: 20 })
+        .send({ title: `${TEST_PREFIX}Empty Series ${Date.now()}`, totalEditions: 20 })
         .expect(201);
       const emptySeriesId = emptySeriesRes.body.data.id;
       createdSeriesIds.push(emptySeriesId);

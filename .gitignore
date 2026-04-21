@@ -1,6 +1,9 @@
 # Dependencies
 node_modules/
 
+# Superpowers plugin
+.superpowers/
+
 # Next.js
 .next/
 
@@ -28,6 +31,13 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+# Uploads (user-generated content)
+apps/api/uploads/
+
+# Playwright
+playwright-report/
+test-results/
 
 # Debug logs
 npm-debug.log*

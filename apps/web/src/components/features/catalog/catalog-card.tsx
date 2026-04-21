@@ -1,27 +1,37 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
-import { useLocale } from 'next-intl';
-import { BookOpen } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
+import { BookOpen, Check, Loader2, Plus, Repeat2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { AxiosError } from 'axios';
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { StarRating } from './star-rating';
+import { FavoriteButton } from '@/components/features/favorites/favorite-button';
+import { useAuth } from '@/lib/auth/use-auth';
+import { addCollectionItem } from '@/lib/api/collection';
 import type { CatalogEntry } from '@/lib/api/catalog';
 
 interface CatalogCardProps {
   entry: CatalogEntry;
+  isOwned?: boolean;
 }
 
-export function CatalogCard({ entry }: CatalogCardProps) {
+export function CatalogCard({ entry, isOwned = false }: CatalogCardProps) {
   const locale = useLocale();
-  const categories = entry.categories.map((c) => c.category);
+  const t = useTranslations('catalog');
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
+  const [added, setAdded] = useState(isOwned);
+  const [adding, setAdding] = useState(false);
 
   return (
-    <Link href={`/${locale}/catalog/${entry.id}`} className="block group">
-      <Card className="h-full overflow-hidden transition-shadow hover:shadow-lg">
-        {/* Cover */}
-        <div className="aspect-[2/3] bg-muted flex items-center justify-center overflow-hidden">
+    <Link href={`/${locale}/catalog/${entry.slug ?? entry.id}`} className="block group">
+      <div className="w-full flex flex-col bg-card text-card-foreground rounded-lg shadow-lg border border-border/50 dark:border-transparent hover:scale-[1.02] transition-transform duration-300 overflow-hidden">
+        {/* Cover image */}
+        <div className="relative aspect-[2/3] bg-muted overflow-hidden">
           {entry.coverImageUrl ? (
             <img
               src={entry.coverImageUrl}
@@ -29,48 +39,126 @@ export function CatalogCard({ entry }: CatalogCardProps) {
               className="h-full w-full object-cover transition-transform group-hover:scale-105"
             />
           ) : (
-            <BookOpen className="h-12 w-12 text-muted-foreground/40" />
+            <div className="h-full w-full flex items-center justify-center bg-primary/5 dark:bg-muted">
+              <BookOpen className="h-16 w-16 text-primary/20" />
+            </div>
           )}
+
+          {/* Owned badge — always visible */}
+          {added && (
+            <div className="absolute top-2 left-2 bg-green-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow">
+              <Check className="h-3 w-3" />
+              Tenho
+            </div>
+          )}
+
+          {/* Action buttons — top-right */}
+          <div className="absolute top-2 right-2 flex flex-col items-end space-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <button
+              className={`w-8 h-8 flex items-center justify-center border-2 border-white rounded-full text-white transition ${
+                added
+                  ? 'bg-green-600'
+                  : 'bg-primary hover:bg-primary/80'
+              }`}
+              onClick={async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (added || adding) return;
+                if (!isAuthenticated) {
+                  router.push(`/${locale}/login`);
+                  return;
+                }
+                setAdding(true);
+                try {
+                  await addCollectionItem({ catalogEntryId: entry.id });
+                  setAdded(true);
+                  toast.success(t('addedToCollection'));
+                } catch (error) {
+                  if (error instanceof AxiosError && error.response?.status === 409) {
+                    setAdded(true);
+                    toast.info(t('alreadyInCollection'));
+                  } else {
+                    toast.error(t('addToCollectionError'));
+                  }
+                } finally {
+                  setAdding(false);
+                }
+              }}
+              disabled={adding || added}
+              title={t('addToCollection')}
+            >
+              {adding ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : added ? (
+                <Check className="h-4 w-4" />
+              ) : (
+                <Plus className="h-4 w-4" />
+              )}
+            </button>
+            <FavoriteButton
+              catalogEntryId={entry.id}
+              size="sm"
+              className="bg-background/80 backdrop-blur-sm shadow-sm"
+            />
+            <button
+              className="w-8 h-8 flex items-center justify-center bg-primary hover:bg-primary/80 border-2 border-white rounded-full text-white transition opacity-50 cursor-not-allowed"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              title={t('trade')}
+              disabled
+            >
+              <Repeat2 className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
-        <CardContent className="p-4 space-y-2">
-          {/* Title */}
-          <h3 className="font-semibold line-clamp-2 group-hover:text-primary transition-colors">
+        {/* Content */}
+        <div className="flex flex-col flex-1 px-3 py-2 overflow-hidden">
+          {/* Star rating — centered */}
+          <div className="flex justify-center mb-1">
+            <StarRating rating={entry.averageRating} count={entry.ratingCount} size="sm" />
+          </div>
+
+          {/* Title — fixed height for 2 lines */}
+          <h3 className="font-bold text-sm line-clamp-2 h-10 mb-1">
             {entry.title}
           </h3>
 
-          {/* Author & Publisher */}
-          <p className="text-sm text-muted-foreground truncate">
-            {[entry.author, entry.publisher].filter(Boolean).join(' — ')}
-          </p>
+          {/* Series badge — always reserve space */}
+          <div className="h-7 mb-1">
+            {entry.series && (
+              <span className="inline-flex items-center gap-1 bg-muted px-2 py-1 rounded-full">
+                <BookOpen className="h-3 w-3 text-primary" />
+                <span className="text-xs text-foreground line-clamp-1">{entry.series.title}</span>
+              </span>
+            )}
+          </div>
 
-          {/* Series badge */}
-          {entry.series && (
-            <Badge variant="secondary" className="text-xs">
-              {entry.series.title}
-            </Badge>
-          )}
-
-          {/* Rating */}
-          <StarRating rating={entry.averageRating} count={entry.ratingCount} size="sm" />
-
-          {/* Categories (first 3) */}
-          {categories.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {categories.slice(0, 3).map((cat) => (
-                <Badge key={cat.id} variant="outline" className="text-xs">
-                  {cat.name}
-                </Badge>
-              ))}
-              {categories.length > 3 && (
-                <Badge variant="outline" className="text-xs text-muted-foreground">
-                  +{categories.length - 3}
-                </Badge>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          {/* Details — fills remaining space */}
+          <div className="text-xs space-y-0.5 text-muted-foreground flex-1">
+            {entry.author && (
+              <p className="truncate">
+                <span className="font-semibold text-foreground">{t('detail.author')}:</span>{' '}
+                {entry.author}
+              </p>
+            )}
+            {entry.publisher && (
+              <p className="truncate">
+                <span className="font-semibold text-foreground">{t('detail.publisher')}:</span>{' '}
+                {entry.publisher}
+              </p>
+            )}
+            {entry.createdAt && (
+              <p className="truncate">
+                <span className="font-semibold text-foreground">{t('releaseDate')}:</span>{' '}
+                {new Date(entry.createdAt).toLocaleDateString(locale)}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
     </Link>
   );
 }

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { PrismaClient } from '@prisma/client';
 import { request, loginAs, TEST_ADMIN, TEST_USER } from '../setup';
+import { TEST_PREFIX } from '../global-setup';
 import path from 'path';
 import fs from 'fs';
 
@@ -25,14 +26,14 @@ beforeAll(async () => {
   const seriesRes = await request
     .post('/api/v1/series')
     .set('Authorization', `Bearer ${adminToken}`)
-    .send({ title: `CSV Series ${Date.now()}`, totalEditions: 10 })
+    .send({ title: `${TEST_PREFIX}CSV Series ${Date.now()}`, totalEditions: 10 })
     .expect(201);
   testSeriesId = seriesRes.body.data.id;
 
   // Create and approve 2 catalog entries with known titles for CSV import matching
   const ts = Date.now();
-  approvedEntryTitle1 = `CSV Import Comic Alpha ${ts}`;
-  approvedEntryTitle2 = `CSV Import Comic Beta ${ts}`;
+  approvedEntryTitle1 = `${TEST_PREFIX}CSV Import Comic Alpha ${ts}`;
+  approvedEntryTitle2 = `${TEST_PREFIX}CSV Import Comic Beta ${ts}`;
 
   for (const title of [approvedEntryTitle1, approvedEntryTitle2]) {
     const createRes = await request

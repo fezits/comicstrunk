@@ -5,34 +5,44 @@
 See: .planning/PROJECT.md (updated 2026-02-21)
 
 **Core value:** Collectors can catalog, track, and organize their physical comic book collection — knowing exactly what they have, what they've read, and what's missing from their series.
-**Current focus:** Phase 2 — Catalog and Taxonomy
+**Current focus:** Post-MVP — Catalog sync and incremental improvements
 
 ## Current Position
 
-Phase: 2 of 10 (Catalog and Taxonomy)
-Plan: 4 of 7 in current phase
-Status: Executing
-Last activity: 2026-02-22 — Completed 02-04-PLAN.md (catalog search and CSV import/export)
+Phase: 10 of 10 (ALL PHASES COMPLETE)
+Status: MVP COMPLETE + Sync features added
+Last activity: 2026-04-01 — Unified sync into catalog module, Panini browser fallback
 
-Progress: [████████████░░░░░░░░] 15%
+Progress: [██████████████████████████████████████████████████] 100%
+
+### Post-MVP Work (feat/sync-api-remoto branch)
+- JSON bulk import endpoint (`POST /catalog/import-json`)
+- Remote sync API (`POST /sync/catalog`, `POST /sync/covers`, `GET /sync/status`)
+- Panini browser fallback when GraphQL API is unavailable
+- Sync endpoints unified into catalog module (refactor)
+- E2E test suite with Playwright
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 11
-- Average duration: 9 min
-- Total execution time: 1.6 hours
+- Total plans completed: 38
+- Average duration: 8 min
+- Total execution time: 5.5 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Foundation | 7/8 | 80 min | 11 min |
-| 2. Catalog | 4/7 | 22 min | 6 min |
+| 2. Catalog | 7/7 | 37 min | 5 min |
+| 3. Collection | 4/4 | 29 min | 7 min |
+| 4. Marketplace | 7/7 | 70 min | 10 min |
+| 5. Payments | 7/7 | 65 min | 9 min |
+| 6. Subscriptions | 6/6 | 60 min | 10 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-06b (8 min), 02-01 (6 min), 02-02 (7 min), 02-03 (5 min), 02-04 (4 min)
-- Trend: Steady/Improving
+- Last 5 plans: 03-02 (10 min), 03-03 (6 min), 03-04 (4 min), 04-01 (10 min), 04-04 (7 min)
+- Trend: Steady
 
 *Updated after each plan completion*
 | Phase 01 P01 | 16min | 2 tasks | 22 files |
@@ -46,6 +56,20 @@ Progress: [████████████░░░░░░░░] 15%
 | Phase 02 P02 | 7min | 3 tasks | 10 files |
 | Phase 02 P03 | 5min | 2 tasks | 3 files |
 | Phase 02 P04 | 4min | 2 tasks | 2 files |
+| Phase 02 P05 | 5min | 2 tasks | 6 files |
+| Phase 02 P06 | 4min | 2 tasks | 10 files |
+| Phase 02 P07 | 6min | 2 tasks | 12 files |
+| Phase 03 P01 | 9min | 2 tasks | 7 files |
+| Phase 03 P02 | 10min | 2 tasks | 4 files |
+| Phase 03 P03 | 6min | 2 tasks | 4 files |
+| Phase 03 P04 | 4min | 2 tasks | 4 files |
+| Phase 04 P01 | 10min | 2 tasks | 16 files |
+| Phase 04 P02 | 5min | 2 tasks | 3 files |
+| Phase 04 P03 | 9min | 2 tasks | 4 files |
+| Phase 04 P04 | 7min | 2 tasks | 4 files |
+| Phase 04 P05 | 13min | 2 tasks | 15 files |
+| Phase 04 P06 | 14min | 2 tasks | 17 files |
+| Phase 04 P07 | 12min | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -102,6 +126,50 @@ Recent decisions affecting current work:
 - [02-04]: CSV import creates entries as DRAFT status, not PENDING or APPROVED
 - [02-04]: Series lookup during CSV import uses case-insensitive contains match on title
 - [02-04]: Import capped at 1000 rows per CSV file to prevent memory issues
+- [02-05]: Series listing uses client-side fetching with URL search params for search state persistence
+- [02-05]: Edition ratings display star icon with numeric rating and count, fallback to 'Sem avaliacoes'
+- [02-05]: Progress indicator shows 'X de Y edicoes' when totalEditions known, otherwise just count
+- [02-06]: URL search params sync for filter state persistence, enabling shareable/bookmarkable catalog URLs
+- [02-06]: Grid/list view toggle with separate CatalogCard and CatalogListItem components
+- [02-06]: Collapsible filter panel on desktop (toggle button) with Sheet drawer on mobile
+- [02-06]: Half-star rating via CSS overflow clipping on lucide Star icon
+- [02-06]: 400ms debounce on search input to reduce API calls during typing
+- [02-07]: Admin taxonomy CRUD uses inline dialog pattern (create/edit in same modal) for consistency
+- [02-07]: Delete blocked when catalog entry count > 0 with disabled button and tooltip hint
+- [02-07]: ApprovalBadge uses shadcn Badge variant mapping: DRAFT=outline, PENDING=secondary, APPROVED=default, REJECTED=destructive
+- [03-01]: BadRequestError details typed as unknown to support both object and array payloads
+- [03-01]: Photo cleanup on removePhoto silently continues if Cloudinary/local deletion fails
+- [03-01]: photoUrls stored as Json? field set to Prisma.JsonNull when empty instead of empty array
+- [03-02]: Quick add button on catalog detail uses default values for fast workflow; 'Add with details' link provides full form
+- [03-02]: Missing editions fetched lazily on expand to prevent N+1 queries on page load
+- [03-02]: Missing editions link to individual catalog detail pages, not to search results
+- [Phase 03]: [03-03]: BadRequestError for photo limit uses inline message (constructor only accepts 1 arg)
+- [Phase 03]: [03-03]: Migration marked as already applied via prisma migrate resolve since photo_urls column existed from dist
+- [Phase 03]: [03-04]: Plan limit detection uses axios error status 400 + message.includes('Collection limit reached') pattern
+- [Phase 03]: [03-04]: Photo section only rendered in non-editing view to avoid layout conflicts with edit form
+- [Phase 04]: [04-01]: Commission auto-seed on first getCommissionRate call ensures configs exist without manual migration
+- [Phase 04]: [04-01]: Marketplace endpoints are fully public (no auth middleware) for unauthenticated browsing
+- [Phase 04]: [04-01]: commissionPreviewSchema uses z.coerce.number() for query param parsing
+- [Phase 04]: [04-01]: Cron jobs registered in createApp() after route registration but before error handler
+- [Phase 04]: [04-02]: Interactive $transaction for addToCart prevents race conditions on unique physical items
+- [Phase 04]: [04-02]: Cart items include remainingMs for frontend countdown display
+- [Phase 04]: [04-02]: Static route /summary placed before /:id in Express router to prevent path collision
+- [Phase 04]: [04-03]: updateShippingMethodSchema added as partial of createShippingMethodSchema for consistent CRUD validation
+- [Phase 04]: [04-03]: Default address auto-promotion on delete uses most recent (createdAt desc) remaining address
+- [Phase 04]: [04-03]: Tracking update only allowed in PROCESSING status to enforce correct order lifecycle
+- [Phase 04]: [04-04]: Order state machine defined as separate utility for reuse across services, cron, and dispute resolution
+- [Phase 04]: [04-04]: createOrder uses interactive $transaction for atomicity across cart read, address validation, order creation, and cart clear
+- [Phase 04]: [04-04]: Shipping address snapshot captures all fields as JSON at order creation for immutable audit trail
+- [Phase 04]: [04-04]: syncOrderStatus auto-promotes order to COMPLETED/CANCELLED when all items reach terminal state
+- [Phase 04]: [04-04]: Buyer restricted to COMPLETED/DISPUTED transitions; seller handles all other item status advancement
+- [Phase 04]: MarketplaceCard uses single component with variant prop (grid/list) instead of separate components
+- [Phase 04]: Seller profile page derived from marketplace listings by sellerId filter (no dedicated profile API)
+- [Phase 04]: Added sellerId filter to marketplace contract and service for seller profile page
+- [Phase 04]: Commission transparency only shown to authenticated users (previewCommission requires auth)
+- [Phase 04]: CartProvider wraps locale layout inside AuthProvider for shared cart state across header, sidebar, and listing detail
+- [Phase 04]: Cart badge uses optimistic count updates (increment/decrement) for instant UI feedback
+- [Phase 04]: Address selector uses custom radio-style cards (not radix RadioGroup) for richer layout
+- [Phase 04]: CEP masking via simple onChange handler rather than mask library dependency
 
 ### Pending Todos
 
@@ -115,6 +183,13 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-22
-Stopped at: Completed 02-04-PLAN.md (catalog search and CSV import/export)
-Resume file: .planning/phases/02-catalog-and-taxonomy/02-04-SUMMARY.md
+Last session: 2026-04-01
+Stopped at: Post-MVP sync work — unified sync into catalog module
+Resume file: N/A (all phases complete)
+
+### Completed Phases (Post Phase 6)
+- Phase 07: Community and Notifications (reviews, comments, favorites, notifications, transactional emails)
+- Phase 08: Disputes (dispute system with mediation and refund flow)
+- Phase 09: Affiliate Deals and Homepage (deals, click tracking, configurable homepage)
+- Phase 10: Admin Panel, Legal, and Production Hardening (admin dashboard, legal documents, LGPD, contact form)
+- Post-MVP: Catalog sync (JSON bulk import, remote sync API, Panini browser fallback, E2E tests)

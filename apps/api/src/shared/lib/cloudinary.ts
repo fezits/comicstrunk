@@ -33,7 +33,8 @@ function ensureDir(dir: string) {
 }
 
 /** Base URL for serving local uploads (set by express.static in create-app) */
-const apiBaseUrl = process.env.API_BASE_URL || `http://localhost:${process.env.PORT || 3001}`;
+const apiBaseUrl = process.env.API_BASE_URL
+  || (process.env.WEB_URL ? process.env.WEB_URL.replace('://', '://api.') : `http://localhost:${process.env.PORT || 3001}`);
 
 export async function uploadImage(
   buffer: Buffer,
@@ -101,3 +102,11 @@ function detectExtension(buffer: Buffer): string {
 
 /** Path to uploads directory — used by create-app for express.static */
 export const UPLOADS_PATH = UPLOADS_DIR;
+
+/** Build the public URL for a locally-stored cover file */
+export function localCoverUrl(filename: string, folder = 'comicstrunk/covers'): string {
+  return `${apiBaseUrl}/uploads/${folder}/${filename}`;
+}
+
+/** The base URL used for local uploads — allows callers to detect stale URLs */
+export const LOCAL_API_BASE_URL = apiBaseUrl;

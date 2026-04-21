@@ -8,7 +8,8 @@ import {
 } from '@comicstrunk/contracts';
 import { validate } from '../../shared/middleware/validate';
 import { authenticate } from '../../shared/middleware/authenticate';
-import { uploadCSV } from '../../shared/middleware/upload';
+import { uploadCSV, uploadSingle } from '../../shared/middleware/upload';
+import { uploadImage } from '../../shared/lib/cloudinary';
 import { sendSuccess, sendPaginated } from '../../shared/utils/response';
 import { BadRequestError } from '../../shared/utils/api-error';
 import * as collectionService from './collection.service';
@@ -104,6 +105,22 @@ router.post(
   },
 );
 
+// GET /missing-editions/:seriesId — editions the user does NOT own
+router.get(
+  '/missing-editions/:seriesId',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const editions = await collectionService.getMissingEditions(
+        req.user!.userId,
+        req.params.seriesId as string,
+      );
+      sendSuccess(res, editions);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
 // ============================================================================
 // List + Create
 // ============================================================================
@@ -140,9 +157,81 @@ router.post(
   },
 );
 
+// POST /batch — add multiple items at once
+router.post(
+  '/batch',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { catalogEntryIds, condition, isRead } = req.body;
+
+      if (!Array.isArray(catalogEntryIds) || catalogEntryIds.length === 0) {
+        throw new BadRequestError('catalogEntryIds must be a non-empty array');
+      }
+
+      if (catalogEntryIds.length > 200) {
+        throw new BadRequestError('Maximum 200 items per batch');
+      }
+
+      const result = await collectionService.batchAddItems(req.user!.userId, {
+        catalogEntryIds,
+        condition: condition || 'VERY_GOOD',
+        isRead: isRead ?? false,
+      });
+
+      sendSuccess(res, result, 201);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
 // ============================================================================
 // Item-specific routes (/:id)
+// Photo routes MUST be defined BEFORE GET /:id to prevent path collision.
 // ============================================================================
+
+// POST /:id/photos — upload a photo for a collection item
+router.post(
+  '/:id/photos',
+  uploadSingle('photo'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (!req.file) {
+        throw new BadRequestError('No photo file provided');
+      }
+      const { url } = await uploadImage(req.file.buffer, 'comicstrunk/collection');
+      const item = await collectionService.addPhoto(
+        req.user!.userId,
+        req.params.id as string,
+        url,
+      );
+      sendSuccess(res, item);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// DELETE /:id/photos/:photoIndex — remove a photo by index
+router.delete(
+  '/:id/photos/:photoIndex',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const photoIndex = parseInt(req.params.photoIndex as string, 10);
+      if (isNaN(photoIndex)) {
+        throw new BadRequestError('Invalid photo index');
+      }
+      const item = await collectionService.removePhoto(
+        req.user!.userId,
+        req.params.id as string,
+        photoIndex,
+      );
+      sendSuccess(res, item);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
 
 // GET /:id — get single collection item
 router.get(
@@ -182,6 +271,49 @@ router.delete(
     try {
       await collectionService.deleteItem(req.user!.userId, req.params.id as string);
       sendSuccess(res, { deleted: true });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /:id/photos — upload a photo for a collection item
+router.post(
+  '/:id/photos',
+  uploadSingle('photo'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (!req.file) {
+        throw new BadRequestError('No photo file provided');
+      }
+      const { url } = await uploadImage(req.file.buffer, 'comicstrunk/collection');
+      const item = await collectionService.addPhoto(
+        req.user!.userId,
+        req.params.id as string,
+        url,
+      );
+      sendSuccess(res, item);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// DELETE /:id/photos/:photoIndex — remove a photo by index
+router.delete(
+  '/:id/photos/:photoIndex',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const photoIndex = parseInt(req.params.photoIndex as string, 10);
+      if (isNaN(photoIndex)) {
+        throw new BadRequestError('Invalid photo index');
+      }
+      const item = await collectionService.removePhoto(
+        req.user!.userId,
+        req.params.id as string,
+        photoIndex,
+      );
+      sendSuccess(res, item);
     } catch (err) {
       next(err);
     }

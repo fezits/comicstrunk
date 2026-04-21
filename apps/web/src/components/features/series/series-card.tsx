@@ -18,7 +18,7 @@ export function SeriesCard({ series }: SeriesCardProps) {
   const editionCount = series._count?.catalogEntries ?? 0;
 
   return (
-    <Link href={`/${locale}/series/${series.id}`} className="block group">
+    <Link href={`/${locale}/series/${series.slug ?? series.id}`} className="block group">
       <Card className="h-full transition-colors hover:border-primary/50">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between gap-2">

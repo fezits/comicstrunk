@@ -1,0 +1,3 @@
+deployment:
+  tasks:
+    - echo "Deploy via script local (scripts/deploy.sh). Este arquivo existe apenas para satisfazer o requisito do cPanel Git."

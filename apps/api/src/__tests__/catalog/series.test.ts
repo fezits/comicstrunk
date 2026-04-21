@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { PrismaClient } from '@prisma/client';
 import { request, loginAs, TEST_ADMIN, TEST_USER } from '../setup';
+import { TEST_PREFIX } from '../global-setup';
 
 const prisma = new PrismaClient();
 const createdIds: string[] = [];
@@ -13,9 +14,9 @@ beforeAll(async () => {
   const existing = await request.get('/api/v1/series');
   if (existing.body.data.length < 3) {
     for (const s of [
-      { title: 'Test Dragon Ball', totalEditions: 42 },
-      { title: 'Test One Piece', totalEditions: 105 },
-      { title: 'Test Batman', totalEditions: 4 },
+      { title: `${TEST_PREFIX}Test Dragon Ball`, totalEditions: 42 },
+      { title: `${TEST_PREFIX}Test One Piece`, totalEditions: 105 },
+      { title: `${TEST_PREFIX}Test Batman`, totalEditions: 4 },
     ]) {
       const res = await request
         .post('/api/v1/series')
@@ -101,7 +102,7 @@ describe('Series API', () => {
       const res = await request
         .post('/api/v1/series')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ title: `CRUD Series ${Date.now()}`, description: 'A test series', totalEditions: 10 })
+        .send({ title: `${TEST_PREFIX}CRUD Series ${Date.now()}`, description: 'A test series', totalEditions: 10 })
         .expect(201);
 
       expect(res.body.data).toHaveProperty('title');
@@ -115,14 +116,14 @@ describe('Series API', () => {
       await request
         .post('/api/v1/series')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ title: 'Should Fail', totalEditions: 5 })
+        .send({ title: `${TEST_PREFIX}Should Fail`, totalEditions: 5 })
         .expect(403);
     });
 
     it('unauthenticated cannot create', async () => {
       await request
         .post('/api/v1/series')
-        .send({ title: 'No Auth', totalEditions: 1 })
+        .send({ title: `${TEST_PREFIX}No Auth`, totalEditions: 1 })
         .expect(401);
     });
   });
@@ -134,17 +135,17 @@ describe('Series API', () => {
       const createRes = await request
         .post('/api/v1/series')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ title: `Ser Upd ${Date.now()}`, totalEditions: 5 })
+        .send({ title: `${TEST_PREFIX}Ser Upd ${Date.now()}`, totalEditions: 5 })
         .expect(201);
       createdIds.push(createRes.body.data.id);
 
       const res = await request
         .put(`/api/v1/series/${createRes.body.data.id}`)
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ title: 'Series Updated', totalEditions: 20 })
+        .send({ title: `${TEST_PREFIX}Series Updated`, totalEditions: 20 })
         .expect(200);
 
-      expect(res.body.data.title).toBe('Series Updated');
+      expect(res.body.data.title).toBe(`${TEST_PREFIX}Series Updated`);
       expect(res.body.data.totalEditions).toBe(20);
     });
   });
@@ -156,7 +157,7 @@ describe('Series API', () => {
       const createRes = await request
         .post('/api/v1/series')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ title: `Ser Del ${Date.now()}`, totalEditions: 1 })
+        .send({ title: `${TEST_PREFIX}Ser Del ${Date.now()}`, totalEditions: 1 })
         .expect(201);
 
       await request

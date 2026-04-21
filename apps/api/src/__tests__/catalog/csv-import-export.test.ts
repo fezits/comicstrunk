@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { PrismaClient } from '@prisma/client';
 import { request, loginAs, TEST_ADMIN } from '../setup';
+import { TEST_PREFIX } from '../global-setup';
 import path from 'path';
 import fs from 'fs';
 
@@ -18,8 +19,8 @@ afterAll(async () => {
   const csvEntries = await prisma.catalogEntry.findMany({
     where: {
       OR: [
-        { title: { contains: 'CSV Import' } },
-        { title: { contains: 'Valid Title' } },
+        { title: { contains: `${TEST_PREFIX}CSV Import` } },
+        { title: { contains: `${TEST_PREFIX}Valid Title` } },
       ],
     },
     select: { id: true },
@@ -38,7 +39,7 @@ describe('CSV Import/Export', () => {
   describe('POST /api/v1/catalog/import', () => {
     it('imports valid CSV and creates entries', async () => {
       const csvContent =
-        'title,author,publisher\nCSV Import Test 1,Author A,Panini\nCSV Import Test 2,Author B,JBC\n';
+        `title,author,publisher\n${TEST_PREFIX}CSV Import Test 1,Author A,Panini\n${TEST_PREFIX}CSV Import Test 2,Author B,JBC\n`;
 
       const tmpFile = path.join(__dirname, 'test-import.csv');
       fs.writeFileSync(tmpFile, csvContent);
@@ -58,7 +59,7 @@ describe('CSV Import/Export', () => {
     });
 
     it('returns errors for rows with missing title', async () => {
-      const csvContent = 'title,author,publisher\n,Author A,Panini\nValid Title,Author B,JBC\n';
+      const csvContent = `title,author,publisher\n,Author A,Panini\n${TEST_PREFIX}Valid Title,Author B,JBC\n`;
 
       const tmpFile = path.join(__dirname, 'test-import-bad.csv');
       fs.writeFileSync(tmpFile, csvContent);

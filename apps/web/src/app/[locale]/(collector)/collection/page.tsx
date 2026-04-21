@@ -6,11 +6,24 @@ import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Plus, Download, Upload, SlidersHorizontal, BarChart3 } from 'lucide-react';
+import { PageSizeSelect } from '@/components/ui/page-size-select';
 
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { ViewToggle, type ViewMode } from '@/components/ui/view-toggle';
 import { CollectionItemCard } from '@/components/features/collection/collection-item-card';
+import { CollectionItemCompact } from '@/components/features/collection/collection-item-compact';
+import { CollectionItemList } from '@/components/features/collection/collection-item-list';
 import { CollectionFilters } from '@/components/features/collection/collection-filters';
 import { CollectionStats } from '@/components/features/collection/collection-stats';
 import {
@@ -25,7 +38,7 @@ import {
 } from '@/lib/api/collection';
 import type { PaginationMeta } from '@/lib/api/catalog';
 
-const LIMIT = 20;
+const DEFAULT_LIMIT = 20;
 
 function parseFiltersFromParams(sp: URLSearchParams): CollectionSearchParams {
   const isReadParam = sp.get('isRead');
@@ -41,7 +54,7 @@ function parseFiltersFromParams(sp: URLSearchParams): CollectionSearchParams {
     sortBy: (sp.get('sortBy') as CollectionSearchParams['sortBy']) || undefined,
     sortOrder: (sp.get('sortOrder') as 'asc' | 'desc') || undefined,
     page: sp.get('page') ? Number(sp.get('page')) : 1,
-    limit: LIMIT,
+    limit: sp.get('limit') ? Number(sp.get('limit')) : DEFAULT_LIMIT,
   };
 }
 
@@ -55,6 +68,7 @@ function filtersToParams(f: CollectionSearchParams): string {
   if (f.sortBy && f.sortBy !== 'createdAt') p.set('sortBy', f.sortBy);
   if (f.sortOrder && f.sortOrder !== 'desc') p.set('sortOrder', f.sortOrder);
   if (f.page && f.page > 1) p.set('page', String(f.page));
+  if (f.limit && f.limit !== DEFAULT_LIMIT) p.set('limit', String(f.limit));
   return p.toString();
 }
 
@@ -73,6 +87,10 @@ export default function CollectionPage() {
   const [statsLoading, setStatsLoading] = useState(true);
   const [error, setError] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [saleDialogOpen, setSaleDialogOpen] = useState(false);
+  const [saleItemId, setSaleItemId] = useState<string | null>(null);
+  const [salePrice, setSalePrice] = useState('');
   const [exporting, setExporting] = useState(false);
 
   const filters = parseFiltersFromParams(searchParams);
@@ -109,7 +127,7 @@ export default function CollectionPage() {
     return () => {
       cancelled = true;
     };
-  }, [searchParams.toString()]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [searchParams.toString()]); // eslint-disable-line
 
   const handleFiltersChange = useCallback(
     (newFilters: CollectionSearchParams) => {
@@ -139,11 +157,38 @@ export default function CollectionPage() {
   const handleToggleSale = async (id: string) => {
     const item = items.find((i) => i.id === id);
     if (!item) return;
+
+    if (item.isForSale) {
+      // Remove from sale — no price needed
+      try {
+        const updated = await markForSale(id, { isForSale: false });
+        setItems((prev) => prev.map((i) => (i.id === id ? updated : i)));
+        toast.success(t('removedFromSale'));
+        getCollectionStats().then(setStats).catch(() => {});
+      } catch {
+        toast.error(tCommon('error'));
+      }
+    } else {
+      // Mark for sale — need to ask for price
+      setSaleItemId(id);
+      setSalePrice('');
+      setSaleDialogOpen(true);
+    }
+  };
+
+  const handleConfirmSale = async () => {
+    if (!saleItemId || !salePrice) return;
+    const price = parseFloat(salePrice.replace(',', '.'));
+    if (isNaN(price) || price <= 0) {
+      toast.error('Informe um preço válido');
+      return;
+    }
     try {
-      const updated = await markForSale(id, { isForSale: !item.isForSale });
-      setItems((prev) => prev.map((i) => (i.id === id ? updated : i)));
-      toast.success(updated.isForSale ? t('markedForSale') : t('removedFromSale'));
+      const updated = await markForSale(saleItemId, { isForSale: true, salePrice: price });
+      setItems((prev) => prev.map((i) => (i.id === saleItemId ? updated : i)));
+      toast.success(t('markedForSale'));
       getCollectionStats().then(setStats).catch(() => {});
+      setSaleDialogOpen(false);
     } catch {
       toast.error(tCommon('error'));
     }
@@ -204,6 +249,16 @@ export default function CollectionPage() {
             </Link>
           </Button>
 
+          <ViewToggle value={viewMode} onChange={setViewMode} />
+
+          <PageSizeSelect
+            value={filters.limit || DEFAULT_LIMIT}
+            onChange={(size) => {
+              const newParams = filtersToParams({ ...filters, limit: size, page: 1 });
+              router.push(`${pathname}${newParams ? '?' + newParams : ''}`);
+            }}
+          />
+
           {/* Mobile filter toggle */}
           <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
             <SheetTrigger asChild>
@@ -255,16 +310,39 @@ export default function CollectionPage() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {items.map((item) => (
-                  <CollectionItemCard
-                    key={item.id}
-                    item={item}
-                    onToggleRead={handleToggleRead}
-                    onToggleSale={handleToggleSale}
-                  />
-                ))}
-              </div>
+              {viewMode === 'grid' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {items.map((item) => (
+                    <CollectionItemCard
+                      key={item.id}
+                      item={item}
+                      onToggleRead={handleToggleRead}
+                      onToggleSale={handleToggleSale}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {viewMode === 'compact' && (
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2">
+                  {items.map((item) => (
+                    <CollectionItemCompact key={item.id} item={item} />
+                  ))}
+                </div>
+              )}
+
+              {viewMode === 'list' && (
+                <div className="flex flex-col gap-2">
+                  {items.map((item) => (
+                    <CollectionItemList
+                      key={item.id}
+                      item={item}
+                      onToggleRead={handleToggleRead}
+                      onToggleSale={handleToggleSale}
+                    />
+                  ))}
+                </div>
+              )}
 
               {/* Pagination */}
               {pagination && pagination.totalPages > 1 && (
@@ -294,6 +372,39 @@ export default function CollectionPage() {
           )}
         </div>
       </div>
+
+      {/* Sale price dialog */}
+      <Dialog open={saleDialogOpen} onOpenChange={setSaleDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t('markForSale')}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="sale-price">Preço de venda (R$)</Label>
+              <Input
+                id="sale-price"
+                type="number"
+                step="0.01"
+                min="0.01"
+                placeholder="29.90"
+                value={salePrice}
+                onChange={(e) => setSalePrice(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleConfirmSale()}
+                autoFocus
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSaleDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleConfirmSale} disabled={!salePrice}>
+              Colocar à venda
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -28,7 +28,7 @@ export function SeriesEditionsList({ editions }: SeriesEditionsListProps) {
       {editions.map((edition) => (
         <Link
           key={edition.id}
-          href={`/${locale}/catalog/${edition.id}`}
+          href={`/${locale}/catalog/${edition.slug ?? edition.id}`}
           className="flex items-center gap-4 rounded-lg border p-3 transition-colors hover:bg-accent/50"
         >
           {/* Cover thumbnail */}
@@ -69,7 +69,7 @@ export function SeriesEditionsList({ editions }: SeriesEditionsListProps) {
             {edition.ratingCount > 0 ? (
               <div className="flex items-center gap-1 text-sm">
                 <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
-                <span>{edition.averageRating.toFixed(1)}</span>
+                <span>{(Number(edition.averageRating) || 0).toFixed(1)}</span>
                 <span className="text-muted-foreground">({edition.ratingCount})</span>
               </div>
             ) : (

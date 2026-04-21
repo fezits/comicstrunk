@@ -275,11 +275,13 @@ model PasswordReset {
 model CatalogEntry {
   id              String         @id @default(cuid())
   title           String
+  slug            String?        @unique
   author          String?
   publisher       String?
   imprint         String?
   barcode         String?
   isbn            String?
+  sourceKey       String?        @unique @map("source_key") // Internal sync key (e.g. rika:12345, panini:ABCD001) - hidden from users
   description     String?        @db.Text
   coverImageUrl   String?        @map("cover_image_url")
   approvalStatus  ApprovalStatus @default(DRAFT) @map("approval_status")
@@ -290,6 +292,11 @@ model CatalogEntry {
   seriesId        String?        @map("series_id")
   volumeNumber    Int?           @map("volume_number")
   editionNumber   Int?           @map("edition_number")
+  coverPrice      Decimal?       @map("cover_price") @db.Decimal(10, 2)
+  publishYear     Int?           @map("publish_year")
+  publishMonth    Int?           @map("publish_month")
+  pageCount       Int?           @map("page_count")
+  coverFileName   String?        @map("cover_file_name")
   createdAt       DateTime       @default(now()) @map("created_at")
   updatedAt       DateTime       @updatedAt @map("updated_at")
 
@@ -314,12 +321,14 @@ model CatalogEntry {
   @@index([approvalStatus])
   @@index([barcode])
   @@index([isbn])
+  @@index([publishYear])
   @@map("catalog_entries")
 }
 
 model Series {
   id            String   @id @default(cuid())
   title         String
+  slug          String?  @unique
   description   String?  @db.Text
   totalEditions Int      @map("total_editions")
   createdAt     DateTime @default(now()) @map("created_at")
@@ -327,6 +336,7 @@ model Series {
 
   catalogEntries CatalogEntry[]
 
+  @@index([title])
   @@map("series")
 }
 
@@ -424,6 +434,7 @@ model CollectionItem {
   readAt         DateTime?     @map("read_at")
   isForSale      Boolean       @default(false) @map("is_for_sale")
   salePrice      Decimal?      @map("sale_price") @db.Decimal(10, 2)
+  photoUrls      Json?         @map("photo_urls")
   createdAt      DateTime      @default(now()) @map("created_at")
   updatedAt      DateTime      @updatedAt @map("updated_at")
 
@@ -669,6 +680,7 @@ model PlanConfig {
   commissionRate  Decimal         @map("commission_rate") @db.Decimal(5, 4)
   trialDays       Int             @default(0) @map("trial_days")
   isActive        Boolean         @default(true) @map("is_active")
+  stripePriceId   String?         @map("stripe_price_id")
   createdAt       DateTime        @default(now()) @map("created_at")
   updatedAt       DateTime        @updatedAt @map("updated_at")
 

@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema, type SignupInput } from "@comicstrunk/contracts";
 import { toast } from "sonner";
-import { Loader2, Check, X } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 import { useAuth } from "@/lib/auth/use-auth";
 import { Button } from "@/components/ui/button";
@@ -37,16 +37,6 @@ export function SignupForm() {
       acceptedTerms: false as unknown as true,
     },
   });
-
-  const password = form.watch("password");
-
-  // Password requirement checks
-  const passwordChecks = {
-    minLength: password.length >= 8,
-    uppercase: /[A-Z]/.test(password),
-    lowercase: /[a-z]/.test(password),
-    number: /[0-9]/.test(password),
-  };
 
   async function onSubmit(data: SignupInput) {
     setIsSubmitting(true);
@@ -81,7 +71,7 @@ export function SignupForm() {
               <FormLabel>{t("labels.name")}</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Seu nome completo"
+                  placeholder={t("placeholders.name")}
                   autoComplete="name"
                   {...field}
                 />
@@ -100,7 +90,7 @@ export function SignupForm() {
               <FormControl>
                 <Input
                   type="email"
-                  placeholder="email@exemplo.com"
+                  placeholder={t("placeholders.email")}
                   autoComplete="email"
                   {...field}
                 />
@@ -119,37 +109,12 @@ export function SignupForm() {
               <FormControl>
                 <Input
                   type="password"
-                  placeholder="********"
+                  placeholder="******"
                   autoComplete="new-password"
                   {...field}
                 />
               </FormControl>
               <FormMessage />
-
-              {/* Password requirements indicator */}
-              {password.length > 0 && (
-                <div className="mt-2 space-y-1 text-xs">
-                  <p className="text-muted-foreground font-medium">
-                    {t("passwordRequirements.title")}
-                  </p>
-                  <PasswordRequirement
-                    met={passwordChecks.minLength}
-                    label={t("passwordRequirements.minLength")}
-                  />
-                  <PasswordRequirement
-                    met={passwordChecks.uppercase}
-                    label={t("passwordRequirements.uppercase")}
-                  />
-                  <PasswordRequirement
-                    met={passwordChecks.lowercase}
-                    label={t("passwordRequirements.lowercase")}
-                  />
-                  <PasswordRequirement
-                    met={passwordChecks.number}
-                    label={t("passwordRequirements.number")}
-                  />
-                </div>
-              )}
             </FormItem>
           )}
         />
@@ -167,7 +132,22 @@ export function SignupForm() {
               </FormControl>
               <div className="space-y-1 leading-none">
                 <FormLabel className="text-sm font-normal cursor-pointer">
-                  {t("labels.acceptTerms")}
+                  {t("signup.acceptTermsPrefix")}
+                  <Link
+                    href={`/${locale}/terms`}
+                    target="_blank"
+                    className="text-primary hover:underline font-medium"
+                  >
+                    {t("signup.termsOfUse")}
+                  </Link>
+                  {t("signup.and")}
+                  <Link
+                    href={`/${locale}/privacy`}
+                    target="_blank"
+                    className="text-primary hover:underline font-medium"
+                  >
+                    {t("signup.privacyPolicy")}
+                  </Link>
                 </FormLabel>
                 <FormMessage />
               </div>
@@ -199,20 +179,5 @@ export function SignupForm() {
         </p>
       </form>
     </Form>
-  );
-}
-
-function PasswordRequirement({ met, label }: { met: boolean; label: string }) {
-  return (
-    <div className="flex items-center gap-1.5">
-      {met ? (
-        <Check className="h-3 w-3 text-green-500" />
-      ) : (
-        <X className="h-3 w-3 text-muted-foreground" />
-      )}
-      <span className={met ? "text-green-500" : "text-muted-foreground"}>
-        {label}
-      </span>
-    </div>
   );
 }

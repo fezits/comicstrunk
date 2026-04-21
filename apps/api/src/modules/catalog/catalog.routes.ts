@@ -15,6 +15,7 @@ import { uploadSingle, uploadCSV } from '../../shared/middleware/upload';
 import { sendSuccess, sendPaginated } from '../../shared/utils/response';
 import { BadRequestError } from '../../shared/utils/api-error';
 import * as catalogService from './catalog.service';
+import { importFromJSON } from './catalog-import.service';
 import type { Request, Response, NextFunction } from 'express';
 
 const router = Router();
@@ -54,6 +55,39 @@ router.get(
         limit,
         approvalStatus,
       });
+      sendPaginated(res, result.data, {
+        page: result.page,
+        limit: result.limit,
+        total: result.total,
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// === Admin recent entries schema ===
+
+const recentEntriesSchema = paginationSchema.extend({
+  source: z.enum(['sync_panini', 'sync_rika', 'manual', 'import']).optional(),
+  days: z.coerce.number().int().positive().max(365).default(7),
+});
+
+// GET /admin/recent — admin only, list recently added entries (MUST be before /admin/:id)
+router.get(
+  '/admin/recent',
+  authenticate,
+  authorize('ADMIN'),
+  validate(recentEntriesSchema, 'query'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { page, limit, source, days } = req.query as unknown as {
+        page: number;
+        limit: number;
+        source?: 'sync_panini' | 'sync_rika' | 'manual' | 'import';
+        days: number;
+      };
+      const result = await catalogService.getRecentEntries({ page, limit, source, days });
       sendPaginated(res, result.data, {
         page: result.page,
         limit: result.limit,
@@ -149,11 +183,69 @@ router.post(
   },
 );
 
-// GET /:id — public, only returns APPROVED entries
-router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
+// POST /import-json — admin only, bulk import from JSON
+router.post(
+  '/import-json',
+  authenticate,
+  authorize('ADMIN'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { rows, options } = req.body;
+
+      if (!Array.isArray(rows)) {
+        throw new BadRequestError('Request body must contain a "rows" JSON array');
+      }
+
+      const result = await importFromJSON(rows, req.user!.userId, options);
+      sendSuccess(res, result);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// GET /stats — catalog statistics (counts by source, covers, etc.)
+router.get(
+  '/stats',
+  authenticate,
+  authorize('ADMIN'),
+  async (_req: Request, res: Response, next: NextFunction) => {
+    try {
+      const stats = await catalogService.getCatalogStats();
+      sendSuccess(res, stats);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /by-source-key/:sourceKey/cover — upload cover by sourceKey (for sync)
+router.post(
+  '/by-source-key/:sourceKey/cover',
+  authenticate,
+  authorize('ADMIN'),
+  uploadSingle('cover'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (!req.file) {
+        throw new BadRequestError('No file provided');
+      }
+      const entry = await catalogService.uploadCoverBySourceKey(
+        req.params.sourceKey as string,
+        req.file.buffer,
+      );
+      sendSuccess(res, entry);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// GET /:idOrSlug — public, accepts CUID or slug, only returns APPROVED entries
+router.get('/:idOrSlug', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const entry = await catalogService.getCatalogEntryById(
-      req.params.id as string,
+    const entry = await catalogService.getCatalogEntryByIdOrSlug(
+      req.params.idOrSlug as string,
       true,
     );
     sendSuccess(res, entry);

@@ -32,6 +32,29 @@ export async function getProfile(userId: string): Promise<UserProfile> {
   };
 }
 
+const PUBLIC_PROFILE_SELECT = {
+  id: true,
+  name: true,
+  avatarUrl: true,
+  createdAt: true,
+} as const;
+
+export async function getPublicProfile(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: PUBLIC_PROFILE_SELECT,
+  });
+
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
+
+  return {
+    ...user,
+    createdAt: user.createdAt.toISOString(),
+  };
+}
+
 export async function updateProfile(
   userId: string,
   data: UpdateProfileInput,

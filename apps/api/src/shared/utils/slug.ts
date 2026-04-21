@@ -5,7 +5,7 @@ export function generateSlug(text: string): string {
   return slugifyLib(text, { lower: true, strict: true, locale: 'pt' });
 }
 
-type SlugModel = 'category' | 'tag' | 'character';
+type SlugModel = 'category' | 'tag' | 'character' | 'catalogEntry' | 'series';
 
 interface SlugDelegate {
   findFirst(args: { where: { slug: string; id?: { not: string } } }): Promise<unknown>;

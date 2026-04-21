@@ -17,6 +17,7 @@ export interface CollectionItem {
   readAt: string | null;
   isForSale: boolean;
   salePrice: number | null;
+  photoUrls: string[] | null;
   createdAt: string;
   updatedAt: string;
   catalogEntry: CatalogEntry;
@@ -162,6 +163,40 @@ export async function importCollection(
   return response.data.data;
 }
 
+export interface MissingEdition {
+  id: string;
+  title: string;
+  slug: string | null;
+  editionNumber: number | null;
+  volumeNumber: number | null;
+  coverImageUrl: string | null;
+}
+
+export async function getMissingEditions(seriesId: string): Promise<MissingEdition[]> {
+  const response = await apiClient.get(`/collection/missing-editions/${seriesId}`);
+  return response.data.data;
+}
+
+// === Batch Add ===
+
+export interface BatchAddInput {
+  catalogEntryIds: string[];
+  condition: string;
+  isRead: boolean;
+}
+
+export interface BatchAddResult {
+  added: number;
+  skipped: number;
+  skippedIds: string[];
+  total: number;
+}
+
+export async function batchAddItems(data: BatchAddInput): Promise<BatchAddResult> {
+  const response = await apiClient.post('/collection/batch', data);
+  return response.data.data;
+}
+
 export async function getCSVTemplate(): Promise<void> {
   const response = await apiClient.get('/collection/csv-template', {
     responseType: 'blob',
@@ -174,4 +209,18 @@ export async function getCSVTemplate(): Promise<void> {
   link.click();
   link.remove();
   window.URL.revokeObjectURL(url);
+}
+
+export async function addPhoto(itemId: string, file: File): Promise<CollectionItem> {
+  const formData = new FormData();
+  formData.append('photo', file);
+  const response = await apiClient.post(`/collection/${itemId}/photos`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data.data;
+}
+
+export async function removePhoto(itemId: string, photoIndex: number): Promise<CollectionItem> {
+  const response = await apiClient.delete(`/collection/${itemId}/photos/${photoIndex}`);
+  return response.data.data;
 }

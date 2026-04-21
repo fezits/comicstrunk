@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import { Menu, Bell, LogIn, UserPlus, LogOut } from 'lucide-react';
+import { Menu, LogIn, UserPlus, LogOut, ShoppingCart } from 'lucide-react';
 
 import { useAuth } from '@/lib/auth/use-auth';
+import { useCart } from '@/contexts/cart-context';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -17,12 +18,16 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { ThemeToggle } from './theme-toggle';
 import { MobileNav } from './mobile-nav';
+import { CartSidebar } from '@/components/features/cart/cart-sidebar';
+import { NotificationBell } from '@/components/features/notifications/notification-bell';
 
 export function Header() {
   const t = useTranslations();
   const locale = useLocale();
   const { user, isLoading, isAuthenticated, logout } = useAuth();
+  const { cartCount } = useCart();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
 
   return (
     <>
@@ -48,24 +53,30 @@ export function Header() {
             </Link>
           </div>
 
-          {/* Right: auth buttons + notifications + theme toggle + user menu */}
+          {/* Right: auth buttons + notifications + cart + theme toggle + user menu */}
           <div className="flex items-center gap-2 [&_button]:text-white [&_button]:hover:bg-white/10 [&_button]:hover:text-white">
             {isLoading ? (
               <Skeleton className="h-8 w-20 bg-white/20 rounded-md" />
             ) : isAuthenticated ? (
               <>
-                {/* Notification bell in header */}
+                {/* Cart icon with badge */}
                 <Button
                   variant="ghost"
                   size="icon"
                   className="relative"
-                  asChild
+                  onClick={() => setCartOpen(true)}
+                  aria-label={t('nav.cart')}
                 >
-                  <Link href={`/${locale}/notifications`}>
-                    <Bell className="h-5 w-5" />
-                    <span className="sr-only">{t('nav.notifications')}</span>
-                  </Link>
+                  <ShoppingCart className="h-5 w-5" />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-white text-[10px] font-bold text-primary">
+                      {cartCount > 99 ? '99+' : cartCount}
+                    </span>
+                  )}
                 </Button>
+
+                {/* Notification bell with dropdown */}
+                <NotificationBell />
 
                 <ThemeToggle />
 
@@ -147,6 +158,7 @@ export function Header() {
       </header>
 
       <MobileNav open={mobileNavOpen} onOpenChange={setMobileNavOpen} />
+      <CartSidebar open={cartOpen} onOpenChange={setCartOpen} />
     </>
   );
 }

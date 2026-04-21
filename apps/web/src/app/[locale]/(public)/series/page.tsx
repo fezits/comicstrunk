@@ -62,7 +62,7 @@ export default function SeriesPage() {
           setSeriesList(result.data);
           setPagination(result.pagination);
         }
-      } catch (_err) {
+      } catch {
         if (!cancelled) {
           setError(tCommon('error'));
         }

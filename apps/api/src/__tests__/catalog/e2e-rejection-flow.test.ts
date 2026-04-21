@@ -13,6 +13,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { PrismaClient } from '@prisma/client';
 import { request, loginAs, TEST_ADMIN } from '../setup';
+import { TEST_PREFIX } from '../global-setup';
 
 const prisma = new PrismaClient();
 
@@ -28,7 +29,7 @@ beforeAll(async () => {
   const seriesRes = await request
     .post('/api/v1/series')
     .set('Authorization', `Bearer ${adminToken}`)
-    .send({ title: `Rejection Test Series ${Date.now()}`, totalEditions: 10 });
+    .send({ title: `${TEST_PREFIX}Rejection Test Series ${Date.now()}`, totalEditions: 10 });
   seriesId = seriesRes.body.data.id;
 });
 
@@ -53,7 +54,7 @@ describe('E2E: Rejection → Revision → Re-approval Flow', () => {
       .post('/api/v1/catalog')
       .set('Authorization', `Bearer ${adminToken}`)
       .send({
-        title: `Reject Me ${Date.now()}`,
+        title: `${TEST_PREFIX}Reject Me ${Date.now()}`,
         author: 'Unknown',
         // Missing publisher, ISBN, etc — reason for rejection
       })
@@ -105,7 +106,7 @@ describe('E2E: Rejection → Revision → Re-approval Flow', () => {
       .put(`/api/v1/catalog/${entryId}`)
       .set('Authorization', `Bearer ${adminToken}`)
       .send({
-        title: `Revised Entry ${Date.now()}`,
+        title: `${TEST_PREFIX}Revised Entry ${Date.now()}`,
         author: 'Akira Toriyama',
         publisher: 'Panini Comics',
         isbn: '978-85-7657-999-0',

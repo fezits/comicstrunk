@@ -143,7 +143,29 @@ export function Sidebar() {
             </div>
           )}
 
-          <p className="px-3 mt-4 text-xs text-muted-foreground">
+          {/* Legal / policy links */}
+          <div className="px-3 mt-4 flex flex-wrap gap-x-3 gap-y-1">
+            <Link
+              href={`/${locale}/terms`}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Termos
+            </Link>
+            <Link
+              href={`/${locale}/privacy`}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Privacidade
+            </Link>
+            <Link
+              href={`/${locale}/policies`}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Politicas
+            </Link>
+          </div>
+
+          <p className="px-3 mt-2 text-xs text-muted-foreground">
             {t('common.appName')} &copy; {new Date().getFullYear()}
           </p>
         </div>

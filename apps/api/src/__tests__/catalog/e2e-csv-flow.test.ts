@@ -12,6 +12,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { PrismaClient } from '@prisma/client';
 import { request, loginAs, TEST_ADMIN } from '../setup';
+import { TEST_PREFIX } from '../global-setup';
 import path from 'path';
 import fs from 'fs';
 
@@ -32,7 +33,7 @@ afterAll(async () => {
   // Clean up entries created by CSV import
   const csvEntries = await prisma.catalogEntry.findMany({
     where: {
-      title: { contains: `CSV-E2E-${SUFFIX}` },
+      title: { contains: `${TEST_PREFIX}CSV-E2E-${SUFFIX}` },
     },
     select: { id: true },
   });
@@ -54,13 +55,13 @@ describe('E2E: CSV Import → Approval → Public Catalog', () => {
   it('imports CSV with 5 valid and 2 invalid rows', async () => {
     const csvContent = [
       'title,author,publisher,imprint,barcode,isbn,description',
-      `CSV-E2E-${SUFFIX} Dragon Ball Vol 1,Akira Toriyama,Panini,Manga,7891111111111,978-1111111111,Primeiro volume`,
-      `CSV-E2E-${SUFFIX} One Piece Vol 1,Eiichiro Oda,Panini,Manga,7891111111112,978-1111111112,Comeco da aventura`,
-      `CSV-E2E-${SUFFIX} Naruto Vol 1,Masashi Kishimoto,Panini,Manga,7891111111113,978-1111111113,O ninja cabeça de vento`,
+      `${TEST_PREFIX}CSV-E2E-${SUFFIX} Dragon Ball Vol 1,Akira Toriyama,Panini,Manga,7891111111111,978-1111111111,Primeiro volume`,
+      `${TEST_PREFIX}CSV-E2E-${SUFFIX} One Piece Vol 1,Eiichiro Oda,Panini,Manga,7891111111112,978-1111111112,Comeco da aventura`,
+      `${TEST_PREFIX}CSV-E2E-${SUFFIX} Naruto Vol 1,Masashi Kishimoto,Panini,Manga,7891111111113,978-1111111113,O ninja cabeça de vento`,
       `,Author Without Title,Publisher,,,, `, // Invalid: empty title
-      `CSV-E2E-${SUFFIX} Batman Ano Um,Frank Miller,DC Comics,Vertigo,7891111111114,978-1111111114,Classico do Batman`,
+      `${TEST_PREFIX}CSV-E2E-${SUFFIX} Batman Ano Um,Frank Miller,DC Comics,Vertigo,7891111111114,978-1111111114,Classico do Batman`,
       `,,,,,, `, // Invalid: empty title
-      `CSV-E2E-${SUFFIX} Sandman Vol 1,Neil Gaiman,Vertigo,,7891111111115,978-1111111115,O Mestre dos Sonhos`,
+      `${TEST_PREFIX}CSV-E2E-${SUFFIX} Sandman Vol 1,Neil Gaiman,Vertigo,,7891111111115,978-1111111115,O Mestre dos Sonhos`,
     ].join('\n');
 
     const tmpFile = path.join(__dirname, `test-e2e-csv-${SUFFIX}.csv`);
@@ -97,7 +98,7 @@ describe('E2E: CSV Import → Approval → Public Catalog', () => {
       .expect(200);
 
     const importedEntries = res.body.data.filter((e: { title: string }) =>
-      e.title.includes(`CSV-E2E-${SUFFIX}`),
+      e.title.includes(`${TEST_PREFIX}CSV-E2E-${SUFFIX}`),
     );
 
     expect(importedEntries.length).toBe(5);
@@ -109,7 +110,7 @@ describe('E2E: CSV Import → Approval → Public Catalog', () => {
   });
 
   it('imported entries do NOT appear in public catalog', async () => {
-    const res = await request.get(`/api/v1/catalog?title=CSV-E2E-${SUFFIX}`).expect(200);
+    const res = await request.get(`/api/v1/catalog?title=${TEST_PREFIX}CSV-E2E-${SUFFIX}`).expect(200);
     expect(res.body.data.length).toBe(0);
   });
 
@@ -140,21 +141,21 @@ describe('E2E: CSV Import → Approval → Public Catalog', () => {
   // === Step 4: Verify in public catalog ===
 
   it('all 5 approved entries appear in public catalog', async () => {
-    const res = await request.get(`/api/v1/catalog?title=CSV-E2E-${SUFFIX}`).expect(200);
+    const res = await request.get(`/api/v1/catalog?title=${TEST_PREFIX}CSV-E2E-${SUFFIX}`).expect(200);
 
     expect(res.body.data.length).toBe(5);
 
     const titles = res.body.data.map((e: { title: string }) => e.title);
-    expect(titles).toContain(`CSV-E2E-${SUFFIX} Dragon Ball Vol 1`);
-    expect(titles).toContain(`CSV-E2E-${SUFFIX} One Piece Vol 1`);
-    expect(titles).toContain(`CSV-E2E-${SUFFIX} Naruto Vol 1`);
-    expect(titles).toContain(`CSV-E2E-${SUFFIX} Batman Ano Um`);
-    expect(titles).toContain(`CSV-E2E-${SUFFIX} Sandman Vol 1`);
+    expect(titles).toContain(`${TEST_PREFIX}CSV-E2E-${SUFFIX} Dragon Ball Vol 1`);
+    expect(titles).toContain(`${TEST_PREFIX}CSV-E2E-${SUFFIX} One Piece Vol 1`);
+    expect(titles).toContain(`${TEST_PREFIX}CSV-E2E-${SUFFIX} Naruto Vol 1`);
+    expect(titles).toContain(`${TEST_PREFIX}CSV-E2E-${SUFFIX} Batman Ano Um`);
+    expect(titles).toContain(`${TEST_PREFIX}CSV-E2E-${SUFFIX} Sandman Vol 1`);
   });
 
   it('each approved entry has correct fields from CSV', async () => {
     const res = await request
-      .get(`/api/v1/catalog?title=CSV-E2E-${SUFFIX} Dragon Ball`)
+      .get(`/api/v1/catalog?title=${TEST_PREFIX}CSV-E2E-${SUFFIX} Dragon Ball`)
       .expect(200);
 
     expect(res.body.data.length).toBeGreaterThanOrEqual(1);
@@ -174,7 +175,7 @@ describe('E2E: CSV Import → Approval → Public Catalog', () => {
 
     expect(res.headers['content-type']).toMatch(/text\/csv|application\/octet-stream/);
     const csvBody = res.text;
-    expect(csvBody).toContain(`CSV-E2E-${SUFFIX} Dragon Ball Vol 1`);
+    expect(csvBody).toContain(`${TEST_PREFIX}CSV-E2E-${SUFFIX} Dragon Ball Vol 1`);
     expect(csvBody).toContain('Akira Toriyama');
   });
 });

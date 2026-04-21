@@ -36,7 +36,7 @@ export function CollectionItemCard({ item, onToggleRead, onToggleSale }: Collect
   };
 
   return (
-    <Card className="h-full overflow-hidden transition-shadow hover:shadow-lg group">
+    <Card className={`h-full overflow-hidden transition-shadow hover:shadow-lg group${item.isRead ? ' border-l-4 border-l-green-500' : ''}`}>
       <Link href={`/${locale}/collection/${item.id}`} className="block">
         {/* Cover */}
         <div className="aspect-[2/3] bg-muted flex items-center justify-center overflow-hidden relative">
@@ -50,10 +50,15 @@ export function CollectionItemCard({ item, onToggleRead, onToggleSale }: Collect
             <BookOpen className="h-12 w-12 text-muted-foreground/40" />
           )}
 
+          {/* Read overlay */}
+          {item.isRead && (
+            <div className="absolute inset-0 bg-green-500/10" />
+          )}
+
           {/* Badges overlay */}
           <div className="absolute top-2 right-2 flex flex-col gap-1">
             {item.isRead && (
-              <Badge variant="secondary" className="text-xs">
+              <Badge className="text-xs bg-green-500/20 text-green-600 border-green-500/30 border">
                 <Eye className="h-3 w-3 mr-1" />
                 {t('readBadge')}
               </Badge>

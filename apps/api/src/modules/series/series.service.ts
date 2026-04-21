@@ -1,6 +1,11 @@
 import { prisma } from '../../shared/lib/prisma';
 import { BadRequestError, NotFoundError } from '../../shared/utils/api-error';
+import { uniqueSlug } from '../../shared/utils/slug';
 import type { CreateSeriesInput, UpdateSeriesInput, SeriesSearchInput } from '@comicstrunk/contracts';
+
+function isCuid(str: string): boolean {
+  return /^c[a-z0-9]{24}$/.test(str);
+}
 
 // === List Series ===
 
@@ -41,6 +46,41 @@ export async function getSeriesById(id: string) {
         select: {
           id: true,
           title: true,
+          slug: true,
+          volumeNumber: true,
+          editionNumber: true,
+          coverImageUrl: true,
+          author: true,
+          publisher: true,
+          averageRating: true,
+          ratingCount: true,
+        },
+      },
+    },
+  });
+
+  if (!series) {
+    throw new NotFoundError('Series not found');
+  }
+
+  return series;
+}
+
+// === Get Series by ID or Slug ===
+
+export async function getSeriesByIdOrSlug(idOrSlug: string) {
+  const where = isCuid(idOrSlug) ? { id: idOrSlug } : { slug: idOrSlug };
+
+  const series = await prisma.series.findFirst({
+    where,
+    include: {
+      catalogEntries: {
+        where: { approvalStatus: 'APPROVED' },
+        orderBy: { editionNumber: 'asc' },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
           volumeNumber: true,
           editionNumber: true,
           coverImageUrl: true,
@@ -63,7 +103,8 @@ export async function getSeriesById(id: string) {
 // === Create Series ===
 
 export async function createSeries(data: CreateSeriesInput) {
-  return prisma.series.create({ data });
+  const slug = await uniqueSlug(data.title, 'series');
+  return prisma.series.create({ data: { ...data, slug } });
 }
 
 // === Update Series ===

@@ -26,6 +26,7 @@ export interface Character {
 export interface CatalogSeries {
   id: string;
   title: string;
+  slug: string | null;
   description: string | null;
   totalEditions: number;
 }
@@ -33,6 +34,7 @@ export interface CatalogSeries {
 export interface CatalogEntry {
   id: string;
   title: string;
+  slug: string | null;
   author: string | null;
   publisher: string | null;
   imprint: string | null;
@@ -45,6 +47,11 @@ export interface CatalogEntry {
   ratingCount: number;
   volumeNumber: number | null;
   editionNumber: number | null;
+  coverPrice: number | null;
+  publishYear: number | null;
+  publishMonth: number | null;
+  pageCount: number | null;
+  coverFileName: string | null;
   createdAt: string;
   series: CatalogSeries | null;
   categories: Array<{ categoryId: string; category: Category }>;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { ArrowLeft, BookOpen } from 'lucide-react';
@@ -12,12 +12,17 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { SeriesEditionsList } from '@/components/features/series/series-editions-list';
 import { getSeriesById, type SeriesDetail } from '@/lib/api/series';
 
+function isCuid(str: string): boolean {
+  return /^c[a-z0-9]{24}$/.test(str);
+}
+
 export default function SeriesDetailPage() {
   const t = useTranslations('series.detail');
   const tCommon = useTranslations('common');
   const locale = useLocale();
   const params = useParams();
-  const id = params.id as string;
+  const router = useRouter();
+  const idOrSlug = params.id as string;
 
   const [series, setSeries] = useState<SeriesDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,8 +35,15 @@ export default function SeriesDetailPage() {
       setLoading(true);
       setNotFound(false);
       try {
-        const data = await getSeriesById(id);
-        if (!cancelled) setSeries(data);
+        const data = await getSeriesById(idOrSlug);
+        if (!cancelled) {
+          // Redirect CUID URLs to slug URLs
+          if (isCuid(idOrSlug) && data.slug) {
+            router.replace(`/${locale}/series/${data.slug}`);
+            return;
+          }
+          setSeries(data);
+        }
       } catch (err: unknown) {
         if (!cancelled) {
           const status = (err as { response?: { status?: number } })?.response?.status;
@@ -48,7 +60,7 @@ export default function SeriesDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [idOrSlug, locale, router]);
 
   if (loading) {
     return (

@@ -1,8 +1,11 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../../shared/lib/prisma';
-import { uploadImage, deleteImage } from '../../shared/lib/cloudinary';
+import { uploadImage, deleteImage, localCoverUrl, LOCAL_API_BASE_URL } from '../../shared/lib/cloudinary';
 import { parseCSV, generateCSV } from '../../shared/lib/csv';
 import { BadRequestError, NotFoundError } from '../../shared/utils/api-error';
+import { uniqueSlug } from '../../shared/utils/slug';
 import { catalogImportRowSchema } from '@comicstrunk/contracts';
 import type {
   CreateCatalogEntryInput,
@@ -26,6 +29,25 @@ const ACTION_TO_STATUS: Record<string, string> = {
   reject: 'REJECTED',
 };
 
+// === Resolve effective cover URL ===
+// Imported entries have coverFileName but no coverImageUrl; fill it in at read time.
+
+function resolveCover<T extends { coverImageUrl: string | null; coverFileName: string | null }>(
+  entry: T,
+): T {
+  const url = entry.coverImageUrl;
+  // URL from old server (different host/port) — extract filename and rebuild
+  if (url && !url.startsWith(LOCAL_API_BASE_URL) && url.includes('/uploads/')) {
+    const filename = url.split('/').pop();
+    if (filename) return { ...entry, coverImageUrl: localCoverUrl(filename) };
+  }
+  // No URL but has local filename — build URL
+  if (!url && entry.coverFileName) {
+    return { ...entry, coverImageUrl: localCoverUrl(entry.coverFileName) };
+  }
+  return entry;
+}
+
 // === Standard includes for catalog entry queries ===
 
 function catalogIncludes() {
@@ -38,16 +60,24 @@ function catalogIncludes() {
   };
 }
 
+// === Helpers ===
+
+function isCuid(str: string): boolean {
+  return /^c[a-z0-9]{24}$/.test(str);
+}
+
 // === CRUD Operations ===
 
 export async function createCatalogEntry(
   data: CreateCatalogEntryInput & { createdById: string },
 ) {
   const { categoryIds, tagIds, characterIds, ...scalarData } = data;
+  const slug = await uniqueSlug(scalarData.title, 'catalogEntry');
 
   const entry = await prisma.catalogEntry.create({
     data: {
       ...scalarData,
+      slug,
       categories: categoryIds?.length
         ? { create: categoryIds.map((id) => ({ categoryId: id })) }
         : undefined,
@@ -78,7 +108,26 @@ export async function getCatalogEntryById(id: string, publicOnly = true) {
     throw new NotFoundError('Catalog entry not found');
   }
 
-  return entry;
+  return resolveCover(entry);
+}
+
+export async function getCatalogEntryByIdOrSlug(idOrSlug: string, publicOnly = true) {
+  const where = isCuid(idOrSlug) ? { id: idOrSlug } : { slug: idOrSlug };
+
+  const entry = await prisma.catalogEntry.findFirst({
+    where,
+    include: catalogIncludes(),
+  });
+
+  if (!entry) {
+    throw new NotFoundError('Catalog entry not found');
+  }
+
+  if (publicOnly && entry.approvalStatus !== 'APPROVED') {
+    throw new NotFoundError('Catalog entry not found');
+  }
+
+  return resolveCover(entry);
 }
 
 export async function updateCatalogEntry(id: string, data: UpdateCatalogEntryInput) {
@@ -132,10 +181,11 @@ export async function updateCatalogEntry(id: string, data: UpdateCatalogEntryInp
   });
 
   // Fetch and return updated entry with full includes
-  return prisma.catalogEntry.findUnique({
+  const updated = await prisma.catalogEntry.findUnique({
     where: { id },
     include: catalogIncludes(),
   });
+  return updated ? resolveCover(updated) : null;
 }
 
 export async function deleteCatalogEntry(id: string) {
@@ -221,7 +271,23 @@ export async function searchCatalog(filters: CatalogSearchInput) {
   };
 
   if (filters.title) {
-    where.title = { contains: filters.title };
+    // Split search query into words and require ALL words to be present
+    // Each word can match in title OR publisher
+    // This allows "dragon ball conrad" to find Dragon Ball from Conrad publisher
+    const words = filters.title.trim().split(/\s+/).filter(w => w.length > 0);
+    if (words.length === 1) {
+      where.OR = [
+        { title: { contains: words[0] } },
+        { publisher: { contains: words[0] } },
+      ];
+    } else if (words.length > 1) {
+      where.AND = words.map(word => ({
+        OR: [
+          { title: { contains: word } },
+          { publisher: { contains: word } },
+        ],
+      }));
+    }
   }
   if (filters.publisher) {
     where.publisher = { contains: filters.publisher };
@@ -239,14 +305,14 @@ export async function searchCatalog(filters: CatalogSearchInput) {
     where.tags = { some: { tagId: { in: filters.tagIds } } };
   }
   if (filters.yearFrom || filters.yearTo) {
-    const dateFilter: Prisma.DateTimeFilter = {};
+    const yearFilter: Prisma.IntNullableFilter = {};
     if (filters.yearFrom) {
-      dateFilter.gte = new Date(`${filters.yearFrom}-01-01`);
+      yearFilter.gte = filters.yearFrom;
     }
     if (filters.yearTo) {
-      dateFilter.lte = new Date(`${filters.yearTo}-12-31T23:59:59`);
+      yearFilter.lte = filters.yearTo;
     }
-    where.createdAt = dateFilter;
+    where.publishYear = yearFilter;
   }
 
   const sortFieldMap: Record<string, string> = {
@@ -270,7 +336,7 @@ export async function searchCatalog(filters: CatalogSearchInput) {
     prisma.catalogEntry.count({ where }),
   ]);
 
-  return { entries, total, page: filters.page, limit: filters.limit };
+  return { entries: entries.map(resolveCover), total, page: filters.page, limit: filters.limit };
 }
 
 // === Admin List ===
@@ -299,7 +365,7 @@ export async function listCatalogEntries(params: {
     prisma.catalogEntry.count({ where }),
   ]);
 
-  return { data, total, page, limit };
+  return { data: data.map(resolveCover), total, page, limit };
 }
 
 // === CSV Import / Export ===
@@ -403,4 +469,114 @@ export async function exportToCSV() {
   }));
 
   return generateCSV(rows);
+}
+
+// === Upload Cover by sourceKey ===
+
+export async function uploadCoverBySourceKey(sourceKey: string, buffer: Buffer) {
+  const entry = await prisma.catalogEntry.findUnique({ where: { sourceKey } });
+  if (!entry) {
+    throw new NotFoundError(`No catalog entry found for sourceKey: ${sourceKey}`);
+  }
+
+  // Build filename from sourceKey: rika:123 → rika-123.jpg
+  const coverFileName = sourceKey.replace(':', '-') + '.jpg';
+  const coversDir = path.resolve(__dirname, '..', '..', '..', 'uploads', 'covers');
+  if (!fs.existsSync(coversDir)) fs.mkdirSync(coversDir, { recursive: true });
+
+  const coverPath = path.join(coversDir, coverFileName);
+
+  // Check if already exists
+  if (fs.existsSync(coverPath)) {
+    return { id: entry.id, sourceKey, coverFileName, status: 'already_exists' as const };
+  }
+
+  fs.writeFileSync(coverPath, buffer);
+
+  const updated = await prisma.catalogEntry.update({
+    where: { id: entry.id },
+    data: { coverFileName },
+  });
+
+  return { id: updated.id, sourceKey, coverFileName, status: 'created' as const };
+}
+
+// === Derive source label from sourceKey ===
+
+function deriveSource(sourceKey: string | null): 'panini' | 'rika' | 'manual' | 'import' {
+  if (!sourceKey) return 'manual';
+  if (sourceKey.startsWith('panini:')) return 'panini';
+  if (sourceKey.startsWith('rika:')) return 'rika';
+  return 'import';
+}
+
+// === Recent Entries (admin) ===
+
+export async function getRecentEntries(params: {
+  page: number;
+  limit: number;
+  source?: 'sync_panini' | 'sync_rika' | 'manual' | 'import';
+  days: number;
+}) {
+  const { page, limit, source, days } = params;
+  const skip = (page - 1) * limit;
+
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
+
+  const where: Prisma.CatalogEntryWhereInput = {
+    createdAt: { gte: cutoff },
+  };
+
+  // Apply source filter based on sourceKey patterns
+  if (source === 'sync_panini') {
+    where.sourceKey = { startsWith: 'panini:' };
+  } else if (source === 'sync_rika') {
+    where.sourceKey = { startsWith: 'rika:' };
+  } else if (source === 'manual') {
+    where.sourceKey = null;
+  } else if (source === 'import') {
+    where.sourceKey = { not: null };
+  }
+
+  const [entries, total] = await Promise.all([
+    prisma.catalogEntry.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: catalogIncludes(),
+    }),
+    prisma.catalogEntry.count({ where }),
+  ]);
+
+  const data = entries.map((entry) => ({
+    ...resolveCover(entry),
+    source: deriveSource(entry.sourceKey),
+  }));
+
+  return { data, total, page, limit };
+}
+
+// === Catalog Stats ===
+
+export async function getCatalogStats() {
+  const totalEntries = await prisma.catalogEntry.count();
+  const withCover = await prisma.catalogEntry.count({ where: { coverFileName: { not: null } } });
+  const withoutCover = totalEntries - withCover;
+
+  const rikaTotal = await prisma.catalogEntry.count({ where: { sourceKey: { startsWith: 'rika:' } } });
+  const rikaCover = await prisma.catalogEntry.count({ where: { sourceKey: { startsWith: 'rika:' }, coverFileName: { not: null } } });
+  const paniniTotal = await prisma.catalogEntry.count({ where: { sourceKey: { startsWith: 'panini:' } } });
+  const paniniCover = await prisma.catalogEntry.count({ where: { sourceKey: { startsWith: 'panini:' }, coverFileName: { not: null } } });
+
+  return {
+    totalEntries,
+    withCover,
+    withoutCover,
+    bySource: {
+      rika: { total: rikaTotal, withCover: rikaCover },
+      panini: { total: paniniTotal, withCover: paniniCover },
+    },
+  };
 }

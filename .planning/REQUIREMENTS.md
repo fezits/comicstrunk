@@ -50,44 +50,44 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **SERI-01**: Each series has: title, description, total number of editions
 - [x] **SERI-02**: Catalog entries linked to series with volume and edition number
-- [ ] **SERI-03**: Series listing page with search
-- [ ] **SERI-04**: Series detail page showing all editions
-- [ ] **SERI-05**: User can see series progress ("15 of 42 editions") when logged in
-- [ ] **SERI-06**: Dedicated series progress page: all series the user collects, with progress bars and missing editions
-- [ ] **SERI-07**: Link from missing editions to catalog/marketplace search
+- [x] **SERI-03**: Series listing page with search
+- [x] **SERI-04**: Series detail page showing all editions
+- [x] **SERI-05**: User can see series progress ("15 of 42 editions") when logged in
+- [x] **SERI-06**: Dedicated series progress page: all series the user collects, with progress bars and missing editions
+- [x] **SERI-07**: Link from missing editions to catalog/marketplace search
 
 ### Collection Management
 
-- [ ] **COLL-01**: User can add copies to collection specifying: quantity, price paid, condition (New/Very Good/Good/Fair/Poor), personal notes
-- [ ] **COLL-02**: User can mark a copy as read (with reading date)
-- [ ] **COLL-03**: User can mark a copy as for sale (sets price; commission preview shown in real-time)
-- [ ] **COLL-04**: User can upload photos of their copy
-- [ ] **COLL-05**: User can import collection via CSV (with downloadable template and error report)
-- [ ] **COLL-06**: User can export collection as CSV
-- [ ] **COLL-07**: Collection size enforced per subscription plan (FREE: 50, BASIC: 200) with clear message and upgrade suggestion when limit is reached
-- [ ] **COLL-08**: Existing copies are never removed on downgrade — only new additions blocked
-- [ ] **COLL-09**: Collection limit enforcement uses atomic database operations (prevents race condition)
+- [x] **COLL-01**: User can add copies to collection specifying: quantity, price paid, condition (New/Very Good/Good/Fair/Poor), personal notes
+- [x] **COLL-02**: User can mark a copy as read (with reading date)
+- [x] **COLL-03**: User can mark a copy as for sale (sets price; commission preview shown in real-time)
+- [x] **COLL-04**: User can upload photos of their copy
+- [x] **COLL-05**: User can import collection via CSV (with downloadable template and error report)
+- [x] **COLL-06**: User can export collection as CSV
+- [x] **COLL-07**: Collection size enforced per subscription plan (FREE: 50, BASIC: 200) with clear message and upgrade suggestion when limit is reached
+- [x] **COLL-08**: Existing copies are never removed on downgrade — only new additions blocked
+- [x] **COLL-09**: Collection limit enforcement uses atomic database operations (prevents race condition)
 
 ### Cart & Marketplace
 
-- [ ] **CART-01**: Adding a copy to cart reserves it for 24 hours (no one else can buy it)
-- [ ] **CART-02**: Maximum 50 items per cart
-- [ ] **CART-03**: Cart persists across sessions
-- [ ] **CART-04**: Expired reservations are automatically released
-- [ ] **CART-05**: Abandoned carts cleaned up after 7 days
-- [ ] **CART-06**: User cannot buy their own copy
-- [ ] **CART-07**: Each copy can only be in one cart at a time
-- [ ] **CART-08**: Cart reservation uses atomic UPDATE (prevents double-sell race condition on unique items)
+- [x] **CART-01**: Adding a copy to cart reserves it for 24 hours (no one else can buy it)
+- [x] **CART-02**: Maximum 50 items per cart
+- [x] **CART-03**: Cart persists across sessions
+- [x] **CART-04**: Expired reservations are automatically released
+- [x] **CART-05**: Abandoned carts cleaned up after 7 days
+- [x] **CART-06**: User cannot buy their own copy
+- [x] **CART-07**: Each copy can only be in one cart at a time
+- [x] **CART-08**: Cart reservation uses atomic UPDATE (prevents double-sell race condition on unique items)
 
 ### Orders
 
-- [ ] **ORDR-01**: Each order has a unique identifier (e.g., ORD-20260221-A1B2C3)
-- [ ] **ORDR-02**: Prices are snapshot at order creation (immutable — never recalculated)
-- [ ] **ORDR-03**: Order can contain items from multiple sellers (each ships separately)
-- [ ] **ORDR-04**: Each item has individual shipping tracking
-- [ ] **ORDR-05**: Order status flow: Pending → Paid → Processing → Shipped → Delivered → Completed
-- [ ] **ORDR-06**: Orders can be cancelled or disputed at any stage
-- [ ] **ORDR-07**: Items not shipped within 7 days are automatically cancelled
+- [x] **ORDR-01**: Each order has a unique identifier (e.g., ORD-20260221-A1B2C3)
+- [x] **ORDR-02**: Prices are snapshot at order creation (immutable — never recalculated)
+- [x] **ORDR-03**: Order can contain items from multiple sellers (each ships separately)
+- [x] **ORDR-04**: Each item has individual shipping tracking
+- [x] **ORDR-05**: Order status flow: Pending → Paid → Processing → Shipped → Delivered → Completed
+- [x] **ORDR-06**: Orders can be cancelled or disputed at any stage
+- [x] **ORDR-07**: Items not shipped within 7 days are automatically cancelled
 - [ ] **ORDR-08**: PIX payment expires in 24h
 
 ### Payments
@@ -103,11 +103,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Commissions
 
-- [ ] **COMM-01**: Commission is a percentage of sale price, paid by seller
-- [ ] **COMM-02**: Commission rate varies by seller plan: FREE 10%, BASIC 8%
-- [ ] **COMM-03**: Rates are configurable by admin (with optional min/max values)
-- [ ] **COMM-04**: Real-time net amount preview shown to seller when setting price ("You'll receive R$ X")
-- [ ] **COMM-05**: Commission rate and net amount snapshot at order creation (immutable for audit)
+- [x] **COMM-01**: Commission is a percentage of sale price, paid by seller
+- [x] **COMM-02**: Commission rate varies by seller plan: FREE 10%, BASIC 8%
+- [x] **COMM-03**: Rates are configurable by admin (with optional min/max values)
+- [x] **COMM-04**: Real-time net amount preview shown to seller when setting price ("You'll receive R$ X")
+- [x] **COMM-05**: Commission rate and net amount snapshot at order creation (immutable for audit)
 - [ ] **COMM-06**: Admin commission dashboard: totals by period, by plan, transaction list
 
 ### Subscriptions
@@ -124,10 +124,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Shipping & Addresses
 
-- [ ] **SHIP-01**: User can register multiple delivery addresses with one as default
-- [ ] **SHIP-02**: Address fields: street, number, complement, neighborhood, city, state, ZIP (CEP)
-- [ ] **SHIP-03**: Shipping methods configurable by admin (PAC, SEDEX, local pickup, etc.)
-- [ ] **SHIP-04**: Seller updates tracking code and carrier for each item
+- [x] **SHIP-01**: User can register multiple delivery addresses with one as default
+- [x] **SHIP-02**: Address fields: street, number, complement, neighborhood, city, state, ZIP (CEP)
+- [x] **SHIP-03**: Shipping methods configurable by admin (PAC, SEDEX, local pickup, etc.)
+- [x] **SHIP-04**: Seller updates tracking code and carrier for each item
 - [ ] **SHIP-05**: Buyer notified of shipping updates
 
 ### Social & Community
@@ -357,46 +357,46 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CATL-13 | Phase 2 | Complete |
 | SERI-01 | Phase 2 | Complete |
 | SERI-02 | Phase 2 | Complete |
-| SERI-03 | Phase 2 | Pending |
-| SERI-04 | Phase 2 | Pending |
-| SERI-05 | Phase 3 | Pending |
-| SERI-06 | Phase 3 | Pending |
-| SERI-07 | Phase 3 | Pending |
-| COLL-01 | Phase 3 | Pending |
-| COLL-02 | Phase 3 | Pending |
-| COLL-03 | Phase 3 | Pending |
-| COLL-04 | Phase 3 | Pending |
-| COLL-05 | Phase 3 | Pending |
-| COLL-06 | Phase 3 | Pending |
-| COLL-07 | Phase 3 | Pending |
-| COLL-08 | Phase 3 | Pending |
-| COLL-09 | Phase 3 | Pending |
-| CART-01 | Phase 4 | Pending |
-| CART-02 | Phase 4 | Pending |
-| CART-03 | Phase 4 | Pending |
-| CART-04 | Phase 4 | Pending |
-| CART-05 | Phase 4 | Pending |
-| CART-06 | Phase 4 | Pending |
-| CART-07 | Phase 4 | Pending |
-| CART-08 | Phase 4 | Pending |
-| ORDR-01 | Phase 4 | Pending |
-| ORDR-02 | Phase 4 | Pending |
-| ORDR-03 | Phase 4 | Pending |
-| ORDR-04 | Phase 4 | Pending |
-| ORDR-05 | Phase 4 | Pending |
-| ORDR-06 | Phase 4 | Pending |
-| ORDR-07 | Phase 4 | Pending |
-| ORDR-08 | Phase 4 | Pending |
-| SHIP-01 | Phase 4 | Pending |
-| SHIP-02 | Phase 4 | Pending |
-| SHIP-03 | Phase 4 | Pending |
-| SHIP-04 | Phase 4 | Pending |
-| SHIP-05 | Phase 4 | Pending |
-| COMM-01 | Phase 4 | Pending |
-| COMM-02 | Phase 4 | Pending |
-| COMM-03 | Phase 4 | Pending |
-| COMM-04 | Phase 4 | Pending |
-| COMM-05 | Phase 4 | Pending |
+| SERI-03 | Phase 2 | Complete |
+| SERI-04 | Phase 2 | Complete |
+| SERI-05 | Phase 3 | Complete |
+| SERI-06 | Phase 3 | Complete |
+| SERI-07 | Phase 3 | Complete |
+| COLL-01 | Phase 3 | Complete |
+| COLL-02 | Phase 3 | Complete |
+| COLL-03 | Phase 3 | Complete |
+| COLL-04 | Phase 3 | Complete |
+| COLL-05 | Phase 3 | Complete |
+| COLL-06 | Phase 3 | Complete |
+| COLL-07 | Phase 3 | Complete |
+| COLL-08 | Phase 3 | Complete |
+| COLL-09 | Phase 3 | Complete |
+| CART-01 | Phase 4 | Complete |
+| CART-02 | Phase 4 | Complete |
+| CART-03 | Phase 4 | Complete |
+| CART-04 | Phase 4 | Complete |
+| CART-05 | Phase 4 | Complete |
+| CART-06 | Phase 4 | Complete |
+| CART-07 | Phase 4 | Complete |
+| CART-08 | Phase 4 | Complete |
+| ORDR-01 | Phase 4 | Complete |
+| ORDR-02 | Phase 4 | Complete |
+| ORDR-03 | Phase 4 | Complete |
+| ORDR-04 | Phase 4 | Complete |
+| ORDR-05 | Phase 4 | Complete |
+| ORDR-06 | Phase 4 | Complete |
+| ORDR-07 | Phase 4 | Complete |
+| ORDR-08 | Phase 5 | Pending |
+| SHIP-01 | Phase 4 | Complete |
+| SHIP-02 | Phase 4 | Complete |
+| SHIP-03 | Phase 4 | Complete |
+| SHIP-04 | Phase 4 | Complete |
+| SHIP-05 | Phase 7 | Pending |
+| COMM-01 | Phase 4 | Complete |
+| COMM-02 | Phase 4 | Complete |
+| COMM-03 | Phase 4 | Complete |
+| COMM-04 | Phase 4 | Complete |
+| COMM-05 | Phase 4 | Complete |
 | PYMT-01 | Phase 5 | Pending |
 | PYMT-02 | Phase 5 | Pending |
 | PYMT-03 | Phase 5 | Pending |

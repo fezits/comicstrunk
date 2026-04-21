@@ -4,13 +4,14 @@ import { validate } from '../../shared/middleware/validate';
 import { authenticate } from '../../shared/middleware/authenticate';
 import { authorize } from '../../shared/middleware/authorize';
 import { sendSuccess, sendPaginated } from '../../shared/utils/response';
+import { cachePublic } from '../../shared/middleware/cache-control';
 import * as charactersService from './characters.service';
 import type { Request, Response, NextFunction } from 'express';
 
 const router = Router();
 
 // GET / — public, list characters with pagination
-router.get('/', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/', cachePublic(300), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const page = Math.max(1, Number(req.query.page) || 1);
     const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
