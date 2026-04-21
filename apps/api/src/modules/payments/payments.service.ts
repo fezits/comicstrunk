@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../../shared/lib/prisma';
+import { generatePixPayment, isPixConfigured } from '../../shared/lib/pix';
 import { mpPayment, mpRefund, isMercadoPagoConfigured } from '../../shared/lib/mercadopago';
 import {
   BadRequestError,
@@ -71,13 +72,25 @@ export async function initiatePixPayment(orderId: string, userId: string) {
     pixExpiresAt = new Date(now.getTime() + maxPixDuration);
   }
 
-  // 4. Call Mercado Pago or use dev fallback
+  // 4. Generate PIX payment (local static PIX or Mercado Pago)
   let providerPaymentId: string;
   let providerStatus: string;
   let pixQrCode: string | null = null;
   let pixCopyPaste: string | null = null;
 
-  if (isMercadoPagoConfigured() && mpPayment) {
+  if (isPixConfigured()) {
+    // Local PIX via pix-utils — no intermediary, manual confirmation by admin
+    const pixData = await generatePixPayment(
+      Number(order.totalAmount),
+      orderId,
+      `Comics Trunk - ${order.orderNumber}`,
+    );
+    providerPaymentId = `pix-${orderId}`;
+    providerStatus = 'pending';
+    pixQrCode = pixData.pixQrCode;
+    pixCopyPaste = pixData.pixCopyPaste;
+  } else if (isMercadoPagoConfigured() && mpPayment) {
+    // Mercado Pago dynamic PIX (fallback if MP is configured)
     const mpResponse = await mpPayment.create({
       body: {
         transaction_amount: Number(order.totalAmount),
@@ -100,8 +113,8 @@ export async function initiatePixPayment(orderId: string, userId: string) {
     pixQrCode = txData?.qr_code_base64 ?? null;
     pixCopyPaste = txData?.qr_code ?? null;
   } else {
-    // Dev mode fallback — no Mercado Pago configured
-    console.warn('[Payments] Mercado Pago not configured — using dev mode mock');
+    // Dev mode fallback — nothing configured
+    console.warn('[Payments] No PIX provider configured — using dev mode mock');
     providerPaymentId = `dev-${orderId}`;
     providerStatus = 'pending';
     pixQrCode = null;
@@ -162,6 +175,7 @@ export async function getPaymentStatus(orderId: string, userId: string) {
     mpPayment &&
     payment.providerPaymentId &&
     !payment.providerPaymentId.startsWith('dev-') &&
+    !payment.providerPaymentId.startsWith('pix-') &&
     payment.providerStatus === 'pending'
   ) {
     try {
