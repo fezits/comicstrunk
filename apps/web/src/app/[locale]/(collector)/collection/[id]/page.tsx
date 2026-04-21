@@ -406,7 +406,7 @@ export default function CollectionItemDetailPage() {
                 {item.pricePaid != null && (
                   <div className="flex gap-2 text-sm">
                     <span className="text-muted-foreground shrink-0">{t('form.pricePaid')}:</span>
-                    <span>{formatCurrency(item.pricePaid)}</span>
+                    <span>{formatCurrency(Number(item.pricePaid))}</span>
                   </div>
                 )}
                 <div className="flex gap-2 text-sm items-center">
@@ -443,7 +443,7 @@ export default function CollectionItemDetailPage() {
                 {item.isForSale && (
                   <Badge className="bg-green-600 hover:bg-green-700">
                     <DollarSign className="h-3 w-3 mr-1" />
-                    {item.salePrice ? formatCurrency(item.salePrice) : t('forSaleBadge')}
+                    {item.salePrice ? formatCurrency(Number(item.salePrice)) : t('forSaleBadge')}
                   </Badge>
                 )}
               </div>
@@ -472,7 +472,7 @@ export default function CollectionItemDetailPage() {
                   onClick={() => setDeleteDialogOpen(true)}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
-                  {tCommon('delete')}
+                  {t('deleteDialog.title')}
                 </Button>
               </div>
             </div>
@@ -596,7 +596,7 @@ export default function CollectionItemDetailPage() {
               {tCommon('cancel')}
             </Button>
             <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
-              {deleting ? tCommon('loading') : tCommon('delete')}
+              {deleting ? tCommon('loading') : 'Remover'}
             </Button>
           </DialogFooter>
         </DialogContent>
