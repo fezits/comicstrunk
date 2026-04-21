@@ -4,6 +4,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
+import rateLimit from 'express-rate-limit';
 import { CONTRACT_VERSION } from '@comicstrunk/contracts';
 import { prisma } from './shared/lib/prisma';
 import { authRoutes } from './modules/auth/auth.routes';
@@ -49,9 +50,15 @@ export function createApp(): Express {
     crossOriginResourcePolicy: { policy: 'cross-origin' },
     contentSecurityPolicy: false,
   }));
+  const allowedOrigins = (process.env.WEB_URL || 'http://localhost:3000').split(',').map(s => s.trim());
   app.use(
     cors({
-      origin: (process.env.WEB_URL || 'http://localhost:3000').split(',').map(s => s.trim()),
+      origin: (origin, callback) => {
+        // Allow requests with no origin (server-to-server, health checks)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) return callback(null, true);
+        callback(new Error('Bloqueado por CORS'));
+      },
       credentials: true,
     }),
   );
@@ -65,6 +72,30 @@ export function createApp(): Express {
 
   // Increased JSON limit for bulk import endpoint — must be before general parser
   app.use('/api/v1/catalog/import-json', express.json({ limit: '50mb' }));
+
+  // === Rate Limiting ===
+  // Global: 200 requests per minute per IP
+  const globalLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 200,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, error: { message: 'Muitas requisições. Tente novamente em 1 minuto.', code: 'RATE_LIMIT' } },
+    keyGenerator: (req) => req.ip || req.socket.remoteAddress || 'unknown',
+  });
+  app.use('/api/', globalLimiter);
+
+  // Catalog: stricter — 60 requests per minute per IP
+  const catalogLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 60,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, error: { message: 'Limite de consultas ao catálogo atingido. Tente novamente em 1 minuto.', code: 'RATE_LIMIT' } },
+    keyGenerator: (req) => req.ip || req.socket.remoteAddress || 'unknown',
+  });
+  app.use('/api/v1/catalog', catalogLimiter);
+  app.use('/api/v1/series', catalogLimiter);
 
   // Parsing
   app.use(express.json());
