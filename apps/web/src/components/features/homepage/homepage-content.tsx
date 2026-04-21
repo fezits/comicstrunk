@@ -296,6 +296,7 @@ export function HomepageContent() {
     <div className="space-y-8 md:space-y-10">
       <HeroSection />
       <SearchStatsSection />
+      <CtaSection />
 
       {/* Dynamic sections from API (excluding banner carousel) */}
       {filteredSections.length > 0 &&
@@ -307,7 +308,6 @@ export function HomepageContent() {
       }
 
       <RecentAdditions />
-      <CtaSection />
     </div>
   );
 }
