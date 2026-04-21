@@ -4,12 +4,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { Search, Loader2, Check, Plus, X } from 'lucide-react';
+import { Search, Loader2, Check, Plus, X, Minus } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { searchCatalog, type CatalogEntry } from '@/lib/api/catalog';
-import { batchAddItems, deleteCollectionItem, getCollectionItems } from '@/lib/api/collection';
+import { batchAddItems, addCollectionItem, deleteCollectionItem, getCollectionItems } from '@/lib/api/collection';
 
 const PAGE_SIZE = 30;
 
@@ -36,15 +36,28 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
   const [ownedMap, setOwnedMap] = useState<Map<string, string>>(new Map());
   const activeQuery = useRef('');
 
-  // Load user's collection to know what they already have
+  // Track quantity per entry for adding
+  const [quantities, setQuantities] = useState<Map<string, number>>(new Map());
+
+  const getQty = (entryId: string) => quantities.get(entryId) ?? 1;
+  const setQty = (entryId: string, qty: number) => {
+    setQuantities((prev) => { const next = new Map(prev); next.set(entryId, Math.max(1, qty)); return next; });
+  };
+
+  // Load user's full collection to know what they already have
   useEffect(() => {
     async function loadOwned() {
       try {
-        const result = await getCollectionItems({ limit: 100 });
         const map = new Map<string, string>();
-        result.data.forEach((item: { id: string; catalogEntryId: string }) => {
-          map.set(item.catalogEntryId, item.id);
-        });
+        let page = 1;
+        while (true) {
+          const result = await getCollectionItems({ limit: 100, page });
+          result.data.forEach((item: { id: string; catalogEntryId: string }) => {
+            map.set(item.catalogEntryId, item.id);
+          });
+          if (page >= (result.pagination?.totalPages ?? 1)) break;
+          page++;
+        }
         setOwnedMap(map);
       } catch {
         // ignore
@@ -99,38 +112,31 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
 
   const handleQuickAdd = useCallback(async (entry: CatalogEntry) => {
     setAddingId(entry.id);
+    const qty = getQty(entry.id);
     try {
-      const result = await batchAddItems({
-        catalogEntryIds: [entry.id],
+      const item = await addCollectionItem({
+        catalogEntryId: entry.id,
+        quantity: qty,
         condition: 'VERY_GOOD',
-        isRead: false,
       });
 
-      if (result.added > 0) {
-        setAddedIds((prev) => new Set(prev).add(entry.id));
-        onAdded(1);
-        toast.success(`"${entry.title}" adicionado`);
-
-        // Refresh owned map to get the new collection item ID
-        try {
-          const coll = await getCollectionItems({ limit: 100 });
-          const map = new Map<string, string>();
-          coll.data.forEach((item: { id: string; catalogEntryId: string }) => {
-            map.set(item.catalogEntryId, item.id);
-          });
-          setOwnedMap(map);
-        } catch { /* ignore */ }
-      } else {
+      setAddedIds((prev) => new Set(prev).add(entry.id));
+      setOwnedMap((prev) => { const next = new Map(prev); next.set(entry.id, item.id); return next; });
+      onAdded(1);
+      toast.success(`"${entry.title}" adicionado (${qty}x)`);
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      if (status === 409) {
         setAddedIds((prev) => new Set(prev).add(entry.id));
         toast.info(t('alreadyInCollection'));
+      } else {
+        const message = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+        toast.error(message || 'Erro ao adicionar');
       }
-    } catch (err: unknown) {
-      const message = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
-      toast.error(message || 'Erro ao adicionar');
     } finally {
       setAddingId(null);
     }
-  }, [onAdded, t]);
+  }, [onAdded, t, quantities]);
 
   const handleRemove = useCallback(async (catalogEntryId: string) => {
     const collectionItemId = ownedMap.get(catalogEntryId);
@@ -270,22 +276,43 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
                   </Button>
                 </div>
               ) : (
-                <Button
-                  size="sm"
-                  variant="default"
-                  onClick={() => handleQuickAdd(entry)}
-                  disabled={isAdding}
-                  className="shrink-0 bg-green-600 hover:bg-green-700"
-                >
-                  {isAdding ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <>
-                      <Plus className="h-4 w-4 mr-1" />
-                      {t('add')}
-                    </>
-                  )}
-                </Button>
+                <div className="flex items-center gap-1 shrink-0">
+                  {/* Quantity selector */}
+                  <div className="flex items-center border rounded-md">
+                    <button
+                      className="h-7 w-6 flex items-center justify-center text-muted-foreground hover:text-foreground"
+                      onClick={(e) => { e.stopPropagation(); setQty(entry.id, getQty(entry.id) - 1); }}
+                      disabled={getQty(entry.id) <= 1}
+                    >
+                      <Minus className="h-3 w-3" />
+                    </button>
+                    <span className="h-7 w-6 flex items-center justify-center text-xs font-medium">
+                      {getQty(entry.id)}
+                    </span>
+                    <button
+                      className="h-7 w-6 flex items-center justify-center text-muted-foreground hover:text-foreground"
+                      onClick={(e) => { e.stopPropagation(); setQty(entry.id, getQty(entry.id) + 1); }}
+                    >
+                      <Plus className="h-3 w-3" />
+                    </button>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="default"
+                    onClick={() => handleQuickAdd(entry)}
+                    disabled={isAdding}
+                    className="shrink-0 bg-green-600 hover:bg-green-700"
+                  >
+                    {isAdding ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Plus className="h-4 w-4 mr-1" />
+                        {t('add')}
+                      </>
+                    )}
+                  </Button>
+                </div>
               )}
             </div>
           );
