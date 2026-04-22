@@ -176,6 +176,47 @@ export function createApp(): Express {
   // Serve uploaded files (covers, etc.)
   app.use('/uploads', express.static(UPLOADS_PATH));
 
+  // === Sitemap for Google ===
+  app.get('/sitemap.xml', async (_req, res) => {
+    try {
+      const SITE = 'https://comicstrunk.com';
+      const entries = await prisma.catalogEntry.findMany({
+        where: { approvalStatus: 'APPROVED' },
+        select: { slug: true, id: true },
+        orderBy: { title: 'asc' },
+      });
+      const series = await prisma.series.findMany({
+        select: { slug: true, id: true },
+      });
+
+      let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+      xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+
+      // Static pages
+      for (const p of ['', '/catalog', '/marketplace', '/deals', '/contact']) {
+        xml += `<url><loc>${SITE}/pt-BR${p}</loc><changefreq>daily</changefreq><priority>0.9</priority></url>\n`;
+      }
+
+      // Catalog entries
+      for (const e of entries) {
+        xml += `<url><loc>${SITE}/pt-BR/catalog/${e.slug || e.id}</loc></url>\n`;
+      }
+
+      // Series
+      for (const s of series) {
+        xml += `<url><loc>${SITE}/pt-BR/series/${s.slug || s.id}</loc></url>\n`;
+      }
+
+      xml += '</urlset>';
+
+      res.setHeader('Content-Type', 'application/xml');
+      res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache 24h
+      res.send(xml);
+    } catch {
+      res.status(500).send('Error generating sitemap');
+    }
+  });
+
   // Health check (outside /api/v1 prefix for simple uptime monitoring)
   app.get('/health', async (_req, res) => {
     let dbStatus: 'ok' | 'error' = 'ok';
