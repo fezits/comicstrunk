@@ -89,14 +89,18 @@ export function createApp(): Express {
     if (req.headers.authorization) {
       return next();
     }
-    // Check if request comes from our site
+    // Internal SSR requests from our Next.js server
+    if (req.headers['x-internal-key'] === (process.env.INTERNAL_API_KEY || 'comicstrunk-ssr-2026')) {
+      return next();
+    }
+    // Check if request comes from our site (browser or SSR)
     const origin = req.headers.origin || '';
     const referer = req.headers.referer || '';
     const isFromSite = allowedOrigins.some(o => origin.includes(o) || referer.includes(o));
     if (isFromSite) {
-      return next();
+      return next(); // Valid Referer/Origin — allow regardless of User-Agent
     }
-    // Block known scraping tools
+    // Block known scraping tools (no valid Referer)
     const ua = req.headers['user-agent'] || '';
     if (SUSPICIOUS_UA.test(ua) || BOT_UA.test(ua) || !ua) {
       res.status(403).json({

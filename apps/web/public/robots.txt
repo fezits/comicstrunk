@@ -1,0 +1,28 @@
+# Comics Trunk — robots.txt
+User-agent: *
+Allow: /
+
+# Block private/auth pages
+Disallow: /*/login
+Disallow: /*/signup
+Disallow: /*/forgot-password
+Disallow: /*/reset-password
+Disallow: /*/collection
+Disallow: /*/collection/*
+Disallow: /*/favorites
+Disallow: /*/cart
+Disallow: /*/orders
+Disallow: /*/orders/*
+Disallow: /*/seller
+Disallow: /*/seller/*
+Disallow: /*/profile
+Disallow: /*/settings
+Disallow: /*/subscription
+Disallow: /*/notifications
+Disallow: /*/lgpd
+Disallow: /*/admin
+Disallow: /*/admin/*
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://comicstrunk.com/sitemap.xml
