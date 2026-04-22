@@ -176,41 +176,81 @@ export function createApp(): Express {
   // Serve uploaded files (covers, etc.)
   app.use('/uploads', express.static(UPLOADS_PATH));
 
-  // === Sitemap for Google ===
+  // === Sitemap for Google (split into 50k chunks) ===
+  const SITE_URL = 'https://comicstrunk.com';
+  const API_HOST = 'https://api.comicstrunk.com';
+  const SITEMAP_LIMIT = 49000; // Under 50k limit
+
+  // Sitemap index
   app.get('/sitemap.xml', async (_req, res) => {
     try {
-      const SITE = 'https://comicstrunk.com';
-      const entries = await prisma.catalogEntry.findMany({
-        where: { approvalStatus: 'APPROVED' },
-        select: { slug: true, id: true },
-        orderBy: { title: 'asc' },
-      });
-      const series = await prisma.series.findMany({
-        select: { slug: true, id: true },
-      });
+      const totalEntries = await prisma.catalogEntry.count({ where: { approvalStatus: 'APPROVED' } });
+      const totalSeries = await prisma.series.count();
+      const total = totalEntries + totalSeries;
+      const numSitemaps = Math.ceil(total / SITEMAP_LIMIT);
+
+      let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+      xml += '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+      for (let i = 0; i < numSitemaps; i++) {
+        xml += `<sitemap><loc>${API_HOST}/sitemap-${i}.xml</loc></sitemap>\n`;
+      }
+      xml += '</sitemapindex>';
+
+      res.setHeader('Content-Type', 'application/xml');
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+      res.send(xml);
+    } catch {
+      res.status(500).send('Error generating sitemap index');
+    }
+  });
+
+  // Individual sitemaps
+  app.get('/sitemap-:id.xml', async (req, res) => {
+    try {
+      const sitemapId = parseInt(req.params.id);
+      const skip = sitemapId * SITEMAP_LIMIT;
 
       let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
       xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
 
-      // Static pages
-      for (const p of ['', '/catalog', '/marketplace', '/deals', '/contact']) {
-        xml += `<url><loc>${SITE}/pt-BR${p}</loc><changefreq>daily</changefreq><priority>0.9</priority></url>\n`;
+      // First sitemap includes static pages
+      if (sitemapId === 0) {
+        for (const p of ['', '/catalog', '/marketplace', '/deals', '/contact']) {
+          xml += `<url><loc>${SITE_URL}/pt-BR${p}</loc><changefreq>daily</changefreq><priority>0.9</priority></url>\n`;
+        }
       }
 
       // Catalog entries
-      for (const e of entries) {
-        xml += `<url><loc>${SITE}/pt-BR/catalog/${e.slug || e.id}</loc></url>\n`;
-      }
+      const totalEntries = await prisma.catalogEntry.count({ where: { approvalStatus: 'APPROVED' } });
 
-      // Series
-      for (const s of series) {
-        xml += `<url><loc>${SITE}/pt-BR/series/${s.slug || s.id}</loc></url>\n`;
+      if (skip < totalEntries) {
+        const entries = await prisma.catalogEntry.findMany({
+          where: { approvalStatus: 'APPROVED' },
+          select: { slug: true, id: true },
+          orderBy: { title: 'asc' },
+          skip,
+          take: SITEMAP_LIMIT,
+        });
+        for (const e of entries) {
+          xml += `<url><loc>${SITE_URL}/pt-BR/catalog/${e.slug || e.id}</loc></url>\n`;
+        }
+      } else {
+        // This sitemap is for series
+        const seriesSkip = skip - totalEntries;
+        const series = await prisma.series.findMany({
+          select: { slug: true, id: true },
+          skip: seriesSkip,
+          take: SITEMAP_LIMIT,
+        });
+        for (const s of series) {
+          xml += `<url><loc>${SITE_URL}/pt-BR/series/${s.slug || s.id}</loc></url>\n`;
+        }
       }
 
       xml += '</urlset>';
 
       res.setHeader('Content-Type', 'application/xml');
-      res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache 24h
+      res.setHeader('Cache-Control', 'public, max-age=86400');
       res.send(xml);
     } catch {
       res.status(500).send('Error generating sitemap');
