@@ -10,6 +10,8 @@ import { authenticate } from '../../shared/middleware/authenticate';
 import { authorize } from '../../shared/middleware/authorize';
 import { sendSuccess, sendPaginated } from '../../shared/utils/response';
 import * as adminService from './admin.service';
+import { prisma } from '../../shared/lib/prisma';
+import { resolveCoverUrl } from '../../shared/lib/cloudinary';
 import type { Request, Response, NextFunction } from 'express';
 
 const router = Router();
@@ -108,5 +110,61 @@ router.post(
     }
   },
 );
+
+// === Cover Review ===
+
+// GET /covers/review — list covers for review (suspected placeholders)
+router.get('/covers/review', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 50;
+    const filter = (req.query.filter as string) || 'all'; // 'all' | 'rika' | 'panini' | 'openlibrary'
+    const skip = (page - 1) * limit;
+
+    const where: Record<string, unknown> = {
+      coverFileName: { not: null },
+    };
+
+    if (filter === 'rika') where.coverFileName = { startsWith: 'rika-' };
+    else if (filter === 'panini') where.coverFileName = { startsWith: 'panini-' };
+    else if (filter === 'openlibrary') where.coverImageUrl = { contains: 'openlibrary' };
+
+    const [entries, total] = await Promise.all([
+      prisma.catalogEntry.findMany({
+        where,
+        select: { id: true, title: true, slug: true, coverImageUrl: true, coverFileName: true, publisher: true },
+        orderBy: { title: 'asc' },
+        skip,
+        take: limit,
+      }),
+      prisma.catalogEntry.count({ where }),
+    ]);
+
+    const resolved = entries.map(resolveCoverUrl);
+    sendPaginated(res, resolved, { page, limit, total });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /covers/remove — remove covers (set to NULL) for selected entry IDs
+router.post('/covers/remove', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { ids } = req.body as { ids: string[] };
+    if (!ids?.length) {
+      sendSuccess(res, { removed: 0 });
+      return;
+    }
+
+    const result = await prisma.catalogEntry.updateMany({
+      where: { id: { in: ids } },
+      data: { coverImageUrl: null, coverFileName: null },
+    });
+
+    sendSuccess(res, { removed: result.count });
+  } catch (err) {
+    next(err);
+  }
+});
 
 export const adminRoutes: Router = router;
