@@ -73,11 +73,47 @@ export function createApp(): Express {
   // Increased JSON limit for bulk import endpoint — must be before general parser
   app.use('/api/v1/catalog/import-json', express.json({ limit: '50mb' }));
 
+  // === Anti-Scraping: Block suspicious API access ===
+  // Real browsers send Origin/Referer. Scripts (curl, python, etc.) usually don't.
+  // We allow: authenticated requests, webhooks, auth endpoints, and requests with valid browser context.
+  const SUSPICIOUS_UA = /^(curl|python|wget|httpie|postman|insomnia|axios|node-fetch|got|undici)/i;
+  const BOT_UA = /bot|crawler|spider|scraper|headless/i;
+
+  app.use('/api/v1', (req, res, next) => {
+    const path = req.path;
+    // Skip protection for auth, webhooks, health, and mutations
+    if (path.startsWith('/auth') || path.startsWith('/webhooks') || path === '/homepage' || req.method !== 'GET') {
+      return next();
+    }
+    // Authenticated users are fine
+    if (req.headers.authorization) {
+      return next();
+    }
+    // Check if request comes from our site
+    const origin = req.headers.origin || '';
+    const referer = req.headers.referer || '';
+    const isFromSite = allowedOrigins.some(o => origin.includes(o) || referer.includes(o));
+    if (isFromSite) {
+      return next();
+    }
+    // Block known scraping tools
+    const ua = req.headers['user-agent'] || '';
+    if (SUSPICIOUS_UA.test(ua) || BOT_UA.test(ua) || !ua) {
+      res.status(403).json({
+        success: false,
+        error: { message: 'Acesso direto à API não permitido.', code: 'FORBIDDEN' },
+      });
+      return;
+    }
+    // Allow other requests (could be SSR, CDN, or browser without Referer)
+    next();
+  });
+
   // === Rate Limiting ===
-  // Global: 200 requests per minute per IP
+  // Global: 500 requests per minute per IP (generous for normal browsing)
   const globalLimiter = rateLimit({
     windowMs: 60 * 1000,
-    max: 200,
+    max: 500,
     standardHeaders: true,
     legacyHeaders: false,
     message: { success: false, error: { message: 'Muitas requisições. Tente novamente em 1 minuto.', code: 'RATE_LIMIT' } },
@@ -85,17 +121,44 @@ export function createApp(): Express {
   });
   app.use('/api/', globalLimiter);
 
-  // Catalog: stricter — 60 requests per minute per IP
+  // Catalog: 200 requests per minute (enough for heavy browsing, blocks mass scraping)
   const catalogLimiter = rateLimit({
     windowMs: 60 * 1000,
-    max: 60,
+    max: 200,
     standardHeaders: true,
     legacyHeaders: false,
-    message: { success: false, error: { message: 'Limite de consultas ao catálogo atingido. Tente novamente em 1 minuto.', code: 'RATE_LIMIT' } },
+    message: { success: false, error: { message: 'Limite de consultas atingido. Tente novamente em 1 minuto.', code: 'RATE_LIMIT' } },
     keyGenerator: (req) => req.ip || req.socket.remoteAddress || 'unknown',
   });
   app.use('/api/v1/catalog', catalogLimiter);
   app.use('/api/v1/series', catalogLimiter);
+
+  // === Honeypot: trap for bots ===
+  // Hidden endpoint that only bots/crawlers find. Real users never hit it.
+  // If accessed, the IP gets flagged.
+  const honeypotIPs = new Set<string>();
+  app.get('/api/v1/admin/export-all', (req, res) => {
+    const ip = req.ip || req.socket.remoteAddress || '';
+    honeypotIPs.add(ip);
+    console.warn(`[HONEYPOT] Bot detected from IP: ${ip} — ${req.headers['user-agent']}`);
+    // Return fake data to waste their time
+    res.json({ success: true, data: [], message: 'Processing... please wait' });
+  });
+  app.get('/api/v1/database/dump', (req, res) => {
+    const ip = req.ip || req.socket.remoteAddress || '';
+    honeypotIPs.add(ip);
+    console.warn(`[HONEYPOT] Bot detected from IP: ${ip} — ${req.headers['user-agent']}`);
+    res.json({ success: true, data: [], message: 'Processing... please wait' });
+  });
+  // Block honeypot IPs from all future requests
+  app.use('/api/', (req, res, next) => {
+    const ip = req.ip || req.socket.remoteAddress || '';
+    if (honeypotIPs.has(ip)) {
+      res.status(429).json({ success: false, error: { message: 'Acesso bloqueado.', code: 'BLOCKED' } });
+      return;
+    }
+    next();
+  });
 
   // Parsing
   app.use(express.json());
