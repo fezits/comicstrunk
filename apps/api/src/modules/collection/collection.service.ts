@@ -41,6 +41,14 @@ function collectionIncludes() {
   };
 }
 
+/** Resolve cover URLs for any collection item with catalogEntry */
+function resolveItemCover<T extends { catalogEntry?: { coverImageUrl: string | null; coverFileName?: string | null } | null }>(item: T): T {
+  if (item.catalogEntry) {
+    return { ...item, catalogEntry: resolveCoverUrl(item.catalogEntry) };
+  }
+  return item;
+}
+
 // === Plan Limit Check (returns structured data) ===
 
 async function checkPlanLimit(
@@ -96,7 +104,7 @@ export async function addItem(userId: string, data: CreateCollectionItemInput) {
         data: { quantity: existing.quantity + (data.quantity ?? 1) },
         include: collectionIncludes(),
       });
-      return updated;
+      return resolveItemCover(updated);
     }
 
     // Check plan limit atomically within the transaction
@@ -116,7 +124,7 @@ export async function addItem(userId: string, data: CreateCollectionItemInput) {
       include: collectionIncludes(),
     });
 
-    return item;
+    return resolveItemCover(item);
   });
 }
 
@@ -203,7 +211,7 @@ export async function updateItem(userId: string, itemId: string, data: UpdateCol
     throw new NotFoundError('Collection item not found');
   }
 
-  return prisma.collectionItem.update({
+  const updated = await prisma.collectionItem.update({
     where: { id: itemId },
     data: {
       ...(data.quantity !== undefined && { quantity: data.quantity }),
@@ -213,6 +221,8 @@ export async function updateItem(userId: string, itemId: string, data: UpdateCol
     },
     include: collectionIncludes(),
   });
+
+  return resolveItemCover(updated);
 }
 
 export async function deleteItem(userId: string, itemId: string) {
@@ -314,7 +324,7 @@ export async function getItem(userId: string, itemId: string) {
     throw new NotFoundError('Collection item not found');
   }
 
-  return { ...item, catalogEntry: item.catalogEntry ? resolveCoverUrl(item.catalogEntry) : item.catalogEntry };
+  return resolveItemCover(item);
 }
 
 // === Toggle Read ===
@@ -330,7 +340,7 @@ export async function markAsRead(userId: string, itemId: string, isRead: boolean
     throw new NotFoundError('Collection item not found');
   }
 
-  return prisma.collectionItem.update({
+  const updated = await prisma.collectionItem.update({
     where: { id: itemId },
     data: {
       isRead,
@@ -338,6 +348,7 @@ export async function markAsRead(userId: string, itemId: string, isRead: boolean
     },
     include: collectionIncludes(),
   });
+  return resolveItemCover(updated);
 }
 
 // === Toggle For Sale ===
@@ -372,7 +383,7 @@ export async function markForSale(userId: string, itemId: string, data: MarkForS
       include: collectionIncludes(),
     })
     .then((updated) => ({
-      ...updated,
+      ...resolveItemCover(updated),
       commission,
       sellerNet:
         data.isForSale && data.salePrice && commission
@@ -516,11 +527,12 @@ export async function addPhoto(userId: string, itemId: string, photoUrl: string)
     );
   }
 
-  return prisma.collectionItem.update({
+  const updated = await prisma.collectionItem.update({
     where: { id: itemId },
     data: { photoUrls: [...currentPhotos, photoUrl] },
     include: collectionIncludes(),
   });
+  return resolveItemCover(updated);
 }
 
 export async function removePhoto(userId: string, itemId: string, photoIndex: number) {
@@ -558,11 +570,12 @@ export async function removePhoto(userId: string, itemId: string, photoIndex: nu
 
   const updatedPhotos = currentPhotos.filter((_, idx) => idx !== photoIndex);
 
-  return prisma.collectionItem.update({
+  const updated = await prisma.collectionItem.update({
     where: { id: itemId },
     data: { photoUrls: updatedPhotos.length > 0 ? updatedPhotos : Prisma.JsonNull },
     include: collectionIncludes(),
   });
+  return resolveItemCover(updated);
 }
 
 // === CSV Import ===
