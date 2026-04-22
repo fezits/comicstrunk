@@ -12,6 +12,7 @@ interface CollectionItemListProps {
   item: CollectionItem;
   onToggleRead?: (id: string, isRead: boolean) => void;
   onToggleSale?: (id: string) => void;
+  onChangeCondition?: (id: string, condition: ItemCondition) => void;
 }
 
 const conditionColors: Record<ItemCondition, string> = {
