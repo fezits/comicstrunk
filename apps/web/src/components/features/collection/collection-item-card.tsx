@@ -54,10 +54,10 @@ export function CollectionItemCard({ item, onToggleRead, onToggleSale, onChangeC
   };
 
   return (
-    <Card className={`h-full overflow-hidden transition-shadow hover:shadow-lg group${item.isRead ? ' border-l-4 border-l-green-500' : ''}`}>
+    <Card className={`h-full transition-shadow hover:shadow-lg group${item.isRead ? ' border-l-4 border-l-green-500' : ''}`}>
       <Link href={`/${locale}/collection/${item.id}`} className="block">
         {/* Cover */}
-        <div className="aspect-[2/3] bg-muted flex items-center justify-center overflow-hidden relative">
+        <div className="aspect-[2/3] bg-muted flex items-center justify-center overflow-hidden relative rounded-t-lg">
           {entry.coverImageUrl ? (
             <img
               src={entry.coverImageUrl}
@@ -117,7 +117,7 @@ export function CollectionItemCard({ item, onToggleRead, onToggleSale, onChangeC
             {t(`condition.${item.condition}`)}
           </Badge>
           {showConditionPicker && (
-            <div className="absolute top-full left-0 mt-1 z-50 bg-popover border border-border rounded-md shadow-lg p-1 flex flex-col gap-0.5 min-w-[120px]">
+            <div className="absolute bottom-full left-0 mb-1 z-[100] bg-popover border border-border rounded-md shadow-lg p-1 flex flex-col gap-0.5 min-w-[120px]">
               {CONDITIONS.map((c) => (
                 <button
                   key={c}
