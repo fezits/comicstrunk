@@ -56,7 +56,8 @@ async function checkPlanLimit(
   userId: string,
   additionalItems = 1,
 ): Promise<{ currentCount: number; limit: number; planType: string }> {
-  const currentCount = await tx.collectionItem.count({ where: { userId } });
+  const agg = await tx.collectionItem.aggregate({ where: { userId }, _sum: { quantity: true } });
+  const currentCount = Number(agg._sum.quantity ?? 0);
 
   // Check subscription — default to FREE if none
   // TRIALING status grants same benefits as ACTIVE (Phase 6 subscription support)
@@ -395,10 +396,20 @@ export async function markForSale(userId: string, itemId: string, data: MarkForS
 // === Stats ===
 
 export async function getStats(userId: string) {
-  const [totalItems, totalRead, totalForSale, valuePaid, valueForSale] = await Promise.all([
+  const [uniqueItems, totalQuantity, totalRead, totalForSale, valuePaid, valueForSale] = await Promise.all([
     prisma.collectionItem.count({ where: { userId } }),
-    prisma.collectionItem.count({ where: { userId, isRead: true } }),
-    prisma.collectionItem.count({ where: { userId, isForSale: true } }),
+    prisma.collectionItem.aggregate({
+      where: { userId },
+      _sum: { quantity: true },
+    }),
+    prisma.collectionItem.aggregate({
+      where: { userId, isRead: true },
+      _sum: { quantity: true },
+    }),
+    prisma.collectionItem.aggregate({
+      where: { userId, isForSale: true },
+      _sum: { quantity: true },
+    }),
     prisma.collectionItem.aggregate({
       where: { userId, pricePaid: { not: null } },
       _sum: { pricePaid: true },
@@ -409,11 +420,16 @@ export async function getStats(userId: string) {
     }),
   ]);
 
+  const totalItems = Number(totalQuantity._sum.quantity ?? 0);
+  const readCount = Number(totalRead._sum.quantity ?? 0);
+  const forSaleCount = Number(totalForSale._sum.quantity ?? 0);
+
   return {
     totalItems,
-    totalRead,
-    totalUnread: totalItems - totalRead,
-    totalForSale,
+    uniqueTitles: uniqueItems,
+    totalRead: readCount,
+    totalUnread: totalItems - readCount,
+    totalForSale: forSaleCount,
     totalValuePaid: Number(valuePaid._sum.pricePaid ?? 0),
     totalValueForSale: Number(valueForSale._sum.salePrice ?? 0),
   };

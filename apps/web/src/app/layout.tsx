@@ -10,6 +10,10 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: 'Comics Trunk',
   description: 'Plataforma para colecionadores de quadrinhos no Brasil',
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/icon-192.png',
+  },
 };
 
 export default function RootLayout({
