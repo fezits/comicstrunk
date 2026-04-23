@@ -121,6 +121,7 @@ router.get('/covers/review', async (req: Request, res: Response, next: NextFunct
     const filter = (req.query.filter as string) || 'all'; // 'all' | 'rika' | 'panini' | 'openlibrary'
     const skip = (page - 1) * limit;
 
+    const sort = (req.query.sort as string) || 'title'; // 'title' | 'filename'
     const where: Record<string, unknown> = {
       coverFileName: { not: null },
     };
@@ -128,12 +129,20 @@ router.get('/covers/review', async (req: Request, res: Response, next: NextFunct
     if (filter === 'rika') where.coverFileName = { startsWith: 'rika-' };
     else if (filter === 'panini') where.coverFileName = { startsWith: 'panini-' };
     else if (filter === 'openlibrary') where.coverImageUrl = { contains: 'openlibrary' };
+    else if (filter === 'placeholder_rika') {
+      // Placeholder Rika: coverFileName starts with rika- (sorted by filename to group similar sizes)
+      where.coverFileName = { startsWith: 'rika-' };
+    }
+
+    const orderBy = sort === 'filename'
+      ? { coverFileName: 'asc' as const }
+      : { title: 'asc' as const };
 
     const [entries, total] = await Promise.all([
       prisma.catalogEntry.findMany({
         where,
         select: { id: true, title: true, slug: true, coverImageUrl: true, coverFileName: true, publisher: true },
-        orderBy: { title: 'asc' },
+        orderBy,
         skip,
         take: limit,
       }),

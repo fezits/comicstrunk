@@ -23,9 +23,11 @@ import { navGroups, type NavGroup } from './nav-config';
 function MobileNavGroup({
   group,
   onNavigate,
+  collectionCount,
 }: {
   group: NavGroup;
   onNavigate: () => void;
+  collectionCount?: number;
 }) {
   const t = useTranslations();
   const pathname = usePathname();
@@ -69,9 +71,9 @@ function MobileNavGroup({
               >
                 <Icon className="h-4 w-4 shrink-0" />
                 <span className="flex-1">{t(item.titleKey)}</span>
-                {item.href === '/collection' && collectionCount > 0 && (
+                {item.href === '/collection' && (collectionCount ?? 0) > 0 && (
                   <span className="text-xs bg-primary/15 text-primary font-semibold px-2 py-0.5 rounded">
-                    {collectionCount.toLocaleString('pt-BR')}
+                    {(collectionCount ?? 0).toLocaleString('pt-BR')}
                   </span>
                 )}
               </Link>
@@ -120,7 +122,7 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
           {visibleGroups.map((group, index) => (
             <div key={group.labelKey}>
               {index > 0 && <Separator className="my-2" />}
-              <MobileNavGroup group={group} onNavigate={handleNavigate} />
+              <MobileNavGroup group={group} onNavigate={handleNavigate} collectionCount={collectionCount} />
             </div>
           ))}
 

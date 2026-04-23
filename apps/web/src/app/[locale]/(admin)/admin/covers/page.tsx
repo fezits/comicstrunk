@@ -18,7 +18,7 @@ interface CoverEntry {
   publisher: string | null;
 }
 
-const LIMIT = 60;
+const LIMIT = 120;
 
 export default function AdminCoverReviewPage() {
   const tCommon = useTranslations('common');
@@ -29,13 +29,14 @@ export default function AdminCoverReviewPage() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [removing, setRemoving] = useState(false);
   const [filter, setFilter] = useState('rika');
+  const [sort, setSort] = useState('title');
 
   const totalPages = Math.ceil(total / LIMIT);
 
   const fetchCovers = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await apiClient.get(`/admin/covers/review?page=${page}&limit=${LIMIT}&filter=${filter}`);
+      const res = await apiClient.get(`/admin/covers/review?page=${page}&limit=${LIMIT}&filter=${filter}&sort=${sort}`);
       setEntries(res.data.data || []);
       setTotal(res.data.pagination?.total || 0);
     } catch {
@@ -43,7 +44,7 @@ export default function AdminCoverReviewPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, filter]);
+  }, [page, filter, sort]);
 
   useEffect(() => {
     fetchCovers();
@@ -97,14 +98,29 @@ export default function AdminCoverReviewPage() {
 
       {/* Filters */}
       <div className="flex items-center gap-2 flex-wrap">
-        {['rika', 'panini', 'openlibrary', 'all'].map(f => (
+        {['placeholder_rika', 'rika', 'panini', 'openlibrary', 'all'].map(f => (
           <Button
             key={f}
             variant={filter === f ? 'default' : 'outline'}
             size="sm"
             onClick={() => { setFilter(f); setPage(1); }}
           >
-            {f === 'all' ? 'Todas' : f.charAt(0).toUpperCase() + f.slice(1)}
+            {f === 'all' ? 'Todas' : f === 'placeholder_rika' ? 'Placeholders Rika' : f.charAt(0).toUpperCase() + f.slice(1)}
+          </Button>
+        ))}
+      </div>
+
+      {/* Sort */}
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-muted-foreground">Ordenar:</span>
+        {[{ key: 'title', label: 'Título' }, { key: 'filename', label: 'Arquivo' }].map(s => (
+          <Button
+            key={s.key}
+            variant={sort === s.key ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => { setSort(s.key); setPage(1); }}
+          >
+            {s.label}
           </Button>
         ))}
       </div>

@@ -26,6 +26,7 @@ import {
   Mail,
   Clock,
   ListPlus,
+  ImageIcon,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -99,6 +100,7 @@ export const navGroups: NavGroup[] = [
       { titleKey: 'nav.adminDashboard', href: '/admin', icon: LayoutDashboard },
       { titleKey: 'nav.adminCatalog', href: '/admin/catalog', icon: Library },
       { titleKey: 'nav.adminRecentCatalog', href: '/admin/catalog/recent', icon: Clock },
+      { titleKey: 'nav.adminCovers', href: '/admin/covers', icon: ImageIcon },
       { titleKey: 'nav.adminUsers', href: '/admin/users', icon: Users },
       { titleKey: 'nav.adminContent', href: '/admin/content', icon: FileText },
       { titleKey: 'nav.adminPayments', href: '/admin/payments', icon: CreditCard },
