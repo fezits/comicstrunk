@@ -1,9 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import Link from 'next/link';
+import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { Search, CheckSquare, Square, Loader2 } from 'lucide-react';
+import { Search, CheckSquare, Square, Loader2, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +17,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { getSeries, getSeriesById, type Series, type SeriesDetail, type CatalogEdition } from '@/lib/api/series';
+import { useAuth } from '@/lib/auth/use-auth';
+import { COLLECTION_LIMITS } from '@comicstrunk/contracts';
 
 function extractNumber(edition: CatalogEdition): string {
   if (edition.editionNumber != null) return String(edition.editionNumber);
@@ -35,10 +38,12 @@ interface BatchAddBySeriesProps {
 
 export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
   const t = useTranslations('batchAdd');
+  const locale = useLocale();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [seriesResults, setSeriesResults] = useState<Series[]>([]);
   const [searching, setSearching] = useState(false);
+  const [zoomImage, setZoomImage] = useState<{ url: string; title: string } | null>(null);
 
   const [selectedSeries, setSelectedSeries] = useState<SeriesDetail | null>(null);
   const [loadingSeries, setLoadingSeries] = useState(false);
@@ -139,11 +144,13 @@ export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
     setSelectedIds(new Set());
   };
 
-  // Plan limit check (1000 for free, validated by backend too)
-  const planLimit = 1000;
+  // Plan limit check — ADMIN has no limit
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
+  const planLimit = isAdmin ? Infinity : COLLECTION_LIMITS.FREE;
   const currentCount = totalItems;
-  const available = planLimit - currentCount;
-  const overLimit = selectedIds.size > available;
+  const available = isAdmin ? Infinity : planLimit - currentCount;
+  const overLimit = !isAdmin && selectedIds.size > available;
 
   const handleBatchAdd = async () => {
     if (selectedIds.size === 0 || overLimit) return;
@@ -270,8 +277,16 @@ export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
                         : 'border-transparent hover:border-muted-foreground/30'
                   }`}
                 >
-                  {/* Cover */}
-                  <div className="aspect-[2/3] bg-muted flex items-center justify-center">
+                  {/* Cover — click to zoom */}
+                  <div
+                    className="aspect-[2/3] bg-muted flex items-center justify-center cursor-zoom-in"
+                    onClick={(e) => {
+                      if (edition.coverImageUrl) {
+                        e.stopPropagation();
+                        setZoomImage({ url: edition.coverImageUrl, title: edition.title });
+                      }
+                    }}
+                  >
                     {edition.coverImageUrl ? (
                       <img
                         src={edition.coverImageUrl}
@@ -300,10 +315,15 @@ export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
                     </div>
                   )}
 
-                  {/* Edition number */}
-                  <p className="text-center text-[10px] py-0.5 truncate px-1">
+                  {/* Edition title — clickable link */}
+                  <Link
+                    href={`/${locale}/catalog/${edition.slug || edition.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="block text-center text-[10px] py-0.5 truncate px-1 hover:text-primary hover:underline"
+                    target="_blank"
+                  >
                     #{extractNumber(edition)}
-                  </p>
+                  </Link>
                 </button>
               );
             })}
@@ -370,6 +390,26 @@ export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
               )}
             </Button>
           </div>
+        </div>
+      )}
+      {/* Image zoom modal */}
+      {zoomImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setZoomImage(null)}
+        >
+          <button
+            className="absolute top-4 right-4 text-white hover:text-gray-300"
+            onClick={() => setZoomImage(null)}
+          >
+            <X className="h-8 w-8" />
+          </button>
+          <img
+            src={zoomImage.url}
+            alt={zoomImage.title}
+            className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
     </div>

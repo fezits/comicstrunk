@@ -165,7 +165,7 @@ export async function getPaymentStatus(orderId: string, userId: string) {
   }
 
   // Validate order ownership
-  if (payment.order.buyerId !== userId) {
+  if (payment.order!.buyerId !== userId) {
     throw new ForbiddenError('Not your order');
   }
 
@@ -318,7 +318,7 @@ export async function processWebhookEvent(
           });
 
           if (payment) {
-            await processPaymentConfirmation(payment.orderId);
+            await processPaymentConfirmation(payment.orderId!);
           }
         }
       }
@@ -510,12 +510,12 @@ export async function refundPayment(paymentId: string, amount?: number) {
   if (isFullRefund) {
     await prisma.$transaction(async (tx) => {
       await tx.orderItem.updateMany({
-        where: { orderId: payment.orderId, status: 'PAID' },
+        where: { orderId: payment.orderId!, status: 'PAID' },
         data: { status: 'REFUNDED' },
       });
 
       await tx.order.update({
-        where: { id: payment.orderId },
+        where: { id: payment.orderId! },
         data: { status: 'CANCELLED' },
       });
     });
