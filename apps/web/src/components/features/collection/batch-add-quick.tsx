@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { searchCatalog, type CatalogEntry } from '@/lib/api/catalog';
 import { batchAddItems, addCollectionItem, deleteCollectionItem, getCollectionItems } from '@/lib/api/collection';
+import { useCollection } from '@/contexts/collection-context';
 
 const PAGE_SIZE = 30;
 
@@ -29,6 +30,7 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [zoomImage, setZoomImage] = useState<{ url: string; title: string } | null>(null);
+  const { incrementCount, decrementCount } = useCollection();
   const [totalResults, setTotalResults] = useState(0);
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
   const [addingId, setAddingId] = useState<string | null>(null);
@@ -124,6 +126,7 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
       setAddedIds((prev) => new Set(prev).add(entry.id));
       setOwnedMap((prev) => { const next = new Map(prev); next.set(entry.id, item.id); return next; });
       onAdded(1);
+      incrementCount(qty);
       toast.success(`"${entry.title}" adicionado (${qty}x)`);
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status;
@@ -156,6 +159,7 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
         next.delete(catalogEntryId);
         return next;
       });
+      decrementCount();
       toast.success('Removido da coleção');
     } catch (err: unknown) {
       const message = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;

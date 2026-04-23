@@ -31,6 +31,7 @@ function extractNumber(edition: CatalogEdition): string {
   return '?';
 }
 import { batchAddItems, getCollectionStats } from '@/lib/api/collection';
+import { useCollection } from '@/contexts/collection-context';
 
 interface BatchAddBySeriesProps {
   onAdded: (count: number) => void;
@@ -39,6 +40,7 @@ interface BatchAddBySeriesProps {
 export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
   const t = useTranslations('batchAdd');
   const locale = useLocale();
+  const { incrementCount } = useCollection();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [seriesResults, setSeriesResults] = useState<Series[]>([]);
@@ -161,6 +163,7 @@ export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
       });
       toast.success(t('success', { added: result.added, skipped: result.skipped }));
       onAdded(result.added);
+      incrementCount(result.added);
 
       // Move added items to owned
       setOwnedIds((prev) => {

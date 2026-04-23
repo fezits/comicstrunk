@@ -1,0 +1,178 @@
+[
+  {
+    "title": "Scion",
+    "author": "Ron Marz, Jim Cheung",
+    "publisher": "CrossGen",
+    "publishYear": 2001,
+    "pageCount": 192,
+    "isbn": "1931484260",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/4851911-L.jpg",
+    "sourceKey": "openlibrary:4851911",
+    "editionCount": 7
+  },
+  {
+    "title": "Meridian",
+    "author": "Barbara Kesel",
+    "publisher": "CrossGen",
+    "publishYear": 2001,
+    "pageCount": 191,
+    "isbn": "9781593140564",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/4851866-L.jpg",
+    "sourceKey": "openlibrary:4851866",
+    "editionCount": 6
+  },
+  {
+    "title": "Mystic",
+    "author": "Ron Marz, Brandon Peterson, Tony Bedard, Fabrizio Fiorentino",
+    "publisher": "CrossGen",
+    "publishYear": 2001,
+    "pageCount": 160,
+    "isbn": "1931484007",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/4858088-L.jpg",
+    "sourceKey": "openlibrary:4858088",
+    "editionCount": 4
+  },
+  {
+    "title": "Meridian, flying solo",
+    "author": "Barbara Kesel",
+    "publisher": "CrossGen",
+    "publishYear": 2001,
+    "pageCount": 191,
+    "isbn": "1931484031",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/4257069-L.jpg",
+    "sourceKey": "openlibrary:4257069",
+    "editionCount": 2
+  },
+  {
+    "title": "Sigil",
+    "author": "Barbara Kesel",
+    "publisher": "CrossGen",
+    "publishYear": 2001,
+    "pageCount": null,
+    "isbn": "9781931484015",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/956681-L.jpg",
+    "sourceKey": "openlibrary:956681",
+    "editionCount": 1
+  },
+  {
+    "title": "Ruse",
+    "author": "Mark Waid, Jackson Guice, Scott Beatty, Butch Guice, Paul Ryan",
+    "publisher": "CrossGen",
+    "publishYear": 2002,
+    "pageCount": 176,
+    "isbn": "9781931484190",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/956697-L.jpg",
+    "sourceKey": "openlibrary:956697",
+    "editionCount": 4
+  },
+  {
+    "title": "Sojourn",
+    "author": "Ron Marz",
+    "publisher": "CrossGen",
+    "publishYear": 2002,
+    "pageCount": 192,
+    "isbn": "1593140134",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/4858068-L.jpg",
+    "sourceKey": "openlibrary:4858068",
+    "editionCount": 4
+  },
+  {
+    "title": "The path",
+    "author": "Ron Marz, Bart Sears",
+    "publisher": "CrossGen",
+    "publishYear": 2003,
+    "pageCount": 160,
+    "isbn": "9781593140526",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/4857518-L.jpg",
+    "sourceKey": "openlibrary:4857518",
+    "editionCount": 6
+  },
+  {
+    "title": "Crux",
+    "author": "Mark Waid",
+    "publisher": "CrossGen",
+    "publishYear": 2002,
+    "pageCount": null,
+    "isbn": "9781931484145",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/956689-L.jpg",
+    "sourceKey": "openlibrary:956689",
+    "editionCount": 1
+  },
+  {
+    "title": "CrossGen illustrated",
+    "author": "Brandon Peterson, Barbara Kesel",
+    "publisher": "CrossGen",
+    "publishYear": 2001,
+    "pageCount": 192,
+    "isbn": "1931484058",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/4249159-L.jpg",
+    "sourceKey": "openlibrary:4249159",
+    "editionCount": 1
+  },
+  {
+    "title": "Edge/Forge",
+    "author": null,
+    "publisher": "CrossGen",
+    "publishYear": 2003,
+    "pageCount": null,
+    "isbn": "159314007X",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/5195523-L.jpg",
+    "sourceKey": "openlibrary:5195523",
+    "editionCount": 1
+  },
+  {
+    "title": "Negation",
+    "author": "Tony Bedard",
+    "publisher": "CrossGen",
+    "publishYear": 2002,
+    "pageCount": null,
+    "isbn": "9781931484596",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/4851783-L.jpg",
+    "sourceKey": "openlibrary:4851783",
+    "editionCount": 1
+  },
+  {
+    "title": "Compendia Deluxe Starter Kit",
+    "author": "Crossgen Comics",
+    "publisher": "CrossGen",
+    "publishYear": 2003,
+    "pageCount": null,
+    "isbn": "9781593140083",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/5195515-L.jpg",
+    "sourceKey": "openlibrary:5195515",
+    "editionCount": 1
+  },
+  {
+    "title": "The First",
+    "author": "Barbara Kesel",
+    "publisher": "CrossGen",
+    "publishYear": 2001,
+    "pageCount": 160,
+    "isbn": "9781931484398",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/956694-L.jpg",
+    "sourceKey": "openlibrary:956694",
+    "editionCount": 3
+  },
+  {
+    "title": "Way of the rat",
+    "author": "Chuck Dixon",
+    "publisher": "CrossGen",
+    "publishYear": 2003,
+    "pageCount": 160,
+    "isbn": "1931484511",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/956700-L.jpg",
+    "sourceKey": "openlibrary:956700",
+    "editionCount": 2
+  },
+  {
+    "title": "Route 666",
+    "author": "Tony Bedard",
+    "publisher": "CrossGen",
+    "publishYear": 2002,
+    "pageCount": null,
+    "isbn": "1931484562",
+    "coverImageUrl": "",
+    "sourceKey": "openlibrary:work-OL5753647W",
+    "editionCount": 2
+  }
+]

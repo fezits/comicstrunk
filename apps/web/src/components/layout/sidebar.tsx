@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { navGroups, type NavGroup } from './nav-config';
-import { getCollectionStats } from '@/lib/api/collection';
+import { useCollection } from '@/contexts/collection-context';
 
 function NavGroupSection({ group, collectionCount }: { group: NavGroup; collectionCount?: number }) {
   const t = useTranslations();
@@ -74,14 +74,7 @@ export function Sidebar() {
   const t = useTranslations();
   const locale = useLocale();
   const { user, isLoading, isAuthenticated, logout } = useAuth();
-  const [collectionCount, setCollectionCount] = useState<number | undefined>();
-
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    getCollectionStats()
-      .then((stats) => setCollectionCount(stats.totalItems ?? 0))
-      .catch(() => {});
-  }, [isAuthenticated]);
+  const { collectionCount } = useCollection();
 
   // Filter groups based on auth state and role
   const visibleGroups = navGroups.filter((group) => {

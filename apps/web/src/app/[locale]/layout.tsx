@@ -3,6 +3,7 @@ import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
 import { AuthProvider } from '@/lib/auth/auth-provider';
 import { CartProvider } from '@/contexts/cart-context';
+import { CollectionProvider } from '@/contexts/collection-context';
 import { NotificationProvider } from '@/contexts/notification-context';
 import { CookieConsentBanner } from '@/components/features/legal/cookie-consent-banner';
 import { QueryProvider } from '@/components/providers/query-provider';
@@ -32,10 +33,12 @@ export default async function LocaleLayout({
         <QueryProvider>
           <AuthProvider>
             <CartProvider>
-              <NotificationProvider>
-                {children}
-                <CookieConsentBanner />
-              </NotificationProvider>
+              <CollectionProvider>
+                <NotificationProvider>
+                  {children}
+                  <CookieConsentBanner />
+                </NotificationProvider>
+              </CollectionProvider>
             </CartProvider>
           </AuthProvider>
         </QueryProvider>

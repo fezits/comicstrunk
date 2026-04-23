@@ -8,6 +8,7 @@ import { ChevronDown, LogIn, UserPlus, LogOut } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth/use-auth';
+import { useCollection } from '@/contexts/collection-context';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -67,7 +68,12 @@ function MobileNavGroup({
                 )}
               >
                 <Icon className="h-4 w-4 shrink-0" />
-                <span>{t(item.titleKey)}</span>
+                <span className="flex-1">{t(item.titleKey)}</span>
+                {item.href === '/collection' && collectionCount > 0 && (
+                  <span className="text-xs bg-primary/15 text-primary font-semibold px-2 py-0.5 rounded">
+                    {collectionCount.toLocaleString('pt-BR')}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -86,6 +92,7 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
   const t = useTranslations();
   const locale = useLocale();
   const { user, isAuthenticated, logout } = useAuth();
+  const { collectionCount } = useCollection();
 
   // Filter groups based on auth state and role
   const visibleGroups = navGroups.filter((group) => {

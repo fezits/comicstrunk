@@ -1,0 +1,496 @@
+=== OPEN LIBRARY BULK FETCH ===
+Publishers: 43
+Subject searches: 7
+Started at: 2026-04-21T05:12:05.592Z
+
+Resuming from previous run. Completed: 9
+Loaded 22686 entries from previous run
+
+
+Skipping DC Comics (already done)
+
+Skipping Marvel Comics (already done)
+
+Skipping Image Comics (already done)
+
+Skipping Dark Horse Comics (already done)
+
+Skipping IDW Publishing (already done)
+
+Skipping BOOM! Studios (already done)
+
+Skipping Dynamite Entertainment (already done)
+
+Skipping Archie Comics (already done)
+
+Skipping Valiant Entertainment (already done)
+
+=== Oni Press ===
+  Searching: "Oni Press"
+  Total in OL: 1782
+  Page 1: 100 unique entries  Page 2: 200 unique entries  Page 3: 300 unique entries  Page 4: 400 unique entries  Page 5: 500 unique entries  Page 6: 600 unique entries  Page 7: 700 unique entries  Page 8: 800 unique entries  Page 9: 900 unique entries  Page 10: 1000 unique entries  After "Oni Press": 1000 unique entries
+  TOTAL Oni Press: 1000
+    With cover: 513
+  New unique: 988 (global total: 23674)
+
+=== Titan Comics ===
+  Searching: "Titan Comics"
+  Total in OL: 620
+  Page 1: 100 unique entries  Page 2: 200 unique entries  Page 3: 299 unique entries  Page 4: 397 unique entries  Page 5: 491 unique entries  Page 6: 590 unique entries  Page 7: 610 unique entries  After "Titan Comics": 610 unique entries
+  Searching: "Titan Books"
+  Total in OL: 4840
+  Page 1: 684 unique entries  Page 2: 758 unique entries  Page 3: 836 unique entries  Page 4: 915 unique entries  Page 5: 1007 unique entries  Page 6: 1087 unique entries  Page 7: 1166 unique entries  Page 8: 1257 unique entries  Page 9: 1348 unique entries  Page 10: 1434 unique entries  Page 11: 1519 unique entries  Page 12: 1611 unique entries  Page 13: 1704 unique entries  Page 14: 1785 unique entries  Page 15: 1884 unique entries  After "Titan Books": 1884 unique entries
+  TOTAL Titan Comics: 1884
+    With cover: 1623
+  New unique: 1597 (global total: 25271)
+
+=== AfterShock Comics ===
+  Searching: "AfterShock Comics"
+  Total in OL: 179
+  Page 1: 100 unique entries  Page 2: 168 unique entries  After "AfterShock Comics": 168 unique entries
+  TOTAL AfterShock Comics: 168
+    With cover: 72
+  New unique: 168 (global total: 25439)
+
+=== Vertigo ===
+  Searching: "Vertigo"
+  Total in OL: 662
+  Page 1: 100 unique entries  Page 2: 200 unique entries  Page 3: 299 unique entries  Page 4: 399 unique entries  Page 5: 499 unique entries  Page 6: 568 unique entries  Page 7: 621 unique entries  After "Vertigo": 621 unique entries
+  Searching: "DC Comics/Vertigo"
+  Total in OL: 262
+  Page 1: 621 unique entries  Page 2: 621 unique entries  Page 3: 621 unique entries  After "DC Comics/Vertigo": 621 unique entries
+  TOTAL Vertigo: 621
+    With cover: 508
+  New unique: 381 (global total: 25820)
+
+=== WildStorm ===
+  Searching: "WildStorm"
+  Total in OL: 386
+  Page 1: 100 unique entries  Page 2: 200 unique entries  Page 3: 290 unique entries  Page 4: 375 unique entries  After "WildStorm": 375 unique entries
+  Searching: "Wildstorm Productions"
+  Total in OL: 157
+  Page 1: 375 unique entries  Page 2: 376 unique entries  After "Wildstorm Productions": 376 unique entries
+  TOTAL WildStorm: 376
+    With cover: 274
+  New unique: 320 (global total: 26140)
+
+=== Top Cow ===
+  Searching: "Top Cow"
+  Total in OL: 134
+  Page 1: 100 unique entries  Page 2: 134 unique entries  After "Top Cow": 134 unique entries
+  Searching: "Top Cow Productions"
+  Total in OL: 121
+  Page 1: 134 unique entries  Page 2: 134 unique entries  After "Top Cow Productions": 134 unique entries
+  TOTAL Top Cow: 134
+    With cover: 112
+  New unique: 118 (global total: 26258)
+
+=== CrossGen ===
+  Searching: "CrossGen"
+  Total in OL: 5
+  Page 1: 5 unique entries  After "CrossGen": 5 unique entries
+  Searching: "CrossGeneration"
+  Total in OL: 13
+  Page 1: 16 unique entries  After "CrossGeneration": 16 unique entries
+  TOTAL CrossGen: 16
+    With cover: 15
+  New unique: 16 (global total: 26274)
+
+=== Eclipse Comics ===
+  Searching: "Eclipse Comics"
+  Total in OL: 19
+  Page 1: 19 unique entries  After "Eclipse Comics": 19 unique entries
+  TOTAL Eclipse Comics: 19
+    With cover: 11
+  New unique: 13 (global total: 26287)
+
+=== Fantagraphics ===
+  Searching: "Fantagraphics"
+  Total in OL: 2142
+  Page 1: 100 unique entries  Page 2: 200 unique entries  Page 3: 299 unique entries  Page 4: 399 unique entries  Page 5: 497 unique entries  Page 6: 596 unique entries    ERROR: The operation was aborted due to timeout
+  After "Fantagraphics": 596 unique entries
+  Searching: "Fantagraphics Books"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Fantagraphics Books": 596 unique entries
+  TOTAL Fantagraphics: 596
+    With cover: 534
+  New unique: 588 (global total: 26875)
+
+=== Drawn & Quarterly ===
+  Searching: "Drawn & Quarterly"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Drawn & Quarterly": 0 unique entries
+  Searching: "Drawn and Quarterly"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Drawn and Quarterly": 0 unique entries
+  TOTAL Drawn & Quarterly: 0
+    With cover: 0
+  New unique: 0 (global total: 26875)
+
+=== Top Shelf Productions ===
+  Searching: "Top Shelf Productions"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Top Shelf Productions": 0 unique entries
+  TOTAL Top Shelf Productions: 0
+    With cover: 0
+  New unique: 0 (global total: 26875)
+
+=== Scholastic ===
+  Searching: "Scholastic"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Scholastic": 0 unique entries
+  TOTAL Scholastic: 0
+    With cover: 0
+  New unique: 0 (global total: 26875)
+
+=== Rebellion ===
+  Searching: "Rebellion"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Rebellion": 0 unique entries
+  Searching: "2000 AD"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "2000 AD": 0 unique entries
+  TOTAL Rebellion: 0
+    With cover: 0
+  New unique: 0 (global total: 26875)
+
+=== Cinebook ===
+  Searching: "Cinebook"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Cinebook": 0 unique entries
+  TOTAL Cinebook: 0
+    With cover: 0
+  New unique: 0 (global total: 26875)
+
+=== Humanoids ===
+  Searching: "Humanoids"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Humanoids": 0 unique entries
+  Searching: "Humanoids Publishing"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Humanoids Publishing": 0 unique entries
+  TOTAL Humanoids: 0
+    With cover: 0
+  New unique: 0 (global total: 26875)
+
+=== Titan Books ===
+  Searching: "Titan Books"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Titan Books": 0 unique entries
+  TOTAL Titan Books: 0
+    With cover: 0
+  New unique: 0 (global total: 26875)
+
+=== VIZ Media ===
+  Searching: "VIZ Media"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "VIZ Media": 0 unique entries
+  Searching: "Viz Media"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Viz Media": 0 unique entries
+  Searching: "Viz Communications"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Viz Communications": 0 unique entries
+  TOTAL VIZ Media: 0
+    With cover: 0
+  New unique: 0 (global total: 26875)
+
+=== Kodansha Comics ===
+  Searching: "Kodansha Comics"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Kodansha Comics": 0 unique entries
+  Searching: "Kodansha USA"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Kodansha USA": 0 unique entries
+  TOTAL Kodansha Comics: 0
+    With cover: 0
+  New unique: 0 (global total: 26875)
+
+=== Yen Press ===
+  Searching: "Yen Press"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Yen Press": 0 unique entries
+  TOTAL Yen Press: 0
+    With cover: 0
+  New unique: 0 (global total: 26875)
+
+=== Seven Seas ===
+  Searching: "Seven Seas"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Seven Seas": 0 unique entries
+  Searching: "Seven Seas Entertainment"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Seven Seas Entertainment": 0 unique entries
+  TOTAL Seven Seas: 0
+    With cover: 0
+  New unique: 0 (global total: 26875)
+
+=== Dark Horse Manga ===
+  Searching: "Dark Horse Manga"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Dark Horse Manga": 0 unique entries
+  TOTAL Dark Horse Manga: 0
+    With cover: 0
+  New unique: 0 (global total: 26875)
+
+=== Tokyopop ===
+  Searching: "Tokyopop"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Tokyopop": 0 unique entries
+  Searching: "TOKYOPOP"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "TOKYOPOP": 0 unique entries
+  TOTAL Tokyopop: 0
+    With cover: 0
+  New unique: 0 (global total: 26875)
+
+=== Ablaze Publishing ===
+  Searching: "Ablaze"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Ablaze": 0 unique entries
+  Searching: "Ablaze Publishing"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Ablaze Publishing": 0 unique entries
+  TOTAL Ablaze Publishing: 0
+    With cover: 0
+  New unique: 0 (global total: 26875)
+
+=== AWA Studios ===
+  Searching: "AWA Studios"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "AWA Studios": 0 unique entries
+  Searching: "Artists Writers & Artisans"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Artists Writers & Artisans": 0 unique entries
+  TOTAL AWA Studios: 0
+    With cover: 0
+  New unique: 0 (global total: 26875)
+
+=== Scout Comics ===
+  Searching: "Scout Comics"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Scout Comics": 0 unique entries
+  TOTAL Scout Comics: 0
+    With cover: 0
+  New unique: 0 (global total: 26875)
+
+=== Vault Comics ===
+  Searching: "Vault Comics"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Vault Comics": 0 unique entries
+  TOTAL Vault Comics: 0
+    With cover: 0
+  New unique: 0 (global total: 26875)
+
+=== Mad Cave Studios ===
+  Searching: "Mad Cave Studios"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Mad Cave Studios": 0 unique entries
+  Searching: "Mad Cave"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Mad Cave": 0 unique entries
+  TOTAL Mad Cave Studios: 0
+    With cover: 0
+  New unique: 0 (global total: 26875)
+
+=== Ahoy Comics ===
+  Searching: "Ahoy Comics"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Ahoy Comics": 0 unique entries
+  TOTAL Ahoy Comics: 0
+    With cover: 0
+  New unique: 0 (global total: 26875)
+
+=== Antarctic Press ===
+  Searching: "Antarctic Press"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Antarctic Press": 0 unique entries
+  TOTAL Antarctic Press: 0
+    With cover: 0
+  New unique: 0 (global total: 26875)
+
+=== Abstract Studio ===
+  Searching: "Abstract Studio"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Abstract Studio": 0 unique entries
+  TOTAL Abstract Studio: 0
+    With cover: 0
+  New unique: 0 (global total: 26875)
+
+=== Action Lab ===
+  Searching: "Action Lab"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Action Lab": 0 unique entries
+  Searching: "Action Lab Entertainment"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Action Lab Entertainment": 0 unique entries
+  TOTAL Action Lab: 0
+    With cover: 0
+  New unique: 0 (global total: 26875)
+
+=== Avatar Press ===
+  Searching: "Avatar Press"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Avatar Press": 0 unique entries
+  TOTAL Avatar Press: 0
+    With cover: 0
+  New unique: 0 (global total: 26875)
+
+=== Black Mask Studios ===
+  Searching: "Black Mask Studios"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Black Mask Studios": 0 unique entries
+  TOTAL Black Mask Studios: 0
+    With cover: 0
+  New unique: 0 (global total: 26875)
+
+=== Zenescope ===
+  Searching: "Zenescope"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Zenescope": 0 unique entries
+  Searching: "Zenescope Entertainment"
+    ERROR: fetch failed
+  Total in OL: 0
+  After "Zenescope Entertainment": 0 unique entries
+  TOTAL Zenescope: 0
+    With cover: 0
+  New unique: 0 (global total: 26875)
+
+=== Subject: comic books, strips, etc. ===
+    ERROR: fetch failed
+  Total in OL: 0
+    ERROR: fetch failed
+  TOTAL subject "comic books, strips, etc.": 0
+  New unique: 0 (global total: 26875)
+
+=== Subject: graphic novels ===
+    ERROR: fetch failed
+  Total in OL: 0
+  Page 2: 100 unique entries  Page 3: 200 unique entries  Page 4: 300 unique entries  Page 5: 400 unique entries  Page 6: 499 unique entries  Page 7: 598 unique entries  Page 8: 698 unique entries  Page 9: 798 unique entries  Page 10: 898 unique entries  Page 11: 998 unique entries  Page 12: 1096 unique entries  Page 13: 1195 unique entries  Page 14: 1295 unique entries  Page 15: 1394 unique entries  Page 16: 1492 unique entries  Page 17: 1592 unique entries  Page 18: 1688 unique entries  Page 19: 1787 unique entries  Page 20: 1887 unique entries  Page 21: 1987 unique entries  Page 22: 2087 unique entries  Page 23: 2187 unique entries  Page 24: 2286 unique entries  Page 25: 2383 unique entries  Page 26: 2481 unique entries  Page 27: 2581 unique entries  Page 28: 2680 unique entries  Page 29: 2776 unique entries  Page 30: 2875 unique entries  Page 31: 2975 unique entries  Page 32: 3075 unique entries  Page 33: 3175 unique entries  Page 34: 3275 unique entries  Page 35: 3375 unique entries  Page 36: 3469 unique entries  Page 37: 3569 unique entries  Page 38: 3661 unique entries  Page 39: 3756 unique entries  Page 40: 3855 unique entries  Page 41: 3954 unique entries  Page 42: 4054 unique entries  Page 43: 4154 unique entries  Page 44: 4254 unique entries  Page 45: 4354 unique entries  Page 46: 4454 unique entries  Page 47: 4554 unique entries  Page 48: 4654 unique entries  Page 49: 4754 unique entries  Page 50: 4853 unique entries  TOTAL subject "graphic novels": 4853
+  New unique: 3083 (global total: 29958)
+
+=== Subject: superhero comic books ===
+  Total in OL: 4140
+  Page 2: 198 unique entries  Page 3: 298 unique entries  Page 4: 398 unique entries  Page 5: 498 unique entries  Page 6: 598 unique entries  Page 7: 697 unique entries  Page 8: 797 unique entries  Page 9: 897 unique entries  Page 10: 997 unique entries  Page 11: 1097 unique entries  Page 12: 1197 unique entries  Page 13: 1297 unique entries  Page 14: 1397 unique entries  Page 15: 1496 unique entries  Page 16: 1596 unique entries  Page 17: 1695 unique entries  Page 18: 1795 unique entries  Page 19: 1895 unique entries  Page 20: 1995 unique entries  Page 21: 2094 unique entries  Page 22: 2193 unique entries  Page 23: 2293 unique entries  Page 24: 2392 unique entries  Page 25: 2491 unique entries  Page 26: 2590 unique entries  Page 27: 2689 unique entries  Page 28: 2789 unique entries  Page 29: 2888 unique entries  Page 30: 2988 unique entries  TOTAL subject "superhero comic books": 2988
+  New unique: 1068 (global total: 31026)
+
+=== Subject: manga ===
+  Total in OL: 15164
+  Page 2: 200 unique entries  Page 3: 300 unique entries  Page 4: 399 unique entries  Page 5: 499 unique entries  Page 6: 599 unique entries  Page 7: 698 unique entries  Page 8: 798 unique entries  Page 9: 897 unique entries  Page 10: 996 unique entries  Page 11: 1094 unique entries  Page 12: 1188 unique entries  Page 13: 1288 unique entries  Page 14: 1388 unique entries  Page 15: 1488 unique entries  Page 16: 1588 unique entries  Page 17: 1688 unique entries  Page 18: 1788 unique entries  Page 19: 1888 unique entries  Page 20: 1979 unique entries  Page 21: 2078 unique entries  Page 22: 2178 unique entries  Page 23: 2264 unique entries  Page 24: 2364 unique entries  Page 25: 2464 unique entries  Page 26: 2540 unique entries  Page 27: 2640 unique entries  Page 28: 2740 unique entries  Page 29: 2837 unique entries  Page 30: 2920 unique entries  TOTAL subject "manga": 2920
+  New unique: 1673 (global total: 32699)
+
+=== Subject: science fiction comic books ===
+  Total in OL: 5863
+  Page 2: 200 unique entries  Page 3: 300 unique entries  Page 4: 399 unique entries  Page 5: 499 unique entries  Page 6: 599 unique entries  Page 7: 698 unique entries  Page 8: 798 unique entries  Page 9: 897 unique entries  Page 10: 995 unique entries  Page 11: 1095 unique entries  Page 12: 1195 unique entries  Page 13: 1294 unique entries  Page 14: 1394 unique entries  Page 15: 1494 unique entries  Page 16: 1594 unique entries  Page 17: 1694 unique entries  Page 18: 1794 unique entries  Page 19: 1894 unique entries  Page 20: 1991 unique entries  TOTAL subject "science fiction comic books": 1991
+  New unique: 354 (global total: 33053)
+
+=== Subject: horror comic books ===
+  Total in OL: 1618
+  Page 2: 200 unique entries  Page 3: 300 unique entries  Page 4: 400 unique entries  Page 5: 500 unique entries  Page 6: 600 unique entries  Page 7: 700 unique entries  Page 8: 800 unique entries  Page 9: 900 unique entries  Page 10: 1000 unique entries  Page 11: 1100 unique entries  Page 12: 1200 unique entries  Page 13: 1299 unique entries  Page 14: 1399 unique entries  Page 15: 1497 unique entries  TOTAL subject "horror comic books": 1497
+  New unique: 693 (global total: 33746)
+
+=== Subject: fantasy comic books ===
+  Total in OL: 5656
+  Page 2: 200 unique entries  Page 3: 300 unique entries  Page 4: 400 unique entries  Page 5: 498 unique entries  Page 6: 596 unique entries  Page 7: 696 unique entries  Page 8: 794 unique entries  Page 9: 894 unique entries  Page 10: 994 unique entries  Page 11: 1094 unique entries  Page 12: 1192 unique entries  Page 13: 1292 unique entries  Page 14: 1392 unique entries  Page 15: 1492 unique entries  TOTAL subject "fantasy comic books": 1492
+  New unique: 241 (global total: 33987)
+
+
+========================================
+=== FINAL RESULTS ===
+========================================
+Total unique entries: 33987
+With cover: 23977
+Without cover: 10010
+Time elapsed: 333m 26s
+
+Per publisher/subject:
+  Marvel Comics: 6360
+  subject:graphic novels: 4853
+  DC Comics: 4289
+  Dark Horse Comics: 4100
+  subject:superhero comic books: 2988
+  subject:manga: 2920
+  Image Comics: 2549
+  subject:science fiction comic books: 1991
+  IDW Publishing: 1969
+  Titan Comics: 1884
+  BOOM! Studios: 1521
+  subject:horror comic books: 1497
+  subject:fantasy comic books: 1492
+  Dynamite Entertainment: 1142
+  Oni Press: 1000
+  Vertigo: 621
+  Archie Comics: 607
+  Fantagraphics: 596
+  WildStorm: 376
+  Valiant Entertainment: 220
+  AfterShock Comics: 168
+  Top Cow: 134
+  Eclipse Comics: 19
+  CrossGen: 16
+  Drawn & Quarterly: 0
+  Top Shelf Productions: 0
+  Scholastic: 0
+  Rebellion: 0
+  Cinebook: 0
+  Humanoids: 0
+  Titan Books: 0
+  VIZ Media: 0
+  Kodansha Comics: 0
+  Yen Press: 0
+  Seven Seas: 0
+  Dark Horse Manga: 0
+  Tokyopop: 0
+  Ablaze Publishing: 0
+  AWA Studios: 0
+  Scout Comics: 0
+  Vault Comics: 0
+  Mad Cave Studios: 0
+  Ahoy Comics: 0
+  Antarctic Press: 0
+  Abstract Studio: 0
+  Action Lab: 0
+  Avatar Press: 0
+  Black Mask Studios: 0
+  Zenescope: 0
+  subject:comic books, strips, etc.: 0
+
+Saved to: D:\Projetos\comicstrunk\docs\openlibrary-bulk\_combined.json
