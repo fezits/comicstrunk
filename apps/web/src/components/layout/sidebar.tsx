@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { navGroups, type NavGroup } from './nav-config';
-import { getCollectionItems } from '@/lib/api/collection';
+import { getCollectionStats } from '@/lib/api/collection';
 
 function NavGroupSection({ group, collectionCount }: { group: NavGroup; collectionCount?: number }) {
   const t = useTranslations();
@@ -78,8 +78,8 @@ export function Sidebar() {
 
   useEffect(() => {
     if (!isAuthenticated) return;
-    getCollectionItems({ page: 1, limit: 1 })
-      .then((res) => setCollectionCount(res.pagination?.total ?? 0))
+    getCollectionStats()
+      .then((stats) => setCollectionCount(stats.totalItems ?? 0))
       .catch(() => {});
   }, [isAuthenticated]);
 

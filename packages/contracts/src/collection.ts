@@ -18,6 +18,7 @@ export const itemConditionSchema = z.enum(['NEW', 'VERY_GOOD', 'GOOD', 'FAIR', '
 export const COLLECTION_LIMITS = {
   FREE: 1000,
   BASIC: 5000,
+  ADMIN: Infinity,
 } as const;
 
 // === Collection Item Schemas ===

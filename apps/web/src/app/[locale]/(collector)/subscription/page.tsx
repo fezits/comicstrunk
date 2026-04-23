@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
+import { useLocale } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 import { Skeleton } from '@/components/ui/skeleton';
@@ -17,6 +19,8 @@ import {
 
 export default function SubscriptionPage() {
   const t = useTranslations('subscription');
+  const locale = useLocale();
+  const router = useRouter();
 
   const [plans, setPlans] = useState<PlanConfig[]>([]);
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
@@ -89,6 +93,7 @@ export default function SubscriptionPage() {
         plans={plans}
         currentPlanType={subscription?.planType ?? 'FREE'}
         onUpgrade={handleUpgrade}
+        onPixUpgrade={(planConfigId) => router.push(`/${locale}/subscription/pix?planConfigId=${planConfigId}`)}
         loading={checkoutLoading}
       />
     </div>

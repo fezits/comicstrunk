@@ -569,7 +569,8 @@ model OrderItem {
 
 model Payment {
   id                String        @id @default(cuid())
-  orderId           String        @map("order_id")
+  orderId           String?       @map("order_id")
+  subscriptionId    String?       @map("subscription_id")
   method            PaymentMethod @default(PIX)
   providerPaymentId String?       @map("provider_payment_id")
   providerStatus    String?       @map("provider_status")
@@ -582,9 +583,11 @@ model Payment {
   createdAt         DateTime      @default(now()) @map("created_at")
   updatedAt         DateTime      @updatedAt @map("updated_at")
 
-  order Order @relation(fields: [orderId], references: [id])
+  order        Order?        @relation(fields: [orderId], references: [id])
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id])
 
   @@index([orderId])
+  @@index([subscriptionId])
   @@index([providerPaymentId])
   @@map("payments")
 }
@@ -653,6 +656,7 @@ model Subscription {
   userId               String             @map("user_id")
   stripeCustomerId     String?            @map("stripe_customer_id")
   stripeSubscriptionId String?            @map("stripe_subscription_id")
+  paymentMethod        String?            @map("payment_method") // 'stripe' | 'pix'
   planType             PlanType           @default(FREE) @map("plan_type")
   status               SubscriptionStatus @default(ACTIVE)
   currentPeriodStart   DateTime?          @map("current_period_start")
@@ -661,7 +665,8 @@ model Subscription {
   createdAt            DateTime           @default(now()) @map("created_at")
   updatedAt            DateTime           @updatedAt @map("updated_at")
 
-  user User @relation(fields: [userId], references: [id])
+  user     User      @relation(fields: [userId], references: [id])
+  payments Payment[]
 
   @@index([userId])
   @@index([stripeCustomerId])

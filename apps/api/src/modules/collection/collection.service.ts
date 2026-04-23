@@ -66,6 +66,12 @@ async function checkPlanLimit(
     orderBy: { createdAt: 'desc' },
   });
 
+  // Check if user is ADMIN — unlimited collection
+  const user = await tx.user.findUnique({ where: { id: userId }, select: { role: true } });
+  if (user?.role === 'ADMIN') {
+    return { currentCount, limit: Infinity, planType: 'ADMIN' };
+  }
+
   const planType = subscription?.planType ?? 'FREE';
   const limit =
     COLLECTION_LIMITS[planType as keyof typeof COLLECTION_LIMITS] ?? COLLECTION_LIMITS.FREE;

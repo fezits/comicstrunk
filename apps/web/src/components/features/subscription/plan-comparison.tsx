@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Check, Crown, Loader2, Sparkles } from 'lucide-react';
+import { Check, Crown, Loader2, Sparkles, QrCode } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +13,7 @@ interface PlanComparisonProps {
   plans: PlanConfig[];
   currentPlanType: string;
   onUpgrade: (planConfigId: string) => void;
+  onPixUpgrade?: (planConfigId: string) => void;
   loading: boolean;
 }
 
@@ -29,6 +30,7 @@ export function PlanComparison({
   plans,
   currentPlanType,
   onUpgrade,
+  onPixUpgrade,
   loading,
 }: PlanComparisonProps) {
   const t = useTranslations('subscription');
@@ -167,20 +169,33 @@ export function PlanComparison({
                 {t('currentPlan')}
               </Button>
             ) : (
-              <Button
-                className="w-full"
-                onClick={() => selectedBasicPlan && onUpgrade(selectedBasicPlan.id)}
-                disabled={loading || !selectedBasicPlan}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    {t('checkout.processing')}
-                  </>
-                ) : (
-                  t('upgradeTo', { plan: 'BASIC' })
+              <div className="space-y-2">
+                <Button
+                  className="w-full"
+                  onClick={() => selectedBasicPlan && onUpgrade(selectedBasicPlan.id)}
+                  disabled={loading || !selectedBasicPlan}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      {t('checkout.processing')}
+                    </>
+                  ) : (
+                    t('upgradeTo', { plan: 'BASIC' })
+                  )}
+                </Button>
+                {onPixUpgrade && (
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => selectedBasicPlan && onPixUpgrade(selectedBasicPlan.id)}
+                    disabled={loading || !selectedBasicPlan}
+                  >
+                    <QrCode className="h-4 w-4 mr-2" />
+                    {t('payWithPix')}
+                  </Button>
                 )}
-              </Button>
+              </div>
             )}
           </CardContent>
         </Card>
