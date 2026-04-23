@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { Search, CheckSquare, Square, Loader2, X } from 'lucide-react';
+import { Search, CheckSquare, Square, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,8 +43,6 @@ export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [seriesResults, setSeriesResults] = useState<Series[]>([]);
   const [searching, setSearching] = useState(false);
-  const [zoomImage, setZoomImage] = useState<{ url: string; title: string } | null>(null);
-
   const [selectedSeries, setSelectedSeries] = useState<SeriesDetail | null>(null);
   const [loadingSeries, setLoadingSeries] = useState(false);
 
@@ -277,16 +275,8 @@ export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
                         : 'border-transparent hover:border-muted-foreground/30'
                   }`}
                 >
-                  {/* Cover — click to zoom */}
-                  <div
-                    className="aspect-[2/3] bg-muted flex items-center justify-center cursor-zoom-in"
-                    onClick={(e) => {
-                      if (edition.coverImageUrl) {
-                        e.stopPropagation();
-                        setZoomImage({ url: edition.coverImageUrl, title: edition.title });
-                      }
-                    }}
-                  >
+                  {/* Cover */}
+                  <div className="aspect-[2/3] bg-muted flex items-center justify-center">
                     {edition.coverImageUrl ? (
                       <img
                         src={edition.coverImageUrl}
@@ -390,26 +380,6 @@ export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
               )}
             </Button>
           </div>
-        </div>
-      )}
-      {/* Image zoom modal */}
-      {zoomImage && (
-        <div
-          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
-          onClick={() => setZoomImage(null)}
-        >
-          <button
-            className="absolute top-4 right-4 text-white hover:text-gray-300"
-            onClick={() => setZoomImage(null)}
-          >
-            <X className="h-8 w-8" />
-          </button>
-          <img
-            src={zoomImage.url}
-            alt={zoomImage.title}
-            className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          />
         </div>
       )}
     </div>
