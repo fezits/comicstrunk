@@ -19,7 +19,7 @@ export async function listSeries(filters: SeriesSearchInput) {
     where.title = { contains: title };
   }
 
-  const [data, total] = await Promise.all([
+  const [rawData, total] = await Promise.all([
     prisma.series.findMany({
       where,
       skip,
@@ -27,10 +27,22 @@ export async function listSeries(filters: SeriesSearchInput) {
       orderBy: { title: 'asc' },
       include: {
         _count: { select: { catalogEntries: true } },
+        catalogEntries: {
+          select: { publishYear: true },
+          where: { publishYear: { not: null } },
+          orderBy: { publishYear: 'asc' },
+          take: 1,
+        },
       },
     }),
     prisma.series.count({ where }),
   ]);
+
+  const data = rawData.map(s => ({
+    ...s,
+    yearBegan: s.catalogEntries[0]?.publishYear ?? null,
+    catalogEntries: undefined,
+  }));
 
   return { data, total, page, limit };
 }

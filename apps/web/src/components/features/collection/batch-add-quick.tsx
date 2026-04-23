@@ -30,6 +30,8 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [zoomImage, setZoomImage] = useState<{ url: string; title: string } | null>(null);
+  const [sortBy, setSortBy] = useState<'createdAt' | 'title'>('createdAt');
+  const [sortOrder] = useState<'desc' | 'asc'>('desc');
   const { incrementCount, decrementCount } = useCollection();
   const [totalResults, setTotalResults] = useState(0);
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
@@ -83,7 +85,7 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
       setPage(1);
       activeQuery.current = searchQuery;
       try {
-        const result = await searchCatalog({ title: searchQuery, limit: PAGE_SIZE, page: 1 });
+        const result = await searchCatalog({ title: searchQuery, limit: PAGE_SIZE, page: 1, sortBy, sortOrder });
         setResults(result.data);
         setTotalResults(result.pagination.total);
         setHasMore(result.pagination.page < result.pagination.totalPages);
@@ -95,14 +97,14 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
     }, 400);
 
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchQuery, sortBy, sortOrder]);
 
   const loadMore = useCallback(async () => {
     if (loadingMore || !hasMore) return;
     setLoadingMore(true);
     const nextPage = page + 1;
     try {
-      const result = await searchCatalog({ title: activeQuery.current, limit: PAGE_SIZE, page: nextPage });
+      const result = await searchCatalog({ title: activeQuery.current, limit: PAGE_SIZE, page: nextPage, sortBy, sortOrder });
       setResults((prev) => [...prev, ...result.data]);
       setPage(nextPage);
       setHasMore(result.pagination.page < result.pagination.totalPages);
@@ -180,6 +182,23 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
           placeholder={t('searchCatalog')}
           className="pl-10"
         />
+      </div>
+
+      {/* Sort options */}
+      <div className="flex items-center gap-2 text-sm">
+        <span className="text-muted-foreground">Ordenar:</span>
+        <button
+          className={`px-2 py-1 rounded ${sortBy === 'createdAt' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
+          onClick={() => setSortBy('createdAt')}
+        >
+          Mais recentes
+        </button>
+        <button
+          className={`px-2 py-1 rounded ${sortBy === 'title' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
+          onClick={() => setSortBy('title')}
+        >
+          A-Z
+        </button>
       </div>
 
       {searching && (

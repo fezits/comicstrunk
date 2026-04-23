@@ -18,7 +18,7 @@ interface CoverEntry {
   publisher: string | null;
 }
 
-const LIMIT = 120;
+const LIMIT = 200;
 
 export default function AdminCoverReviewPage() {
   const tCommon = useTranslations('common');
@@ -215,7 +215,7 @@ export default function AdminCoverReviewPage() {
             variant="outline"
             size="sm"
             disabled={page <= 1}
-            onClick={() => setPage(p => p - 1)}
+            onClick={() => { setPage(p => p - 1); window.scrollTo(0, 0); }}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -226,7 +226,7 @@ export default function AdminCoverReviewPage() {
             variant="outline"
             size="sm"
             disabled={page >= totalPages}
-            onClick={() => setPage(p => p + 1)}
+            onClick={() => { setPage(p => p + 1); window.scrollTo(0, 0); }}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>

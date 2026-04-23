@@ -212,6 +212,7 @@ export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
                 <p className="font-medium">{s.title}</p>
                 <p className="text-sm text-muted-foreground">
                   {t('editions', { count: s._count?.catalogEntries ?? s.totalEditions ?? 0 })}
+                  {(s as unknown as { yearBegan?: number }).yearBegan && ` · ${(s as unknown as { yearBegan: number }).yearBegan}`}
                 </p>
               </div>
             </button>
