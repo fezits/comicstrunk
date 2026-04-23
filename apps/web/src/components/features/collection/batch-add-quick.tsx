@@ -28,6 +28,7 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
+  const [zoomImage, setZoomImage] = useState<{ url: string; title: string } | null>(null);
   const [totalResults, setTotalResults] = useState(0);
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
   const [addingId, setAddingId] = useState<string | null>(null);
@@ -218,8 +219,11 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
                     : 'bg-muted/30 hover:bg-muted/50'
               }`}
             >
-              {/* Cover thumbnail */}
-              <div className="w-10 h-14 bg-muted rounded overflow-hidden flex-shrink-0">
+              {/* Cover thumbnail — click to zoom */}
+              <div
+                className="w-10 h-14 bg-muted rounded overflow-hidden flex-shrink-0 cursor-zoom-in"
+                onClick={() => entry.coverImageUrl && setZoomImage({ url: entry.coverImageUrl, title: entry.title })}
+              >
                 {entry.coverImageUrl ? (
                   <img
                     src={entry.coverImageUrl}
@@ -234,9 +238,15 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
                 )}
               </div>
 
-              {/* Info */}
+              {/* Info — title links to detail */}
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm truncate">{entry.title}</p>
+                <Link
+                  href={`/${locale}/catalog/${entry.slug || entry.id}`}
+                  target="_blank"
+                  className="font-medium text-sm truncate block hover:text-primary hover:underline"
+                >
+                  {entry.title}
+                </Link>
                 <p className="text-xs text-muted-foreground">
                   {entry.publisher ?? ''}
                   {entry.publishYear ? ` · ${entry.publishYear}` : ''}
@@ -344,6 +354,26 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
           <Button variant="outline" size="sm" asChild>
             <Link href={`/${locale}/collection`}>{t('viewCollection')}</Link>
           </Button>
+        </div>
+      )}
+      {/* Image zoom modal */}
+      {zoomImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setZoomImage(null)}
+        >
+          <button
+            className="absolute top-4 right-4 text-white hover:text-gray-300"
+            onClick={() => setZoomImage(null)}
+          >
+            <X className="h-8 w-8" />
+          </button>
+          <img
+            src={zoomImage.url}
+            alt={zoomImage.title}
+            className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
     </div>
