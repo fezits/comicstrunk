@@ -52,9 +52,7 @@ function MobileNavGroup({
         <div className="space-y-0.5">
           {group.items.map((item) => {
             const href = `/${locale}${item.href}`;
-            const isActive =
-              pathname === href ||
-              (item.href !== '/' && pathname.startsWith(href));
+            const isActive = pathname === href;
             const Icon = item.icon;
 
             return (
