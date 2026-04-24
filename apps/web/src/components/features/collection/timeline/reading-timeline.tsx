@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
 import { toast } from 'sonner';
-import { ChevronLeft, BookOpen, CalendarDays, ZoomIn, ZoomOut, X, AlignHorizontalDistributeCenter, AlignVerticalDistributeCenter } from 'lucide-react';
+import { ChevronLeft, BookOpen, CalendarDays, ZoomIn, ZoomOut, X, AlignHorizontalDistributeCenter, AlignVerticalDistributeCenter, Grid3X3 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -49,7 +49,7 @@ interface TimelineFilters {
 }
 
 type ZoomLevel = 'year' | 'month' | 'day';
-type Orientation = 'horizontal' | 'vertical';
+type Orientation = 'horizontal' | 'vertical' | 'heatmap';
 
 const MONTH_NAMES = ['Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 const MONTH_SHORT = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
@@ -160,24 +160,38 @@ export function ReadingTimeline() {
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             {data.totalRead} gibi{data.totalRead !== 1 ? 's' : ''} lido{data.totalRead !== 1 ? 's' : ''}
+            {data.periodStart && ` · ${formatDate(data.periodStart)} a ${formatDate(data.periodEnd!)}`}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           {/* Orientation toggle */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setOrientation(o => o === 'horizontal' ? 'vertical' : 'horizontal')}
-            className="gap-1"
-            title={orientation === 'horizontal' ? 'Mudar para vertical' : 'Mudar para horizontal'}
-          >
-            {orientation === 'horizontal' ? (
-              <AlignVerticalDistributeCenter className="h-4 w-4" />
-            ) : (
+          <div className="flex items-center bg-muted rounded-lg p-0.5">
+            <Button
+              variant={orientation === 'horizontal' ? 'default' : 'ghost'}
+              size="sm" className="h-7 px-2"
+              onClick={() => setOrientation('horizontal')}
+              title="Horizontal"
+            >
               <AlignHorizontalDistributeCenter className="h-4 w-4" />
-            )}
-          </Button>
+            </Button>
+            <Button
+              variant={orientation === 'vertical' ? 'default' : 'ghost'}
+              size="sm" className="h-7 px-2"
+              onClick={() => setOrientation('vertical')}
+              title="Vertical"
+            >
+              <AlignVerticalDistributeCenter className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={orientation === 'heatmap' ? 'default' : 'ghost'}
+              size="sm" className="h-7 px-2"
+              onClick={() => setOrientation('heatmap')}
+              title="Heatmap"
+            >
+              <Grid3X3 className="h-4 w-4" />
+            </Button>
+          </div>
 
           <div className="h-6 w-px bg-border" />
 
@@ -293,7 +307,7 @@ export function ReadingTimeline() {
             getLabel={getTimeLabel}
             onCoverClick={setZoomedItem}
           />
-        ) : (
+        ) : orientation === 'vertical' ? (
           <VerticalTimeline
             groups={data.groups}
             zoomLevel={zoomLevel}
@@ -302,6 +316,15 @@ export function ReadingTimeline() {
             setExpandedGroup={setExpandedGroup}
             onZoomIn={zoomIn}
             getLabel={getTimeLabel}
+            onCoverClick={setZoomedItem}
+          />
+        ) : (
+          <HeatmapView
+            groups={data.groups}
+            zoomLevel={zoomLevel}
+            selectedYear={selectedYear}
+            selectedMonth={selectedMonth}
+            onZoomIn={zoomIn}
             onCoverClick={setZoomedItem}
           />
         )}
@@ -616,6 +639,118 @@ function CoverThumb({ item, onClick }: { item: TimelineItem; locale: string; onC
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// === Heatmap View (GitHub-style) ===
+
+function HeatmapView({
+  groups, zoomLevel, selectedYear, selectedMonth, onZoomIn, onCoverClick,
+}: {
+  groups: TimelineGroup[];
+  zoomLevel: ZoomLevel;
+  selectedYear: number | null;
+  selectedMonth: number | null;
+  onZoomIn: (key: string) => void;
+  onCoverClick?: (item: TimelineItem) => void;
+}) {
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+
+  if (zoomLevel === 'year') {
+    const countMap = new Map(groups.map(g => [g.key, g]));
+    return (
+      <div>
+        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+          {MONTH_SHORT.map((m, i) => {
+            const key = String(i + 1);
+            const group = countMap.get(key);
+            const count = group?.count ?? 0;
+            const intensity = count === 0 ? 0 : count < 5 ? 1 : count < 20 ? 2 : count < 50 ? 3 : 4;
+            return (
+              <button key={i} onClick={() => onZoomIn(key)}
+                className={`rounded-lg p-3 text-center transition-all hover:ring-2 hover:ring-primary/50 ${
+                  intensity === 0 ? 'bg-muted/30' : intensity === 1 ? 'bg-green-500/20' : intensity === 2 ? 'bg-green-500/40' : intensity === 3 ? 'bg-green-500/60' : 'bg-green-500/80'
+                }`}>
+                <p className="text-xs font-medium">{m}</p>
+                <p className={`text-lg font-bold ${count > 0 ? 'text-foreground' : 'text-muted-foreground'}`}>{count}</p>
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex items-center gap-2 mt-4 text-xs text-muted-foreground justify-end">
+          <span>Menos</span>
+          {[0.3,0.2,0.4,0.6,0.8].map((o,i) => <div key={i} className={`w-3 h-3 rounded-sm ${i===0?'bg-muted/30':`bg-green-500/${o*100}`}`} style={{opacity:1}} />)}
+          <span>Mais</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (zoomLevel === 'month') {
+    const countMap = new Map(groups.map(g => [g.key, g]));
+    const daysInMonth = selectedYear && selectedMonth ? new Date(selectedYear, selectedMonth, 0).getDate() : 31;
+    const firstDayOfWeek = selectedYear && selectedMonth ? new Date(selectedYear, selectedMonth - 1, 1).getDay() : 0;
+    const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+    return (
+      <div>
+        <div className="grid grid-cols-7 gap-1 mb-1">
+          {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'].map(d => (
+            <div key={d} className="text-center text-[10px] text-muted-foreground font-medium py-1">{d}</div>
+          ))}
+        </div>
+        <div className="grid grid-cols-7 gap-1">
+          {Array.from({ length: firstDayOfWeek }).map((_, i) => <div key={`e-${i}`} className="aspect-square" />)}
+          {days.map(day => {
+            const key = String(day);
+            const group = countMap.get(key);
+            const count = group?.count ?? 0;
+            const isSelected = selectedDay === key;
+            const intensity = count === 0 ? 0 : count < 3 ? 1 : count < 10 ? 2 : count < 30 ? 3 : 4;
+            return (
+              <button key={day} onClick={() => count > 0 && setSelectedDay(isSelected ? null : key)}
+                className={`aspect-square rounded-md flex flex-col items-center justify-center transition-all text-xs ${
+                  isSelected ? 'ring-2 ring-primary bg-primary/20 scale-105'
+                  : intensity === 0 ? 'bg-muted/20 text-muted-foreground/50'
+                  : intensity === 1 ? 'bg-green-500/20 hover:bg-green-500/30'
+                  : intensity === 2 ? 'bg-green-500/40 hover:bg-green-500/50'
+                  : intensity === 3 ? 'bg-green-500/60 hover:bg-green-500/70'
+                  : 'bg-green-500/80 hover:bg-green-500/90'
+                } ${count > 0 ? 'cursor-pointer' : 'cursor-default'}`}>
+                <span className="font-medium">{day}</span>
+                {count > 0 && <span className="text-[9px] font-bold">{count}</span>}
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex items-center gap-2 mt-4 text-xs text-muted-foreground justify-end">
+          <span>Menos</span>
+          <div className="w-3 h-3 rounded-sm bg-muted/20" />
+          <div className="w-3 h-3 rounded-sm bg-green-500/20" />
+          <div className="w-3 h-3 rounded-sm bg-green-500/40" />
+          <div className="w-3 h-3 rounded-sm bg-green-500/60" />
+          <div className="w-3 h-3 rounded-sm bg-green-500/80" />
+          <span>Mais</span>
+        </div>
+        {selectedDay && countMap.get(selectedDay) && (
+          <div className="mt-4 border-t border-border pt-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold">Dia {selectedDay} — {countMap.get(selectedDay)!.count} gibis</h3>
+              <Button variant="ghost" size="sm" onClick={() => setSelectedDay(null)} className="h-7 text-xs gap-1"><X className="h-3 w-3" /> Fechar</Button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {countMap.get(selectedDay)!.items.map(item => <CoverCard key={item.id} item={item} locale="" onClick={onCoverClick} />)}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {groups.flatMap(g => g.items).map(item => <CoverCard key={item.id} item={item} locale="" onClick={onCoverClick} />)}
     </div>
   );
 }
