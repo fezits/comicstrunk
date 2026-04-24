@@ -189,8 +189,8 @@ export function ReadingTimeline() {
               onClick={() => {
                 setOrientation('heatmap');
                 setSelectedYear(now.getFullYear());
-                setSelectedMonth(now.getMonth() + 1);
-                setZoomLevel('day');
+                setSelectedMonth(null);
+                setZoomLevel('month');
               }}
               title="Heatmap"
             >
@@ -660,92 +660,121 @@ function HeatmapView({
   onZoomIn: (key: string) => void;
   onCoverClick?: (item: TimelineItem) => void;
 }) {
-  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const [selectedCell, setSelectedCell] = useState<string | null>(null);
+  const countMap = new Map(groups.map(g => [g.key, g]));
 
-  if (zoomLevel === 'year') {
-    const countMap = new Map(groups.map(g => [g.key, g]));
+  // GitHub-style annual heatmap: 52 weeks × 7 days
+  if (zoomLevel === 'year' || zoomLevel === 'month' && !selectedMonth) {
+    const year = selectedYear || new Date().getFullYear();
+    const startDate = new Date(year, 0, 1);
+    const startDay = startDate.getDay(); // 0=Sun
+    const isLeap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+    const totalDays = isLeap ? 366 : 365;
+
+    // Build day-to-count map from groups (groups keyed by month)
+    const dayCountMap = new Map<string, number>();
+    const dayItemsMap = new Map<string, TimelineItem[]>();
+    for (const g of groups) {
+      for (const item of g.items) {
+        const d = new Date(item.readAt);
+        const key = `${d.getMonth()+1}-${d.getDate()}`;
+        dayCountMap.set(key, (dayCountMap.get(key) || 0) + 1);
+        if (!dayItemsMap.has(key)) dayItemsMap.set(key, []);
+        dayItemsMap.get(key)!.push(item);
+      }
+    }
+
+    // Build weeks grid
+    const weeks: { date: Date; count: number; key: string }[][] = [];
+    let currentWeek: { date: Date; count: number; key: string }[] = [];
+
+    // Pad first week
+    for (let i = 0; i < startDay; i++) currentWeek.push({ date: new Date(year, 0, 0), count: -1, key: '' });
+
+    for (let d = 0; d < totalDays; d++) {
+      const date = new Date(year, 0, d + 1);
+      const key = `${date.getMonth()+1}-${date.getDate()}`;
+      const count = dayCountMap.get(key) || 0;
+      currentWeek.push({ date, count, key });
+      if (currentWeek.length === 7) { weeks.push(currentWeek); currentWeek = []; }
+    }
+    if (currentWeek.length > 0) {
+      while (currentWeek.length < 7) currentWeek.push({ date: new Date(), count: -1, key: '' });
+      weeks.push(currentWeek);
+    }
+
+    const getColor = (count: number) => {
+      if (count <= 0) return 'bg-muted/20';
+      if (count < 3) return 'bg-green-500/30';
+      if (count < 10) return 'bg-green-500/50';
+      if (count < 30) return 'bg-green-500/70';
+      return 'bg-green-500/90';
+    };
+
     return (
       <div>
-        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-          {MONTH_SHORT.map((m, i) => {
-            const key = String(i + 1);
-            const group = countMap.get(key);
-            const count = group?.count ?? 0;
-            const intensity = count === 0 ? 0 : count < 5 ? 1 : count < 20 ? 2 : count < 50 ? 3 : 4;
-            return (
-              <button key={i} onClick={() => onZoomIn(key)}
-                className={`rounded-lg p-3 text-center transition-all hover:ring-2 hover:ring-primary/50 ${
-                  intensity === 0 ? 'bg-muted/30' : intensity === 1 ? 'bg-green-500/20' : intensity === 2 ? 'bg-green-500/40' : intensity === 3 ? 'bg-green-500/60' : 'bg-green-500/80'
-                }`}>
-                <p className="text-xs font-medium">{m}</p>
-                <p className={`text-lg font-bold ${count > 0 ? 'text-foreground' : 'text-muted-foreground'}`}>{count}</p>
-              </button>
-            );
-          })}
+        <div className="overflow-x-auto">
+          {/* Month labels */}
+          <div className="flex gap-0 mb-1 ml-8">
+            {MONTH_SHORT.map((m, i) => (
+              <div key={i} className="text-[9px] text-muted-foreground" style={{ width: `${(weeks.length / 12) * 14}px` }}>{m}</div>
+            ))}
+          </div>
+
+          <div className="flex gap-0">
+            {/* Day labels */}
+            <div className="flex flex-col gap-[2px] mr-1 text-[9px] text-muted-foreground">
+              <div className="h-[12px]" />
+              <div className="h-[12px] leading-[12px]">Seg</div>
+              <div className="h-[12px]" />
+              <div className="h-[12px] leading-[12px]">Qua</div>
+              <div className="h-[12px]" />
+              <div className="h-[12px] leading-[12px]">Sex</div>
+              <div className="h-[12px]" />
+            </div>
+
+            {/* Grid */}
+            <div className="flex gap-[2px]">
+              {weeks.map((week, wi) => (
+                <div key={wi} className="flex flex-col gap-[2px]">
+                  {week.map((day, di) => (
+                    <div
+                      key={di}
+                      className={`w-[12px] h-[12px] rounded-[2px] transition-all ${
+                        day.count < 0 ? 'bg-transparent'
+                        : selectedCell === day.key ? 'ring-1 ring-primary ' + getColor(day.count)
+                        : getColor(day.count)
+                      } ${day.count > 0 ? 'cursor-pointer hover:ring-1 hover:ring-foreground/30' : ''}`}
+                      title={day.count >= 0 ? `${day.date.getDate()}/${day.date.getMonth()+1}: ${day.count} gibi${day.count !== 1 ? 's' : ''}` : ''}
+                      onClick={() => day.count > 0 && setSelectedCell(selectedCell === day.key ? null : day.key)}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-        <div className="flex items-center gap-2 mt-4 text-xs text-muted-foreground justify-end">
+
+        {/* Legend */}
+        <div className="flex items-center gap-1 mt-3 text-[10px] text-muted-foreground justify-end">
           <span>Menos</span>
-          {[0.3,0.2,0.4,0.6,0.8].map((o,i) => <div key={i} className={`w-3 h-3 rounded-sm ${i===0?'bg-muted/30':`bg-green-500/${o*100}`}`} style={{opacity:1}} />)}
+          <div className="w-[10px] h-[10px] rounded-[2px] bg-muted/20" />
+          <div className="w-[10px] h-[10px] rounded-[2px] bg-green-500/30" />
+          <div className="w-[10px] h-[10px] rounded-[2px] bg-green-500/50" />
+          <div className="w-[10px] h-[10px] rounded-[2px] bg-green-500/70" />
+          <div className="w-[10px] h-[10px] rounded-[2px] bg-green-500/90" />
           <span>Mais</span>
         </div>
-      </div>
-    );
-  }
 
-  if (zoomLevel === 'month' || zoomLevel === 'day') {
-    const countMap = new Map(groups.map(g => [g.key, g]));
-    const daysInMonth = selectedYear && selectedMonth ? new Date(selectedYear, selectedMonth, 0).getDate() : 31;
-    const firstDayOfWeek = selectedYear && selectedMonth ? new Date(selectedYear, selectedMonth - 1, 1).getDay() : 0;
-    const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-
-    return (
-      <div>
-        <div className="grid grid-cols-7 gap-1 mb-1">
-          {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'].map(d => (
-            <div key={d} className="text-center text-[10px] text-muted-foreground font-medium py-1">{d}</div>
-          ))}
-        </div>
-        <div className="grid grid-cols-7 gap-1">
-          {Array.from({ length: firstDayOfWeek }).map((_, i) => <div key={`e-${i}`} className="aspect-square" />)}
-          {days.map(day => {
-            const key = String(day);
-            const group = countMap.get(key);
-            const count = group?.count ?? 0;
-            const isSelected = selectedDay === key;
-            const intensity = count === 0 ? 0 : count < 3 ? 1 : count < 10 ? 2 : count < 30 ? 3 : 4;
-            return (
-              <button key={day} onClick={() => count > 0 && setSelectedDay(isSelected ? null : key)}
-                className={`aspect-square rounded-md flex flex-col items-center justify-center transition-all text-xs ${
-                  isSelected ? 'ring-2 ring-primary bg-primary/20 scale-105'
-                  : intensity === 0 ? 'bg-muted/20 text-muted-foreground/50'
-                  : intensity === 1 ? 'bg-green-500/20 hover:bg-green-500/30'
-                  : intensity === 2 ? 'bg-green-500/40 hover:bg-green-500/50'
-                  : intensity === 3 ? 'bg-green-500/60 hover:bg-green-500/70'
-                  : 'bg-green-500/80 hover:bg-green-500/90'
-                } ${count > 0 ? 'cursor-pointer' : 'cursor-default'}`}>
-                <span className="font-medium">{day}</span>
-                {count > 0 && <span className="text-[9px] font-bold">{count}</span>}
-              </button>
-            );
-          })}
-        </div>
-        <div className="flex items-center gap-2 mt-4 text-xs text-muted-foreground justify-end">
-          <span>Menos</span>
-          <div className="w-3 h-3 rounded-sm bg-muted/20" />
-          <div className="w-3 h-3 rounded-sm bg-green-500/20" />
-          <div className="w-3 h-3 rounded-sm bg-green-500/40" />
-          <div className="w-3 h-3 rounded-sm bg-green-500/60" />
-          <div className="w-3 h-3 rounded-sm bg-green-500/80" />
-          <span>Mais</span>
-        </div>
-        {selectedDay && countMap.get(selectedDay) && (
+        {/* Selected day expansion */}
+        {selectedCell && dayItemsMap.get(selectedCell) && (
           <div className="mt-4 border-t border-border pt-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold">Dia {selectedDay} — {countMap.get(selectedDay)!.count} gibis</h3>
-              <Button variant="ghost" size="sm" onClick={() => setSelectedDay(null)} className="h-7 text-xs gap-1"><X className="h-3 w-3" /> Fechar</Button>
+              <h3 className="text-sm font-semibold">{dayCountMap.get(selectedCell)} gibis lidos</h3>
+              <Button variant="ghost" size="sm" onClick={() => setSelectedCell(null)} className="h-7 text-xs gap-1"><X className="h-3 w-3" /> Fechar</Button>
             </div>
             <div className="flex flex-wrap gap-2">
-              {countMap.get(selectedDay)!.items.map(item => <CoverCard key={item.id} item={item} locale="" onClick={onCoverClick} />)}
+              {dayItemsMap.get(selectedCell)!.map(item => <CoverCard key={item.id} item={item} locale="" onClick={onCoverClick} />)}
             </div>
           </div>
         )}
@@ -753,9 +782,62 @@ function HeatmapView({
     );
   }
 
+  // Month/Day level — calendar grid (smaller)
+  const daysInMonth = selectedYear && selectedMonth ? new Date(selectedYear, selectedMonth, 0).getDate() : 31;
+  const firstDayOfWeek = selectedYear && selectedMonth ? new Date(selectedYear, selectedMonth - 1, 1).getDay() : 0;
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
   return (
-    <div className="flex flex-wrap gap-2">
-      {groups.flatMap(g => g.items).map(item => <CoverCard key={item.id} item={item} locale="" onClick={onCoverClick} />)}
+    <div className="max-w-md">
+      <div className="grid grid-cols-7 gap-1 mb-1">
+        {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d, i) => (
+          <div key={i} className="text-center text-[10px] text-muted-foreground font-medium py-1">{d}</div>
+        ))}
+      </div>
+      <div className="grid grid-cols-7 gap-1">
+        {Array.from({ length: firstDayOfWeek }).map((_, i) => <div key={`e-${i}`} />)}
+        {days.map(day => {
+          const key = String(day);
+          const group = countMap.get(key);
+          const count = group?.count ?? 0;
+          const isSelected = selectedCell === key;
+          const intensity = count === 0 ? 0 : count < 3 ? 1 : count < 10 ? 2 : count < 30 ? 3 : 4;
+          return (
+            <button key={day} onClick={() => count > 0 && setSelectedCell(isSelected ? null : key)}
+              className={`w-10 h-10 rounded-md flex flex-col items-center justify-center transition-all text-xs ${
+                isSelected ? 'ring-2 ring-primary bg-primary/20'
+                : intensity === 0 ? 'bg-muted/20 text-muted-foreground/50'
+                : intensity === 1 ? 'bg-green-500/25 hover:bg-green-500/35'
+                : intensity === 2 ? 'bg-green-500/45 hover:bg-green-500/55'
+                : intensity === 3 ? 'bg-green-500/65 hover:bg-green-500/75'
+                : 'bg-green-500/85 hover:bg-green-500/95'
+              } ${count > 0 ? 'cursor-pointer' : 'cursor-default'}`}>
+              <span className="font-medium">{day}</span>
+              {count > 0 && <span className="text-[8px] font-bold">{count}</span>}
+            </button>
+          );
+        })}
+      </div>
+      <div className="flex items-center gap-1 mt-3 text-[10px] text-muted-foreground justify-end">
+        <span>Menos</span>
+        <div className="w-[10px] h-[10px] rounded-sm bg-muted/20" />
+        <div className="w-[10px] h-[10px] rounded-sm bg-green-500/25" />
+        <div className="w-[10px] h-[10px] rounded-sm bg-green-500/45" />
+        <div className="w-[10px] h-[10px] rounded-sm bg-green-500/65" />
+        <div className="w-[10px] h-[10px] rounded-sm bg-green-500/85" />
+        <span>Mais</span>
+      </div>
+      {selectedCell && countMap.get(selectedCell) && (
+        <div className="mt-4 border-t border-border pt-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold">Dia {selectedCell} — {countMap.get(selectedCell)!.count} gibis</h3>
+            <Button variant="ghost" size="sm" onClick={() => setSelectedCell(null)} className="h-7 text-xs gap-1"><X className="h-3 w-3" /> Fechar</Button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {countMap.get(selectedCell)!.items.map(item => <CoverCard key={item.id} item={item} locale="" onClick={onCoverClick} />)}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
