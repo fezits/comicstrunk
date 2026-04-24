@@ -7,6 +7,7 @@ import { useLocale } from 'next-intl';
 import { BookOpen, Tag, Search, TrendingUp, Library, ArrowRight } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { CoverImage } from '@/components/ui/cover-image';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HomepageSectionRenderer } from './homepage-section-renderer';
@@ -183,11 +184,10 @@ function RecentAdditions() {
           >
             <div className="aspect-[2/3] bg-muted relative overflow-hidden">
               {entry.coverImageUrl ? (
-                <img
+                <CoverImage
                   src={entry.coverImageUrl}
                   alt={entry.title}
                   className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                  loading="lazy"
                 />
               ) : (
                 <div className="h-full w-full flex items-center justify-center bg-primary/5">

@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { BookOpen, Eye, DollarSign } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
+import { CoverImage } from '@/components/ui/cover-image';
 import type { CollectionItem, ItemCondition } from '@/lib/api/collection';
 
 interface CollectionItemCompactProps {
@@ -32,11 +33,10 @@ export function CollectionItemCompact({ item }: CollectionItemCompactProps) {
       {/* Cover - smaller */}
       <div className="aspect-[2/3] bg-muted flex items-center justify-center overflow-hidden relative">
         {entry.coverImageUrl ? (
-          <img
+          <CoverImage
             src={entry.coverImageUrl}
             alt={entry.title}
             className="h-full w-full object-cover transition-transform group-hover:scale-105"
-            loading="lazy"
           />
         ) : (
           <BookOpen className="h-8 w-8 text-muted-foreground/40" />

@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Trash2, CheckSquare, Square, BookOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { CoverImage } from '@/components/ui/cover-image';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { apiClient } from '@/lib/api/client';
@@ -199,11 +200,10 @@ export default function AdminCoverReviewPage() {
               >
                 <div className="aspect-[2/3] bg-muted">
                   {entry.coverImageUrl ? (
-                    <img
+                    <CoverImage
                       src={entry.coverImageUrl}
                       alt={entry.title}
                       className="h-full w-full object-cover"
-                      loading="lazy"
                     />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center">

@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Search, Loader2, Check, Plus, X, Minus } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { CoverImage } from '@/components/ui/cover-image';
 import { Input } from '@/components/ui/input';
 import { searchCatalog, type CatalogEntry } from '@/lib/api/catalog';
 import { batchAddItems, addCollectionItem, deleteCollectionItem, getCollectionItems } from '@/lib/api/collection';
@@ -248,11 +249,10 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
                 onClick={() => entry.coverImageUrl && setZoomImage({ url: entry.coverImageUrl, title: entry.title })}
               >
                 {entry.coverImageUrl ? (
-                  <img
+                  <CoverImage
                     src={entry.coverImageUrl}
                     alt={entry.title}
                     className="h-full w-full object-cover"
-                    loading="lazy"
                   />
                 ) : (
                   <div className="h-full w-full flex items-center justify-center text-[8px] text-muted-foreground">

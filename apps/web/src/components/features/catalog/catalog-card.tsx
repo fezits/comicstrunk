@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { BookOpen, Check, Loader2, Plus, Repeat2 } from 'lucide-react';
+import { CoverImage } from '@/components/ui/cover-image';
 import { toast } from 'sonner';
 import { AxiosError } from 'axios';
 
@@ -33,11 +34,7 @@ export function CatalogCard({ entry, isOwned = false }: CatalogCardProps) {
         {/* Cover image */}
         <div className="relative aspect-[2/3] bg-muted overflow-hidden">
           {entry.coverImageUrl ? (
-            <img
-              src={entry.coverImageUrl}
-              alt={entry.title}
-              className="h-full w-full object-cover transition-transform group-hover:scale-105"
-            />
+            <CoverImage src={entry.coverImageUrl} alt={entry.title} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
           ) : (
             <div className="h-full w-full flex items-center justify-center bg-primary/5 dark:bg-muted">
               <BookOpen className="h-16 w-16 text-primary/20" />

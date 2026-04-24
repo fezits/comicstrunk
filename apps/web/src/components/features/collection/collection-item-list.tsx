@@ -6,6 +6,7 @@ import { BookOpen, Eye, EyeOff, Tag, DollarSign } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { CoverImage } from '@/components/ui/cover-image';
 import type { CollectionItem, ItemCondition } from '@/lib/api/collection';
 
 interface CollectionItemListProps {
@@ -37,11 +38,10 @@ export function CollectionItemList({ item, onToggleRead, onToggleSale }: Collect
       <Link href={`/${locale}/collection/${item.id}`} className="shrink-0">
         <div className="w-12 h-16 bg-muted rounded overflow-hidden">
           {entry.coverImageUrl ? (
-            <img
+            <CoverImage
               src={entry.coverImageUrl}
               alt={entry.title}
               className="h-full w-full object-cover"
-              loading="lazy"
             />
           ) : (
             <div className="h-full w-full flex items-center justify-center">

@@ -8,6 +8,7 @@ import { BookOpen, Eye, EyeOff, Tag, DollarSign } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { CoverImage } from '@/components/ui/cover-image';
 import type { CollectionItem, ItemCondition } from '@/lib/api/collection';
 
 interface CollectionItemCardProps {
@@ -59,7 +60,7 @@ export function CollectionItemCard({ item, onToggleRead, onToggleSale, onChangeC
         {/* Cover */}
         <div className="aspect-[2/3] bg-muted flex items-center justify-center overflow-hidden relative rounded-t-lg">
           {entry.coverImageUrl ? (
-            <img
+            <CoverImage
               src={entry.coverImageUrl}
               alt={entry.title}
               className="h-full w-full object-cover transition-transform group-hover:scale-105"
