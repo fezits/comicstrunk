@@ -186,7 +186,12 @@ export function ReadingTimeline() {
             <Button
               variant={orientation === 'heatmap' ? 'default' : 'ghost'}
               size="sm" className="h-7 px-2"
-              onClick={() => setOrientation('heatmap')}
+              onClick={() => {
+                setOrientation('heatmap');
+                setSelectedYear(now.getFullYear());
+                setSelectedMonth(now.getMonth() + 1);
+                setZoomLevel('day');
+              }}
               title="Heatmap"
             >
               <Grid3X3 className="h-4 w-4" />
@@ -687,7 +692,7 @@ function HeatmapView({
     );
   }
 
-  if (zoomLevel === 'month') {
+  if (zoomLevel === 'month' || zoomLevel === 'day') {
     const countMap = new Map(groups.map(g => [g.key, g]));
     const daysInMonth = selectedYear && selectedMonth ? new Date(selectedYear, selectedMonth, 0).getDate() : 31;
     const firstDayOfWeek = selectedYear && selectedMonth ? new Date(selectedYear, selectedMonth - 1, 1).getDay() : 0;
