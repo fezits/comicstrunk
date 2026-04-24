@@ -73,7 +73,7 @@ export function ReadingTimeline() {
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
   const [filterPublisher, setFilterPublisher] = useState<string>('');
   const [filterSeries, setFilterSeries] = useState<string>('');
-  const [orientation, setOrientation] = useState<Orientation>('horizontal');
+  const [orientation, setOrientation] = useState<Orientation>('vertical');
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
 
   const fetchTimeline = useCallback(async () => {
@@ -397,27 +397,11 @@ function VerticalTimeline({
             <span className="text-xs text-muted-foreground ml-2">{g.count} gibi{g.count !== 1 ? 's' : ''}</span>
           </div>
 
-          {/* Covers grid — uses full width */}
+          {/* Covers grid — shows all */}
           <div className="flex flex-wrap gap-2">
-            {(expandedGroup === g.key ? g.items : g.items.slice(0, 12)).map((item) => (
+            {g.items.map((item) => (
               <CoverCard key={item.id} item={item} locale={locale} />
             ))}
-            {g.count > 12 && expandedGroup !== g.key && (
-              <button
-                onClick={() => setExpandedGroup(g.key)}
-                className="w-16 h-24 rounded-lg bg-muted/50 border border-border/50 flex items-center justify-center text-sm font-bold text-muted-foreground hover:bg-primary/10 hover:text-primary transition-all"
-              >
-                +{g.count - 12}
-              </button>
-            )}
-            {expandedGroup === g.key && g.count > 12 && (
-              <button
-                onClick={() => setExpandedGroup(null)}
-                className="w-16 h-24 rounded-lg bg-muted/50 border border-border/50 flex items-center justify-center text-xs text-muted-foreground hover:text-primary transition-all"
-              >
-                Menos
-              </button>
-            )}
           </div>
 
           {/* Zoom in hint */}

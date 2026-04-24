@@ -479,6 +479,29 @@ export default function CollectionItemDetailPage() {
                 )}
               </div>
 
+              {/* Read date — editable */}
+              {item.isRead && (
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-muted-foreground">Lido em:</span>
+                  <input
+                    type="date"
+                    value={item.readAt ? new Date(item.readAt).toISOString().slice(0, 10) : ''}
+                    onChange={async (e) => {
+                      const newDate = e.target.value;
+                      if (!newDate) return;
+                      try {
+                        const updated = await updateCollectionItem(item.id, { readAt: new Date(newDate + 'T12:00:00').toISOString() } as Record<string, unknown>);
+                        setItem(updated);
+                        toast.success('Data de leitura atualizada');
+                      } catch {
+                        toast.error('Erro ao atualizar data');
+                      }
+                    }}
+                    className="bg-transparent border border-border rounded px-2 py-1 text-sm focus:border-primary outline-none"
+                  />
+                </div>
+              )}
+
               {/* Action buttons */}
               <div className="flex items-center gap-2 flex-wrap pt-2">
                 <Button variant="outline" size="sm" onClick={startEditing}>

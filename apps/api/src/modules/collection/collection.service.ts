@@ -225,6 +225,7 @@ export async function updateItem(userId: string, itemId: string, data: UpdateCol
       ...(data.pricePaid !== undefined && { pricePaid: data.pricePaid }),
       ...(data.condition !== undefined && { condition: data.condition }),
       ...(data.notes !== undefined && { notes: data.notes }),
+      ...((data as Record<string, unknown>).readAt !== undefined && { readAt: (data as Record<string, unknown>).readAt ? new Date((data as Record<string, unknown>).readAt as string) : null }),
     },
     include: collectionIncludes(),
   });
@@ -527,7 +528,7 @@ export async function getTimeline(
     }
     const group = groups.get(key)!;
     group.count++;
-    if (group.items.length < 20) {
+    {
       group.items.push({
         id: item.catalogEntry.id,
         title: item.catalogEntry.title,

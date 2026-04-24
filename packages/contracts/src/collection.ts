@@ -37,6 +37,7 @@ export const updateCollectionItemSchema = z.object({
   pricePaid: z.number().positive().nullable().optional(),
   condition: itemConditionSchema.optional(),
   notes: z.string().max(2000).trim().nullable().optional(),
+  readAt: z.string().datetime().nullable().optional(),
 });
 
 export const markForSaleSchema = z.object({
