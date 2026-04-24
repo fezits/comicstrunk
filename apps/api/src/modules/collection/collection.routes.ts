@@ -38,6 +38,36 @@ router.get(
   },
 );
 
+// GET /timeline — reading timeline data
+router.get(
+  '/timeline',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const year = req.query.year ? parseInt(req.query.year as string) : undefined;
+      const month = req.query.month ? parseInt(req.query.month as string) : undefined;
+      const publisher = req.query.publisher as string | undefined;
+      const seriesId = req.query.seriesId as string | undefined;
+      const data = await collectionService.getTimeline(req.user!.userId, { year, month, publisher, seriesId });
+      sendSuccess(res, data);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// GET /timeline/filters — available filters for timeline
+router.get(
+  '/timeline/filters',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const data = await collectionService.getTimelineFilters(req.user!.userId);
+      sendSuccess(res, data);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
 // GET /series-progress — progress per series
 router.get(
   '/series-progress',

@@ -61,6 +61,7 @@ export const navGroups: NavGroup[] = [
     requiresAuth: true,
     items: [
       { titleKey: 'nav.collection', href: '/collection', icon: BookOpen },
+      { titleKey: 'nav.timeline', href: '/collection/timeline', icon: Clock },
       { titleKey: 'nav.batchAdd', href: '/collection/add-batch', icon: ListPlus },
       { titleKey: 'nav.seriesProgress', href: '/collection/series-progress', icon: BarChart3 },
       { titleKey: 'nav.favorites', href: '/favorites', icon: Heart },

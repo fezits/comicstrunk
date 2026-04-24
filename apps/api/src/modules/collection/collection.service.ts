@@ -441,6 +441,150 @@ export async function getStats(userId: string) {
   };
 }
 
+// === Reading Timeline ===
+
+export async function getTimeline(
+  userId: string,
+  params: { year?: number; month?: number; publisher?: string; seriesId?: string },
+) {
+  const where: Record<string, unknown> = {
+    userId,
+    isRead: true,
+    readAt: { not: null },
+  };
+
+  // Apply filters
+  if (params.publisher || params.seriesId) {
+    const catalogWhere: Record<string, unknown> = {};
+    if (params.publisher) catalogWhere.publisher = { contains: params.publisher };
+    if (params.seriesId) catalogWhere.seriesId = params.seriesId;
+    where.catalogEntry = catalogWhere;
+  }
+
+  // Date range filter
+  if (params.year) {
+    const start = new Date(params.year, params.month ? params.month - 1 : 0, 1);
+    const end = params.month
+      ? new Date(params.year, params.month, 0, 23, 59, 59)
+      : new Date(params.year, 11, 31, 23, 59, 59);
+    where.readAt = { gte: start, lte: end };
+  }
+
+  const items = await prisma.collectionItem.findMany({
+    where,
+    select: {
+      id: true,
+      readAt: true,
+      catalogEntry: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          coverImageUrl: true,
+          coverFileName: true,
+          publisher: true,
+          seriesId: true,
+          series: { select: { title: true } },
+        },
+      },
+    },
+    orderBy: { readAt: 'asc' },
+  });
+
+  // Resolve cover URLs
+  const resolved = items.map(item => ({
+    ...item,
+    catalogEntry: resolveCoverUrl(item.catalogEntry),
+  }));
+
+  // Group by period
+  const groups = new Map<string, { key: string; label: string; count: number; items: unknown[] }>();
+
+  for (const item of resolved) {
+    const readAt = new Date(item.readAt!);
+    let key: string;
+    let label: string;
+
+    if (params.year && params.month) {
+      // Group by day
+      const day = readAt.getDate();
+      key = String(day);
+      label = String(day);
+    } else if (params.year) {
+      // Group by month
+      const month = readAt.getMonth();
+      const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+      key = String(month + 1);
+      label = monthNames[month];
+    } else {
+      // Group by year
+      key = String(readAt.getFullYear());
+      label = String(readAt.getFullYear());
+    }
+
+    if (!groups.has(key)) {
+      groups.set(key, { key, label, count: 0, items: [] });
+    }
+    const group = groups.get(key)!;
+    group.count++;
+    if (group.items.length < 20) {
+      group.items.push({
+        id: item.catalogEntry.id,
+        title: item.catalogEntry.title,
+        slug: item.catalogEntry.slug,
+        coverImageUrl: item.catalogEntry.coverImageUrl,
+        publisher: item.catalogEntry.publisher,
+        seriesName: item.catalogEntry.series?.title ?? null,
+        readAt: item.readAt,
+      });
+    }
+  }
+
+  // Find period range
+  const allDates = resolved.filter(i => i.readAt).map(i => new Date(i.readAt!));
+  const periodStart = allDates.length ? allDates[0].toISOString().slice(0, 10) : null;
+  const periodEnd = allDates.length ? allDates[allDates.length - 1].toISOString().slice(0, 10) : null;
+
+  return {
+    totalRead: resolved.length,
+    periodStart,
+    periodEnd,
+    groups: Array.from(groups.values()).sort((a, b) => Number(a.key) - Number(b.key)),
+  };
+}
+
+// === Available filters for timeline ===
+
+export async function getTimelineFilters(userId: string) {
+  const items = await prisma.collectionItem.findMany({
+    where: { userId, isRead: true, readAt: { not: null } },
+    select: {
+      catalogEntry: {
+        select: {
+          publisher: true,
+          seriesId: true,
+          series: { select: { id: true, title: true } },
+        },
+      },
+    },
+  });
+
+  const publishers = new Set<string>();
+  const seriesMap = new Map<string, string>();
+
+  for (const item of items) {
+    if (item.catalogEntry.publisher) publishers.add(item.catalogEntry.publisher);
+    if (item.catalogEntry.seriesId && item.catalogEntry.series) {
+      seriesMap.set(item.catalogEntry.series.id, item.catalogEntry.series.title);
+    }
+  }
+
+  return {
+    publishers: Array.from(publishers).sort(),
+    series: Array.from(seriesMap.entries()).map(([id, title]) => ({ id, title })).sort((a, b) => a.title.localeCompare(b.title)),
+  };
+}
+
 // === Series Progress ===
 
 export async function getSeriesProgress(userId: string, seriesId?: string) {
