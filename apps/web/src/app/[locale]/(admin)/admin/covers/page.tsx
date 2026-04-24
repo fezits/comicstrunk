@@ -163,9 +163,15 @@ export default function AdminCoverReviewPage() {
           </Button>
         )}
 
-        <span className="text-sm text-muted-foreground ml-auto">
-          Página {page} de {totalPages}
-        </span>
+        <div className="flex items-center gap-2 ml-auto">
+          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => { setPage(p => p - 1); window.scrollTo(0, 0); }}>
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-sm text-muted-foreground">{page}/{totalPages}</span>
+          <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => { setPage(p => p + 1); window.scrollTo(0, 0); }}>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Grid */}
