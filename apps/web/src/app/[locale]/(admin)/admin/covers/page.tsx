@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Trash2, CheckSquare, Square, BookOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { apiClient } from '@/lib/api/client';
 
@@ -30,13 +31,16 @@ export default function AdminCoverReviewPage() {
   const [removing, setRemoving] = useState(false);
   const [filter, setFilter] = useState('rika');
   const [sort, setSort] = useState('title');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const totalPages = Math.ceil(total / LIMIT);
 
   const fetchCovers = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await apiClient.get(`/admin/covers/review?page=${page}&limit=${LIMIT}&filter=${filter}&sort=${sort}`);
+      const params = new URLSearchParams({ page: String(page), limit: String(LIMIT), filter, sort });
+      if (searchQuery.trim()) params.set('title', searchQuery.trim());
+      const res = await apiClient.get(`/admin/covers/review?${params}`);
       setEntries(res.data.data || []);
       setTotal(res.data.pagination?.total || 0);
     } catch {
@@ -44,7 +48,7 @@ export default function AdminCoverReviewPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, filter, sort]);
+  }, [page, filter, sort, searchQuery]);
 
   useEffect(() => {
     fetchCovers();
@@ -94,6 +98,16 @@ export default function AdminCoverReviewPage() {
             {total.toLocaleString('pt-BR')} capas encontradas — selecione placeholders para remover
           </p>
         </div>
+      </div>
+
+      {/* Search */}
+      <div className="relative max-w-md">
+        <Input
+          value={searchQuery}
+          onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+          placeholder="Buscar por titulo..."
+          className="pl-3"
+        />
       </div>
 
       {/* Filters */}

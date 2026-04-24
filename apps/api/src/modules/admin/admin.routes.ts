@@ -121,10 +121,15 @@ router.get('/covers/review', async (req: Request, res: Response, next: NextFunct
     const filter = (req.query.filter as string) || 'all'; // 'all' | 'rika' | 'panini' | 'openlibrary'
     const skip = (page - 1) * limit;
 
-    const sort = (req.query.sort as string) || 'title'; // 'title' | 'filename'
+    const sort = (req.query.sort as string) || 'title';
+    const titleSearch = req.query.title as string | undefined;
     const where: Record<string, unknown> = {
       coverFileName: { not: null },
     };
+
+    if (titleSearch) {
+      where.title = { contains: titleSearch };
+    }
 
     if (filter === 'rika') where.coverFileName = { startsWith: 'rika-' };
     else if (filter === 'panini') where.coverFileName = { startsWith: 'panini-' };
