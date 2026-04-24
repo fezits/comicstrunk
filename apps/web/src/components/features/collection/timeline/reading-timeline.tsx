@@ -75,6 +75,7 @@ export function ReadingTimeline() {
   const [filterSeries, setFilterSeries] = useState<string>('');
   const [orientation, setOrientation] = useState<Orientation>('vertical');
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
+  const [zoomedItem, setZoomedItem] = useState<TimelineItem | null>(null);
 
   const fetchTimeline = useCallback(async () => {
     setLoading(true);
@@ -289,6 +290,7 @@ export function ReadingTimeline() {
             setExpandedGroup={setExpandedGroup}
             onZoomIn={zoomIn}
             getLabel={getTimeLabel}
+            onCoverClick={setZoomedItem}
           />
         ) : (
           <VerticalTimeline
@@ -299,6 +301,7 @@ export function ReadingTimeline() {
             setExpandedGroup={setExpandedGroup}
             onZoomIn={zoomIn}
             getLabel={getTimeLabel}
+            onCoverClick={setZoomedItem}
           />
         )}
 
@@ -306,6 +309,32 @@ export function ReadingTimeline() {
           <div className="text-center text-muted-foreground py-12">Nenhum gibi lido neste periodo</div>
         )}
       </div>
+
+      {/* Cover zoom modal */}
+      {zoomedItem && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" onClick={() => setZoomedItem(null)}>
+          <div className="relative max-w-sm" onClick={(e) => e.stopPropagation()}>
+            <button onClick={() => setZoomedItem(null)} className="absolute -top-3 -right-3 bg-background border border-border rounded-full w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-foreground z-10">
+              <X className="h-4 w-4" />
+            </button>
+            {zoomedItem.coverImageUrl && (
+              <img src={zoomedItem.coverImageUrl} alt={zoomedItem.title} className="max-h-[70vh] w-auto rounded-lg shadow-2xl" />
+            )}
+            <div className="mt-3 text-center">
+              <p className="text-white font-semibold">{zoomedItem.title}</p>
+              {zoomedItem.publisher && <p className="text-white/60 text-sm">{zoomedItem.publisher}</p>}
+              <p className="text-primary text-sm mt-1">Lido em {formatDate(zoomedItem.readAt)}</p>
+              <Link
+                href={`/${locale}/catalog/${zoomedItem.slug || zoomedItem.id}`}
+                className="inline-block mt-3 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+                onClick={() => setZoomedItem(null)}
+              >
+                Ver detalhes
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -313,7 +342,7 @@ export function ReadingTimeline() {
 // === Horizontal Timeline ===
 
 function HorizontalTimeline({
-  groups, zoomLevel, locale, scrollRef, expandedGroup, setExpandedGroup, onZoomIn, getLabel,
+  groups, zoomLevel, locale, scrollRef, expandedGroup, setExpandedGroup, onZoomIn, getLabel, onCoverClick,
 }: {
   groups: TimelineGroup[];
   zoomLevel: ZoomLevel;
@@ -323,6 +352,7 @@ function HorizontalTimeline({
   setExpandedGroup: (key: string | null) => void;
   onZoomIn: (key: string) => void;
   getLabel: (g: TimelineGroup) => string;
+  onCoverClick?: (item: TimelineItem) => void;
 }) {
   return (
     <div ref={scrollRef} className="overflow-x-auto">
@@ -330,10 +360,10 @@ function HorizontalTimeline({
         {/* Top row (even) */}
         <div className="flex items-end min-h-[140px]">
           {groups.map((g, i) => (
-            <NodeCard key={g.key} group={g} position={i % 2 === 0 ? 'show' : 'spacer'} label={getLabel(g)} locale={locale}
+            <NodeCard key={g.key} group={g} position={i % 2 === 0 ? 'show' : 'spacer'} side="above" label={getLabel(g)} locale={locale}
               zoomLevel={zoomLevel} isExpanded={expandedGroup === g.key}
               onToggleExpand={() => setExpandedGroup(expandedGroup === g.key ? null : g.key)}
-              onZoomIn={() => onZoomIn(g.key)} />
+              onZoomIn={() => onZoomIn(g.key)} onCoverClick={onCoverClick} />
           ))}
         </div>
 
@@ -352,16 +382,16 @@ function HorizontalTimeline({
         {/* Bottom row (odd) */}
         <div className="flex items-start min-h-[140px]">
           {groups.map((g, i) => (
-            <NodeCard key={g.key} group={g} position={i % 2 === 1 ? 'show' : 'spacer'} label={getLabel(g)} locale={locale}
+            <NodeCard key={g.key} group={g} position={i % 2 === 1 ? 'show' : 'spacer'} side="below" label={getLabel(g)} locale={locale}
               zoomLevel={zoomLevel} isExpanded={expandedGroup === g.key}
               onToggleExpand={() => setExpandedGroup(expandedGroup === g.key ? null : g.key)}
-              onZoomIn={() => onZoomIn(g.key)} />
+              onZoomIn={() => onZoomIn(g.key)} onCoverClick={onCoverClick} />
           ))}
         </div>
       </div>
 
       {/* Expanded view */}
-      {expandedGroup && <ExpandedView group={groups.find(g => g.key === expandedGroup)!} locale={locale} onClose={() => setExpandedGroup(null)} />}
+      {expandedGroup && <ExpandedView group={groups.find(g => g.key === expandedGroup)!} locale={locale} onClose={() => setExpandedGroup(null)} onCoverClick={onCoverClick} />}
     </div>
   );
 }
@@ -369,7 +399,7 @@ function HorizontalTimeline({
 // === Vertical Timeline ===
 
 function VerticalTimeline({
-  groups, zoomLevel, locale, expandedGroup, setExpandedGroup, onZoomIn, getLabel,
+  groups, zoomLevel, locale, expandedGroup, setExpandedGroup, onZoomIn, getLabel, onCoverClick,
 }: {
   groups: TimelineGroup[];
   zoomLevel: ZoomLevel;
@@ -378,6 +408,7 @@ function VerticalTimeline({
   setExpandedGroup: (key: string | null) => void;
   onZoomIn: (key: string) => void;
   getLabel: (g: TimelineGroup) => string;
+  onCoverClick?: (item: TimelineItem) => void;
 }) {
   return (
     <div className="relative pl-8">
@@ -400,7 +431,7 @@ function VerticalTimeline({
           {/* Covers grid — 10 visible, expand on click */}
           <div className="flex flex-wrap gap-2">
             {(expandedGroup === g.key ? g.items : g.items.slice(0, 10)).map((item) => (
-              <CoverCard key={item.id} item={item} locale={locale} />
+              <CoverCard key={item.id} item={item} locale={locale} onClick={onCoverClick} />
             ))}
             {g.count > 10 && expandedGroup !== g.key && (
               <button
@@ -435,16 +466,18 @@ function VerticalTimeline({
 // === Node Card (horizontal mode) ===
 
 function NodeCard({
-  group, position, label, locale, zoomLevel, isExpanded, onToggleExpand, onZoomIn,
+  group, position, side, label, locale, zoomLevel, isExpanded, onToggleExpand, onZoomIn, onCoverClick,
 }: {
   group: TimelineGroup;
   position: 'show' | 'spacer';
+  side: 'above' | 'below';
   label: string;
   locale: string;
   zoomLevel: ZoomLevel;
   isExpanded: boolean;
   onToggleExpand: () => void;
   onZoomIn: () => void;
+  onCoverClick?: (item: TimelineItem) => void;
 }) {
   const width = Math.max(160, Math.min(group.items.length * 54, 320));
 
@@ -454,7 +487,8 @@ function NodeCard({
 
   return (
     <div className="flex-shrink-0 flex flex-col items-center px-2" style={{ width: `${width}px` }}>
-      <div className="w-px h-6 bg-primary/30" />
+      {/* Connector: below cards have connector on top, above cards on bottom */}
+      {side === 'below' && <div className="w-px h-6 bg-primary/30" />}
 
       <div
         className="bg-primary/5 border border-primary/20 rounded-xl p-3 w-full hover:border-primary/40 transition-all cursor-pointer"
@@ -468,7 +502,7 @@ function NodeCard({
 
         <div className="flex flex-wrap justify-center gap-1">
           {group.items.slice(0, 5).map((item) => (
-            <CoverThumb key={item.id} item={item} locale={locale} />
+            <CoverThumb key={item.id} item={item} locale={locale} onClick={onCoverClick} />
           ))}
           {group.count > 5 && (
             <div className="w-12 h-16 rounded bg-muted/50 flex items-center justify-center text-xs font-bold text-muted-foreground">
@@ -481,13 +515,15 @@ function NodeCard({
           {group.count} gibi{group.count !== 1 ? 's' : ''}
         </p>
       </div>
+
+      {side === 'above' && <div className="w-px h-6 bg-primary/30" />}
     </div>
   );
 }
 
 // === Expanded View (all covers from a group) ===
 
-function ExpandedView({ group, locale, onClose }: { group: TimelineGroup; locale: string; onClose: () => void }) {
+function ExpandedView({ group, locale, onClose, onCoverClick }: { group: TimelineGroup; locale: string; onClose: () => void; onCoverClick?: (item: TimelineItem) => void }) {
   if (!group) return null;
 
   return (
@@ -500,7 +536,7 @@ function ExpandedView({ group, locale, onClose }: { group: TimelineGroup; locale
       </div>
       <div className="flex flex-wrap gap-3">
         {group.items.map((item) => (
-          <CoverCard key={item.id} item={item} locale={locale} />
+          <CoverCard key={item.id} item={item} locale={locale} onClick={onCoverClick} />
         ))}
       </div>
     </div>
@@ -509,13 +545,13 @@ function ExpandedView({ group, locale, onClose }: { group: TimelineGroup; locale
 
 // === Cover Card (bigger — for vertical & expanded) ===
 
-function CoverCard({ item, locale }: { item: TimelineItem; locale: string }) {
+function CoverCard({ item, onClick }: { item: TimelineItem; locale: string; onClick?: (item: TimelineItem) => void }) {
   const [hovered, setHovered] = useState(false);
 
   return (
     <div className="relative" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-      <Link
-        href={`/${locale}/catalog/${item.slug || item.id}`}
+      <button
+        onClick={() => onClick?.(item)}
         className="block w-16 h-24 rounded-lg overflow-hidden border border-border/50 hover:border-primary shadow-sm hover:shadow-lg transition-all"
         style={{
           transform: hovered ? 'scale(1.15) translateY(-4px)' : 'scale(1)',
@@ -531,7 +567,7 @@ function CoverCard({ item, locale }: { item: TimelineItem; locale: string }) {
             <BookOpen className="h-4 w-4 text-muted-foreground/40" />
           </div>
         )}
-      </Link>
+      </button>
 
       {hovered && (
         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 pointer-events-none">
@@ -547,13 +583,13 @@ function CoverCard({ item, locale }: { item: TimelineItem; locale: string }) {
 
 // === Cover Thumb (smaller — for horizontal cards) ===
 
-function CoverThumb({ item, locale }: { item: TimelineItem; locale: string }) {
+function CoverThumb({ item, onClick }: { item: TimelineItem; locale: string; onClick?: (item: TimelineItem) => void }) {
   const [hovered, setHovered] = useState(false);
 
   return (
     <div className="relative" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-      <Link
-        href={`/${locale}/catalog/${item.slug || item.id}`}
+      <button
+        onClick={() => onClick?.(item)}
         className="block w-12 h-16 rounded overflow-hidden border border-border/30 hover:border-primary transition-all"
         style={{
           transform: hovered ? 'scale(1.3) translateY(-3px)' : 'scale(1)',
@@ -569,7 +605,7 @@ function CoverThumb({ item, locale }: { item: TimelineItem; locale: string }) {
             <BookOpen className="h-3 w-3 text-muted-foreground/40" />
           </div>
         )}
-      </Link>
+      </button>
 
       {hovered && (
         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 z-50 pointer-events-none">
