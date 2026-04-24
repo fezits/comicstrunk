@@ -77,11 +77,13 @@ export function ReadingTimeline() {
   const [orientation, setOrientation] = useState<Orientation>('vertical');
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const [zoomedItem, setZoomedItem] = useState<TimelineItem | null>(null);
+  const [timelineMode, setTimelineMode] = useState<'read' | 'added'>('read');
 
   const fetchTimeline = useCallback(async () => {
     setLoading(true);
     try {
       const params: Record<string, string> = {};
+      params.mode = timelineMode;
       if (selectedYear) params.year = String(selectedYear);
       if (selectedMonth) params.month = String(selectedMonth);
       if (filterPublisher) params.publisher = filterPublisher;
@@ -94,7 +96,7 @@ export function ReadingTimeline() {
     } finally {
       setLoading(false);
     }
-  }, [selectedYear, selectedMonth, filterPublisher, filterSeries]);
+  }, [selectedYear, selectedMonth, filterPublisher, filterSeries, timelineMode]);
 
   const fetchFilters = useCallback(async () => {
     try {
@@ -159,7 +161,7 @@ export function ReadingTimeline() {
             Linha do Tempo
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {data.totalRead} gibi{data.totalRead !== 1 ? 's' : ''} lido{data.totalRead !== 1 ? 's' : ''}
+            {data.totalRead} gibi{data.totalRead !== 1 ? 's' : ''} {timelineMode === 'added' ? 'adicionado' : 'lido'}{data.totalRead !== 1 ? 's' : ''}
             {data.periodStart && ` · ${formatDate(data.periodStart)} a ${formatDate(data.periodEnd!)}`}
           </p>
         </div>
@@ -219,6 +221,24 @@ export function ReadingTimeline() {
 
       {/* Filters */}
       <div className="flex items-center gap-3 flex-wrap bg-muted/30 rounded-lg p-3">
+        {/* Mode toggle */}
+        <div className="flex items-center bg-muted rounded-full p-0.5">
+          <button
+            className={`px-3 py-1 text-xs rounded-full transition-all ${timelineMode === 'read' ? 'bg-green-600 text-white' : 'text-muted-foreground hover:text-foreground'}`}
+            onClick={() => setTimelineMode('read')}
+          >
+            Lidos
+          </button>
+          <button
+            className={`px-3 py-1 text-xs rounded-full transition-all ${timelineMode === 'added' ? 'bg-blue-600 text-white' : 'text-muted-foreground hover:text-foreground'}`}
+            onClick={() => setTimelineMode('added')}
+          >
+            Adicionados
+          </button>
+        </div>
+
+        <div className="h-6 w-px bg-border" />
+
         <Select
           value={selectedYear ? String(selectedYear) : 'all'}
           onValueChange={(v) => {
@@ -331,6 +351,7 @@ export function ReadingTimeline() {
             selectedMonth={selectedMonth}
             onZoomIn={zoomIn}
             onCoverClick={setZoomedItem}
+            colorScheme={timelineMode === 'added' ? 'blue' : 'green'}
           />
         )}
 
@@ -651,7 +672,7 @@ function CoverThumb({ item, onClick }: { item: TimelineItem; locale: string; onC
 // === Heatmap View (GitHub-style) ===
 
 function HeatmapView({
-  groups, zoomLevel, selectedYear, selectedMonth, onZoomIn, onCoverClick,
+  groups, zoomLevel, selectedYear, selectedMonth, onZoomIn, onCoverClick, colorScheme = 'green',
 }: {
   groups: TimelineGroup[];
   zoomLevel: ZoomLevel;
@@ -659,9 +680,14 @@ function HeatmapView({
   selectedMonth: number | null;
   onZoomIn: (key: string) => void;
   onCoverClick?: (item: TimelineItem) => void;
+  colorScheme?: 'green' | 'blue';
 }) {
   const [selectedCell, setSelectedCell] = useState<string | null>(null);
   const countMap = new Map(groups.map(g => [g.key, g]));
+
+  const c = colorScheme === 'blue'
+    ? { l1: 'bg-blue-500/30', l2: 'bg-blue-500/50', l3: 'bg-blue-500/70', l4: 'bg-blue-500/90', h1: 'hover:bg-blue-500/35', h2: 'hover:bg-blue-500/55', h3: 'hover:bg-blue-500/75', h4: 'hover:bg-blue-500/95' }
+    : { l1: 'bg-green-500/30', l2: 'bg-green-500/50', l3: 'bg-green-500/70', l4: 'bg-green-500/90', h1: 'hover:bg-green-500/35', h2: 'hover:bg-green-500/55', h3: 'hover:bg-green-500/75', h4: 'hover:bg-green-500/95' };
 
   // GitHub-style annual heatmap: 52 weeks × 7 days
   if (zoomLevel === 'year' || zoomLevel === 'month' && !selectedMonth) {
@@ -705,10 +731,10 @@ function HeatmapView({
 
     const getColor = (count: number) => {
       if (count <= 0) return 'bg-muted/20';
-      if (count < 3) return 'bg-green-500/30';
-      if (count < 10) return 'bg-green-500/50';
-      if (count < 30) return 'bg-green-500/70';
-      return 'bg-green-500/90';
+      if (count < 3) return c.l1;
+      if (count < 10) return c.l2;
+      if (count < 30) return c.l3;
+      return c.l4;
     };
 
     return (
@@ -759,10 +785,10 @@ function HeatmapView({
         <div className="flex items-center gap-1 mt-3 text-[10px] text-muted-foreground justify-end">
           <span>Menos</span>
           <div className="w-[10px] h-[10px] rounded-[2px] bg-muted/20" />
-          <div className="w-[10px] h-[10px] rounded-[2px] bg-green-500/30" />
-          <div className="w-[10px] h-[10px] rounded-[2px] bg-green-500/50" />
-          <div className="w-[10px] h-[10px] rounded-[2px] bg-green-500/70" />
-          <div className="w-[10px] h-[10px] rounded-[2px] bg-green-500/90" />
+          <div className={`w-[10px] h-[10px] rounded-[2px] ${c.l1}`} />
+          <div className={`w-[10px] h-[10px] rounded-[2px] ${c.l2}`} />
+          <div className={`w-[10px] h-[10px] rounded-[2px] ${c.l3}`} />
+          <div className={`w-[10px] h-[10px] rounded-[2px] ${c.l4}`} />
           <span>Mais</span>
         </div>
 
@@ -807,10 +833,10 @@ function HeatmapView({
               className={`w-10 h-10 rounded-md flex flex-col items-center justify-center transition-all text-xs ${
                 isSelected ? 'ring-2 ring-primary bg-primary/20'
                 : intensity === 0 ? 'bg-muted/20 text-muted-foreground/50'
-                : intensity === 1 ? 'bg-green-500/25 hover:bg-green-500/35'
-                : intensity === 2 ? 'bg-green-500/45 hover:bg-green-500/55'
-                : intensity === 3 ? 'bg-green-500/65 hover:bg-green-500/75'
-                : 'bg-green-500/85 hover:bg-green-500/95'
+                : intensity === 1 ? `${c.l1} ${c.h1}`
+                : intensity === 2 ? `${c.l2} ${c.h2}`
+                : intensity === 3 ? `${c.l3} ${c.h3}`
+                : `${c.l4} ${c.h4}`
               } ${count > 0 ? 'cursor-pointer' : 'cursor-default'}`}>
               <span className="font-medium">{day}</span>
               {count > 0 && <span className="text-[8px] font-bold">{count}</span>}
@@ -821,10 +847,10 @@ function HeatmapView({
       <div className="flex items-center gap-1 mt-3 text-[10px] text-muted-foreground justify-end">
         <span>Menos</span>
         <div className="w-[10px] h-[10px] rounded-sm bg-muted/20" />
-        <div className="w-[10px] h-[10px] rounded-sm bg-green-500/25" />
-        <div className="w-[10px] h-[10px] rounded-sm bg-green-500/45" />
-        <div className="w-[10px] h-[10px] rounded-sm bg-green-500/65" />
-        <div className="w-[10px] h-[10px] rounded-sm bg-green-500/85" />
+        <div className={`w-[10px] h-[10px] rounded-sm ${c.l1}`} />
+        <div className={`w-[10px] h-[10px] rounded-sm ${c.l2}`} />
+        <div className={`w-[10px] h-[10px] rounded-sm ${c.l3}`} />
+        <div className={`w-[10px] h-[10px] rounded-sm ${c.l4}`} />
         <span>Mais</span>
       </div>
       {selectedCell && countMap.get(selectedCell) && (

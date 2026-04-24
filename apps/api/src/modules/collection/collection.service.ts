@@ -446,13 +446,18 @@ export async function getStats(userId: string) {
 
 export async function getTimeline(
   userId: string,
-  params: { year?: number; month?: number; publisher?: string; seriesId?: string },
+  params: { year?: number; month?: number; publisher?: string; seriesId?: string; mode?: string },
 ) {
-  const where: Record<string, unknown> = {
-    userId,
-    isRead: true,
-    readAt: { not: null },
-  };
+  const mode = params.mode || 'read'; // 'read' | 'added' | 'both'
+  const dateField = mode === 'added' ? 'createdAt' : 'readAt';
+
+  const where: Record<string, unknown> = { userId };
+
+  if (mode === 'read') {
+    where.isRead = true;
+    where.readAt = { not: null };
+  }
+  // 'added' and 'both' don't filter by isRead
 
   // Apply filters
   if (params.publisher || params.seriesId) {
@@ -468,7 +473,7 @@ export async function getTimeline(
     const end = params.month
       ? new Date(params.year, params.month, 0, 23, 59, 59)
       : new Date(params.year, 11, 31, 23, 59, 59);
-    where.readAt = { gte: start, lte: end };
+    where[dateField] = { gte: start, lte: end };
   }
 
   const items = await prisma.collectionItem.findMany({
@@ -476,6 +481,7 @@ export async function getTimeline(
     select: {
       id: true,
       readAt: true,
+      createdAt: true,
       catalogEntry: {
         select: {
           id: true,
@@ -502,25 +508,24 @@ export async function getTimeline(
   const groups = new Map<string, { key: string; label: string; count: number; items: unknown[] }>();
 
   for (const item of resolved) {
-    const readAt = new Date(item.readAt!);
+    const dateValue = mode === 'added' ? item.createdAt : item.readAt;
+    if (!dateValue) continue;
+    const d = new Date(dateValue);
     let key: string;
     let label: string;
 
     if (params.year && params.month) {
-      // Group by day
-      const day = readAt.getDate();
+      const day = d.getDate();
       key = String(day);
       label = String(day);
     } else if (params.year) {
-      // Group by month
-      const month = readAt.getMonth();
+      const month = d.getMonth();
       const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
       key = String(month + 1);
       label = monthNames[month];
     } else {
-      // Group by year
-      key = String(readAt.getFullYear());
-      label = String(readAt.getFullYear());
+      key = String(d.getFullYear());
+      label = String(d.getFullYear());
     }
 
     if (!groups.has(key)) {
@@ -537,6 +542,7 @@ export async function getTimeline(
         publisher: item.catalogEntry.publisher,
         seriesName: item.catalogEntry.series?.title ?? null,
         readAt: item.readAt,
+        addedAt: item.createdAt,
       });
     }
   }

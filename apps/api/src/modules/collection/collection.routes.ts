@@ -47,7 +47,8 @@ router.get(
       const month = req.query.month ? parseInt(req.query.month as string) : undefined;
       const publisher = req.query.publisher as string | undefined;
       const seriesId = req.query.seriesId as string | undefined;
-      const data = await collectionService.getTimeline(req.user!.userId, { year, month, publisher, seriesId });
+      const mode = req.query.mode as string | undefined;
+      const data = await collectionService.getTimeline(req.user!.userId, { year, month, publisher, seriesId, mode });
       sendSuccess(res, data);
     } catch (err) {
       next(err);
