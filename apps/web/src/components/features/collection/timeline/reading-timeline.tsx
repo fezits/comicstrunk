@@ -68,9 +68,10 @@ export function ReadingTimeline() {
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const [zoomLevel, setZoomLevel] = useState<ZoomLevel>('year');
-  const [selectedYear, setSelectedYear] = useState<number | null>(null);
-  const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
+  const now = new Date();
+  const [zoomLevel, setZoomLevel] = useState<ZoomLevel>('day');
+  const [selectedYear, setSelectedYear] = useState<number | null>(now.getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState<number | null>(now.getMonth() + 1);
   const [filterPublisher, setFilterPublisher] = useState<string>('');
   const [filterSeries, setFilterSeries] = useState<string>('');
   const [orientation, setOrientation] = useState<Orientation>('vertical');
@@ -451,10 +452,10 @@ function VerticalTimeline({
             )}
           </div>
 
-          {/* Zoom in — only on year level */}
-          {zoomLevel === 'year' && g.count > 0 && (
+          {/* Zoom in */}
+          {zoomLevel !== 'day' && g.count > 0 && (
             <button onClick={() => onZoomIn(g.key)} className="text-xs text-primary/60 hover:text-primary mt-1 flex items-center gap-1">
-              <ZoomIn className="h-3 w-3" /> Ver meses
+              <ZoomIn className="h-3 w-3" /> {zoomLevel === 'year' ? 'Ver meses' : 'Ver dias'}
             </button>
           )}
         </div>
