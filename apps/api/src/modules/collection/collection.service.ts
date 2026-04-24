@@ -457,7 +457,7 @@ export async function getTimeline(
     where.isRead = true;
     where.readAt = { not: null };
   }
-  // 'added' and 'both' don't filter by isRead
+  // 'added' and 'both': fetch all items
 
   // Apply filters
   if (params.publisher || params.seriesId) {
@@ -548,15 +548,39 @@ export async function getTimeline(
   }
 
   // Find period range
-  const allDates = resolved.filter(i => i.readAt).map(i => new Date(i.readAt!));
+  const dateFn = (i: typeof resolved[0]) => mode === 'added' ? i.createdAt : i.readAt;
+  const allDates = resolved.filter(i => dateFn(i)).map(i => new Date(dateFn(i)!));
   const periodStart = allDates.length ? allDates[0].toISOString().slice(0, 10) : null;
   const periodEnd = allDates.length ? allDates[allDates.length - 1].toISOString().slice(0, 10) : null;
+
+  // For 'both' mode: build per-day read and added counts
+  let readCounts: Record<string, number> | undefined;
+  let addedCounts: Record<string, number> | undefined;
+
+  if (mode === 'both') {
+    readCounts = {};
+    addedCounts = {};
+    for (const item of resolved) {
+      // Added count by createdAt
+      const addedDate = new Date(item.createdAt);
+      const addedKey = `${addedDate.getFullYear()}-${addedDate.getMonth() + 1}-${addedDate.getDate()}`;
+      addedCounts[addedKey] = (addedCounts[addedKey] || 0) + 1;
+
+      // Read count by readAt
+      if (item.readAt) {
+        const readDate = new Date(item.readAt);
+        const readKey = `${readDate.getFullYear()}-${readDate.getMonth() + 1}-${readDate.getDate()}`;
+        readCounts[readKey] = (readCounts[readKey] || 0) + 1;
+      }
+    }
+  }
 
   return {
     totalRead: resolved.length,
     periodStart,
     periodEnd,
     groups: Array.from(groups.values()).sort((a, b) => Number(a.key) - Number(b.key)),
+    ...(mode === 'both' && { readCounts, addedCounts }),
   };
 }
 

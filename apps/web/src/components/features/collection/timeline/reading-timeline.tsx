@@ -77,7 +77,7 @@ export function ReadingTimeline() {
   const [orientation, setOrientation] = useState<Orientation>('vertical');
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const [zoomedItem, setZoomedItem] = useState<TimelineItem | null>(null);
-  const [timelineMode, setTimelineMode] = useState<'read' | 'added'>('read');
+  const [timelineMode, setTimelineMode] = useState<'read' | 'added' | 'both'>('read');
 
   const fetchTimeline = useCallback(async () => {
     setLoading(true);
@@ -235,6 +235,12 @@ export function ReadingTimeline() {
           >
             Adicionados
           </button>
+          <button
+            className={`px-3 py-1 text-xs rounded-full transition-all ${timelineMode === 'both' ? 'bg-purple-600 text-white' : 'text-muted-foreground hover:text-foreground'}`}
+            onClick={() => { setTimelineMode('both'); setOrientation('heatmap'); setSelectedYear(now.getFullYear()); setSelectedMonth(null); setZoomLevel('month'); }}
+          >
+            Ambos
+          </button>
         </div>
 
         <div className="h-6 w-px bg-border" />
@@ -352,6 +358,9 @@ export function ReadingTimeline() {
             onZoomIn={zoomIn}
             onCoverClick={setZoomedItem}
             colorScheme={timelineMode === 'added' ? 'blue' : 'green'}
+            mode={timelineMode}
+            readCounts={(data as unknown as Record<string, unknown>).readCounts as Record<string, number> | undefined}
+            addedCounts={(data as unknown as Record<string, unknown>).addedCounts as Record<string, number> | undefined}
           />
         )}
 
@@ -672,7 +681,7 @@ function CoverThumb({ item, onClick }: { item: TimelineItem; locale: string; onC
 // === Heatmap View (GitHub-style) ===
 
 function HeatmapView({
-  groups, zoomLevel, selectedYear, selectedMonth, onZoomIn, onCoverClick, colorScheme = 'green',
+  groups, zoomLevel, selectedYear, selectedMonth, onZoomIn, onCoverClick, colorScheme = 'green', mode = 'read', readCounts, addedCounts,
 }: {
   groups: TimelineGroup[];
   zoomLevel: ZoomLevel;
@@ -681,6 +690,9 @@ function HeatmapView({
   onZoomIn: (key: string) => void;
   onCoverClick?: (item: TimelineItem) => void;
   colorScheme?: 'green' | 'blue';
+  mode?: 'read' | 'added' | 'both';
+  readCounts?: Record<string, number>;
+  addedCounts?: Record<string, number>;
 }) {
   const [selectedCell, setSelectedCell] = useState<string | null>(null);
   const countMap = new Map(groups.map(g => [g.key, g]));
@@ -737,6 +749,34 @@ function HeatmapView({
       return c.l4;
     };
 
+    // For 'both' mode: get read/added counts per day
+    const getCellStyle = (date: Date): React.CSSProperties | undefined => {
+      if (mode !== 'both' || !readCounts || !addedCounts) return undefined;
+      const key = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+      const rc = readCounts[key] || 0;
+      const ac = addedCounts[key] || 0;
+      if (rc > 0 && ac > 0) {
+        // Diagonal: green top-left, blue bottom-right
+        return { background: 'linear-gradient(135deg, rgba(34,197,94,0.7) 50%, rgba(59,130,246,0.7) 50%)' };
+      }
+      if (rc > 0) return { background: 'rgba(34,197,94,0.5)' };
+      if (ac > 0) return { background: 'rgba(59,130,246,0.5)' };
+      return undefined;
+    };
+
+    const getCellTitle = (date: Date, count: number): string => {
+      if (mode === 'both' && readCounts && addedCounts) {
+        const key = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+        const rc = readCounts[key] || 0;
+        const ac = addedCounts[key] || 0;
+        const parts = [];
+        if (ac > 0) parts.push(`${ac} adicionado${ac !== 1 ? 's' : ''}`);
+        if (rc > 0) parts.push(`${rc} lido${rc !== 1 ? 's' : ''}`);
+        return `${date.getDate()}/${date.getMonth()+1}: ${parts.join(', ')}`;
+      }
+      return `${date.getDate()}/${date.getMonth()+1}: ${count} gibi${count !== 1 ? 's' : ''}`;
+    };
+
     return (
       <div>
         <div className="overflow-x-auto">
@@ -763,18 +803,30 @@ function HeatmapView({
             <div className="flex gap-[2px]">
               {weeks.map((week, wi) => (
                 <div key={wi} className="flex flex-col gap-[2px]">
-                  {week.map((day, di) => (
-                    <div
-                      key={di}
-                      className={`w-[12px] h-[12px] rounded-[2px] transition-all ${
-                        day.count < 0 ? 'bg-transparent'
-                        : selectedCell === day.key ? 'ring-1 ring-primary ' + getColor(day.count)
-                        : getColor(day.count)
-                      } ${day.count > 0 ? 'cursor-pointer hover:ring-1 hover:ring-foreground/30' : ''}`}
-                      title={day.count >= 0 ? `${day.date.getDate()}/${day.date.getMonth()+1}: ${day.count} gibi${day.count !== 1 ? 's' : ''}` : ''}
-                      onClick={() => day.count > 0 && setSelectedCell(selectedCell === day.key ? null : day.key)}
-                    />
-                  ))}
+                  {week.map((day, di) => {
+                    const cellStyle = mode === 'both' && day.count >= 0 ? getCellStyle(day.date) : undefined;
+                    return (
+                      <div
+                        key={di}
+                        className={`w-[12px] h-[12px] rounded-[2px] transition-all ${
+                          day.count < 0 ? 'bg-transparent'
+                          : cellStyle ? '' // style handles the color
+                          : selectedCell === day.key ? 'ring-1 ring-primary ' + getColor(day.count)
+                          : getColor(day.count)
+                        } ${day.count > 0 || (mode === 'both' && day.count >= 0) ? 'cursor-pointer hover:ring-1 hover:ring-foreground/30' : ''} ${
+                          selectedCell === day.key && cellStyle ? 'ring-1 ring-primary' : ''
+                        }`}
+                        style={cellStyle || undefined}
+                        title={day.count >= 0 ? getCellTitle(day.date, day.count) : ''}
+                        onClick={() => {
+                          const hasData = mode === 'both'
+                            ? (readCounts?.[`${day.date.getFullYear()}-${day.date.getMonth()+1}-${day.date.getDate()}`] || 0) + (addedCounts?.[`${day.date.getFullYear()}-${day.date.getMonth()+1}-${day.date.getDate()}`] || 0) > 0
+                            : day.count > 0;
+                          if (hasData) setSelectedCell(selectedCell === day.key ? null : day.key);
+                        }}
+                      />
+                    );
+                  })}
                 </div>
               ))}
             </div>
@@ -782,14 +834,33 @@ function HeatmapView({
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-1 mt-3 text-[10px] text-muted-foreground justify-end">
-          <span>Menos</span>
-          <div className="w-[10px] h-[10px] rounded-[2px] bg-muted/20" />
-          <div className={`w-[10px] h-[10px] rounded-[2px] ${c.l1}`} />
-          <div className={`w-[10px] h-[10px] rounded-[2px] ${c.l2}`} />
-          <div className={`w-[10px] h-[10px] rounded-[2px] ${c.l3}`} />
-          <div className={`w-[10px] h-[10px] rounded-[2px] ${c.l4}`} />
-          <span>Mais</span>
+        <div className="flex items-center gap-2 mt-3 text-[10px] text-muted-foreground justify-end flex-wrap">
+          {mode === 'both' ? (
+            <>
+              <div className="flex items-center gap-1">
+                <div className="w-[10px] h-[10px] rounded-[2px]" style={{ background: 'rgba(34,197,94,0.5)' }} />
+                <span>Lidos</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-[10px] h-[10px] rounded-[2px]" style={{ background: 'rgba(59,130,246,0.5)' }} />
+                <span>Adicionados</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-[10px] h-[10px] rounded-[2px]" style={{ background: 'linear-gradient(135deg, rgba(34,197,94,0.7) 50%, rgba(59,130,246,0.7) 50%)' }} />
+                <span>Ambos</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <span>Menos</span>
+              <div className="w-[10px] h-[10px] rounded-[2px] bg-muted/20" />
+              <div className={`w-[10px] h-[10px] rounded-[2px] ${c.l1}`} />
+              <div className={`w-[10px] h-[10px] rounded-[2px] ${c.l2}`} />
+              <div className={`w-[10px] h-[10px] rounded-[2px] ${c.l3}`} />
+              <div className={`w-[10px] h-[10px] rounded-[2px] ${c.l4}`} />
+              <span>Mais</span>
+            </>
+          )}
         </div>
 
         {/* Selected day expansion */}
