@@ -397,11 +397,27 @@ function VerticalTimeline({
             <span className="text-xs text-muted-foreground ml-2">{g.count} gibi{g.count !== 1 ? 's' : ''}</span>
           </div>
 
-          {/* Covers grid — shows all */}
+          {/* Covers grid — 10 visible, expand on click */}
           <div className="flex flex-wrap gap-2">
-            {g.items.map((item) => (
+            {(expandedGroup === g.key ? g.items : g.items.slice(0, 10)).map((item) => (
               <CoverCard key={item.id} item={item} locale={locale} />
             ))}
+            {g.count > 10 && expandedGroup !== g.key && (
+              <button
+                onClick={() => setExpandedGroup(g.key)}
+                className="w-16 h-24 rounded-lg bg-muted/50 border border-border/50 flex items-center justify-center text-sm font-bold text-muted-foreground hover:bg-primary/10 hover:text-primary transition-all"
+              >
+                +{g.count - 10}
+              </button>
+            )}
+            {expandedGroup === g.key && g.count > 10 && (
+              <button
+                onClick={() => setExpandedGroup(null)}
+                className="w-16 h-24 rounded-lg bg-muted/50 border border-border/50 flex items-center justify-center text-xs text-muted-foreground hover:text-primary transition-all"
+              >
+                Menos
+              </button>
+            )}
           </div>
 
           {/* Zoom in hint */}
