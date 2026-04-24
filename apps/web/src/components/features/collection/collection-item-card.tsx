@@ -94,13 +94,13 @@ export function CollectionItemCard({ item, onToggleRead, onToggleSale, onChangeC
       <CardContent className="p-4 space-y-2">
         {/* Title */}
         <Link href={`/${locale}/collection/${item.id}`}>
-          <h3 className="font-semibold line-clamp-2 group-hover:text-primary transition-colors">
+          <h3 className="font-semibold text-sm sm:text-base line-clamp-2 group-hover:text-primary transition-colors">
             {entry.title}
           </h3>
         </Link>
 
         {/* Author & Publisher */}
-        <p className="text-sm text-muted-foreground truncate">
+        <p className="text-xs sm:text-sm text-muted-foreground truncate">
           {[entry.author, entry.publisher].filter(Boolean).join(' — ')}
         </p>
 

@@ -29,7 +29,7 @@ function HeroSection() {
 
       <div className="relative px-6 py-10 md:px-12 md:py-14 flex flex-col items-center text-center">
         <div className="flex flex-col items-center gap-3 mb-3">
-          <img src="/logo-400.png" alt="Comics Trunk" className="h-24 md:h-32 w-auto" />
+          <img src="/logo-400.png" alt="Comics Trunk" className="h-16 sm:h-24 md:h-32 w-auto" />
         </div>
 
         <p className="text-muted-foreground text-sm md:text-base max-w-2xl mb-6">
@@ -110,7 +110,7 @@ function SearchStatsSection() {
 
       {/* Stats */}
       {stats && (
-        <div className="flex items-center justify-center gap-6 md:gap-10 text-center">
+        <div className="flex items-center justify-center gap-3 sm:gap-6 md:gap-10 text-center">
           <div className="flex items-center gap-2">
             <Library className="h-5 w-5 text-primary" />
             <div>
@@ -174,7 +174,7 @@ function RecentAdditions() {
           Ver todos <ArrowRight className="h-3 w-3" />
         </Link>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
         {entries.map((entry) => (
           <Link
             key={entry.id}

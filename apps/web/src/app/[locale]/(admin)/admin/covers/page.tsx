@@ -156,7 +156,7 @@ export default function AdminCoverReviewPage() {
 
       {/* Grid */}
       {loading ? (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-8 xl:grid-cols-10 gap-2">
           {Array.from({ length: LIMIT }).map((_, i) => (
             <Skeleton key={i} className="aspect-[2/3] rounded" />
           ))}
@@ -164,7 +164,7 @@ export default function AdminCoverReviewPage() {
       ) : entries.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">Nenhuma capa encontrada</div>
       ) : (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-8 xl:grid-cols-10 gap-2">
           {entries.map(entry => {
             const isSelected = selected.has(entry.id);
             return (

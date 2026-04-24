@@ -266,7 +266,7 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
                 <Link
                   href={`/${locale}/catalog/${entry.slug || entry.id}`}
                   target="_blank"
-                  className="font-medium text-sm truncate block hover:text-primary hover:underline"
+                  className="font-medium text-xs sm:text-sm truncate block hover:text-primary hover:underline"
                 >
                   {entry.title}
                 </Link>

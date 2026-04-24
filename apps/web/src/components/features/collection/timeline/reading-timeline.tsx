@@ -252,7 +252,7 @@ export function ReadingTimeline() {
             else { setSelectedYear(parseInt(v)); setSelectedMonth(null); setZoomLevel('month'); }
           }}
         >
-          <SelectTrigger className="w-[120px] h-9 rounded-full text-sm"><SelectValue placeholder="Ano" /></SelectTrigger>
+          <SelectTrigger className="w-[100px] sm:w-[120px] h-9 rounded-full text-sm"><SelectValue placeholder="Ano" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos anos</SelectItem>
             {(zoomLevel === 'year' ? data.groups.map(g => g.key) : [String(selectedYear)]).map(y => (
@@ -269,7 +269,7 @@ export function ReadingTimeline() {
             else { setSelectedMonth(parseInt(v)); setZoomLevel('day'); }
           }}
         >
-          <SelectTrigger className="w-[140px] h-9 rounded-full text-sm"><SelectValue placeholder="Mes" /></SelectTrigger>
+          <SelectTrigger className="w-[110px] sm:w-[140px] h-9 rounded-full text-sm"><SelectValue placeholder="Mes" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos meses</SelectItem>
             {MONTH_NAMES.map((m, i) => <SelectItem key={i} value={String(i + 1)}>{m}</SelectItem>)}
@@ -279,7 +279,7 @@ export function ReadingTimeline() {
         <div className="h-6 w-px bg-border mx-1" />
 
         <Select value={filterPublisher || 'all'} onValueChange={(v) => setFilterPublisher(v === 'all' ? '' : v)}>
-          <SelectTrigger className="w-[160px] h-9 rounded-full text-sm"><SelectValue placeholder="Editora" /></SelectTrigger>
+          <SelectTrigger className="w-[120px] sm:w-[160px] h-9 rounded-full text-sm"><SelectValue placeholder="Editora" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas editoras</SelectItem>
             {filters?.publishers.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
@@ -287,7 +287,7 @@ export function ReadingTimeline() {
         </Select>
 
         <Select value={filterSeries || 'all'} onValueChange={(v) => setFilterSeries(v === 'all' ? '' : v)}>
-          <SelectTrigger className="w-[180px] h-9 rounded-full text-sm"><SelectValue placeholder="Serie" /></SelectTrigger>
+          <SelectTrigger className="w-[130px] sm:w-[180px] h-9 rounded-full text-sm"><SelectValue placeholder="Serie" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas series</SelectItem>
             {filters?.series.map(s => <SelectItem key={s.id} value={s.id}>{s.title}</SelectItem>)}
