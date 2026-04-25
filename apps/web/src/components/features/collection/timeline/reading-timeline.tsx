@@ -372,24 +372,36 @@ export function ReadingTimeline() {
       {/* Cover zoom modal */}
       {zoomedItem && (
         <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" onClick={() => setZoomedItem(null)}>
-          <div className="relative max-w-sm" onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => setZoomedItem(null)} className="absolute -top-3 -right-3 bg-background border border-border rounded-full w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-foreground z-10">
-              <X className="h-4 w-4" />
+          <div className="relative max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
+            {/* Close button — always visible, inside the card */}
+            <button
+              onClick={() => setZoomedItem(null)}
+              className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm rounded-full w-10 h-10 flex items-center justify-center text-white hover:bg-black/80 z-10"
+            >
+              <X className="h-5 w-5" />
             </button>
             {zoomedItem.coverImageUrl && (
-              <img src={zoomedItem.coverImageUrl} alt={zoomedItem.title} className="max-h-[70vh] w-auto rounded-lg shadow-2xl" />
+              <img src={zoomedItem.coverImageUrl} alt={zoomedItem.title} className="max-h-[60vh] w-auto mx-auto rounded-lg shadow-2xl" />
             )}
             <div className="mt-3 text-center">
               <p className="text-white font-semibold">{zoomedItem.title}</p>
               {zoomedItem.publisher && <p className="text-white/60 text-sm">{zoomedItem.publisher}</p>}
               <p className="text-primary text-sm mt-1">Lido em {formatDate(zoomedItem.readAt)}</p>
-              <Link
-                href={`/${locale}/catalog/${zoomedItem.slug || zoomedItem.id}`}
-                className="inline-block mt-3 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
-                onClick={() => setZoomedItem(null)}
-              >
-                Ver detalhes
-              </Link>
+              <div className="flex items-center justify-center gap-3 mt-3">
+                <Link
+                  href={`/${locale}/catalog/${zoomedItem.slug || zoomedItem.id}`}
+                  className="inline-block px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+                  onClick={() => setZoomedItem(null)}
+                >
+                  Ver detalhes
+                </Link>
+                <button
+                  onClick={() => setZoomedItem(null)}
+                  className="inline-block px-4 py-2 bg-white/10 text-white rounded-lg text-sm font-medium hover:bg-white/20 transition-colors"
+                >
+                  Fechar
+                </button>
+              </div>
             </div>
           </div>
         </div>

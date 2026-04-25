@@ -40,18 +40,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     let cancelled = false;
 
-    async function fetchSummary() {
+    async function fetchCart() {
+      setIsLoading(true);
       try {
-        const summary = await getCartSummary();
+        const items = await getCart();
         if (!cancelled) {
-          setCartCount(summary.itemCount);
+          setCartItems(items);
+          setCartCount(items.length);
         }
       } catch {
-        // Silently fail — cart summary is non-critical
+        // Fallback to summary only
+        try {
+          const summary = await getCartSummary();
+          if (!cancelled) setCartCount(summary.itemCount);
+        } catch { /* ignore */ }
+      } finally {
+        if (!cancelled) setIsLoading(false);
       }
     }
 
-    fetchSummary();
+    fetchCart();
 
     return () => {
       cancelled = true;

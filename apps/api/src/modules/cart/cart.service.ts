@@ -10,7 +10,7 @@ import { resolveCoverUrl } from '../../shared/lib/cloudinary';
 // === Constants ===
 
 const CART_ITEM_LIMIT = 50;
-const RESERVATION_HOURS = 24;
+const RESERVATION_MINUTES = 30;
 
 // === Cart includes for rich responses ===
 
@@ -101,8 +101,8 @@ export async function addToCart(userId: string, collectionItemId: string) {
       throw new BadRequestError(`Cart limit reached (maximum ${CART_ITEM_LIMIT} items)`);
     }
 
-    // 6. Create CartItem with 24-hour reservation (CART-01)
-    const expiresAt = new Date(now.getTime() + RESERVATION_HOURS * 60 * 60 * 1000);
+    // 6. Create CartItem with 30-minute reservation
+    const expiresAt = new Date(now.getTime() + RESERVATION_MINUTES * 60 * 1000);
 
     const cartItem = await tx.cartItem.create({
       data: {
