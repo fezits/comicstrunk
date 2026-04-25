@@ -247,8 +247,11 @@ router.get('/duplicates', async (req: Request, res: Response, next: NextFunction
         WHERE (source_key LIKE 'rika:%' OR source_key LIKE 'panini:%') AND title LIKE '%#%'
         HAVING issue_num > 0
       ) r ON g.issue_num = r.issue_num
-        AND r.base_title LIKE CONCAT('%', g.base_title, '%')
         AND (g.publish_year IS NULL OR r.publish_year IS NULL OR ABS(g.publish_year - r.publish_year) <= 1)
+        AND (
+          g.base_title = r.base_title
+          OR (r.base_title LIKE CONCAT('%', g.base_title, '%') AND ABS(CHAR_LENGTH(g.base_title) - CHAR_LENGTH(r.base_title)) <= 3)
+        )
       ORDER BY g.title ASC
       LIMIT ${limit} OFFSET ${skip}
     `;
@@ -272,8 +275,11 @@ router.get('/duplicates', async (req: Request, res: Response, next: NextFunction
         WHERE (source_key LIKE 'rika:%' OR source_key LIKE 'panini:%') AND title LIKE '%#%'
         HAVING issue_num > 0
       ) r ON g.issue_num = r.issue_num
-        AND r.base_title LIKE CONCAT('%', g.base_title, '%')
         AND (g.publish_year IS NULL OR r.publish_year IS NULL OR ABS(g.publish_year - r.publish_year) <= 1)
+        AND (
+          g.base_title = r.base_title
+          OR (r.base_title LIKE CONCAT('%', g.base_title, '%') AND ABS(CHAR_LENGTH(g.base_title) - CHAR_LENGTH(r.base_title)) <= 3)
+        )
     `;
 
     const total = Number(countResult[0].total);
