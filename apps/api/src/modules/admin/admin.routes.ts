@@ -211,9 +211,9 @@ router.get('/duplicates', async (req: Request, res: Response, next: NextFunction
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
     const skip = (page - 1) * limit;
-    const status = (req.query.status as string) || 'pending'; // 'pending' | 'kept' | 'removed' | 'all'
 
-    // Find GCD entries that have potential matches in Rika/Panini by series+number overlap
+    // Use derived tables to pre-extract issue number and base title,
+    // filtering only entries with '#' before the JOIN to keep it fast.
     const duplicates = await prisma.$queryRaw<Array<{
       gcd_id: string;
       gcd_title: string;
@@ -231,28 +231,47 @@ router.get('/duplicates', async (req: Request, res: Response, next: NextFunction
         g.source_key as gcd_source_key, g.cover_image_url as gcd_cover,
         r.id as rika_id, r.title as rika_title, r.publisher as rika_publisher,
         r.source_key as rika_source_key, r.cover_image_url as rika_cover
-      FROM catalog_entries g
-      JOIN catalog_entries r ON (
-        CAST(SUBSTRING_INDEX(g.title, '#', -1) AS UNSIGNED) = CAST(SUBSTRING_INDEX(r.title, '#', -1) AS UNSIGNED)
-        AND CAST(SUBSTRING_INDEX(g.title, '#', -1) AS UNSIGNED) > 0
-        AND LOWER(TRIM(SUBSTRING_INDEX(r.title, '#', 1))) LIKE CONCAT('%', LOWER(TRIM(REPLACE(REPLACE(SUBSTRING_INDEX(g.title, '#', 1), 'The ', ''), 'the ', ''))), '%')
-      )
-      WHERE g.source_key LIKE 'gcd:%'
-        AND (r.source_key LIKE 'rika:%' OR r.source_key LIKE 'panini:%')
+      FROM (
+        SELECT id, title, publisher, source_key, cover_image_url,
+          CAST(SUBSTRING_INDEX(title, '#', -1) AS UNSIGNED) AS issue_num,
+          LOWER(TRIM(REPLACE(REPLACE(SUBSTRING_INDEX(title, '#', 1), 'The ', ''), 'the ', ''))) AS base_title
+        FROM catalog_entries
+        WHERE source_key LIKE 'gcd:%' AND title LIKE '%#%'
+        HAVING issue_num > 0
+      ) g
+      JOIN (
+        SELECT id, title, publisher, source_key, cover_image_url,
+          CAST(SUBSTRING_INDEX(title, '#', -1) AS UNSIGNED) AS issue_num,
+          LOWER(TRIM(SUBSTRING_INDEX(title, '#', 1))) AS base_title
+        FROM catalog_entries
+        WHERE (source_key LIKE 'rika:%' OR source_key LIKE 'panini:%') AND title LIKE '%#%'
+        HAVING issue_num > 0
+      ) r ON g.issue_num = r.issue_num
+        AND r.base_title LIKE CONCAT('%', g.base_title, '%')
       ORDER BY g.title ASC
       LIMIT ${limit} OFFSET ${skip}
     `;
 
+    // Use SQL_CALC_FOUND_ROWS alternative: count with same optimized query
     const countResult = await prisma.$queryRaw<[{ total: bigint }]>`
       SELECT COUNT(*) as total
-      FROM catalog_entries g
-      JOIN catalog_entries r ON (
-        CAST(SUBSTRING_INDEX(g.title, '#', -1) AS UNSIGNED) = CAST(SUBSTRING_INDEX(r.title, '#', -1) AS UNSIGNED)
-        AND CAST(SUBSTRING_INDEX(g.title, '#', -1) AS UNSIGNED) > 0
-        AND LOWER(TRIM(SUBSTRING_INDEX(r.title, '#', 1))) LIKE CONCAT('%', LOWER(TRIM(REPLACE(REPLACE(SUBSTRING_INDEX(g.title, '#', 1), 'The ', ''), 'the ', ''))), '%')
-      )
-      WHERE g.source_key LIKE 'gcd:%'
-        AND (r.source_key LIKE 'rika:%' OR r.source_key LIKE 'panini:%')
+      FROM (
+        SELECT id,
+          CAST(SUBSTRING_INDEX(title, '#', -1) AS UNSIGNED) AS issue_num,
+          LOWER(TRIM(REPLACE(REPLACE(SUBSTRING_INDEX(title, '#', 1), 'The ', ''), 'the ', ''))) AS base_title
+        FROM catalog_entries
+        WHERE source_key LIKE 'gcd:%' AND title LIKE '%#%'
+        HAVING issue_num > 0
+      ) g
+      JOIN (
+        SELECT id,
+          CAST(SUBSTRING_INDEX(title, '#', -1) AS UNSIGNED) AS issue_num,
+          LOWER(TRIM(SUBSTRING_INDEX(title, '#', 1))) AS base_title
+        FROM catalog_entries
+        WHERE (source_key LIKE 'rika:%' OR source_key LIKE 'panini:%') AND title LIKE '%#%'
+        HAVING issue_num > 0
+      ) r ON g.issue_num = r.issue_num
+        AND r.base_title LIKE CONCAT('%', g.base_title, '%')
     `;
 
     const total = Number(countResult[0].total);

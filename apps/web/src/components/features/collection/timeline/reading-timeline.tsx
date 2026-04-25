@@ -175,7 +175,7 @@ export function ReadingTimeline() {
               onClick={() => setOrientation('horizontal')}
               title="Horizontal"
             >
-              <AlignHorizontalDistributeCenter className="h-4 w-4" />
+              <AlignVerticalDistributeCenter className="h-4 w-4" />
             </Button>
             <Button
               variant={orientation === 'vertical' ? 'default' : 'ghost'}
@@ -183,7 +183,7 @@ export function ReadingTimeline() {
               onClick={() => setOrientation('vertical')}
               title="Vertical"
             >
-              <AlignVerticalDistributeCenter className="h-4 w-4" />
+              <AlignHorizontalDistributeCenter className="h-4 w-4" />
             </Button>
             <Button
               variant={orientation === 'heatmap' ? 'default' : 'ghost'}
