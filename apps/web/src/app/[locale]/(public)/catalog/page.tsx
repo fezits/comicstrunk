@@ -8,8 +8,6 @@ import {
   ArrowUpDown,
   ChevronUp,
   Filter,
-  LayoutGrid,
-  List,
   Search,
   X,
 } from 'lucide-react';
@@ -18,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { ViewToggle, type ViewMode } from '@/components/ui/view-toggle';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { CatalogCard } from '@/components/features/catalog/catalog-card';
+import { CatalogCardCompact } from '@/components/features/catalog/catalog-card-compact';
 import { CatalogListItem } from '@/components/features/catalog/catalog-list-item';
 import { CatalogFilters } from '@/components/features/catalog/catalog-filters';
 import {
@@ -40,8 +40,6 @@ import { useAuth } from '@/lib/auth/use-auth';
 import { PageSizeSelect } from '@/components/ui/page-size-select';
 
 const DEFAULT_LIMIT = 20;
-
-type ViewMode = 'grid' | 'list';
 
 function parseFiltersFromParams(sp: URLSearchParams): CatalogSearchParams {
   return {
@@ -251,26 +249,7 @@ export default function CatalogPage() {
       <div className="flex flex-col sm:flex-row justify-between space-y-4 sm:space-y-0 sm:items-center px-1">
         <div className="flex items-center gap-4">
           {/* View switcher */}
-          <div className="flex items-center rounded-md border border-border">
-            <Button
-              variant={view === 'grid' ? 'default' : 'ghost'}
-              size="sm"
-              className="h-9 px-2.5 rounded-r-none"
-              onClick={() => setView('grid')}
-              title={t('cards')}
-            >
-              <LayoutGrid className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={view === 'list' ? 'default' : 'ghost'}
-              size="sm"
-              className="h-9 px-2.5 rounded-l-none"
-              onClick={() => setView('list')}
-              title={t('list')}
-            >
-              <List className="h-4 w-4" />
-            </Button>
-          </div>
+          <ViewToggle value={view} onChange={setView} />
 
           {pagination && !loading && (
             <span className="text-sm text-muted-foreground">
@@ -465,13 +444,21 @@ export default function CatalogPage() {
           </div>
         ) : (
           <>
-            {view === 'grid' ? (
+            {view === 'grid' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                 {entries.map((entry) => (
                   <CatalogCard key={entry.id} entry={entry} isOwned={ownedIds.has(entry.id)} />
                 ))}
               </div>
-            ) : (
+            )}
+            {view === 'compact' && (
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-2">
+                {entries.map((entry) => (
+                  <CatalogCardCompact key={entry.id} entry={entry} isOwned={ownedIds.has(entry.id)} />
+                ))}
+              </div>
+            )}
+            {view === 'list' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {entries.map((entry) => (
                   <CatalogListItem key={entry.id} entry={entry} />
