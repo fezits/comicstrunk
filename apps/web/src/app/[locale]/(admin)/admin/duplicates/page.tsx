@@ -251,6 +251,22 @@ export default function AdminDuplicatesPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Keep both button */}
+              <div className="border-t bg-muted/30 px-3 py-1.5 flex justify-center">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs h-7 text-green-600"
+                  onClick={() => {
+                    setPairs((prev) => prev.filter((_, i) => i !== idx));
+                    setTotal((t) => t - 1);
+                  }}
+                >
+                  <Check className="h-3 w-3 mr-1" />
+                  Manter ambos
+                </Button>
+              </div>
             </div>
           ))}
         </div>
