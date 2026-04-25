@@ -69,6 +69,19 @@ router.get(
   },
 );
 
+// GET /owned-ids — lightweight: just catalogEntryIds the user owns (single call, no pagination)
+router.get(
+  '/owned-ids',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const ids = await collectionService.getOwnedCatalogEntryIds(req.user!.userId);
+      sendSuccess(res, ids);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
 // GET /series-progress — progress per series
 router.get(
   '/series-progress',

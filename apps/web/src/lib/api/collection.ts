@@ -78,6 +78,11 @@ export async function getCollectionItems(
   return response.data;
 }
 
+export async function getOwnedIds(): Promise<{ id: string; catalogEntryId: string }[]> {
+  const response = await apiClient.get('/collection/owned-ids');
+  return response.data.data;
+}
+
 export async function getCollectionItem(id: string): Promise<CollectionItem> {
   const response = await apiClient.get(`/collection/${id}`);
   return response.data.data;

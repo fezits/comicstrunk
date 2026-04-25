@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { CoverImage } from '@/components/ui/cover-image';
 import { Input } from '@/components/ui/input';
 import { searchCatalog, type CatalogEntry } from '@/lib/api/catalog';
-import { batchAddItems, addCollectionItem, deleteCollectionItem, getCollectionItems } from '@/lib/api/collection';
+import { batchAddItems, addCollectionItem, deleteCollectionItem, getOwnedIds } from '@/lib/api/collection';
 import { useCollection } from '@/contexts/collection-context';
 
 const PAGE_SIZE = 30;
@@ -52,24 +52,13 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
 
   // Load user's full collection to know what they already have
   useEffect(() => {
-    async function loadOwned() {
-      try {
+    getOwnedIds()
+      .then((items) => {
         const map = new Map<string, string>();
-        let page = 1;
-        while (true) {
-          const result = await getCollectionItems({ limit: 100, page });
-          result.data.forEach((item: { id: string; catalogEntryId: string }) => {
-            map.set(item.catalogEntryId, item.id);
-          });
-          if (page >= (result.pagination?.totalPages ?? 1)) break;
-          page++;
-        }
+        items.forEach((item) => map.set(item.catalogEntryId, item.id));
         setOwnedMap(map);
-      } catch {
-        // ignore
-      }
-    }
-    loadOwned();
+      })
+      .catch(() => {});
   }, []);
 
   // Debounced search (resets to page 1)

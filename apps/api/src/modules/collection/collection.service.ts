@@ -49,6 +49,15 @@ function resolveItemCover<T extends { catalogEntry?: { coverImageUrl: string | n
   return item;
 }
 
+// === Owned IDs (lightweight, single query) ===
+
+export async function getOwnedCatalogEntryIds(userId: string): Promise<{ id: string; catalogEntryId: string }[]> {
+  return prisma.collectionItem.findMany({
+    where: { userId },
+    select: { id: true, catalogEntryId: true },
+  });
+}
+
 // === Plan Limit Check (returns structured data) ===
 
 async function checkPlanLimit(

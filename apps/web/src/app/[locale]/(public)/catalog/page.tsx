@@ -35,7 +35,7 @@ import {
 } from '@/lib/api/catalog';
 import { getCategories, getCharacters, type Category, type Character } from '@/lib/api/taxonomy';
 import { getSeries, type Series } from '@/lib/api/series';
-import { getCollectionItems } from '@/lib/api/collection';
+import { getOwnedIds } from '@/lib/api/collection';
 import { useAuth } from '@/lib/auth/use-auth';
 import { PageSizeSelect } from '@/components/ui/page-size-select';
 
@@ -99,25 +99,11 @@ export default function CatalogPage() {
   const [ownedIds, setOwnedIds] = useState<Set<string>>(new Set());
   const { isAuthenticated } = useAuth();
 
-  // Load user's collection IDs to show "Tenho" badge
+  // Load user's owned catalog entry IDs in a single lightweight call
   useEffect(() => {
     if (!isAuthenticated) return;
-    getCollectionItems({ limit: 100, page: 1 })
-      .then((res) => {
-        const ids = new Set<string>(res.data.map((item: { catalogEntryId: string }) => item.catalogEntryId));
-        // If more pages, load remaining sequentially
-        const totalPages = res.pagination?.totalPages ?? 1;
-        if (totalPages <= 1) { setOwnedIds(ids); return; }
-        (async () => {
-          for (let p = 2; p <= totalPages; p++) {
-            try {
-              const r = await getCollectionItems({ limit: 100, page: p });
-              r.data.forEach((item: { catalogEntryId: string }) => ids.add(item.catalogEntryId));
-            } catch { break; }
-          }
-          setOwnedIds(new Set(ids));
-        })();
-      })
+    getOwnedIds()
+      .then((items) => setOwnedIds(new Set(items.map((i) => i.catalogEntryId))))
       .catch(() => {});
   }, [isAuthenticated]);
 
