@@ -617,76 +617,38 @@ function ExpandedView({ group, locale, onClose, onCoverClick }: { group: Timelin
 // === Cover Card (bigger — for vertical & expanded) ===
 
 function CoverCard({ item, onClick }: { item: TimelineItem; locale: string; onClick?: (item: TimelineItem) => void }) {
-  const [hovered, setHovered] = useState(false);
-
   return (
-    <div className="relative" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-      <button
-        onClick={() => onClick?.(item)}
-        className="block w-16 h-24 rounded-lg overflow-hidden border border-border/50 hover:border-primary shadow-sm hover:shadow-lg transition-all"
-        style={{
-          transform: hovered ? 'scale(1.15) translateY(-4px)' : 'scale(1)',
-          transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
-          zIndex: hovered ? 30 : 1,
-          position: 'relative',
-        }}
-      >
-        {item.coverImageUrl ? (
-          <img src={item.coverImageUrl} alt={item.title} className="h-full w-full object-cover" loading="lazy" />
-        ) : (
-          <div className="h-full w-full bg-muted flex items-center justify-center">
-            <BookOpen className="h-4 w-4 text-muted-foreground/40" />
-          </div>
-        )}
-      </button>
-
-      {hovered && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 pointer-events-none">
-          <div className="bg-popover border border-border rounded-lg px-2 py-1 shadow-lg text-[10px] whitespace-nowrap max-w-[200px]">
-            <p className="font-semibold truncate">{item.title}</p>
-            <p className="text-primary">{formatDate(item.readAt)}</p>
-          </div>
+    <button
+      onClick={() => onClick?.(item)}
+      className="block w-16 h-24 rounded-lg overflow-hidden border border-border/50 hover:border-primary shadow-sm transition-colors cursor-pointer"
+    >
+      {item.coverImageUrl ? (
+        <img src={item.coverImageUrl} alt={item.title} className="h-full w-full object-cover" loading="lazy" />
+      ) : (
+        <div className="h-full w-full bg-muted flex items-center justify-center">
+          <BookOpen className="h-4 w-4 text-muted-foreground/40" />
         </div>
       )}
-    </div>
+    </button>
   );
 }
 
 // === Cover Thumb (smaller — for horizontal cards) ===
 
 function CoverThumb({ item, onClick }: { item: TimelineItem; locale: string; onClick?: (item: TimelineItem) => void }) {
-  const [hovered, setHovered] = useState(false);
-
   return (
-    <div className="relative" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-      <button
-        onClick={() => onClick?.(item)}
-        className="block w-12 h-16 rounded overflow-hidden border border-border/30 hover:border-primary transition-all"
-        style={{
-          transform: hovered ? 'scale(1.3) translateY(-3px)' : 'scale(1)',
-          transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
-          zIndex: hovered ? 30 : 1,
-          position: 'relative',
-        }}
-      >
-        {item.coverImageUrl ? (
-          <img src={item.coverImageUrl} alt={item.title} className="h-full w-full object-cover" loading="lazy" />
-        ) : (
-          <div className="h-full w-full bg-muted flex items-center justify-center">
-            <BookOpen className="h-3 w-3 text-muted-foreground/40" />
-          </div>
-        )}
-      </button>
-
-      {hovered && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 z-50 pointer-events-none">
-          <div className="bg-popover border border-border rounded px-2 py-1 shadow-lg text-[10px] whitespace-nowrap max-w-[180px]">
-            <p className="font-semibold truncate">{item.title}</p>
-            <p className="text-primary">{formatDate(item.readAt)}</p>
-          </div>
+    <button
+      onClick={() => onClick?.(item)}
+      className="block w-12 h-16 rounded overflow-hidden border border-border/30 hover:border-primary transition-colors cursor-pointer"
+    >
+      {item.coverImageUrl ? (
+        <img src={item.coverImageUrl} alt={item.title} className="h-full w-full object-cover" loading="lazy" />
+      ) : (
+        <div className="h-full w-full bg-muted flex items-center justify-center">
+          <BookOpen className="h-3 w-3 text-muted-foreground/40" />
         </div>
       )}
-    </div>
+    </button>
   );
 }
 
