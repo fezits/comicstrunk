@@ -335,10 +335,13 @@ router.delete('/duplicates/:id', async (req: Request, res: Response, next: NextF
   try {
     const id = req.params.id as string;
 
-    // Delete junction table records first
+    // Delete all dependent records first (all FKs pointing to catalog_entries)
     await prisma.catalogCategory.deleteMany({ where: { catalogEntryId: id } });
     await prisma.catalogTag.deleteMany({ where: { catalogEntryId: id } });
     await prisma.catalogCharacter.deleteMany({ where: { catalogEntryId: id } });
+    await prisma.favorite.deleteMany({ where: { catalogEntryId: id } });
+    await prisma.comment.deleteMany({ where: { catalogEntryId: id } });
+    await prisma.review.deleteMany({ where: { catalogEntryId: id } });
     await prisma.collectionItem.deleteMany({ where: { catalogEntryId: id } });
 
     await prisma.catalogEntry.delete({ where: { id } });
