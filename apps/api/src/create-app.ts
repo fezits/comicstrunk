@@ -121,7 +121,7 @@ export function createApp(): Express {
     standardHeaders: true,
     legacyHeaders: false,
     message: { success: false, error: { message: 'Muitas requisições. Tente novamente em 1 minuto.', code: 'RATE_LIMIT' } },
-    keyGenerator: (req) => req.ip || req.socket.remoteAddress || 'unknown',
+    // Default keyGenerator uses req.ip which handles IPv4/IPv6 correctly
   });
   app.use('/api/', globalLimiter);
 
@@ -132,7 +132,6 @@ export function createApp(): Express {
     standardHeaders: true,
     legacyHeaders: false,
     message: { success: false, error: { message: 'Limite de consultas atingido. Tente novamente em 1 minuto.', code: 'RATE_LIMIT' } },
-    keyGenerator: (req) => req.ip || req.socket.remoteAddress || 'unknown',
   });
   app.use('/api/v1/catalog', catalogLimiter);
   app.use('/api/v1/series', catalogLimiter);

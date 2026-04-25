@@ -115,9 +115,14 @@ export default function AdminDuplicatesPage() {
                 {/* GCD side */}
                 <div className="p-3 bg-blue-500/5">
                   <div className="flex gap-3">
-                    <div className="w-16 h-24 bg-muted rounded overflow-hidden shrink-0">
+                    <div className="w-16 h-24 bg-muted rounded overflow-hidden shrink-0 group/cover relative cursor-zoom-in">
                       {pair.gcd.coverImageUrl ? (
-                        <img src={pair.gcd.coverImageUrl} alt={pair.gcd.title} className="w-full h-full object-cover" />
+                        <>
+                          <img src={pair.gcd.coverImageUrl} alt={pair.gcd.title} className="w-full h-full object-cover" />
+                          <div className="hidden group-hover/cover:flex fixed inset-0 z-50 items-center justify-center bg-black/70 cursor-zoom-out" onClick={(e) => e.stopPropagation()}>
+                            <img src={pair.gcd.coverImageUrl} alt={pair.gcd.title} className="max-h-[80vh] max-w-[90vw] object-contain rounded shadow-2xl" />
+                          </div>
+                        </>
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">
                           Sem capa
@@ -150,9 +155,14 @@ export default function AdminDuplicatesPage() {
                 {/* Rika side */}
                 <div className="p-3 bg-amber-500/5">
                   <div className="flex gap-3">
-                    <div className="w-16 h-24 bg-muted rounded overflow-hidden shrink-0">
+                    <div className="w-16 h-24 bg-muted rounded overflow-hidden shrink-0 group/cover2 relative cursor-zoom-in">
                       {pair.rika.coverImageUrl ? (
-                        <img src={pair.rika.coverImageUrl} alt={pair.rika.title} className="w-full h-full object-cover" />
+                        <>
+                          <img src={pair.rika.coverImageUrl} alt={pair.rika.title} className="w-full h-full object-cover" />
+                          <div className="hidden group-hover/cover2:flex fixed inset-0 z-50 items-center justify-center bg-black/70 cursor-zoom-out" onClick={(e) => e.stopPropagation()}>
+                            <img src={pair.rika.coverImageUrl} alt={pair.rika.title} className="max-h-[80vh] max-w-[90vw] object-contain rounded shadow-2xl" />
+                          </div>
+                        </>
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">
                           Sem capa

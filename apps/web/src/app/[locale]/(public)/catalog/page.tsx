@@ -415,6 +415,31 @@ export default function CatalogPage() {
         </div>
       )}
 
+      {/* Pagination top */}
+      {pagination && pagination.totalPages > 1 && !loading && (
+        <div className="flex items-center justify-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={currentPage <= 1}
+            onClick={() => handlePageChange(currentPage - 1)}
+          >
+            {t('previousPage')}
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            {t('pageOf', { current: currentPage, total: pagination.totalPages })}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={currentPage >= pagination.totalPages}
+            onClick={() => handlePageChange(currentPage + 1)}
+          >
+            {t('nextPage')}
+          </Button>
+        </div>
+      )}
+
       {/* Results */}
       <div className="h-full overflow-auto pb-20">
         {loading ? (
