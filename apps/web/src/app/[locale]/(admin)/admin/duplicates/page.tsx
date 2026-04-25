@@ -28,7 +28,8 @@ export default function AdminDuplicatesPage() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [removing, setRemoving] = useState(false);
+  const [bulkRemoving, setBulkRemoving] = useState(false);
+  const [removingId, setRemovingId] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [zoomedImage, setZoomedImage] = useState<{ url: string; title: string } | null>(null);
 
@@ -76,7 +77,7 @@ export default function AdminDuplicatesPage() {
     if (selected.size === 0) return;
     if (!confirm(`Remover ${selected.size} entradas do catálogo?`)) return;
 
-    setRemoving(true);
+    setBulkRemoving(true);
     let removed = 0;
     let errors = 0;
 
@@ -92,23 +93,23 @@ export default function AdminDuplicatesPage() {
     if (removed > 0) toast.success(`${removed} entradas removidas`);
     if (errors > 0) toast.error(`${errors} erros ao remover`);
 
-    setRemoving(false);
+    setBulkRemoving(false);
     setSelected(new Set());
     fetchDuplicates();
   };
 
   const removeEntry = async (id: string, title: string) => {
-    setRemoving(true);
+    setRemovingId(id);
     try {
       await apiClient.delete(`/admin/duplicates/${id}`);
       toast.success(`"${title}" removido`);
       setPairs((prev) => prev.filter((p) => p.gcd.id !== id && p.rika.id !== id));
       setTotal((t) => t - 1);
       setSelected((prev) => { const next = new Set(prev); next.delete(id); return next; });
-    } catch {
+    } catch (err) {
       toast.error('Erro ao remover');
     } finally {
-      setRemoving(false);
+      setRemovingId(null);
     }
   };
 
@@ -140,10 +141,10 @@ export default function AdminDuplicatesPage() {
             size="sm"
             className="h-8 gap-1"
             onClick={bulkDelete}
-            disabled={removing}
+            disabled={bulkRemoving}
           >
             <Trash2 className="h-3.5 w-3.5" />
-            {removing ? 'Removendo...' : `Remover ${selected.size} selecionados`}
+            {bulkRemoving ? 'Removendo...' : `Remover ${selected.size} selecionados`}
           </Button>
         )}
       </div>
@@ -203,7 +204,7 @@ export default function AdminDuplicatesPage() {
                         variant="destructive"
                         size="sm"
                         className="text-xs h-6 mt-1 px-2"
-                        disabled={removing}
+                        disabled={removingId === pair.gcd.id}
                         onClick={() => removeEntry(pair.gcd.id, pair.gcd.title)}
                       >
                         <Trash2 className="h-3 w-3 mr-1" />
@@ -241,7 +242,7 @@ export default function AdminDuplicatesPage() {
                         variant="destructive"
                         size="sm"
                         className="text-xs h-6 mt-1 px-2"
-                        disabled={removing}
+                        disabled={removingId === pair.rika.id}
                         onClick={() => removeEntry(pair.rika.id, pair.rika.title)}
                       >
                         <Trash2 className="h-3 w-3 mr-1" />
