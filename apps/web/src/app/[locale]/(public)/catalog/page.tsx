@@ -99,23 +99,26 @@ export default function CatalogPage() {
   const [ownedIds, setOwnedIds] = useState<Set<string>>(new Set());
   const { isAuthenticated } = useAuth();
 
-  // Load ALL user's collection IDs to show "Tenho" badge
+  // Load user's collection IDs to show "Tenho" badge
   useEffect(() => {
     if (!isAuthenticated) return;
-    async function loadAll() {
-      const ids = new Set<string>();
-      let page = 1;
-      while (true) {
-        try {
-          const res = await getCollectionItems({ limit: 100, page });
-          res.data.forEach((item: { catalogEntryId: string }) => ids.add(item.catalogEntryId));
-          if (page >= (res.pagination?.totalPages ?? 1)) break;
-          page++;
-        } catch { break; }
-      }
-      setOwnedIds(ids);
-    }
-    loadAll();
+    getCollectionItems({ limit: 100, page: 1 })
+      .then((res) => {
+        const ids = new Set<string>(res.data.map((item: { catalogEntryId: string }) => item.catalogEntryId));
+        // If more pages, load remaining sequentially
+        const totalPages = res.pagination?.totalPages ?? 1;
+        if (totalPages <= 1) { setOwnedIds(ids); return; }
+        (async () => {
+          for (let p = 2; p <= totalPages; p++) {
+            try {
+              const r = await getCollectionItems({ limit: 100, page: p });
+              r.data.forEach((item: { catalogEntryId: string }) => ids.add(item.catalogEntryId));
+            } catch { break; }
+          }
+          setOwnedIds(new Set(ids));
+        })();
+      })
+      .catch(() => {});
   }, [isAuthenticated]);
 
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
