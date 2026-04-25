@@ -11,6 +11,7 @@ import { validate } from '../../shared/middleware/validate';
 import { authenticate } from '../../shared/middleware/authenticate';
 import { authorize } from '../../shared/middleware/authorize';
 import { sendSuccess, sendPaginated } from '../../shared/utils/response';
+import { BadRequestError } from '../../shared/utils/api-error';
 import * as adminService from './admin.service';
 import { prisma } from '../../shared/lib/prisma';
 import { resolveCoverUrl } from '../../shared/lib/cloudinary';
@@ -237,6 +238,7 @@ router.get('/duplicates', async (req: Request, res: Response, next: NextFunction
           LOWER(TRIM(REPLACE(REPLACE(SUBSTRING_INDEX(title, '#', 1), 'The ', ''), 'the ', ''))) AS base_title
         FROM catalog_entries
         WHERE source_key LIKE 'gcd:%' AND title LIKE '%#%'
+          AND id NOT IN (SELECT gcd_id FROM dismissed_duplicates)
         HAVING issue_num > 0
       ) g
       JOIN (
@@ -257,7 +259,7 @@ router.get('/duplicates', async (req: Request, res: Response, next: NextFunction
       LIMIT ${limit} OFFSET ${skip}
     `;
 
-    // Count unique GCD entries with matches
+    // Count unique GCD entries with matches (excluding dismissed)
     const countResult = await prisma.$queryRaw<[{ total: bigint }]>`
       SELECT COUNT(DISTINCT g.id) as total
       FROM (
@@ -266,6 +268,7 @@ router.get('/duplicates', async (req: Request, res: Response, next: NextFunction
           LOWER(TRIM(REPLACE(REPLACE(SUBSTRING_INDEX(title, '#', 1), 'The ', ''), 'the ', ''))) AS base_title
         FROM catalog_entries
         WHERE source_key LIKE 'gcd:%' AND title LIKE '%#%'
+          AND id NOT IN (SELECT gcd_id FROM dismissed_duplicates)
         HAVING issue_num > 0
       ) g
       JOIN (
@@ -306,6 +309,22 @@ router.get('/duplicates', async (req: Request, res: Response, next: NextFunction
     }));
 
     sendPaginated(res, pairs, { page, limit, total });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /duplicates/dismiss — mark a pair as "keep both" so it won't appear again
+router.post('/duplicates/dismiss', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { gcdId, rikaId } = req.body;
+    if (!gcdId || !rikaId) {
+      throw new BadRequestError('gcdId and rikaId are required');
+    }
+    await prisma.$executeRaw`
+      INSERT IGNORE INTO dismissed_duplicates (gcd_id, rika_id) VALUES (${gcdId}, ${rikaId})
+    `;
+    sendSuccess(res, { dismissed: true });
   } catch (err) {
     next(err);
   }

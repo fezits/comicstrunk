@@ -259,9 +259,17 @@ export default function AdminDuplicatesPage() {
                   variant="ghost"
                   size="sm"
                   className="text-xs h-7 text-green-600"
-                  onClick={() => {
-                    setPairs((prev) => prev.filter((_, i) => i !== idx));
-                    setTotal((t) => t - 1);
+                  onClick={async () => {
+                    try {
+                      await apiClient.post('/admin/duplicates/dismiss', {
+                        gcdId: pair.gcd.id,
+                        rikaId: pair.rika.id,
+                      });
+                      setPairs((prev) => prev.filter((_, i) => i !== idx));
+                      setTotal((t) => t - 1);
+                    } catch {
+                      toast.error('Erro ao salvar');
+                    }
                   }}
                 >
                   <Check className="h-3 w-3 mr-1" />
