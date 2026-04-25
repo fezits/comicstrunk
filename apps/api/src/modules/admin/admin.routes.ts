@@ -232,7 +232,7 @@ router.get('/duplicates', async (req: Request, res: Response, next: NextFunction
         r.id as rika_id, r.title as rika_title, r.publisher as rika_publisher,
         r.source_key as rika_source_key, r.cover_image_url as rika_cover
       FROM (
-        SELECT id, title, publisher, source_key, cover_image_url,
+        SELECT id, title, publisher, source_key, cover_image_url, publish_year,
           CAST(SUBSTRING_INDEX(title, '#', -1) AS UNSIGNED) AS issue_num,
           LOWER(TRIM(REPLACE(REPLACE(SUBSTRING_INDEX(title, '#', 1), 'The ', ''), 'the ', ''))) AS base_title
         FROM catalog_entries
@@ -240,7 +240,7 @@ router.get('/duplicates', async (req: Request, res: Response, next: NextFunction
         HAVING issue_num > 0
       ) g
       JOIN (
-        SELECT id, title, publisher, source_key, cover_image_url,
+        SELECT id, title, publisher, source_key, cover_image_url, publish_year,
           CAST(SUBSTRING_INDEX(title, '#', -1) AS UNSIGNED) AS issue_num,
           LOWER(TRIM(SUBSTRING_INDEX(title, '#', 1))) AS base_title
         FROM catalog_entries
@@ -248,15 +248,16 @@ router.get('/duplicates', async (req: Request, res: Response, next: NextFunction
         HAVING issue_num > 0
       ) r ON g.issue_num = r.issue_num
         AND r.base_title LIKE CONCAT('%', g.base_title, '%')
+        AND (g.publish_year IS NULL OR r.publish_year IS NULL OR ABS(g.publish_year - r.publish_year) <= 1)
       ORDER BY g.title ASC
       LIMIT ${limit} OFFSET ${skip}
     `;
 
-    // Use SQL_CALC_FOUND_ROWS alternative: count with same optimized query
+    // Count with same optimized query + year filter
     const countResult = await prisma.$queryRaw<[{ total: bigint }]>`
       SELECT COUNT(*) as total
       FROM (
-        SELECT id,
+        SELECT id, publish_year,
           CAST(SUBSTRING_INDEX(title, '#', -1) AS UNSIGNED) AS issue_num,
           LOWER(TRIM(REPLACE(REPLACE(SUBSTRING_INDEX(title, '#', 1), 'The ', ''), 'the ', ''))) AS base_title
         FROM catalog_entries
@@ -264,7 +265,7 @@ router.get('/duplicates', async (req: Request, res: Response, next: NextFunction
         HAVING issue_num > 0
       ) g
       JOIN (
-        SELECT id,
+        SELECT id, publish_year,
           CAST(SUBSTRING_INDEX(title, '#', -1) AS UNSIGNED) AS issue_num,
           LOWER(TRIM(SUBSTRING_INDEX(title, '#', 1))) AS base_title
         FROM catalog_entries
@@ -272,6 +273,7 @@ router.get('/duplicates', async (req: Request, res: Response, next: NextFunction
         HAVING issue_num > 0
       ) r ON g.issue_num = r.issue_num
         AND r.base_title LIKE CONCAT('%', g.base_title, '%')
+        AND (g.publish_year IS NULL OR r.publish_year IS NULL OR ABS(g.publish_year - r.publish_year) <= 1)
     `;
 
     const total = Number(countResult[0].total);
