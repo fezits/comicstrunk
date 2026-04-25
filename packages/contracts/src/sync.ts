@@ -2,10 +2,10 @@ import { z } from 'zod';
 
 // === Sync Schemas ===
 
-const sourceKeyRegex = /^(rika|panini):[a-zA-Z0-9_-]+$/;
+const sourceKeyRegex = /^(rika|panini|gcd):[a-zA-Z0-9_-]+$/;
 
 export const syncCatalogItemSchema = z.object({
-  sourceKey: z.string().regex(sourceKeyRegex, 'Invalid sourceKey format (expected rika:123 or panini:ABC)'),
+  sourceKey: z.string().regex(sourceKeyRegex, 'Invalid sourceKey format (expected rika:123, panini:ABC, or gcd:456)'),
   title: z.string().min(1).max(500).trim(),
   publisher: z.string().max(255).trim().optional().nullable(),
   coverPrice: z.number().positive().optional().nullable(),

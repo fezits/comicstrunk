@@ -1,3 +1,7 @@
 node_modules
 # Keep environment variables out of version control
 .env
+
+# GCD import state and data files
+data/gcd/
+scripts/.gcd-import-state.json

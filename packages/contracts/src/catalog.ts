@@ -75,7 +75,7 @@ export const catalogImportRowSchema = z.object({
 });
 
 // === JSON Import Schemas ===
-const sourceKeyRegex = /^(rika|panini):[a-zA-Z0-9_-]+$/;
+const sourceKeyRegex = /^(rika|panini|gcd):[a-zA-Z0-9_-]+$/;
 
 export const jsonImportRowSchema = z.object({
   // Identifiers (at least one recommended for deduplication)

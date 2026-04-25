@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import * as path from 'path';
+import * as fs from 'fs';
 import {
   listUsersSchema,
   updateUserRoleSchema,
@@ -118,10 +120,10 @@ router.get('/covers/review', async (req: Request, res: Response, next: NextFunct
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 50;
-    const filter = (req.query.filter as string) || 'all'; // 'all' | 'rika' | 'panini' | 'openlibrary'
+    const filter = (req.query.filter as string) || 'all'; // 'all' | 'rika' | 'panini' | 'openlibrary' | 'placeholder_rika'
     const skip = (page - 1) * limit;
 
-    const sort = (req.query.sort as string) || 'title';
+    const sort = (req.query.sort as string) || 'title'; // 'title' | 'filename' | 'filesize'
     const titleSearch = req.query.title as string | undefined;
     const where: Record<string, unknown> = {
       coverFileName: { not: null },
@@ -135,7 +137,6 @@ router.get('/covers/review', async (req: Request, res: Response, next: NextFunct
     else if (filter === 'panini') where.coverFileName = { startsWith: 'panini-' };
     else if (filter === 'openlibrary') where.coverImageUrl = { contains: 'openlibrary' };
     else if (filter === 'placeholder_rika') {
-      // Placeholder Rika: coverFileName starts with rika- (sorted by filename to group similar sizes)
       where.coverFileName = { startsWith: 'rika-' };
     }
 
@@ -154,7 +155,28 @@ router.get('/covers/review', async (req: Request, res: Response, next: NextFunct
       prisma.catalogEntry.count({ where }),
     ]);
 
-    const resolved = entries.map(resolveCoverUrl);
+    // Resolve cover URLs and add file size info
+    const coversDir = path.resolve(__dirname, '..', '..', '..', 'uploads', 'covers');
+    const resolved = entries.map((entry) => {
+      const withUrl = resolveCoverUrl(entry);
+      let fileSize: number | null = null;
+      if (entry.coverFileName) {
+        try {
+          const filePath = path.join(coversDir, entry.coverFileName.startsWith('rika-') || entry.coverFileName.startsWith('panini-')
+            ? entry.coverFileName
+            : entry.coverFileName);
+          const stat = fs.statSync(filePath);
+          fileSize = stat.size;
+        } catch { /* file not found */ }
+      }
+      return { ...withUrl, fileSize };
+    });
+
+    // Sort by file size if requested (done in-memory since Prisma can't sort by external file size)
+    if (sort === 'filesize') {
+      resolved.sort((a, b) => (a.fileSize ?? Infinity) - (b.fileSize ?? Infinity));
+    }
+
     sendPaginated(res, resolved, { page, limit, total });
   } catch (err) {
     next(err);
@@ -176,6 +198,105 @@ router.post('/covers/remove', async (req: Request, res: Response, next: NextFunc
     });
 
     sendSuccess(res, { removed: result.count });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// === Duplicate Management ===
+
+// GET /duplicates — find potential duplicates between GCD and Rika/Panini entries
+router.get('/duplicates', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const skip = (page - 1) * limit;
+    const status = (req.query.status as string) || 'pending'; // 'pending' | 'kept' | 'removed' | 'all'
+
+    // Find GCD entries that have potential matches in Rika/Panini by series+number overlap
+    const duplicates = await prisma.$queryRaw<Array<{
+      gcd_id: string;
+      gcd_title: string;
+      gcd_publisher: string;
+      gcd_source_key: string;
+      gcd_cover: string | null;
+      rika_id: string;
+      rika_title: string;
+      rika_publisher: string;
+      rika_source_key: string;
+      rika_cover: string | null;
+    }>>`
+      SELECT
+        g.id as gcd_id, g.title as gcd_title, g.publisher as gcd_publisher,
+        g.source_key as gcd_source_key, g.cover_image_url as gcd_cover,
+        r.id as rika_id, r.title as rika_title, r.publisher as rika_publisher,
+        r.source_key as rika_source_key, r.cover_image_url as rika_cover
+      FROM catalog_entries g
+      JOIN catalog_entries r ON (
+        CAST(SUBSTRING_INDEX(g.title, '#', -1) AS UNSIGNED) = CAST(SUBSTRING_INDEX(r.title, '#', -1) AS UNSIGNED)
+        AND CAST(SUBSTRING_INDEX(g.title, '#', -1) AS UNSIGNED) > 0
+        AND LOWER(TRIM(SUBSTRING_INDEX(r.title, '#', 1))) LIKE CONCAT('%', LOWER(TRIM(REPLACE(REPLACE(SUBSTRING_INDEX(g.title, '#', 1), 'The ', ''), 'the ', ''))), '%')
+      )
+      WHERE g.source_key LIKE 'gcd:%'
+        AND (r.source_key LIKE 'rika:%' OR r.source_key LIKE 'panini:%')
+      ORDER BY g.title ASC
+      LIMIT ${limit} OFFSET ${skip}
+    `;
+
+    const countResult = await prisma.$queryRaw<[{ total: bigint }]>`
+      SELECT COUNT(*) as total
+      FROM catalog_entries g
+      JOIN catalog_entries r ON (
+        CAST(SUBSTRING_INDEX(g.title, '#', -1) AS UNSIGNED) = CAST(SUBSTRING_INDEX(r.title, '#', -1) AS UNSIGNED)
+        AND CAST(SUBSTRING_INDEX(g.title, '#', -1) AS UNSIGNED) > 0
+        AND LOWER(TRIM(SUBSTRING_INDEX(r.title, '#', 1))) LIKE CONCAT('%', LOWER(TRIM(REPLACE(REPLACE(SUBSTRING_INDEX(g.title, '#', 1), 'The ', ''), 'the ', ''))), '%')
+      )
+      WHERE g.source_key LIKE 'gcd:%'
+        AND (r.source_key LIKE 'rika:%' OR r.source_key LIKE 'panini:%')
+    `;
+
+    const total = Number(countResult[0].total);
+
+    // Resolve cover URLs
+    const pairs = duplicates.map((d) => ({
+      gcd: resolveCoverUrl({
+        id: d.gcd_id,
+        title: d.gcd_title,
+        publisher: d.gcd_publisher,
+        sourceKey: d.gcd_source_key,
+        coverImageUrl: d.gcd_cover,
+        coverFileName: null,
+      }),
+      rika: resolveCoverUrl({
+        id: d.rika_id,
+        title: d.rika_title,
+        publisher: d.rika_publisher,
+        sourceKey: d.rika_source_key,
+        coverImageUrl: d.rika_cover,
+        coverFileName: null,
+      }),
+    }));
+
+    sendPaginated(res, pairs, { page, limit, total });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE /duplicates/:id — remove a specific catalog entry (for duplicate resolution)
+router.delete('/duplicates/:id', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = req.params.id as string;
+
+    // Delete junction table records first
+    await prisma.catalogCategory.deleteMany({ where: { catalogEntryId: id } });
+    await prisma.catalogTag.deleteMany({ where: { catalogEntryId: id } });
+    await prisma.catalogCharacter.deleteMany({ where: { catalogEntryId: id } });
+    await prisma.collectionItem.deleteMany({ where: { catalogEntryId: id } });
+
+    await prisma.catalogEntry.delete({ where: { id } });
+
+    sendSuccess(res, { deleted: id });
   } catch (err) {
     next(err);
   }

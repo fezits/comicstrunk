@@ -38,6 +38,7 @@
     "mercadopago": "^2.12.0",
     "morgan": "^1.10.0",
     "multer": "^2.0.2",
+    "mysql2": "^3.22.2",
     "node-cron": "^4.2.1",
     "papaparse": "^5.5.3",
     "pix-utils": "^2.8.2",

@@ -18,6 +18,7 @@ interface CoverEntry {
   coverImageUrl: string | null;
   coverFileName: string | null;
   publisher: string | null;
+  fileSize: number | null;
 }
 
 const LIMIT = 200;
@@ -128,7 +129,7 @@ export default function AdminCoverReviewPage() {
       {/* Sort */}
       <div className="flex items-center gap-2">
         <span className="text-sm text-muted-foreground">Ordenar:</span>
-        {[{ key: 'title', label: 'Título' }, { key: 'filename', label: 'Arquivo' }].map(s => (
+        {[{ key: 'title', label: 'Título' }, { key: 'filename', label: 'Arquivo' }, { key: 'filesize', label: 'Tamanho ↑' }].map(s => (
           <Button
             key={s.key}
             variant={sort === s.key ? 'default' : 'outline'}
@@ -215,6 +216,11 @@ export default function AdminCoverReviewPage() {
                   <p className="text-[10px] leading-tight truncate" title={entry.title}>
                     {entry.title}
                   </p>
+                  {entry.fileSize != null && (
+                    <p className={`text-[9px] ${entry.fileSize === 42169 ? 'text-red-500 font-bold' : 'text-muted-foreground'}`}>
+                      {entry.fileSize === 42169 ? '⚠ PLACEHOLDER' : `${(entry.fileSize / 1024).toFixed(0)} KB`}
+                    </p>
+                  )}
                 </div>
                 {/* Selection checkbox indicator */}
                 <div className={`absolute top-1 left-1 w-5 h-5 rounded flex items-center justify-center text-white text-xs ${
