@@ -229,8 +229,8 @@ router.get('/duplicates', async (req: Request, res: Response, next: NextFunction
       SELECT
         g.id as gcd_id, g.title as gcd_title, g.publisher as gcd_publisher,
         g.source_key as gcd_source_key, g.cover_image_url as gcd_cover,
-        r.id as rika_id, r.title as rika_title, r.publisher as rika_publisher,
-        r.source_key as rika_source_key, r.cover_image_url as rika_cover
+        MIN(r.id) as rika_id, MIN(r.title) as rika_title, MIN(r.publisher) as rika_publisher,
+        MIN(r.source_key) as rika_source_key, MIN(r.cover_image_url) as rika_cover
       FROM (
         SELECT id, title, publisher, source_key, cover_image_url, publish_year,
           CAST(SUBSTRING_INDEX(title, '#', -1) AS UNSIGNED) AS issue_num,
@@ -252,13 +252,14 @@ router.get('/duplicates', async (req: Request, res: Response, next: NextFunction
           g.base_title = r.base_title
           OR (r.base_title LIKE CONCAT('%', g.base_title, '%') AND ABS(CHAR_LENGTH(g.base_title) - CHAR_LENGTH(r.base_title)) <= 3)
         )
+      GROUP BY g.id, g.title, g.publisher, g.source_key, g.cover_image_url
       ORDER BY g.title ASC
       LIMIT ${limit} OFFSET ${skip}
     `;
 
-    // Count with same optimized query + year filter
+    // Count unique GCD entries with matches
     const countResult = await prisma.$queryRaw<[{ total: bigint }]>`
-      SELECT COUNT(*) as total
+      SELECT COUNT(DISTINCT g.id) as total
       FROM (
         SELECT id, publish_year,
           CAST(SUBSTRING_INDEX(title, '#', -1) AS UNSIGNED) AS issue_num,
