@@ -497,7 +497,16 @@
       "noMissing": "Coleção completa!",
       "searchInCatalog": "Buscar no catálogo",
       "edition": "Ed. {number}",
-      "volume": "Vol. {number}"
+      "volume": "Vol. {number}",
+      "searchPlaceholder": "Buscar série...",
+      "filterAll": "Todas",
+      "filterComplete": "Completas",
+      "filterIncomplete": "Incompletas",
+      "sortName": "Ordenar por nome",
+      "sortProgress": "Ordenar por progresso",
+      "sortCollected": "Ordenar por quantidade",
+      "noResults": "Nenhuma série encontrada com esses filtros",
+      "showing": "{count} de {total} séries"
     }
   },
   "marketplace": {
