@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useIsMobile } from '@/hooks/use-is-mobile';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -61,9 +62,11 @@ export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
     getCollectionStats().then((s) => setTotalItems(s.totalItems)).catch(() => {});
   }, []);
 
-  // Manual search (Enter only — mobile-friendly)
-  const submitSearch = useCallback(async () => {
-    const q = searchQuery.trim();
+  const isMobile = useIsMobile();
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const submitSearch = useCallback(async (value?: string) => {
+    const q = (value ?? searchQuery).trim();
     if (!q || q.length < 2) {
       setSeriesResults([]);
       return;
@@ -78,6 +81,14 @@ export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
       setSearching(false);
     }
   }, [searchQuery]);
+
+  const handleSearchInputChange = (value: string) => {
+    setSearchQuery(value);
+    setSelectedSeries(null);
+    if (isMobile) return;
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => submitSearch(value), 400);
+  };
 
   // Load series detail + owned items
   const handleSelectSeries = useCallback(async (series: Series) => {
@@ -186,12 +197,9 @@ export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           value={searchQuery}
-          onChange={(e) => {
-            setSearchQuery(e.target.value);
-            setSelectedSeries(null);
-          }}
+          onChange={(e) => handleSearchInputChange(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitSearch(); } }}
-          onBlur={submitSearch}
+          onBlur={() => isMobile && submitSearch()}
           placeholder={t('searchSeries')}
           className="pl-10"
         />

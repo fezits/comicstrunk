@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useIsMobile } from '@/hooks/use-is-mobile';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -98,6 +99,8 @@ export function MarketplaceListingPage() {
 
   const filters = parseFiltersFromParams(searchParams);
   const [searchInput, setSearchInput] = useState(filters.query ?? '');
+  const isMobile = useIsMobile();
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     setSearchInput(filters.query ?? '');
@@ -141,8 +144,16 @@ export function MarketplaceListingPage() {
     handleFiltersChange({ ...filters, page });
   };
 
-  const submitSearch = () => {
-    handleFiltersChange({ ...filters, query: searchInput.trim() || undefined, page: 1 });
+  const submitSearch = (value?: string) => {
+    const v = (value ?? searchInput).trim();
+    handleFiltersChange({ ...filters, query: v || undefined, page: 1 });
+  };
+
+  const handleSearchInputChange = (value: string) => {
+    setSearchInput(value);
+    if (isMobile) return;
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => submitSearch(value), 400);
   };
 
   const handleSortChange = (sortBy: MarketplaceSearchParams['sortBy']) => {
@@ -326,9 +337,9 @@ export function MarketplaceListingPage() {
           <Input
             placeholder={t('searchPlaceholder')}
             value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
+            onChange={(e) => handleSearchInputChange(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') submitSearch(); }}
-            onBlur={submitSearch}
+            onBlur={() => isMobile && submitSearch()}
             className="pl-9 h-10 focus-visible:ring-2 focus-visible:ring-primary"
           />
         </div>

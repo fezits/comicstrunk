@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Search, Loader2, Check, Plus, X, Minus } from 'lucide-react';
 
+import { useIsMobile } from '@/hooks/use-is-mobile';
 import { Button } from '@/components/ui/button';
 import { CoverImage } from '@/components/ui/cover-image';
 import { Input } from '@/components/ui/input';
@@ -61,9 +62,11 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
       .catch(() => {});
   }, []);
 
-  // Manual search (Enter only — mobile-friendly)
-  const submitSearch = useCallback(async () => {
-    const q = searchQuery.trim();
+  const isMobile = useIsMobile();
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const submitSearch = useCallback(async (value?: string) => {
+    const q = (value ?? searchQuery).trim();
     if (!q || q.length < 2) {
       setResults([]);
       setHasMore(false);
@@ -84,6 +87,13 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
       setSearching(false);
     }
   }, [searchQuery, sortBy, sortOrder]);
+
+  const handleSearchInputChange = (value: string) => {
+    setSearchQuery(value);
+    if (isMobile) return;
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => submitSearch(value), 400);
+  };
 
   // Re-run search when sort changes (only if there's an active query)
   useEffect(() => {
@@ -171,9 +181,9 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => handleSearchInputChange(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitSearch(); } }}
-          onBlur={submitSearch}
+          onBlur={() => isMobile && submitSearch()}
           placeholder={t('searchCatalog')}
           className="pl-10"
         />

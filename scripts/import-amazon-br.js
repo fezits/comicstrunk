@@ -76,9 +76,9 @@ function escapeSql(s) {
 
 function buildInsertSQL(entries) {
   const values = entries.map(e =>
-    `(${escapeSql(e.id)}, ${escapeSql(e.title)}, ${escapeSql(e.slug)}, ${escapeSql(e.publisher)}, ${escapeSql(e.author)}, ${escapeSql(e.sourceKey)}, ${escapeSql(e.coverImageUrl)}, ${escapeSql(e.coverFileName)}, ${escapeSql(ADMIN_USER_ID)}, NOW(), NOW())`
+    `(${escapeSql(e.id)}, ${escapeSql(e.title)}, ${escapeSql(e.slug)}, ${escapeSql(e.publisher)}, ${escapeSql(e.author)}, ${escapeSql(e.sourceKey)}, ${escapeSql(e.coverImageUrl)}, ${escapeSql(e.coverFileName)}, ${escapeSql(ADMIN_USER_ID)}, 'APPROVED', NOW(), NOW())`
   ).join(',\n');
-  return `INSERT INTO catalog_entries (id, title, slug, publisher, author, source_key, cover_image_url, cover_file_name, created_by_id, created_at, updated_at) VALUES\n${values};`;
+  return `INSERT INTO catalog_entries (id, title, slug, publisher, author, source_key, cover_image_url, cover_file_name, created_by_id, approval_status, created_at, updated_at) VALUES\n${values};`;
 }
 
 async function flushBatch(batch) {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -36,6 +36,7 @@ import {
 import { getCategories, getCharacters, type Category, type Character } from '@/lib/api/taxonomy';
 import { getSeries, type Series } from '@/lib/api/series';
 import { getOwnedIds } from '@/lib/api/collection';
+import { useIsMobile } from '@/hooks/use-is-mobile';
 import { useAuth } from '@/lib/auth/use-auth';
 import { PageSizeSelect } from '@/components/ui/page-size-select';
 
@@ -107,6 +108,8 @@ export default function CatalogPage() {
 
   const filters = parseFiltersFromParams(searchParams);
   const [searchInput, setSearchInput] = useState(filters.title ?? '');
+  const isMobile = useIsMobile();
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Sync local input when URL changes externally
   useEffect(() => {
@@ -169,8 +172,17 @@ export default function CatalogPage() {
     handleFiltersChange({ ...filters, page });
   };
 
-  const submitSearch = () => {
-    handleFiltersChange({ ...filters, title: searchInput.trim() || undefined, page: 1 });
+  const submitSearch = (value?: string) => {
+    const v = (value ?? searchInput).trim();
+    handleFiltersChange({ ...filters, title: v || undefined, page: 1 });
+  };
+
+  const handleSearchInputChange = (value: string) => {
+    setSearchInput(value);
+    if (isMobile) return; // mobile: wait for Enter/blur
+    // desktop: debounce 400ms
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => submitSearch(value), 400);
   };
 
   const handleSortChange = (sortBy: CatalogSearchParams['sortBy']) => {
@@ -325,9 +337,9 @@ export default function CatalogPage() {
           <Input
             placeholder={t('searchPlaceholder')}
             value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
+            onChange={(e) => handleSearchInputChange(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') submitSearch(); }}
-            onBlur={submitSearch}
+            onBlur={() => isMobile && submitSearch()}
             className="pl-9 h-10 focus-visible:ring-2 focus-visible:ring-primary"
           />
         </div>

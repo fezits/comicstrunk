@@ -7,6 +7,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { ArrowLeft, Search, BookOpen, Upload, Download } from 'lucide-react';
 
+import { useIsMobile } from '@/hooks/use-is-mobile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -62,17 +63,19 @@ export default function AddCollectionItemPage() {
   const [importing, setImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Search on Enter only (mobile-friendly)
-  const submitSearch = useCallback(async () => {
-    const value = searchQuery.trim();
-    if (!value) {
+  const isMobile = useIsMobile();
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const submitSearch = useCallback(async (value?: string) => {
+    const v = (value ?? searchQuery).trim();
+    if (!v) {
       setSearchResults([]);
       setSearching(false);
       return;
     }
     setSearching(true);
     try {
-      const res = await searchCatalog({ title: value, limit: 12 });
+      const res = await searchCatalog({ title: v, limit: 12 });
       setSearchResults(res.data);
     } catch {
       setSearchResults([]);
@@ -80,6 +83,15 @@ export default function AddCollectionItemPage() {
       setSearching(false);
     }
   }, [searchQuery]);
+
+  const handleSearchInputChange = (value: string) => {
+    setSearchQuery(value);
+    if (isMobile) return;
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    if (!value.trim()) { setSearchResults([]); setSearching(false); return; }
+    setSearching(true);
+    searchTimer.current = setTimeout(() => { submitSearch(value); }, 400);
+  };
 
   const handleSelectEntry = (entry: CatalogEntry) => {
     setSelectedEntry(entry);
@@ -246,9 +258,9 @@ export default function AddCollectionItemPage() {
               <Input
                 placeholder={t('searchCatalogPlaceholder')}
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => handleSearchInputChange(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitSearch(); } }}
-                onBlur={submitSearch}
+                onBlur={() => isMobile && submitSearch()}
                 className="pl-10"
               />
             </div>

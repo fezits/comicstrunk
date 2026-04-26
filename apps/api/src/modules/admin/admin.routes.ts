@@ -206,15 +206,14 @@ router.post('/covers/remove', async (req: Request, res: Response, next: NextFunc
 
 // === Duplicate Management ===
 
-// GET /duplicates — find potential duplicates between GCD and Rika/Panini entries
+// GET /duplicates — find potential duplicates between any two sources
+// (gcd, rika, panini, amazon, openlibrary) — different sources only
 router.get('/duplicates', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
     const skip = (page - 1) * limit;
 
-    // Use derived tables to pre-extract issue number and base title,
-    // filtering only entries with '#' before the JOIN to keep it fast.
     const duplicates = await prisma.$queryRaw<Array<{
       gcd_id: string;
       gcd_title: string;
@@ -244,9 +243,10 @@ router.get('/duplicates', async (req: Request, res: Response, next: NextFunction
       JOIN (
         SELECT id, title, publisher, source_key, cover_image_url, publish_year,
           CAST(SUBSTRING_INDEX(title, '#', -1) AS UNSIGNED) AS issue_num,
-          LOWER(TRIM(SUBSTRING_INDEX(title, '#', 1))) AS base_title
+          LOWER(TRIM(REPLACE(REPLACE(SUBSTRING_INDEX(title, '#', 1), 'The ', ''), 'the ', ''))) AS base_title
         FROM catalog_entries
-        WHERE (source_key LIKE 'rika:%' OR source_key LIKE 'panini:%') AND title LIKE '%#%'
+        WHERE (source_key LIKE 'rika:%' OR source_key LIKE 'panini:%' OR source_key LIKE 'amazon:%' OR source_key LIKE 'openlibrary:%')
+          AND title LIKE '%#%'
         HAVING issue_num > 0
       ) r ON g.issue_num = r.issue_num
         AND (g.publish_year IS NULL OR r.publish_year IS NULL OR ABS(g.publish_year - r.publish_year) <= 1)
@@ -259,7 +259,6 @@ router.get('/duplicates', async (req: Request, res: Response, next: NextFunction
       LIMIT ${limit} OFFSET ${skip}
     `;
 
-    // Count unique GCD entries with matches (excluding dismissed)
     const countResult = await prisma.$queryRaw<[{ total: bigint }]>`
       SELECT COUNT(DISTINCT g.id) as total
       FROM (
@@ -274,9 +273,10 @@ router.get('/duplicates', async (req: Request, res: Response, next: NextFunction
       JOIN (
         SELECT id, publish_year,
           CAST(SUBSTRING_INDEX(title, '#', -1) AS UNSIGNED) AS issue_num,
-          LOWER(TRIM(SUBSTRING_INDEX(title, '#', 1))) AS base_title
+          LOWER(TRIM(REPLACE(REPLACE(SUBSTRING_INDEX(title, '#', 1), 'The ', ''), 'the ', ''))) AS base_title
         FROM catalog_entries
-        WHERE (source_key LIKE 'rika:%' OR source_key LIKE 'panini:%') AND title LIKE '%#%'
+        WHERE (source_key LIKE 'rika:%' OR source_key LIKE 'panini:%' OR source_key LIKE 'amazon:%' OR source_key LIKE 'openlibrary:%')
+          AND title LIKE '%#%'
         HAVING issue_num > 0
       ) r ON g.issue_num = r.issue_num
         AND (g.publish_year IS NULL OR r.publish_year IS NULL OR ABS(g.publish_year - r.publish_year) <= 1)
