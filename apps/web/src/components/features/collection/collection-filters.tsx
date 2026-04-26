@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Filter, X } from 'lucide-react';
 
@@ -53,7 +53,11 @@ function FilterSection({
 
 export function CollectionFilters({ filters, onFiltersChange }: CollectionFiltersProps) {
   const t = useTranslations('collection');
-  const queryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [searchInput, setSearchInput] = useState(filters.query ?? '');
+
+  useEffect(() => {
+    setSearchInput(filters.query ?? '');
+  }, [filters.query]);
 
   const update = useCallback(
     (partial: Partial<CollectionSearchParams>) => {
@@ -62,11 +66,8 @@ export function CollectionFilters({ filters, onFiltersChange }: CollectionFilter
     [filters, onFiltersChange],
   );
 
-  const handleSearchChange = (value: string) => {
-    if (queryTimer.current) clearTimeout(queryTimer.current);
-    queryTimer.current = setTimeout(() => {
-      update({ query: value || undefined });
-    }, 300);
+  const submitSearch = () => {
+    update({ query: searchInput.trim() || undefined });
   };
 
   const clearAll = () => {
@@ -99,8 +100,10 @@ export function CollectionFilters({ filters, onFiltersChange }: CollectionFilter
       <FilterSection title={t('searchPlaceholder')}>
         <Input
           placeholder={t('searchPlaceholder')}
-          defaultValue={filters.query ?? ''}
-          onChange={(e) => handleSearchChange(e.target.value)}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') submitSearch(); }}
+          onBlur={submitSearch}
           className="h-8 text-sm"
         />
       </FilterSection>

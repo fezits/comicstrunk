@@ -61,26 +61,22 @@ export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
     getCollectionStats().then((s) => setTotalItems(s.totalItems)).catch(() => {});
   }, []);
 
-  // Debounced search
-  useEffect(() => {
-    if (!searchQuery.trim() || searchQuery.length < 2) {
+  // Manual search (Enter only — mobile-friendly)
+  const submitSearch = useCallback(async () => {
+    const q = searchQuery.trim();
+    if (!q || q.length < 2) {
       setSeriesResults([]);
       return;
     }
-
-    const timer = setTimeout(async () => {
-      setSearching(true);
-      try {
-        const result = await getSeries({ title: searchQuery, limit: 100 });
-        setSeriesResults(result.data);
-      } catch {
-        // ignore
-      } finally {
-        setSearching(false);
-      }
-    }, 400);
-
-    return () => clearTimeout(timer);
+    setSearching(true);
+    try {
+      const result = await getSeries({ title: q, limit: 100 });
+      setSeriesResults(result.data);
+    } catch {
+      // ignore
+    } finally {
+      setSearching(false);
+    }
   }, [searchQuery]);
 
   // Load series detail + owned items
@@ -194,6 +190,8 @@ export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
             setSearchQuery(e.target.value);
             setSelectedSeries(null);
           }}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitSearch(); } }}
+          onBlur={submitSearch}
           placeholder={t('searchSeries')}
           className="pl-10"
         />

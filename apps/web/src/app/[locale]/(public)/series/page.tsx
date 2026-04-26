@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -31,7 +31,8 @@ export default function SeriesPage() {
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
 
   const [searchInput, setSearchInput] = useState(currentTitle);
-  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => { setSearchInput(currentTitle); }, [currentTitle]);
 
   // Update URL search params
   const updateParams = useCallback(
@@ -80,15 +81,8 @@ export default function SeriesPage() {
     };
   }, [currentTitle, currentPage, tCommon]);
 
-  // Debounced search
-  const handleSearchChange = (value: string) => {
-    setSearchInput(value);
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-    }
-    debounceTimer.current = setTimeout(() => {
-      updateParams(value, 1);
-    }, 300);
+  const submitSearch = () => {
+    updateParams(searchInput.trim(), 1);
   };
 
   const handlePageChange = (page: number) => {
@@ -109,7 +103,9 @@ export default function SeriesPage() {
         <Input
           placeholder={t('searchPlaceholder')}
           value={searchInput}
-          onChange={(e) => handleSearchChange(e.target.value)}
+          onChange={(e) => setSearchInput(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') submitSearch(); }}
+          onBlur={submitSearch}
           className="pl-9"
         />
       </div>

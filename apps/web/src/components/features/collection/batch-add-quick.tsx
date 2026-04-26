@@ -61,33 +61,36 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
       .catch(() => {});
   }, []);
 
-  // Debounced search (resets to page 1)
-  useEffect(() => {
-    if (!searchQuery.trim() || searchQuery.length < 2) {
+  // Manual search (Enter only — mobile-friendly)
+  const submitSearch = useCallback(async () => {
+    const q = searchQuery.trim();
+    if (!q || q.length < 2) {
       setResults([]);
       setHasMore(false);
       setTotalResults(0);
       return;
     }
-
-    const timer = setTimeout(async () => {
-      setSearching(true);
-      setPage(1);
-      activeQuery.current = searchQuery;
-      try {
-        const result = await searchCatalog({ title: searchQuery, limit: PAGE_SIZE, page: 1, sortBy, sortOrder });
-        setResults(result.data);
-        setTotalResults(result.pagination.total);
-        setHasMore(result.pagination.page < result.pagination.totalPages);
-      } catch {
-        // ignore
-      } finally {
-        setSearching(false);
-      }
-    }, 400);
-
-    return () => clearTimeout(timer);
+    setSearching(true);
+    setPage(1);
+    activeQuery.current = q;
+    try {
+      const result = await searchCatalog({ title: q, limit: PAGE_SIZE, page: 1, sortBy, sortOrder });
+      setResults(result.data);
+      setTotalResults(result.pagination.total);
+      setHasMore(result.pagination.page < result.pagination.totalPages);
+    } catch {
+      // ignore
+    } finally {
+      setSearching(false);
+    }
   }, [searchQuery, sortBy, sortOrder]);
+
+  // Re-run search when sort changes (only if there's an active query)
+  useEffect(() => {
+    if (activeQuery.current && activeQuery.current.length >= 2) {
+      submitSearch();
+    }
+  }, [sortBy, sortOrder]);
 
   const loadMore = useCallback(async () => {
     if (loadingMore || !hasMore) return;
@@ -169,6 +172,8 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
         <Input
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitSearch(); } }}
+          onBlur={submitSearch}
           placeholder={t('searchCatalog')}
           className="pl-10"
         />

@@ -46,8 +46,6 @@ export default function AddCollectionItemPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<CatalogEntry[]>([]);
   const [searching, setSearching] = useState(false);
-  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   // Selection state
   const [selectedEntry, setSelectedEntry] = useState<CatalogEntry | null>(null);
 
@@ -64,36 +62,24 @@ export default function AddCollectionItemPage() {
   const [importing, setImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Debounced search
-  const handleSearchChange = useCallback((value: string) => {
-    setSearchQuery(value);
-    if (searchTimer.current) clearTimeout(searchTimer.current);
-
-    if (!value.trim()) {
+  // Search on Enter only (mobile-friendly)
+  const submitSearch = useCallback(async () => {
+    const value = searchQuery.trim();
+    if (!value) {
       setSearchResults([]);
       setSearching(false);
       return;
     }
-
     setSearching(true);
-    searchTimer.current = setTimeout(async () => {
-      try {
-        const res = await searchCatalog({ title: value, limit: 12 });
-        setSearchResults(res.data);
-      } catch {
-        setSearchResults([]);
-      } finally {
-        setSearching(false);
-      }
-    }, 400);
-  }, []);
-
-  // Cleanup timer on unmount
-  useEffect(() => {
-    return () => {
-      if (searchTimer.current) clearTimeout(searchTimer.current);
-    };
-  }, []);
+    try {
+      const res = await searchCatalog({ title: value, limit: 12 });
+      setSearchResults(res.data);
+    } catch {
+      setSearchResults([]);
+    } finally {
+      setSearching(false);
+    }
+  }, [searchQuery]);
 
   const handleSelectEntry = (entry: CatalogEntry) => {
     setSelectedEntry(entry);
@@ -260,7 +246,9 @@ export default function AddCollectionItemPage() {
               <Input
                 placeholder={t('searchCatalogPlaceholder')}
                 value={searchQuery}
-                onChange={(e) => handleSearchChange(e.target.value)}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitSearch(); } }}
+                onBlur={submitSearch}
                 className="pl-10"
               />
             </div>

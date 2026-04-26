@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -96,9 +96,12 @@ export function MarketplaceListingPage() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [addingToCartId, setAddingToCartId] = useState<string | null>(null);
 
-  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   const filters = parseFiltersFromParams(searchParams);
+  const [searchInput, setSearchInput] = useState(filters.query ?? '');
+
+  useEffect(() => {
+    setSearchInput(filters.query ?? '');
+  }, [filters.query]);
 
   // Fetch marketplace when URL params change
   useEffect(() => {
@@ -138,11 +141,8 @@ export function MarketplaceListingPage() {
     handleFiltersChange({ ...filters, page });
   };
 
-  const handleSearchChange = (value: string) => {
-    if (searchTimer.current) clearTimeout(searchTimer.current);
-    searchTimer.current = setTimeout(() => {
-      handleFiltersChange({ ...filters, query: value || undefined, page: 1 });
-    }, 400);
+  const submitSearch = () => {
+    handleFiltersChange({ ...filters, query: searchInput.trim() || undefined, page: 1 });
   };
 
   const handleSortChange = (sortBy: MarketplaceSearchParams['sortBy']) => {
@@ -325,8 +325,10 @@ export function MarketplaceListingPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={t('searchPlaceholder')}
-            defaultValue={filters.query ?? ''}
-            onChange={(e) => handleSearchChange(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') submitSearch(); }}
+            onBlur={submitSearch}
             className="pl-9 h-10 focus-visible:ring-2 focus-visible:ring-primary"
           />
         </div>

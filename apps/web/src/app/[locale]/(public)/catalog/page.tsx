@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -105,9 +105,13 @@ export default function CatalogPage() {
       .catch(() => {});
   }, [isAuthenticated]);
 
-  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   const filters = parseFiltersFromParams(searchParams);
+  const [searchInput, setSearchInput] = useState(filters.title ?? '');
+
+  // Sync local input when URL changes externally
+  useEffect(() => {
+    setSearchInput(filters.title ?? '');
+  }, [filters.title]);
 
   const { data: categories = [] } = useQuery({
     queryKey: ['taxonomy', 'categories'],
@@ -165,11 +169,8 @@ export default function CatalogPage() {
     handleFiltersChange({ ...filters, page });
   };
 
-  const handleSearchChange = (value: string) => {
-    if (searchTimer.current) clearTimeout(searchTimer.current);
-    searchTimer.current = setTimeout(() => {
-      handleFiltersChange({ ...filters, title: value || undefined, page: 1 });
-    }, 400);
+  const submitSearch = () => {
+    handleFiltersChange({ ...filters, title: searchInput.trim() || undefined, page: 1 });
   };
 
   const handleSortChange = (sortBy: CatalogSearchParams['sortBy']) => {
@@ -323,8 +324,10 @@ export default function CatalogPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={t('searchPlaceholder')}
-            defaultValue={filters.title ?? ''}
-            onChange={(e) => handleSearchChange(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') submitSearch(); }}
+            onBlur={submitSearch}
             className="pl-9 h-10 focus-visible:ring-2 focus-visible:ring-primary"
           />
         </div>
