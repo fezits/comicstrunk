@@ -20,6 +20,9 @@ export const coverScanCandidateSchema = z.object({
   editionNumber: z.number().int().nullable(),
   coverImageUrl: z.string().nullable(),
   score: z.number(),
+  isExternal: z.boolean().optional().default(false),
+  externalSource: z.enum(['metron', 'rika']).optional(),
+  externalRef: z.string().optional(),
 });
 export type CoverScanCandidate = z.infer<typeof coverScanCandidateSchema>;
 
@@ -59,6 +62,21 @@ export type CoverScanRecognizeInput = z.infer<typeof coverScanRecognizeSchema>;
 
 // Response reaproveita o mesmo formato do /search (candidatos + scanLogId)
 export type CoverScanRecognizeResponse = CoverScanSearchResponse;
+
+// === Import endpoint (Fase 3) — cria CatalogEntry PENDING a partir de candidato externo ===
+
+export const coverScanImportSchema = z.object({
+  scanLogId: z.string().min(1),
+  externalSource: z.enum(['metron', 'rika']),
+  externalRef: z.string().min(1),
+});
+export type CoverScanImportInput = z.infer<typeof coverScanImportSchema>;
+
+export interface CoverScanImportResponse {
+  catalogEntryId: string;
+  collectionItemId: string;
+  message: string;
+}
 
 // === Daily limit constant ===
 
