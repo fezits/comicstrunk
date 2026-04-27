@@ -28,6 +28,7 @@ import {
   ListPlus,
   ImageIcon,
   Copy,
+  Camera,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -66,6 +67,7 @@ export const navGroups: NavGroup[] = [
       { titleKey: 'nav.batchAdd', href: '/collection/add-batch', icon: ListPlus },
       { titleKey: 'nav.seriesProgress', href: '/collection/series-progress', icon: BarChart3 },
       { titleKey: 'nav.favorites', href: '/favorites', icon: Heart },
+      { titleKey: 'nav.scanCapa', href: '/scan-capa', icon: Camera },
     ],
   },
   {
@@ -131,6 +133,7 @@ export const protectedRoutes = [
   '/collection/add-batch',
   '/collection/series-progress',
   '/favorites',
+  '/scan-capa',
   '/cart',
   '/orders',
   '/payments/history',

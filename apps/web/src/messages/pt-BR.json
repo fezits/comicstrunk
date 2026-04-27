@@ -61,6 +61,7 @@
     "adminLgpd": "LGPD",
     "adminContact": "Contato",
     "lgpd": "Privacidade (LGPD)",
+    "scanCapa": "Buscar por foto",
     "groups": {
       "public": "Explorar",
       "collection": "Minha Coleção",
