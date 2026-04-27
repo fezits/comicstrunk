@@ -202,9 +202,9 @@ export async function getPaymentStatus(orderId: string, userId: string) {
     }
   }
 
-  // Remove the included order relation from response
+  // Remove the included order relation from response + normalize Decimals
   const { order: _order, ...paymentData } = payment;
-  return paymentData;
+  return normalizePayment(paymentData);
 }
 
 // === Process Payment Confirmation ===
@@ -299,7 +299,7 @@ export async function processWebhookEvent(
     throw error;
   }
 
-  // 2. Process payment events
+  // 2. Process payment events (Gap #6: registra falha pra retry posterior)
   if (
     dataId &&
     (eventType === 'payment.updated' ||
@@ -308,11 +308,9 @@ export async function processWebhookEvent(
   ) {
     try {
       if (isMercadoPagoConfigured() && mpPayment) {
-        // Fetch full payment details from Mercado Pago (source of truth)
         const mpStatus = await mpPayment.get({ id: dataId });
 
         if (mpStatus.status === 'approved') {
-          // Find our payment record by provider payment ID
           const payment = await prisma.payment.findFirst({
             where: { providerPaymentId: dataId },
           });
@@ -323,21 +321,99 @@ export async function processWebhookEvent(
         }
       }
     } catch (error) {
-      console.error(`[Webhook] Error processing payment event ${eventId}:`, error);
-      // Don't rethrow — we still want to mark as processed and return 200
+      // Marca como falha, NÃO marca processedAt — cron de retry vai reprocessar
+      const msg = error instanceof Error ? error.message : String(error);
+      console.error(`[Webhook] Error processing payment event ${eventId}:`, msg);
+      await prisma.webhookEvent
+        .update({
+          where: { provider_eventId: { provider: 'mercadopago', eventId } },
+          data: {
+            attempts: { increment: 1 },
+            lastError: msg.slice(0, 500),
+            lastAttemptAt: new Date(),
+          },
+        })
+        .catch(() => undefined);
+      return;
     }
   }
 
-  // 3. Mark webhook as processed
+  // 3. Mark webhook as processed (apenas no caminho feliz)
   await prisma.webhookEvent.update({
-    where: {
-      provider_eventId: {
-        provider: 'mercadopago',
-        eventId,
-      },
-    },
-    data: { processedAt: new Date() },
+    where: { provider_eventId: { provider: 'mercadopago', eventId } },
+    data: { processedAt: new Date(), lastAttemptAt: new Date() },
   });
+}
+
+// === Webhook Retry (Gap #6) ===
+
+/**
+ * Reprocessa eventos webhook que ainda não foram marcados como processed.
+ * Usado pelo cron job (a cada 10min). Reusa `processWebhookEvent` que já tem
+ * idempotência via `webhookEvents` table.
+ */
+export async function retryPendingWebhooks(maxAttempts = 5): Promise<number> {
+  const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);
+
+  const pending = await prisma.webhookEvent.findMany({
+    where: {
+      provider: 'mercadopago',
+      processedAt: null,
+      attempts: { lt: maxAttempts },
+      OR: [{ lastAttemptAt: null }, { lastAttemptAt: { lt: fiveMinAgo } }],
+    },
+    take: 50, // batch
+  });
+
+  let succeeded = 0;
+  for (const ev of pending) {
+    try {
+      const payload = ev.payload as { data?: { id?: string | number } } | null;
+      const dataId = payload?.data?.id != null ? String(payload.data.id) : undefined;
+
+      if (!dataId || !isMercadoPagoConfigured() || !mpPayment) {
+        // Sem como reprocessar — marca como processed pra parar de tentar
+        await prisma.webhookEvent.update({
+          where: { id: ev.id },
+          data: {
+            processedAt: new Date(),
+            lastError: 'Skipped: MP not configured or no dataId',
+            lastAttemptAt: new Date(),
+          },
+        });
+        continue;
+      }
+
+      const mpStatus = await mpPayment.get({ id: dataId });
+      if (mpStatus.status === 'approved') {
+        const payment = await prisma.payment.findFirst({
+          where: { providerPaymentId: dataId },
+        });
+        if (payment) {
+          await processPaymentConfirmation(payment.orderId!);
+        }
+      }
+
+      await prisma.webhookEvent.update({
+        where: { id: ev.id },
+        data: { processedAt: new Date(), lastAttemptAt: new Date() },
+      });
+      succeeded++;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      await prisma.webhookEvent
+        .update({
+          where: { id: ev.id },
+          data: {
+            attempts: { increment: 1 },
+            lastError: msg.slice(0, 500),
+            lastAttemptAt: new Date(),
+          },
+        })
+        .catch(() => undefined);
+    }
+  }
+  return succeeded;
 }
 
 // === Admin: Approve Payment ===
@@ -429,6 +505,19 @@ export async function adminRejectPayment(orderId: string) {
       data: { providerStatus: 'rejected' },
     });
   });
+
+  // Gap #2: Notificar comprador que o pagamento foi rejeitado
+  try {
+    createNotification({
+      userId: order.buyerId,
+      type: 'PAYMENT_REJECTED',
+      title: 'Pagamento não confirmado',
+      message: `Não conseguimos confirmar o pagamento do pedido ${order.orderNumber}. Os itens foram liberados — você pode tentar comprar novamente ou entrar em contato com o suporte.`,
+      metadata: { orderId, orderNumber: order.orderNumber },
+    }).catch(() => {});
+  } catch {
+    // Non-blocking — rejeição é o caminho crítico, notificação é cosmética
+  }
 
   return prisma.order.findUnique({
     where: { id: orderId },
@@ -531,6 +620,22 @@ export async function refundPayment(paymentId: string, amount?: number) {
   });
 }
 
+// === Helpers para serializar Decimal como Number ===
+
+const num = (v: unknown): number | null => (v == null ? null : Number(v));
+
+function normalizePayment<T extends { amount?: unknown; refundedAmount?: unknown }>(p: T): T {
+  return {
+    ...p,
+    amount: num(p.amount) as unknown,
+    refundedAmount: num(p.refundedAmount) as unknown,
+  } as T;
+}
+
+function normalizeOrderTotal<T extends { totalAmount?: unknown }>(o: T): T {
+  return { ...o, totalAmount: num(o.totalAmount) as unknown } as T;
+}
+
 // === User: Payment History ===
 
 export async function getUserPaymentHistory(
@@ -563,7 +668,11 @@ export async function getUserPaymentHistory(
     prisma.payment.count({ where }),
   ]);
 
-  return { payments, total, page, limit };
+  const normalized = payments.map((p) =>
+    normalizePayment({ ...p, order: p.order ? normalizeOrderTotal(p.order) : p.order }),
+  );
+
+  return { payments: normalized, total, page, limit };
 }
 
 // === Admin: List Pending Payments ===
@@ -590,7 +699,12 @@ export async function adminListPendingPayments(page: number, limit: number) {
     prisma.order.count({ where }),
   ]);
 
-  return { orders, total, page, limit };
+  const normalized = orders.map((o) => ({
+    ...normalizeOrderTotal(o),
+    payments: o.payments.map(normalizePayment),
+  }));
+
+  return { orders: normalized, total, page, limit };
 }
 
 // === Admin: List All Payments ===
@@ -630,5 +744,9 @@ export async function adminListAllPayments(filters: {
     prisma.payment.count({ where }),
   ]);
 
-  return { payments, total, page, limit };
+  const normalized = payments.map((p) =>
+    normalizePayment({ ...p, order: p.order ? normalizeOrderTotal(p.order) : p.order }),
+  );
+
+  return { payments: normalized, total, page, limit };
 }

@@ -3,6 +3,8 @@ import { prisma } from '../lib/prisma';
 import { stripe, isStripeConfigured } from '../lib/stripe';
 import { createNotification } from '../../modules/notifications/notifications.service';
 import { executeAccountDeletion } from '../../modules/lgpd/lgpd.service';
+import { retryPendingWebhooks } from '../../modules/payments/payments.service';
+import { creditOrderItemToBalance } from '../../modules/payouts/payouts.service';
 
 /**
  * Register all scheduled cron jobs for cart/order lifecycle management.
@@ -279,6 +281,132 @@ export function registerCronJobs(): void {
       }
     } catch (err) {
       console.error('[CRON] LGPD: Error in account deletion cron:', err);
+    }
+  });
+
+  // Gap #4: Daily at 7 AM — Auto-complete OrderItems entregues há 7+ dias sem disputa.
+  // Sem isso, comprador esquece de confirmar e o item fica preso em DELIVERED, bloqueando
+  // o payout pro vendedor.
+  cron.schedule('0 7 * * *', async () => {
+    try {
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+      const candidates = await prisma.orderItem.findMany({
+        where: {
+          status: 'DELIVERED',
+          deliveredAt: { lt: sevenDaysAgo },
+          disputes: { none: { status: { in: ['OPEN', 'IN_MEDIATION'] } } },
+        },
+        include: {
+          order: { select: { id: true, buyerId: true, orderNumber: true } },
+        },
+      });
+
+      let completed = 0;
+      for (const item of candidates) {
+        try {
+          await prisma.orderItem.update({
+            where: { id: item.id },
+            data: { status: 'COMPLETED' },
+          });
+
+          // Liberar collectionItem
+          await prisma.collectionItem.update({
+            where: { id: item.collectionItemId },
+            data: { isForSale: false, salePrice: null },
+          });
+
+          createNotification({
+            userId: item.order.buyerId,
+            type: 'ORDER_AUTO_COMPLETED',
+            title: 'Pedido finalizado automaticamente',
+            message: `O pedido ${item.order.orderNumber} foi finalizado automaticamente após 7 dias da entrega. Avalie o vendedor!`,
+            metadata: { orderId: item.order.id, orderItemId: item.id },
+          }).catch(() => {});
+
+          // Credita saldo do vendedor (Gap #7)
+          await creditOrderItemToBalance(item.id).catch((err) =>
+            console.error(`[CRON] Erro ao creditar saldo do item ${item.id}:`, err),
+          );
+
+          completed++;
+        } catch (itemErr) {
+          console.error(`[CRON] Erro ao auto-completar item ${item.id}:`, itemErr);
+        }
+      }
+
+      // Avalia se o Order todo virou COMPLETED
+      const ordersTouched = new Set(candidates.map((c) => c.order.id));
+      for (const orderId of ordersTouched) {
+        const allItems = await prisma.orderItem.findMany({
+          where: { orderId },
+          select: { status: true },
+        });
+        const allDone = allItems.every((i) =>
+          ['COMPLETED', 'CANCELLED', 'REFUNDED'].includes(i.status),
+        );
+        if (allDone) {
+          await prisma.order
+            .update({ where: { id: orderId }, data: { status: 'COMPLETED' } })
+            .catch(() => undefined);
+        }
+      }
+
+      if (completed > 0) {
+        console.log(`[CRON] Auto-completed ${completed} delivered order item(s)`);
+      }
+    } catch (err) {
+      console.error('[CRON] Error in auto-complete delivered orders:', err);
+    }
+  });
+
+  // Gap #5: Daily at 7:30 AM — Avisa o comprador 1 dia antes da janela de disputa
+  // fechar (item DELIVERED há 6 dias). Após 7 dias, o item auto-completa e não
+  // dá mais pra abrir disputa.
+  cron.schedule('30 7 * * *', async () => {
+    try {
+      const sixDaysAgo = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000);
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+      const closing = await prisma.orderItem.findMany({
+        where: {
+          status: 'DELIVERED',
+          deliveredAt: { lt: sixDaysAgo, gte: sevenDaysAgo },
+          disputes: { none: {} },
+        },
+        include: {
+          order: { select: { id: true, buyerId: true, orderNumber: true } },
+        },
+      });
+
+      for (const item of closing) {
+        createNotification({
+          userId: item.order.buyerId,
+          type: 'DISPUTE_WINDOW_CLOSING',
+          title: 'Janela de disputa fechando em 24h',
+          message: `O prazo para abrir disputa do pedido ${item.order.orderNumber} termina em 24h. Se algo deu errado, abra agora.`,
+          metadata: { orderId: item.order.id, orderItemId: item.id },
+        }).catch(() => {});
+      }
+
+      if (closing.length > 0) {
+        console.log(`[CRON] Notificou ${closing.length} comprador(es) sobre janela de disputa fechando`);
+      }
+    } catch (err) {
+      console.error('[CRON] Error in dispute window closing notification:', err);
+    }
+  });
+
+  // Gap #6: A cada 10 minutos — retry de webhooks Mercado Pago não processados.
+  // Garante que pagamentos não fiquem em "pending" se webhook falhar (rede, MP down, etc).
+  cron.schedule('*/10 * * * *', async () => {
+    try {
+      const succeeded = await retryPendingWebhooks(5);
+      if (succeeded > 0) {
+        console.log(`[CRON] Webhook retry: ${succeeded} eventos reprocessados`);
+      }
+    } catch (err) {
+      console.error('[CRON] Error in webhook retry:', err);
     }
   });
 

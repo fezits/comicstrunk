@@ -1,12 +1,18 @@
 import axios, { type AxiosInstance } from 'axios';
-import { API_URL } from './test-constants';
+import { API_URL, BASE_URL } from './test-constants';
+
+// Em produção a API exige header Origin (CORS) — incluir em todas as chamadas
+// para que o mesmo client funcione em local e prod.
+const COMMON_HEADERS = {
+  'Content-Type': 'application/json',
+  Origin: BASE_URL,
+  'User-Agent': 'Mozilla/5.0 (Comicstrunk-E2E)',
+};
 
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_URL,
   timeout: 10_000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  headers: { ...COMMON_HEADERS },
 });
 
 export function authedApiClient(accessToken: string): AxiosInstance {
@@ -14,7 +20,7 @@ export function authedApiClient(accessToken: string): AxiosInstance {
     baseURL: API_URL,
     timeout: 10_000,
     headers: {
-      'Content-Type': 'application/json',
+      ...COMMON_HEADERS,
       Authorization: `Bearer ${accessToken}`,
     },
   });

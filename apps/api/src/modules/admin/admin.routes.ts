@@ -206,13 +206,63 @@ router.post('/covers/remove', async (req: Request, res: Response, next: NextFunc
 
 // === Duplicate Management ===
 
-// GET /duplicates — find potential duplicates between any two sources
-// (gcd, rika, panini, amazon, openlibrary) — different sources only
+// GET /duplicates — find potential duplicates
+// mode=pattern (default): GCD #issue match against Rika/Panini/Amazon/OpenLibrary
+// mode=title: exact title match across any two different sources
 router.get('/duplicates', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
     const skip = (page - 1) * limit;
+    const mode = (req.query.mode as string) === 'title' ? 'title' : 'pattern';
+
+    if (mode === 'title') {
+      // Optimized: first find titles with 2+ entries from different sources (uses title index),
+      // then JOIN. Avoids massive cross product. Title comparison is case-insensitive
+      // by default (utf8mb4_unicode_ci collation).
+      const duplicates = await prisma.$queryRaw<Array<{
+        gcd_id: string; gcd_title: string; gcd_publisher: string; gcd_source_key: string; gcd_cover: string | null;
+        rika_id: string; rika_title: string; rika_publisher: string; rika_source_key: string; rika_cover: string | null;
+      }>>`
+        SELECT
+          g.id as gcd_id, g.title as gcd_title, g.publisher as gcd_publisher,
+          g.source_key as gcd_source_key, g.cover_image_url as gcd_cover,
+          MIN(r.id) as rika_id, MIN(r.title) as rika_title, MIN(r.publisher) as rika_publisher,
+          MIN(r.source_key) as rika_source_key, MIN(r.cover_image_url) as rika_cover
+        FROM catalog_entries g
+        JOIN catalog_entries r
+          ON g.title = r.title
+          AND g.id < r.id
+          AND SUBSTRING_INDEX(g.source_key, ':', 1) != SUBSTRING_INDEX(r.source_key, ':', 1)
+        WHERE g.title IN (
+          SELECT title FROM catalog_entries
+          WHERE source_key IS NOT NULL AND title IS NOT NULL AND CHAR_LENGTH(title) > 3
+          GROUP BY title
+          HAVING COUNT(DISTINCT SUBSTRING_INDEX(source_key, ':', 1)) > 1
+        )
+        AND g.source_key IS NOT NULL AND r.source_key IS NOT NULL
+        GROUP BY g.id, g.title, g.publisher, g.source_key, g.cover_image_url
+        ORDER BY g.title ASC
+        LIMIT ${limit} OFFSET ${skip}
+      `;
+
+      const countResult = await prisma.$queryRaw<[{ total: bigint }]>`
+        SELECT COUNT(*) as total FROM (
+          SELECT title FROM catalog_entries
+          WHERE source_key IS NOT NULL AND title IS NOT NULL AND CHAR_LENGTH(title) > 3
+          GROUP BY title
+          HAVING COUNT(DISTINCT SUBSTRING_INDEX(source_key, ':', 1)) > 1
+        ) AS dup_titles
+      `;
+
+      const total = Number(countResult[0].total);
+      const pairs = duplicates.map((d) => ({
+        gcd: resolveCoverUrl({ id: d.gcd_id, title: d.gcd_title, publisher: d.gcd_publisher, sourceKey: d.gcd_source_key, coverImageUrl: d.gcd_cover, coverFileName: null }),
+        rika: resolveCoverUrl({ id: d.rika_id, title: d.rika_title, publisher: d.rika_publisher, sourceKey: d.rika_source_key, coverImageUrl: d.rika_cover, coverFileName: null }),
+      }));
+      sendPaginated(res, pairs, { page, limit, total });
+      return;
+    }
 
     const duplicates = await prisma.$queryRaw<Array<{
       gcd_id: string;
@@ -335,18 +385,50 @@ router.delete('/duplicates/:id', async (req: Request, res: Response, next: NextF
   try {
     const id = req.params.id as string;
 
-    // Delete all dependent records first (all FKs pointing to catalog_entries)
-    await prisma.catalogCategory.deleteMany({ where: { catalogEntryId: id } });
-    await prisma.catalogTag.deleteMany({ where: { catalogEntryId: id } });
-    await prisma.catalogCharacter.deleteMany({ where: { catalogEntryId: id } });
-    await prisma.favorite.deleteMany({ where: { catalogEntryId: id } });
-    await prisma.comment.deleteMany({ where: { catalogEntryId: id } });
-    await prisma.review.deleteMany({ where: { catalogEntryId: id } });
-    await prisma.collectionItem.deleteMany({ where: { catalogEntryId: id } });
+    // Coleta IDs de collection items associados (precisa pra cascade em cart/order)
+    const collectionItems = await prisma.collectionItem.findMany({
+      where: { catalogEntryId: id },
+      select: { id: true },
+    });
+    const collectionItemIds = collectionItems.map((c) => c.id);
 
-    await prisma.catalogEntry.delete({ where: { id } });
+    // Pre-check: se algum collectionItem está em order não-cancelada, bloqueia
+    if (collectionItemIds.length > 0) {
+      const liveOrderItems = await prisma.orderItem.count({
+        where: {
+          collectionItemId: { in: collectionItemIds },
+          status: { notIn: ['CANCELLED', 'REFUNDED'] },
+        },
+      });
+      if (liveOrderItems > 0) {
+        return next(
+          new BadRequestError(
+            `Não é possível remover: ${liveOrderItems} pedido(s) ativos referenciam este catálogo. Cancele os pedidos primeiro.`,
+          ),
+        );
+      }
+    }
 
-    sendSuccess(res, { deleted: id });
+    await prisma.$transaction(async (tx) => {
+      // Limpa dependências em cascata (FKs que apontam pra catalog_entries OU pros collection_items)
+      if (collectionItemIds.length > 0) {
+        await tx.cartItem.deleteMany({ where: { collectionItemId: { in: collectionItemIds } } });
+        await tx.orderItem.deleteMany({ where: { collectionItemId: { in: collectionItemIds } } });
+      }
+      await tx.catalogCategory.deleteMany({ where: { catalogEntryId: id } });
+      await tx.catalogTag.deleteMany({ where: { catalogEntryId: id } });
+      await tx.catalogCharacter.deleteMany({ where: { catalogEntryId: id } });
+      await tx.favorite.deleteMany({ where: { catalogEntryId: id } });
+      await tx.comment.deleteMany({ where: { catalogEntryId: id } });
+      await tx.review.deleteMany({ where: { catalogEntryId: id } });
+      await tx.collectionItem.deleteMany({ where: { catalogEntryId: id } });
+      // Remove dismissed_duplicates entries que apontavam pra esse id
+      await tx.$executeRaw`DELETE FROM dismissed_duplicates WHERE gcd_id = ${id} OR rika_id = ${id}`;
+
+      await tx.catalogEntry.delete({ where: { id } });
+    });
+
+    sendSuccess(res, { deleted: id, removedCollectionItems: collectionItemIds.length });
   } catch (err) {
     next(err);
   }

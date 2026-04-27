@@ -142,7 +142,7 @@ export function PaymentStatusSection({ orderId, orderStatus }: PaymentStatusSect
             {isPaid && payment.amount !== payment.refundedAmount && (
               <div className="text-sm text-muted-foreground space-y-1">
                 <p>
-                  {t('paymentAmount')}: {BRL.format(payment.amount / 100)}
+                  {t('paymentAmount')}: {BRL.format(payment.amount)}
                 </p>
                 <p>
                   {t('refundAmount')}: {BRL.format((payment.refundedAmount ?? 0) / 100)}
@@ -166,7 +166,7 @@ export function PaymentStatusSection({ orderId, orderStatus }: PaymentStatusSect
                 {t('paymentDate')}: {formatDate(payment.paidAt!)}
               </p>
               <p>
-                {t('paymentAmount')}: {BRL.format(payment.amount / 100)}
+                {t('paymentAmount')}: {BRL.format(payment.amount)}
               </p>
             </div>
           </>

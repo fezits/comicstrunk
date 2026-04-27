@@ -4,6 +4,7 @@ import { parseCSV, generateCSV } from '../../shared/lib/csv';
 import { uploadImage, deleteImage, resolveCoverUrl } from '../../shared/lib/cloudinary';
 import { parseXLSX, generateXLSX, generateCollectionTemplate, COLLECTION_FIELD_MAP, COLLECTION_REVERSE } from '../../shared/lib/xlsx';
 import { BadRequestError, NotFoundError, ConflictError } from '../../shared/utils/api-error';
+import { previewCommission } from '../commission/commission.service';
 import { collectionImportRowSchema, COLLECTION_LIMITS } from '@comicstrunk/contracts';
 import type {
   CreateCollectionItemInput,
@@ -41,12 +42,21 @@ function collectionIncludes() {
   };
 }
 
-/** Resolve cover URLs for any collection item with catalogEntry */
-function resolveItemCover<T extends { catalogEntry?: { coverImageUrl: string | null; coverFileName?: string | null } | null }>(item: T): T {
-  if (item.catalogEntry) {
-    return { ...item, catalogEntry: resolveCoverUrl(item.catalogEntry) };
-  }
-  return item;
+/** Resolve cover URLs + converte Decimals (salePrice, pricePaid, shippingCost) pra Number */
+function resolveItemCover<T extends {
+  catalogEntry?: { coverImageUrl: string | null; coverFileName?: string | null } | null;
+  salePrice?: unknown;
+  pricePaid?: unknown;
+  shippingCost?: unknown;
+}>(item: T): T {
+  const num = (v: unknown): number | null => (v == null ? null : Number(v));
+  return {
+    ...item,
+    salePrice: num(item.salePrice) as unknown,
+    pricePaid: num(item.pricePaid) as unknown,
+    shippingCost: num(item.shippingCost) as unknown,
+    catalogEntry: item.catalogEntry ? resolveCoverUrl(item.catalogEntry) : item.catalogEntry,
+  };
 }
 
 // === Owned IDs (lightweight, single query) ===
@@ -267,8 +277,8 @@ export async function deleteItem(userId: string, itemId: string) {
   await prisma.collectionItem.delete({ where: { id: itemId } });
 }
 
-export async function getItems(userId: string, filters: CollectionSearchInput) {
-  const { query, condition, isRead, isForSale, seriesId, sortBy, sortOrder, page, limit } =
+export async function getItems(userId: string, filters: CollectionSearchInput & { duplicates?: boolean }) {
+  const { query, condition, isRead, isForSale, seriesId, sortBy, sortOrder, page, limit, duplicates } =
     filters;
   const skip = (page - 1) * limit;
 
@@ -299,6 +309,22 @@ export async function getItems(userId: string, filters: CollectionSearchInput) {
     };
   }
 
+  // Duplicates filter: items where this user has the same catalog entry
+  // multiple times (either quantity > 1 OR multiple rows for same entry)
+  if (duplicates) {
+    const dupRows = await prisma.$queryRaw<Array<{ catalog_entry_id: string }>>`
+      SELECT catalog_entry_id FROM collection_items
+      WHERE user_id = ${userId}
+      GROUP BY catalog_entry_id
+      HAVING COUNT(*) > 1 OR SUM(quantity) > 1
+    `;
+    const dupIds = dupRows.map((r) => r.catalog_entry_id);
+    if (dupIds.length === 0) {
+      return { data: [], total: 0, page, limit };
+    }
+    where.catalogEntryId = { in: dupIds };
+  }
+
   // Map sort fields
   const sortFieldMap: Record<string, Prisma.CollectionItemOrderByWithRelationInput> = {
     title: { catalogEntry: { title: sortOrder } },
@@ -319,10 +345,7 @@ export async function getItems(userId: string, filters: CollectionSearchInput) {
     prisma.collectionItem.count({ where }),
   ]);
 
-  const data = rawData.map(item => ({
-    ...item,
-    catalogEntry: item.catalogEntry ? resolveCoverUrl(item.catalogEntry) : item.catalogEntry,
-  }));
+  const data = rawData.map(resolveItemCover);
 
   return { data, total, page, limit };
 }
@@ -385,10 +408,22 @@ export async function markForSale(userId: string, itemId: string, data: MarkForS
     throw new BadRequestError('Sale price is required when marking for sale');
   }
 
-  const commission =
+  // Gap #1: Vendedor precisa ter conta bancária cadastrada antes de listar
+  if (data.isForSale) {
+    const bankAccount = await prisma.bankAccount.findFirst({ where: { userId } });
+    if (!bankAccount) {
+      throw new BadRequestError(
+        'Cadastre uma conta bancária antes de listar itens à venda. Acesse /seller/banking',
+      );
+    }
+  }
+
+  // Gap #3: Usa CommissionConfig (com fallback) em vez de COMMISSION_RATE hardcoded
+  const preview =
     data.isForSale && data.salePrice
-      ? Number((data.salePrice * COMMISSION_RATE).toFixed(2))
+      ? await previewCommission(data.salePrice, userId)
       : null;
+  const commission = preview?.commissionAmount ?? null;
 
   return prisma.collectionItem
     .update({
@@ -396,16 +431,14 @@ export async function markForSale(userId: string, itemId: string, data: MarkForS
       data: {
         isForSale: data.isForSale,
         salePrice: data.isForSale ? data.salePrice : null,
+        shippingCost: data.isForSale ? (data.shippingCost ?? null) : null,
       },
       include: collectionIncludes(),
     })
     .then((updated) => ({
       ...resolveItemCover(updated),
       commission,
-      sellerNet:
-        data.isForSale && data.salePrice && commission
-          ? Number((data.salePrice - commission).toFixed(2))
-          : null,
+      sellerNet: preview?.sellerNet ?? null,
     }));
 }
 

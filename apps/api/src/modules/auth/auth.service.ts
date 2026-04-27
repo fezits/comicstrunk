@@ -31,7 +31,7 @@ export async function signup(input: SignupInput) {
   // Hash password
   const passwordHash = await bcrypt.hash(input.password, BCRYPT_ROUNDS);
 
-  // Create user
+  // Create user + assinatura FREE implícita (pra aparecer no admin)
   const user = await prisma.user.create({
     data: {
       name: input.name,
@@ -39,6 +39,12 @@ export async function signup(input: SignupInput) {
       passwordHash,
       role: 'USER',
       acceptedTermsAt: new Date(),
+      subscriptions: {
+        create: {
+          planType: 'FREE',
+          status: 'ACTIVE',
+        },
+      },
     },
   });
 

@@ -37,17 +37,57 @@ function cartItemIncludes() {
   };
 }
 
-/** Resolve cover URLs for the catalog entry nested inside a cart item's collectionItem */
-function resolveCartItemCovers<T extends {
-  collectionItem: { catalogEntry: { coverImageUrl: string | null; coverFileName?: string | null } } | null;
-  [key: string]: unknown;
-}>(item: T): T {
-  if (!item.collectionItem?.catalogEntry) return item;
+/**
+ * Normaliza o cart item Prisma (com `collectionItem.catalogEntry` + `user`)
+ * para o shape achatado que o frontend espera:
+ *   collectionItem: { id, title, coverImageUrl, salePrice, condition, seller }
+ *
+ * Sem isso, /cart e /checkout quebram com client-side exception porque
+ * `collectionItem.seller` é undefined.
+ */
+type RawCartItem = {
+  id: string;
+  userId: string;
+  collectionItemId: string;
+  reservedAt: Date;
+  expiresAt: Date;
+  createdAt: Date;
+  collectionItem: {
+    id: string;
+    condition: string;
+    salePrice: unknown;
+    catalogEntry: {
+      id: string;
+      title: string;
+      coverImageUrl: string | null;
+      coverFileName?: string | null;
+    };
+    user: { id: string; name: string };
+  };
+  remainingMs?: number;
+};
+
+function normalizeCartItem(item: RawCartItem) {
+  const resolved = resolveCoverUrl(item.collectionItem.catalogEntry);
   return {
-    ...item,
+    id: item.id,
+    userId: item.userId,
+    collectionItemId: item.collectionItemId,
+    reservedAt: item.reservedAt,
+    expiresAt: item.expiresAt,
+    createdAt: item.createdAt,
+    remainingMs: item.remainingMs,
     collectionItem: {
-      ...item.collectionItem,
-      catalogEntry: resolveCoverUrl(item.collectionItem.catalogEntry),
+      id: item.collectionItem.id,
+      title: item.collectionItem.catalogEntry.title,
+      coverImageUrl: resolved.coverImageUrl,
+      salePrice:
+        item.collectionItem.salePrice != null ? Number(item.collectionItem.salePrice) : null,
+      condition: item.collectionItem.condition,
+      seller: {
+        id: item.collectionItem.user.id,
+        name: item.collectionItem.user.name,
+      },
     },
   };
 }
@@ -117,7 +157,7 @@ export async function addToCart(userId: string, collectionItemId: string) {
     return cartItem;
   });
 
-  return resolveCartItemCovers(cartItem);
+  return normalizeCartItem(cartItem as unknown as RawCartItem);
 }
 
 // === Get Cart (CART-03, CART-04) ===
@@ -134,11 +174,13 @@ export async function getCart(userId: string) {
     orderBy: { createdAt: 'desc' },
   });
 
-  // Add remaining time info and resolve cover URLs
-  return items.map((item) => ({
-    ...resolveCartItemCovers(item),
-    remainingMs: item.expiresAt.getTime() - now.getTime(),
-  }));
+  // Normaliza para shape esperado pelo frontend + adiciona remainingMs
+  return items.map((item) =>
+    normalizeCartItem({
+      ...item,
+      remainingMs: item.expiresAt.getTime() - now.getTime(),
+    } as unknown as RawCartItem),
+  );
 }
 
 // === Remove from Cart (CART-05) ===

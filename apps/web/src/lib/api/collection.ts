@@ -46,6 +46,7 @@ export interface CollectionSearchParams {
   isRead?: boolean;
   isForSale?: boolean;
   seriesId?: string;
+  duplicates?: boolean;
   sortBy?: 'title' | 'createdAt' | 'pricePaid' | 'condition';
   sortOrder?: 'asc' | 'desc';
   page?: number;
@@ -69,6 +70,7 @@ export async function getCollectionItems(
   if (params.isRead !== undefined) query.isRead = params.isRead;
   if (params.isForSale !== undefined) query.isForSale = params.isForSale;
   if (params.seriesId) query.seriesId = params.seriesId;
+  if (params.duplicates) query.duplicates = params.duplicates;
   if (params.sortBy) query.sortBy = params.sortBy;
   if (params.sortOrder) query.sortOrder = params.sortOrder;
   if (params.page) query.page = params.page;
