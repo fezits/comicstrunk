@@ -46,8 +46,8 @@ pnpm --filter contracts build      # Compile to dist/
 
 ### API (`apps/api`)
 
-Module-based structure under `src/modules/{feature}/` — 29 modules:
-admin, auth, banking, cart, catalog, categories, characters, collection, comments, commission, contact, deals, disputes, favorites, homepage, legal, lgpd, marketplace, notifications, orders, payments, reviews, series, shipping, subscriptions, sync, tags, users
+Module-based structure under `src/modules/{feature}/` — 31 modules:
+admin, auth, banking, cart, catalog, categories, characters, collection, comments, commission, contact, cover-scan, cover-submissions, deals, disputes, favorites, homepage, legal, lgpd, marketplace, notifications, orders, payments, payouts, reviews, series, shipping, subscriptions, sync, tags, users
 
 Each module contains:
 - **Routes** (`*.routes.ts`) — Express router, validation middleware, calls service, returns via `sendSuccess`/`sendPaginated`
@@ -55,11 +55,13 @@ Each module contains:
 - Services use Prisma client directly via `shared/lib/prisma.ts`
 
 Notable modules:
-- **catalog** — Search matches words against title OR publisher. Also handles JSON bulk import and sync endpoints
+- **catalog** — Search matches words against title OR publisher OR author. Also handles JSON bulk import and sync endpoints
 - **sync** — Remote catalog sync via HTTP (upsert by `sourceKey`, cover upload)
 - **subscriptions** — Stripe integration with webhook handler (`stripe-webhook.routes.ts`)
 - **payments** — PIX via pix-utils (static PIX, manual admin confirmation) with Mercado Pago as fallback. Webhook handler at `webhook.routes.ts`
-- **collection** — Includes batch add (`POST /collection/batch`, up to 200 items per request)
+- **collection** — Includes batch add (`POST /collection/batch`, up to 200 items per request). `addItem` accepts entries with status `PENDING`/`DRAFT` (only `REJECTED` blocked) — public catalog filters still require `APPROVED`
+- **cover-scan** — Image-based catalog search. VLM (Llama 3.2 Vision via Cloudflare Workers AI) + textual search + external sources (MetronDB, Rika). Endpoints: `POST /search` (Phase 1, OCR fallback), `POST /recognize` (Phase 2 main), `POST /import` (creates PENDING entry from external source), `POST /choose` (telemetry). Logs in `cover_scan_logs` table. See "Cover Photo Scanner" section below.
+- **cover-submissions** — User-uploaded covers awaiting admin approval (separate from cover-scan)
 
 Shared infrastructure in `src/shared/`:
 - `middleware/validate.ts` — Zod schema validation middleware
@@ -71,6 +73,10 @@ Shared infrastructure in `src/shared/`:
 - `utils/slug.ts` — Slug generation with uniqueness check (supports category, tag, character, catalogEntry, series)
 - `lib/jwt.ts` — Token generation/verification (15min access, 7-day refresh with token family rotation)
 - `lib/pix.ts` — Static PIX QR code generation via pix-utils (no intermediary)
+- `lib/cloudflare-ai.ts` — Cloudflare Workers AI client (Llama 3.2 Vision for cover recognition). Reads `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_AI_MODEL`. Fail-open on errors.
+- `lib/metron.ts` — MetronDB client (HTTP Basic Auth, rate-limited 20/min + 5000/day, in-memory LRU cache TTL 1h). Reads `METRON_USERNAME`/`METRON_PASSWORD`.
+- `lib/rika.ts` — Rika BR scraper (VTEX `/api/catalog_system/pub/products/search`, throttled 200ms, in-memory cache).
+- `lib/cloudinary.ts` — Image storage abstraction. **Currently uses Cloudflare R2** as primary (`r2Configured` check); Cloudinary kept as legacy fallback. Exports `uploadImage`, `localCoverUrl`, `LOCAL_API_BASE_URL`, `resolveCoverUrl`.
 
 **Response format:**
 ```json
@@ -89,7 +95,7 @@ Next.js App Router with locale-based routing (`/[locale]/...`):
 - `(auth)/` — Login, signup, forgot-password, reset-password (public card layout)
 - `(public)/` — Homepage, catálogo, marketplace, séries, deals, contato, políticas legais
 - `(admin)/` — Painel admin (catálogo, usuários, comissões, deals, disputas, legal, LGPD, pagamentos, assinaturas, homepage)
-- `(collector)/` — Coleção, favoritos, notificações, assinatura, endereços, pagamentos, LGPD, carrinho, perfil, configurações, adicionar em lote
+- `(collector)/` — Coleção, favoritos, notificações, assinatura, endereços, pagamentos, LGPD, carrinho, perfil, configurações, adicionar em lote, scan-capa (busca por foto)
 - `(orders)/` — Pedidos e disputas do comprador
 - `(seller)/` — Dashboard do vendedor, pedidos, dados bancários, disputas
 
@@ -116,9 +122,11 @@ Naming: models PascalCase, fields camelCase, tables `@@map("snake_case")`, multi
 
 **Important fields:**
 - `CatalogEntry.slug` — URL-friendly unique slug (generated via `shared/utils/slug.ts`)
-- `CatalogEntry.sourceKey` — Internal dedup field (`rika:{id}` or `panini:{sku}`), hidden from public API via Prisma `$extends`
-- `CatalogEntry.coverImageUrl` — Can be NULL, external URL (rika.vteximg.com.br), or local (`api.comicstrunk.com/uploads/covers/...`). Use `resolveCover()` in catalog.service.ts to build URL from `coverFileName` when `coverImageUrl` is NULL
+- `CatalogEntry.sourceKey` — Internal dedup field (`rika:{id}`, `panini:{sku}`, `metron:{id}`, `gcd:{id}`), hidden from public API via Prisma `$extends`
+- `CatalogEntry.coverImageUrl` — Can be NULL, external URL (Open Library, Metron static, etc.), or stored as `coverFileName` (resolved to R2 URL `covers.comicstrunk.com/covers/{filename}` via `resolveCoverUrl()`). Use `resolveCover()` in catalog.service.ts.
+- `CatalogEntry.approvalStatus` — `DRAFT | PENDING | APPROVED | REJECTED`. **Public catalog queries (search, listings, series, marketplace) filter by `APPROVED`.** Personal collection (`addItem`) accepts everything except `REJECTED` since Phase 3 of cover-scan.
 - `Series.slug` — URL-friendly unique slug
+- `CoverScanLog` — One row per scan attempt. Fields: `userId`, `rawText` (VLM JSON response), `ocrTokens`, `candidateNumber`, `candidatesShown` (Json — `[{id, title, score, isExternal}]`), `chosenEntryId`, `durationMs`, `createdAt`. Used for rate limiting (30/day/user default) and analytics.
 - Prisma Decimal fields (`averageRating`, `totalAmount`, `salePrice`, etc.) serialize as objects in JSON — always use `Number()` when mapping to API responses
 
 ## Code Style
@@ -172,10 +180,39 @@ Key field: `sourceKey` (format: `rika:{id}` or `panini:{sku}`) — used for dedu
 
 **Image rules:**
 - ALL cover images MUST be compressed before storing: max 600px width, JPEG quality 80
+- **Storage primary: Cloudflare R2** (bucket `comicstrunk`, public domain `covers.comicstrunk.com`). Free 10GB, zero egress. Configure via `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL`. When configured, `uploadImage()` writes to R2 and `localCoverUrl()` returns R2 public URLs.
+- **Storage fallback: local filesystem** at `apps/api/uploads/covers/` (legacy, only when R2 not configured).
 - `downloadCover()` in `sync-catalog.ts` uses sharp for compression automatically
 - Cron job also runs `mogrify -resize 600x> -quality 80` on images > 500KB
 - Skip Rika placeholder images (42169 bytes / hash `37eadb1f86601aa2aff6e288a03a8fd9`)
 - Never store external "IMAGEM INDISPONIVEL" images — set `cover_image_url = NULL` instead
+
+## Cover Photo Scanner (busca por foto)
+
+User uploads a comic cover photo, system identifies it via VLM and finds candidates.
+
+**Architecture (3 phases, all live in production):**
+
+1. **Phase 1 (legacy fallback):** OCR via Tesseract.js in browser → `POST /api/v1/cover-scan/search` does textual search against catalog. Kept available; rarely used now.
+2. **Phase 2 (primary path):** Browser compresses photo to JPEG max 800px → base64 → `POST /api/v1/cover-scan/recognize` → server calls Cloudflare Workers AI (Llama 3.2 Vision) → parses structured JSON (`title, issue_number, publisher, authors, series, ocr_text, confidence`) → does textual search with must/boost token buckets + fuzzy stem (5-char prefix to match "absolute"↔"absoluta") + edition number filter (with regex fallback when VLM returns `null`).
+3. **Phase 3 (federated external sources):** In parallel with Phase 2 textual search, `external-search.service.ts` queries MetronDB (US comics) + Rika (BR) via `Promise.allSettled`. External candidates are dedup'd against local catalog (title fuzzy + edition + publisher). External candidates marked `isExternal: true` and styled with amber dashed border in UI. Click on external triggers `POST /api/v1/cover-scan/import` → creates `CatalogEntry` with `approval_status='PENDING'`, downloads cover to R2, adds to user's collection.
+
+**Sources & licensing:**
+- **MetronDB** (`metron.cloud`) — CC BY-SA 4.0. Attribution "Powered by Metron" shown on `/scan-capa` page. HTTP Basic Auth via `METRON_USERNAME`/`METRON_PASSWORD`. Rate limit 20/min + 5000/day.
+- **Rika** (`rika.com.br`) — VTEX scraping, no auth. Throttled 200ms between requests, identified User-Agent.
+- ~~ComicVine~~ — non-commercial ToS, NEVER use in production.
+
+**Cost (measured):** ~R$ 0,00075 per scan (Llama 3.2 Vision tokens). Volume B (15k/month) ≈ R$ 11/mês. Cloudflare free tier (10k neurons/day) covers most. Metron + Rika gratuitos.
+
+**Constants:**
+- `COVER_SCAN_DAILY_LIMIT` — env var, default 30. Rate limit per user per 24h.
+- VLM model: `@cf/meta/llama-3.2-11b-vision-instruct` (override via `CLOUDFLARE_AI_MODEL`).
+- Body parser limit for `/cover-scan/recognize` and `/cover-scan/import`: 5mb (default Express 100kb stoura images).
+
+**Frontend:**
+- Page: `apps/web/src/app/[locale]/(collector)/scan-capa/page.tsx`
+- Component: `apps/web/src/components/features/catalog/cover-photo-scanner.tsx` — reusable, also embedded in `/collection/add`
+- Image compression utility: `apps/web/src/lib/utils/compress-image.ts` (Canvas API, max 800px JPEG q=80)
 
 ## PIX Payment
 
@@ -186,16 +223,19 @@ Environment vars: `PIX_KEY`, `MERCHANT_NAME`, `MERCHANT_CITY`
 ## Environment Variables
 
 Documented in `apps/api/.env.example`. Key vars:
-- `DATABASE_URL` — MySQL connection string
+- `DATABASE_URL` — MySQL connection string (DB local: `comicstrunk` no Docker `comicstrunk-mysql`)
 - `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET` — 64-byte hex strings (must differ)
 - `WEB_URL` — Frontend URL (CORS origin)
 - `NEXT_PUBLIC_API_URL` — API URL exposed to frontend
 - `PORT` — API port (default 3001)
-- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` — Image upload
-- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` — Subscriptions
-- `MERCADOPAGO_ACCESS_TOKEN` — PIX payments (optional, pix-utils used by default)
-- `PIX_KEY`, `MERCHANT_NAME`, `MERCHANT_CITY` — Static PIX configuration
-- `RESEND_API_KEY` — Transactional emails
+- **Image storage (Cloudflare R2 — primary):** `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL`
+- **Image storage (Cloudinary — legacy fallback):** `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+- **Cloudflare Workers AI (cover scanner):** `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` (permission `Workers AI: Read+Edit`), `CLOUDFLARE_AI_MODEL` (default `@cf/meta/llama-3.2-11b-vision-instruct`)
+- **Cover scan rate limit:** `COVER_SCAN_DAILY_LIMIT` (default 30 per user per 24h)
+- **MetronDB (cover-scan external source):** `METRON_USERNAME`, `METRON_PASSWORD` (HTTP Basic Auth, free signup at `metron.cloud`)
+- **Stripe (subscriptions):** `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
+- **PIX payments:** `MERCADOPAGO_ACCESS_TOKEN` (optional fallback), `PIX_KEY`, `MERCHANT_NAME`, `MERCHANT_CITY`
+- **Email:** `RESEND_API_KEY`
 
 ## Workflow Rules
 
