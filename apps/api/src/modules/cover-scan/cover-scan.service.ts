@@ -133,6 +133,3 @@ export async function searchByText(
 
   return { candidates, scanLogId: log.id };
 }
-
-// Re-export LOCAL_API_BASE_URL so other modules that import from here can use it
-export { LOCAL_API_BASE_URL };
