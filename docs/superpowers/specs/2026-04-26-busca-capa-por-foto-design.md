@@ -85,121 +85,151 @@ A feature é construída em fases com **portões claros** entre elas, para evita
 
 ---
 
-### Fase 2 — Produção: CLIP via Cloudflare Workers AI + cosine local
+### Fase 2 — Produção: VLM (Llama 3.2 Vision) via Cloudflare Workers AI
 
-**Objetivo:** elevar precisão para ~90%+ em capas legíveis e cobrir capas onde OCR falha (estilizadas, mangás, capas sem texto grande). Permanecer dentro do ecossistema Cloudflare que o projeto já usa (R2). Sem stack nova.
+> **Atualização (2026-04-27):** A spec original desta fase apontava `@cf/openai/clip-vit-base-patch32` como motor. Verificação direta em 2026-04-27 confirmou que esse modelo **foi removido do catálogo da Cloudflare Workers AI** (HTTP 403 "This account is not allowed to access this model" para todas as contas). A arquitetura foi revisada para usar **`@cf/meta/llama-3.2-11b-vision-instruct`** — VLM (Vision-Language Model) que continua no catálogo, em GA. Em vez de busca por similaridade visual via embeddings, agora o modelo *lê e descreve a capa em texto estruturado*, alimentando busca textual robusta. Validado com chamada real em 2026-04-27 (capa do Spider-Man do Open Library): identificou título, editora e autores com confidence "alta" em formato JSON. Custo medido: ~R$ 0,00075 por scan.
+
+**Objetivo:** elevar precisão para ~90%+ em capas estilizadas, mangás, e capas onde Tesseract falha. Permanecer no ecossistema Cloudflare. Sem stack nova.
 
 **Como funciona:**
 
-1. **Job offline** (script Node em `scripts/`): para cada `CatalogEntry` com capa, baixa imagem do R2, envia ao **Cloudflare Workers AI** (`@cf/openai/clip-vit-base-patch32`), recebe embedding de 512 floats. Salva em coluna nova `catalog_entries.cover_embedding` (`MEDIUMBLOB`, ~1 KB por linha em Float16).
-   - 27k capas × 1 chamada = 27k neurons. Free tier diário cobre. Roda em ~30 min.
-   - Idempotente: pula se `cover_embedding_hash` (sha do arquivo) bate.
-2. **Endpoint runtime** `POST /api/v1/catalog/recognize`:
-   - Recebe `multipart/form-data` com a foto (compressão prévia no cliente: 600 px width, JPEG 80 — mesma regra que `downloadCover` usa).
-   - API repassa pro Cloudflare Workers AI → recebe embedding da foto.
-   - **Brute-force cosine similarity em Node** contra todas as 27k–500k linhas com `cover_embedding NOT NULL`. Em Node, usando `Float32Array` + loop simples, 100k vetores rodam em ~30–60 ms numa CPU média.
-   - Para acelerar e reduzir uso de RAM, embeddings ficam **em cache em memória** no processo da API (carregados na startup). 100k × 1 KB = 100 MB — limite no cPanel, mas o Fernando já planeja sair pra VPS quando o tráfego crescer.
-   - Retorna top 8 candidatos com score.
-3. **Reranking opcional** (atrás de feature flag): top 5 candidatos passam por OCR no servidor (Tesseract Node) ou Claude Haiku 4.5 que confirma número/título. Custo extra ínfimo.
-4. Frontend muda 1 linha: chama `/recognize` em vez de `/search-by-text`. UX igual à Fase 1.
+1. **Cliente** comprime a foto (max 800px width, JPEG quality 80) e codifica em base64 (`data:image/jpeg;base64,...`).
+2. **Cliente** chama o novo endpoint `POST /api/v1/cover-scan/recognize` com `{ imageBase64 }`.
+3. **API** monta payload pro Workers AI:
+   ```json
+   {
+     "messages": [{
+       "role": "user",
+       "content": [
+         {"type": "text", "text": "<system + prompt estruturado>"},
+         {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64,..."}}
+       ]
+     }],
+     "max_tokens": 400
+   }
+   ```
+4. **Workers AI** retorna JSON estruturado (em string dentro do `result.response`) tipo:
+   ```json
+   {
+     "title": "Transmetropolitan",
+     "issue_number": 1,
+     "publisher": "Panini",
+     "authors": ["Warren Ellis", "Darick Robertson"],
+     "series": "Transmetropolitan",
+     "language": "pt-BR",
+     "confidence": "alta",
+     "ocr_text": "todo texto visível na capa..."
+   }
+   ```
+5. **API** parsea o JSON, normaliza tokens (title + series + authors + ocr_text), chama `searchByText` (já existente da Fase 1) com tokens enriquecidos + `editionNumber=issue_number`.
+6. **API** retorna top 8 candidatos como hoje. Reusa `cover_scan_logs`, rate limit, endpoint `/choose`.
+
+**Por que isso resolve capas estilizadas (Transmetropolitan etc.):**
+
+- Llama 3.2 Vision é um VLM moderno (11B params, GA) — vê a imagem inteira como ser humano vê: arte, estilo, texto pequeno, créditos no canto, tudo.
+- Para gibis famosos (Marvel/DC/Image), o modelo já tem conhecimento prévio — identifica direto pelo visual.
+- Para gibis brasileiros menos famosos, ele pelo menos **lê todo texto da capa de forma confiável** (muito melhor que Tesseract puro), alimentando busca textual.
 
 **Componentes novos:**
 
-- Migration: `catalog_entries.cover_embedding` (MEDIUMBLOB) + `cover_embedding_hash` (CHAR(64)).
-- `scripts/generate-cover-embeddings.js` — gera embeddings em batch via Workers AI.
-- `apps/api/src/shared/lib/cloudflare-ai.ts` — cliente fino para Workers AI.
-- `apps/api/src/shared/lib/embedding-cache.ts` — carrega todos embeddings na memória, expõe `findSimilar(embedding, topK)`.
-- `apps/api/src/modules/catalog/cover-recognize.routes.ts` + `cover-recognize.service.ts`.
-- Hook no `catalog.service.ts`: ao criar/atualizar `coverImageUrl`, enfileira regeneração de embedding (fire-and-forget).
+- `apps/api/src/shared/lib/cloudflare-ai.ts` — cliente fino para Workers AI (autoriza, monta payload, parsea JSON da resposta).
+- `apps/api/src/modules/cover-scan/cover-recognize.service.ts` — orquestra: chama Workers AI → parseia JSON → reutiliza `searchByText` da Fase 1 com input enriquecido.
+- `apps/api/src/modules/cover-scan/cover-scan.routes.ts` — adiciona rota `POST /recognize` (mantém `POST /search` da Fase 1 como fallback).
+- Variáveis env: `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` (token com permissão `Workers AI: Read + Edit`).
+- Frontend `cover-photo-scanner.tsx` reescrito: remove Tesseract.js, comprime imagem no canvas, envia base64 pra `/recognize`. Fluxo de UI igual.
+- Remove dependência `tesseract.js` do `apps/web/package.json`.
 
-**Custo:**
+**Custo (medido em chamada real):**
 
-- Workers AI: ~R$ 8–15/mês em volume B (15k scans + ~500 embeddings novos/mês de catálogo crescendo).
-- R2: já existe, capas já estão lá.
-- Banco: `MEDIUMBLOB` x 100k linhas ≈ 100 MB — trivial no MySQL atual.
-- **Sem Python, sem Qdrant, sem VPS adicional.**
+- 1 scan = ~1.700 tokens input ($0,049/M = $0,000083) + ~100 tokens output ($0,68/M = $0,000068) ≈ **$0,00015 por scan**.
+- Volume B (15k/mês): **~R$ 11/mês**. Pico de 30k/mês: ~R$ 22/mês.
+- **Sem Python, sem Qdrant, sem VPS adicional, sem job de embeddings, sem coluna BLOB.**
+- R2 segue como está.
+- Aviso operacional: a primeira chamada de uma conta nova tem que enviar `{"prompt":"agree"}` ao endpoint do Llama 3.2 Vision para aceitar a licença Meta — passo único, já feito na conta atual em 2026-04-27.
 
 **Limitações conhecidas:**
 
-- 100 MB em memória do processo Node. No cPanel atual (1 GB compartilhada) é arriscado — esperar VPS antes de ligar Fase 2 em produção, ou usar streaming/mmap.
-- Catálogo > 500k capas precisa repensar: brute-force cosine vira > 200 ms. Aí entra banco vetorial (não antes).
+- VLM custa por scan (não é "infinitamente grátis" como CLIP+free tier seria). Para volumes muito altos (>1M/mês) reavaliar.
+- Llama 3.2 Vision **não roda no EU** (cláusula da licença Meta). Comics Trunk é Brasil — sem problema.
+- Responde melhor em inglês para títulos clássicos. Prompt em português força output em pt-BR — testar com várias capas brasileiras na execução.
+- Llama pode "alucinar" um título plausível para capa muito ambígua — `confidence` no output ajuda a filtrar; também sempre retorna top N candidatos do catálogo, não confia 100% no que o VLM disse.
 
 **Critério para promover à Fase 3:**
-- Catálogo > 200k entradas; **OU**
-- Precisão observada (taxa de top-1 ser escolhido) abaixo de 75% — sinaliza que CLIP genérico não basta para o estilo das capas brasileiras.
+- Taxa de top-1 escolhido < 75% após 200+ scans logados; **OU**
+- Custo mensal estourar R$ 50 (sinal de que volume cresceu — vale otimizar com fine-tune e cache de prompt).
 
 ---
 
-### Fase 3 — Refinamento: fine-tune CLIP + híbrido OCR+CLIP
+### Fase 3 — Refinamento (futuro, só se Fase 2 não bastar)
 
-**Objetivo:** levar precisão para 95%+ em todas as categorias, incluindo capas estilizadas e mangás.
+**Objetivo:** se a Fase 2 (Llama Vision) ficar abaixo de 75% de top-1 após 200+ scans, ou se o custo virar problema, refinar com técnicas adicionais.
 
-**Como funciona:**
+**Direções possíveis (a decidir conforme dados reais):**
 
-1. **Fine-tuning de CLIP** com o próprio dataset:
-   - Usa logs da Fase 1+2 (`cover_scan_logs`) — temos pares `(foto_real_do_usuario, capa_oficial_do_catalogo)`.
-   - Treino em Google Colab grátis (T4) — 2–4 h.
-   - Modelo fine-tuned vai pra Hugging Face / R2 e é servido via Hugging Face Inference Endpoint dedicado (custo: ~$0.06/h só quando idle, ~$1/h ativo) **ou** convertido para ONNX e carregado via `onnxruntime-node` direto na API.
-2. **Híbrido OCR + CLIP**: pipeline em paralelo:
-   - OCR extrai texto → query textual gera ranking A.
-   - CLIP gera embedding → similaridade gera ranking B.
-   - Score final = combinação ponderada (peso aprendido a partir dos logs). Capa com texto claro confia em OCR; capa estilizada confia em CLIP.
-3. Possíveis adições conforme necessidade:
-   - Detecção de variantes de capa (capas A/B/C do mesmo número) — exige metadado novo no catálogo.
-   - "Capas similares" como feature de descoberta no detalhe do produto.
+1. **Cache de prompt** no Cloudflare AI Gateway: requisições com prompts repetidos pagam menos. Prompt sistema fica idêntico — só a imagem muda. Reduz custo ~30%.
+2. **Reranking LLM**: pegar top 8 candidatos do Llama Vision e passar por Claude Haiku 4.5 com lista dos candidatos pra escolher o melhor (~R$ 0,002 extra por scan).
+3. **Embeddings reais (CLIP via outro provedor)**: se busca visual pura virar essencial, integrar Hugging Face ou self-host onnxruntime-node (requer migração pra VPS).
+4. **Fine-tuning** de modelo open-source com pares `(foto_real_do_usuario, capa_oficial_do_catalogo)` capturados nos logs `cover_scan_logs` (precisa opt-in do user pra guardar foto).
+5. **Variantes de capa**: detectar A/B/C do mesmo número — exige metadado novo no catálogo.
+6. **"Capas similares"** como feature de descoberta no detalhe do produto.
 
-**Componentes novos:**
-
-- `scripts/train-clip-finetune.py` (Colab notebook + script reproduzível).
-- Migração de embeddings: regerar todos os 100k+ com modelo fine-tuned.
-- Lógica de score combinado em `cover-recognize.service.ts`.
-
-**Custo:**
-
-- Fine-tune: zero, só tempo.
-- Hospedar modelo fine-tuned: R$ 0 se ONNX local, R$ 30–80/mês se HF Inference dedicado.
-- Total provável: R$ 10–80/mês dependendo de escolha de hospedagem.
+**Critério para iniciar:** Fase 2 em produção há ≥4 semanas, métricas de sucesso/falha coletadas, decisão tomada com dados reais.
 
 ---
 
 ## 4. Resumo de custos por fase
 
-| Fase | Custo recorrente | Esforço (dev) | Precisão esperada |
-|---|---|---|---|
-| **1 — MVP OCR + texto** | R$ 0 | ~2 dias | ~70% em capas legíveis |
-| **2 — Workers AI + cosine** | R$ 10–20/mês | ~5–7 dias | ~88–92% geral |
-| **3 — Fine-tune + híbrido** | R$ 10–80/mês | ~1–2 semanas | ~95%+ |
+| Fase | Custo recorrente | Esforço (dev) | Precisão esperada | Status |
+|---|---|---|---|---|
+| **1 — MVP OCR + texto** | R$ 0 | ~2 dias | ~70% em capas legíveis | ✅ Implementada (Tesseract.js); falha em capas estilizadas |
+| **2 — Llama 3.2 Vision (Workers AI)** | ~R$ 11/mês | ~3–4 dias | ~88–92% geral | 🚧 Em planejamento (substituiu CLIP+CF que foi removido) |
+| **3 — Refinamento** | a definir | ~1–2 semanas | ~95%+ | Futuro, conforme métricas |
 
 ---
 
 ## 5. Decisões arquiteturais explícitas
 
-1. **Sem Python no stack.** Decisão: o ganho de "ecosistema ML em Python" não compensa dobrar a superfície de manutenção. Cloudflare Workers AI resolve inferência. Fine-tuning é ato isolado em Colab.
-2. **Sem banco vetorial dedicado** (Qdrant/Pinecone/Weaviate) **enquanto < 500k capas**. Brute-force cosine em Node sobre embeddings em memória é O(n) e fica < 100 ms para o nosso volume real. Adicionar Qdrant é sempre uma evolução possível, mas começar com isso é over-engineering.
-3. **OCR no browser na Fase 1, no servidor na Fase 2.** Razão: Fase 1 não tem servidor de inferência; cliente é grátis. Fase 2 já tem Cloudflare AI; rodar OCR no Node fica natural e dá pra reranking.
-4. **Embeddings em coluna MySQL, não em arquivo.** Sincronização com criação/edição de `CatalogEntry` fica trivial (mesmo trigger de qualquer outro campo).
-5. **Capa sempre passa por compressão antes de enviar pro modelo** (600 px, JPEG 80) — vale tanto cliente quanto servidor. Mesma regra que já existe pro upload de capa no projeto.
-6. **Logging desde a Fase 1** (`cover_scan_logs`). Sem log, Fase 3 (fine-tuning) fica inviável depois. Custo de espaço é desprezível (~1 KB por scan, exclui blob da foto).
+1. **Sem Python no stack.** Workers AI faz inferência. Treinos futuros (se vierem) são atos isolados em Colab.
+2. **Sem busca vetorial em DB.** Em vez de embeddings + similaridade coseno, usamos VLM (Llama Vision) que descreve a capa em texto, e reusamos a busca textual da Fase 1 (já existente). Mais simples, equivale na prática para nosso domínio (gibis com algum texto e identidade visual reconhecível).
+3. **OCR no browser na Fase 1, removido na Fase 2.** Llama Vision faz OCR muito melhor que Tesseract.js, e como o servidor já está envolvido (chama Workers AI), o cliente fica leve: só comprime e envia base64.
+4. **Compressão sempre antes de enviar pro modelo** (max 800 px width, JPEG quality 80). Reduz tokens consumidos pelo Llama Vision (~1.700 → ~1.200 por scan) sem prejudicar identificação. Mesma regra que já existe pra upload no projeto.
+5. **Logging desde a Fase 1** (`cover_scan_logs`). Mesma tabela serve as duas fases — só os campos `rawText` e `ocrTokens` mudam de semântica (na Fase 2 viram o JSON do Llama e tokens enriquecidos).
+6. **Endpoint `/recognize` novo, separado do `/search`.** Mantém a Fase 1 acessível como fallback se Workers AI estiver indisponível ou se quisermos comparar resultados. Frontend chama `/recognize`; se erro 5xx, oferece "tentar busca por OCR (mais simples)" que cai no `/search`.
+7. **Token Cloudflare com permissão Workers AI Read+Edit**, sem outras permissões (princípio de menor privilégio). Token vive em env var, nunca commitado.
 
 ---
 
 ## 6. Alternativas consideradas e descartadas
 
+### CLIP via Cloudflare Workers AI (`@cf/openai/clip-vit-base-patch32`)
+
+- **Era a arquitetura original da Fase 2** quando esta spec foi escrita.
+- **Por que abandonado em 2026-04-27:** o modelo foi **removido do catálogo público da Cloudflare**. Verificado direto via API: HTTP 403 "This account is not allowed to access this model". Modelo não existe mais. Llama 3.2 Vision substituiu como motor.
+
 ### CLIP no browser com embeddings pré-computados (zero custo total)
 
-- **Por que descartado:** primeiro acesso baixa ~50–100 MB de modelo + ~55 MB de embeddings (Float16, 27k capas). Em mobile 4G é UX ruim. Quando catálogo crescer pra 100k+, embeddings viram 200 MB+ — não escala. Era um máximo local que existia só pra cumprir restrição "zero custo recorrente". Aceitar R$ 10–20/mês na Fase 2 elimina o problema.
+- **Por que descartado:** primeiro acesso baixa ~50–100 MB de modelo + ~55 MB de embeddings (Float16, 27k capas). Em mobile 4G é UX ruim. Quando catálogo crescer pra 100k+, embeddings viram 200 MB+ — não escala.
 
 ### Python microservice (FastAPI) + Qdrant + VPS
 
-- **Por que descartado:** dobra superfície operacional (deploy, monitoramento, dois stacks) sem ganho real para o tamanho atual de catálogo. Cloudflare Workers AI faz CLIP igualmente bem. Brute-force cosine substitui Qdrant até 500k vetores. Reconsiderar quando catálogo crescer ordens de magnitude.
+- **Por que descartado:** dobra superfície operacional (deploy, monitoramento, dois stacks) sem ganho real. Llama Vision atende bem o caso de uso, e fica tudo dentro do ecossistema Cloudflare que já usamos.
 
-### Vision API genérica (Claude Sonnet 4.6 / GPT-4o) extraindo metadados
+### Hugging Face Inference API com CLIP
 
-- **Por que descartado:** custo ~R$ 0,05–0,15 por scan = R$ 750–2.250/mês em volume B. Era a abordagem da memória antiga; o Fernando explicitamente pediu cenários mais baratos. Útil apenas como reranker eventual de top-N na Fase 3, não como motor principal.
+- **Por que descartado:** free tier limitado com cold start de ~20s (UX ruim). Pagar custa similar ao Llama Vision na CF, mas adiciona provedor novo. Sem ganho que justifique.
+
+### Anthropic Claude Haiku 4.5 ou OpenAI GPT-4o-mini com vision
+
+- **Por que descartado como motor principal:** ~R$ 50–150/mês no volume B. Mais caro que Llama Vision (~R$ 11/mês) sem ganho proporcional para identificação de capas — Llama 3.2 Vision (11B) é suficientemente capaz e moderno.
+- **Mantido como opção futura** para reranking dos top N candidatos na Fase 3 se a precisão do Llama Vision sozinho não bastar.
+
+### Self-host CLIP via onnxruntime-node
+
+- **Por que descartado:** requer ~1–2 GB RAM extra, incompatível com cPanel atual (1 GB compartilhada). Migrar pra VPS adiciona R$ 25–50/mês de infra + manutenção. Não vale enquanto Llama Vision via CF resolve.
 
 ### Google Cloud Vision / AWS Rekognition
 
-- **Por que descartado:** free tier estourável (1k–5k/mês), depende de provedor adicional, não traz vantagem sobre Cloudflare Workers AI no nosso volume.
+- **Por que descartado:** free tier estourável, depende de provedor novo, sem ganho sobre Cloudflare Workers AI no nosso volume.
 
 ---
 
