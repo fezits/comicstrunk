@@ -220,11 +220,11 @@ A feature é construída em fases com **portões claros** entre elas, para evita
 ## 8. Decisões em aberto (resolver antes do plano de implementação)
 
 1. **Onde plugar o entry point no frontend:** página dedicada `/scan-capa`, ou só botão dentro do modal "Adicionar à coleção"? **Provável: ambos**, mas plano fala isso.
-2. **Login obrigatório?** Recomendação: sim, para evitar abuso — mas avaliar liberar para anônimo num botão público no header (chamariz).
-3. **Limite de scans por usuário/dia?** Sugestão: 30/dia/usuário na Fase 1 (zero custo, mas evita abuso). Configurável por env var.
+2. ~~**Login obrigatório?**~~ **DECIDIDO (2026-04-27): SIM, login obrigatório.** Endpoint atrás de `authenticate` middleware. Reduz abuso; evita custo em chamadas anônimas mesmo no MVP zero-custo (no caso de Fase 2 com Workers AI).
+3. ~~**Limite de scans por usuário/dia?**~~ **DECIDIDO (2026-04-27): 30/dia/usuário.** Configurável por env var (`COVER_SCAN_DAILY_LIMIT=30`). Implementar em rate-limiter middleware no endpoint, contando entradas em `cover_scan_logs` na janela de 24h.
 4. **Permissão de armazenar a foto** (para fine-tuning Fase 3): checkbox opt-in no scanner ("ajude a melhorar a busca"). Sem isso, foto é descartada após processamento.
 
-Estas perguntas ficam para o início da escrita do plano de implementação (writing-plans).
+Decisão 4 fica para o plano de implementação (writing-plans).
 
 ---
 
