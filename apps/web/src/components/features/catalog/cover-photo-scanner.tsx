@@ -2,8 +2,8 @@
 
 import { useState, useRef } from 'react';
 import { useTranslations } from 'next-intl';
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
+import { CoverImage } from '@/components/ui/cover-image';
 import { searchByText, recordChoice } from '@/lib/api/cover-scan';
 import type {
   CoverScanCandidate,
@@ -130,13 +130,13 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
       {(stage === 'reading' || stage === 'searching') && (
         <div className="flex flex-col items-center gap-3">
           {previewUrl && (
-            <Image
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
               src={previewUrl}
               alt={t('preview')}
               width={200}
               height={300}
               className="rounded border object-contain"
-              unoptimized
             />
           )}
           <p className="text-sm text-muted-foreground">
@@ -168,16 +168,13 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
                     onClick={() => handleChoose(c)}
                     className="block w-full rounded border bg-card p-2 text-left hover:border-primary"
                   >
-                    {c.coverImageUrl && (
-                      <Image
+                    <div className="aspect-[2/3] w-full overflow-hidden rounded">
+                      <CoverImage
                         src={c.coverImageUrl}
                         alt={c.title}
-                        width={150}
-                        height={220}
-                        className="aspect-[2/3] w-full rounded object-cover"
-                        unoptimized
+                        className="h-full w-full object-cover"
                       />
-                    )}
+                    </div>
                     <p className="mt-2 line-clamp-2 text-xs font-medium">{c.title}</p>
                     {c.publisher && (
                       <p className="text-xs text-muted-foreground">{c.publisher}</p>
