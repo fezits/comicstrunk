@@ -42,12 +42,21 @@ function collectionIncludes() {
   };
 }
 
-/** Resolve cover URLs for any collection item with catalogEntry */
-function resolveItemCover<T extends { catalogEntry?: { coverImageUrl: string | null; coverFileName?: string | null } | null }>(item: T): T {
-  if (item.catalogEntry) {
-    return { ...item, catalogEntry: resolveCoverUrl(item.catalogEntry) };
-  }
-  return item;
+/** Resolve cover URLs + converte Decimals (salePrice, pricePaid, shippingCost) pra Number */
+function resolveItemCover<T extends {
+  catalogEntry?: { coverImageUrl: string | null; coverFileName?: string | null } | null;
+  salePrice?: unknown;
+  pricePaid?: unknown;
+  shippingCost?: unknown;
+}>(item: T): T {
+  const num = (v: unknown): number | null => (v == null ? null : Number(v));
+  return {
+    ...item,
+    salePrice: num(item.salePrice) as unknown,
+    pricePaid: num(item.pricePaid) as unknown,
+    shippingCost: num(item.shippingCost) as unknown,
+    catalogEntry: item.catalogEntry ? resolveCoverUrl(item.catalogEntry) : item.catalogEntry,
+  };
 }
 
 // === Owned IDs (lightweight, single query) ===
@@ -336,10 +345,7 @@ export async function getItems(userId: string, filters: CollectionSearchInput & 
     prisma.collectionItem.count({ where }),
   ]);
 
-  const data = rawData.map(item => ({
-    ...item,
-    catalogEntry: item.catalogEntry ? resolveCoverUrl(item.catalogEntry) : item.catalogEntry,
-  }));
+  const data = rawData.map(resolveItemCover);
 
   return { data, total, page, limit };
 }
