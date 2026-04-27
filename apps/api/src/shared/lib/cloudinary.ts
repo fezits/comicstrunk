@@ -2,6 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
 import { v2 as cloudinary } from 'cloudinary';
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { logger } from './logger';
 
 const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
@@ -16,10 +17,28 @@ if (cloudinaryConfigured) {
     api_key: apiKey,
     api_secret: apiSecret,
   });
-} else {
+}
+
+// === Cloudflare R2 Configuration ===
+const r2AccessKeyId = process.env.R2_ACCESS_KEY_ID;
+const r2SecretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
+const r2Endpoint = process.env.R2_ENDPOINT;
+const r2Bucket = process.env.R2_BUCKET_NAME || 'comicstrunk';
+const r2PublicUrl = process.env.R2_PUBLIC_URL; // e.g. https://covers.comicstrunk.com
+
+const r2Configured = !!(r2AccessKeyId && r2SecretAccessKey && r2Endpoint && r2PublicUrl);
+
+let r2Client: S3Client | null = null;
+if (r2Configured) {
+  r2Client = new S3Client({
+    region: 'auto',
+    endpoint: r2Endpoint,
+    credentials: { accessKeyId: r2AccessKeyId!, secretAccessKey: r2SecretAccessKey! },
+  });
+  logger.info('Cloudflare R2 configured — covers served from ' + r2PublicUrl);
+} else if (!cloudinaryConfigured) {
   logger.warn(
-    'Cloudinary not configured — using local file storage for uploads. ' +
-      'Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET for cloud storage.',
+    'Neither R2 nor Cloudinary configured — using local file storage for uploads.',
   );
 }
 
@@ -40,6 +59,24 @@ export async function uploadImage(
   buffer: Buffer,
   folder: string,
 ): Promise<{ url: string; publicId: string }> {
+  // Priority 1: Cloudflare R2
+  if (r2Client && r2Configured) {
+    const ext = detectExtension(buffer);
+    const filename = `${crypto.randomUUID()}${ext}`;
+    const key = `${folder}/${filename}`;
+
+    await r2Client.send(new PutObjectCommand({
+      Bucket: r2Bucket,
+      Key: key,
+      Body: buffer,
+      ContentType: ext === '.png' ? 'image/png' : ext === '.webp' ? 'image/webp' : 'image/jpeg',
+      CacheControl: 'public, max-age=31536000',
+    }));
+
+    return { url: `${r2PublicUrl}/${key}`, publicId: key };
+  }
+
+  // Priority 2: Cloudinary
   if (cloudinaryConfigured) {
     return new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
@@ -62,7 +99,7 @@ export async function uploadImage(
     });
   }
 
-  // Local file storage fallback
+  // Priority 3: Local file storage fallback
   const subDir = path.join(UPLOADS_DIR, folder.replace(/\//g, path.sep));
   ensureDir(subDir);
 
@@ -79,6 +116,13 @@ export async function uploadImage(
 }
 
 export async function deleteImage(publicId: string): Promise<void> {
+  // R2
+  if (r2Client && r2Configured) {
+    await r2Client.send(new DeleteObjectCommand({ Bucket: r2Bucket, Key: publicId }));
+    return;
+  }
+
+  // Cloudinary
   if (cloudinaryConfigured) {
     await cloudinary.uploader.destroy(publicId);
     return;
@@ -103,10 +147,32 @@ function detectExtension(buffer: Buffer): string {
 /** Path to uploads directory — used by create-app for express.static */
 export const UPLOADS_PATH = UPLOADS_DIR;
 
-/** Build the public URL for a locally-stored cover file */
-export function localCoverUrl(filename: string, folder = 'comicstrunk/covers'): string {
-  return `${apiBaseUrl}/uploads/${folder}/${filename}`;
+/** Build the public URL for a cover file (R2 or local) */
+export function localCoverUrl(filename: string, folder = 'covers'): string {
+  if (r2Configured && r2PublicUrl) {
+    return `${r2PublicUrl}/${folder}/${filename}`;
+  }
+  return `${apiBaseUrl}/uploads/comicstrunk/covers/${filename}`;
 }
 
 /** The base URL used for local uploads — allows callers to detect stale URLs */
 export const LOCAL_API_BASE_URL = apiBaseUrl;
+
+/**
+ * Resolve coverImageUrl for any object that has coverImageUrl + coverFileName.
+ * Use this in all service modules that return catalog entry data.
+ * Priority: coverFileName → R2/local URL, /uploads/ URL → rewrite, external → as-is
+ */
+export function resolveCoverUrl<T extends { coverImageUrl: string | null; coverFileName?: string | null }>(
+  entry: T,
+): T {
+  if (entry.coverFileName) {
+    return { ...entry, coverImageUrl: localCoverUrl(entry.coverFileName) };
+  }
+  const url = entry.coverImageUrl;
+  if (url && url.includes('/uploads/')) {
+    const filename = url.split('/').pop();
+    if (filename) return { ...entry, coverImageUrl: localCoverUrl(filename) };
+  }
+  return entry;
+}

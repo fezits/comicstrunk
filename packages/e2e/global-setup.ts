@@ -56,24 +56,29 @@ async function globalSetup(): Promise<void> {
   }
 
   // 4. Verify test user can login (non-fatal — rate limiting may temporarily block this)
-  try {
-    const { user } = await loginViaApi(
-      TEST_CREDENTIALS.user.email,
-      TEST_CREDENTIALS.user.password,
-    );
-    console.log(`  [OK] Test user login successful (${user.email}, role: ${user.role})`);
-  } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
-    if (msg.includes('429')) {
-      console.warn(
-        `  [WARN] Login rate-limited (429). Tests requiring auth may fail until the 15-min window resets.`,
+  // Skip in production runs to avoid consuming a slot in the 5-login/15min rate limit.
+  if (process.env.E2E_PROD === 'true') {
+    console.log('  [SKIP] Test user login probe (E2E_PROD=true, save rate-limit slot)');
+  } else {
+    try {
+      const { user } = await loginViaApi(
+        TEST_CREDENTIALS.user.email,
+        TEST_CREDENTIALS.user.password,
       );
-    } else {
-      throw new Error(
-        `[e2e global-setup] Cannot login as test user (${TEST_CREDENTIALS.user.email}).\n` +
-          '  Make sure the seed script creates this user: pnpm --filter api db:seed\n' +
-          `  Error: ${msg}`,
-      );
+      console.log(`  [OK] Test user login successful (${user.email}, role: ${user.role})`);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      if (msg.includes('429')) {
+        console.warn(
+          `  [WARN] Login rate-limited (429). Tests requiring auth may fail until the 15-min window resets.`,
+        );
+      } else {
+        throw new Error(
+          `[e2e global-setup] Cannot login as test user (${TEST_CREDENTIALS.user.email}).\n` +
+            '  Make sure the seed script creates this user: pnpm --filter api db:seed\n' +
+            `  Error: ${msg}`,
+        );
+      }
     }
   }
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useIsMobile } from '@/hooks/use-is-mobile';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -96,9 +97,14 @@ export function MarketplaceListingPage() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [addingToCartId, setAddingToCartId] = useState<string | null>(null);
 
+  const filters = parseFiltersFromParams(searchParams);
+  const [searchInput, setSearchInput] = useState(filters.query ?? '');
+  const isMobile = useIsMobile();
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const filters = parseFiltersFromParams(searchParams);
+  useEffect(() => {
+    setSearchInput(filters.query ?? '');
+  }, [filters.query]);
 
   // Fetch marketplace when URL params change
   useEffect(() => {
@@ -138,11 +144,16 @@ export function MarketplaceListingPage() {
     handleFiltersChange({ ...filters, page });
   };
 
-  const handleSearchChange = (value: string) => {
+  const submitSearch = (value?: string) => {
+    const v = (value ?? searchInput).trim();
+    handleFiltersChange({ ...filters, query: v || undefined, page: 1 });
+  };
+
+  const handleSearchInputChange = (value: string) => {
+    setSearchInput(value);
+    if (isMobile) return;
     if (searchTimer.current) clearTimeout(searchTimer.current);
-    searchTimer.current = setTimeout(() => {
-      handleFiltersChange({ ...filters, query: value || undefined, page: 1 });
-    }, 400);
+    searchTimer.current = setTimeout(() => submitSearch(value), 400);
   };
 
   const handleSortChange = (sortBy: MarketplaceSearchParams['sortBy']) => {
@@ -325,8 +336,10 @@ export function MarketplaceListingPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={t('searchPlaceholder')}
-            defaultValue={filters.query ?? ''}
-            onChange={(e) => handleSearchChange(e.target.value)}
+            value={searchInput}
+            onChange={(e) => handleSearchInputChange(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') submitSearch(); }}
+            onBlur={() => isMobile && submitSearch()}
             className="pl-9 h-10 focus-visible:ring-2 focus-visible:ring-primary"
           />
         </div>

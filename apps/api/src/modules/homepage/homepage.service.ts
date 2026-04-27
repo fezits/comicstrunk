@@ -217,20 +217,39 @@ async function resolveCatalogHighlights(refs: ContentRefs) {
       select: catalogSelect,
     });
   } else {
-    // Fallback: top 8 by average rating
+    // Random rotation: pick 8 random APPROVED entries that have a cover
+    // (avoids showing placeholders in the homepage highlights).
+    // Uses RAND() with a filtered subquery — fast enough on indexed columns.
+    const rows = await prisma.$queryRaw<Array<{ id: string }>>`
+      SELECT id FROM catalog_entries
+      WHERE approval_status = 'APPROVED'
+        AND (cover_image_url IS NOT NULL OR cover_file_name IS NOT NULL)
+      ORDER BY RAND()
+      LIMIT 8
+    `;
+    const ids = rows.map((r) => r.id);
     entries = await prisma.catalogEntry.findMany({
-      where: { approvalStatus: 'APPROVED' },
-      orderBy: [{ averageRating: 'desc' }, { ratingCount: 'desc' }],
-      take: 8,
+      where: { id: { in: ids } },
       select: catalogSelect,
     });
+    // Preserve random order from RAND()
+    const orderMap = new Map(ids.map((id, i) => [id, i]));
+    entries.sort((a, b) => (orderMap.get(a.id) ?? 0) - (orderMap.get(b.id) ?? 0));
   }
 
   // Map to frontend-expected shape (resolve cover URL + convert Decimal)
   return entries.map((e) => {
-    let coverUrl = e.coverImageUrl;
-    if (!coverUrl && e.coverFileName) {
+    // coverFileName always wins — points to R2 or local
+    let coverUrl: string | null = null;
+    if (e.coverFileName) {
       coverUrl = localCoverUrl(e.coverFileName);
+    } else if (e.coverImageUrl && !e.coverImageUrl.includes('/uploads/')) {
+      // External URL (Open Library, etc.) — use as-is
+      coverUrl = e.coverImageUrl;
+    } else if (e.coverImageUrl && e.coverImageUrl.includes('/uploads/')) {
+      // Old server URL — extract filename and rebuild
+      const filename = e.coverImageUrl.split('/').pop();
+      coverUrl = filename ? localCoverUrl(filename) : null;
     }
     return {
       id: e.id,

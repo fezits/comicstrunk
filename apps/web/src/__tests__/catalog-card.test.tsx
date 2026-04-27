@@ -30,6 +30,7 @@ vi.mock('next/link', () => ({
 
 const mockEntry: CatalogEntry = {
   id: 'entry-1',
+  slug: 'turma-da-monica-vol-1',
   title: 'Turma da Monica Vol. 1',
   author: 'Mauricio de Sousa',
   publisher: 'Panini Comics',
@@ -51,6 +52,7 @@ const mockEntry: CatalogEntry = {
   createdAt: '2026-01-15T00:00:00.000Z',
   series: {
     id: 'series-1',
+    slug: 'turma-da-monica',
     title: 'Turma da Monica',
     description: null,
     totalEditions: 10,

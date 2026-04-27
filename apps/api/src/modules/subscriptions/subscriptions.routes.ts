@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { z } from 'zod';
 import {
   createCheckoutSchema,
   adminActivateSubscriptionSchema,
@@ -166,6 +167,41 @@ router.put(
     try {
       const plan = await subscriptionsService.adminUpdatePlan(req.params.id as string, req.body);
       sendSuccess(res, plan);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /pix — create PIX subscription (authenticated)
+router.post(
+  '/pix',
+  authenticate,
+  validate(z.object({ planConfigId: z.string().min(1) })),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await subscriptionsService.createPixSubscription(
+        req.user!.userId,
+        req.body.planConfigId,
+      );
+      sendSuccess(res, result);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /pix/:paymentId/confirm — admin confirms PIX subscription payment
+router.post(
+  '/pix/:paymentId/confirm',
+  authenticate,
+  authorize('ADMIN'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await subscriptionsService.confirmPixSubscriptionPayment(
+        req.params.paymentId as string,
+      );
+      sendSuccess(res, result);
     } catch (err) {
       next(err);
     }

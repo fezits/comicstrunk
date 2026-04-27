@@ -1,0 +1,200 @@
+[
+  {
+    "title": "Batman: Dark Victory",
+    "publisher": "DC Comics",
+    "publishYear": 2014,
+    "pageCount": null,
+    "isbn": null,
+    "coverFileName": "batman-dark-victory.jpg",
+    "sourceKey": "openlibrary:14415465",
+    "slug": "batman-dark-victory",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/14415465-L.jpg"
+  },
+  {
+    "title": "Batman: Hush",
+    "publisher": "DC Comics",
+    "publishYear": 2005,
+    "pageCount": null,
+    "isbn": null,
+    "coverFileName": "batman-hush.jpg",
+    "sourceKey": "openlibrary:749064",
+    "slug": "batman-hush",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/749064-L.jpg"
+  },
+  {
+    "title": "Superman for All Seasons",
+    "publisher": "DC Comics",
+    "publishYear": 1999,
+    "pageCount": null,
+    "isbn": null,
+    "coverFileName": "superman-for-all-seasons.jpg",
+    "sourceKey": "openlibrary:798349",
+    "slug": "superman-for-all-seasons",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/798349-L.jpg"
+  },
+  {
+    "title": "The Dark Knight returns",
+    "publisher": "DC Comics",
+    "publishYear": 1986,
+    "pageCount": null,
+    "isbn": null,
+    "coverFileName": "dark-knight-returns.jpg",
+    "sourceKey": "openlibrary:798170",
+    "slug": "dark-knight-returns",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/798170-L.jpg"
+  },
+  {
+    "title": "All-star Superman",
+    "publisher": "DC Comics",
+    "publishYear": 2007,
+    "pageCount": null,
+    "isbn": null,
+    "coverFileName": "all-star-superman.jpg",
+    "sourceKey": "openlibrary:11956378",
+    "slug": "all-star-superman",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/11956378-L.jpg"
+  },
+  {
+    "title": "V for Vendetta",
+    "publisher": "DC Comics",
+    "publishYear": 1988,
+    "pageCount": null,
+    "isbn": null,
+    "coverFileName": "v-for-vendetta.jpg",
+    "sourceKey": "openlibrary:12293384",
+    "slug": "v-for-vendetta",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/12293384-L.jpg"
+  },
+  {
+    "title": "Batman a Death in the Family",
+    "publisher": "DC Comics",
+    "publishYear": 1988,
+    "pageCount": null,
+    "isbn": null,
+    "coverFileName": "batman-death-in-the-family.jpg",
+    "sourceKey": "openlibrary:7249255",
+    "slug": "batman-death-in-the-family",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/7249255-L.jpg"
+  },
+  {
+    "title": "Identity Crisis",
+    "publisher": "DC Comics",
+    "publishYear": 2005,
+    "pageCount": null,
+    "isbn": null,
+    "coverFileName": "identity-crisis.jpg",
+    "sourceKey": "openlibrary:749260",
+    "slug": "identity-crisis",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/749260-L.jpg"
+  },
+  {
+    "title": "Daredevil: Born Again",
+    "publisher": "Marvel Comics",
+    "publishYear": 2019,
+    "pageCount": null,
+    "isbn": null,
+    "coverFileName": "daredevil-born-again.jpg",
+    "sourceKey": "openlibrary:10472713",
+    "slug": "daredevil-born-again",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/10472713-L.jpg"
+  },
+  {
+    "title": "Infinity Gauntlet",
+    "publisher": "Marvel Comics",
+    "publishYear": 2011,
+    "pageCount": null,
+    "isbn": null,
+    "coverFileName": "infinity-gauntlet.jpg",
+    "sourceKey": "openlibrary:8796628",
+    "slug": "infinity-gauntlet",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/8796628-L.jpg"
+  },
+  {
+    "title": "Civil War",
+    "publisher": "Marvel Comics",
+    "publishYear": 2007,
+    "pageCount": null,
+    "isbn": null,
+    "coverFileName": "civil-war-marvel.jpg",
+    "sourceKey": "openlibrary:536418",
+    "slug": "civil-war-marvel",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/536418-L.jpg"
+  },
+  {
+    "title": "Old Man Logan",
+    "publisher": "Marvel Comics",
+    "publishYear": 2016,
+    "pageCount": null,
+    "isbn": null,
+    "coverFileName": "old-man-logan.jpg",
+    "sourceKey": "openlibrary:13057610",
+    "slug": "old-man-logan",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/13057610-L.jpg"
+  },
+  {
+    "title": "Avengers Disassembled",
+    "publisher": "Marvel Comics",
+    "publishYear": 2004,
+    "pageCount": null,
+    "isbn": null,
+    "coverFileName": "avengers-disassembled.jpg",
+    "sourceKey": "openlibrary:535996",
+    "slug": "avengers-disassembled",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/535996-L.jpg"
+  },
+  {
+    "title": "Secret wars",
+    "publisher": "Marvel Comics",
+    "publishYear": 1992,
+    "pageCount": null,
+    "isbn": null,
+    "coverFileName": "secret-wars-marvel.jpg",
+    "sourceKey": "openlibrary:661371",
+    "slug": "secret-wars-marvel",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/661371-L.jpg"
+  },
+  {
+    "title": "Age of apocalypse",
+    "publisher": "Marvel Comics",
+    "publishYear": 2013,
+    "pageCount": null,
+    "isbn": null,
+    "coverFileName": "age-of-apocalypse.jpg",
+    "sourceKey": "openlibrary:12897273",
+    "slug": "age-of-apocalypse",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/12897273-L.jpg"
+  },
+  {
+    "title": "Planet Hulk",
+    "publisher": "Marvel Comics",
+    "publishYear": 2008,
+    "pageCount": null,
+    "isbn": null,
+    "coverFileName": "planet-hulk.jpg",
+    "sourceKey": "openlibrary:7394677",
+    "slug": "planet-hulk",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/7394677-L.jpg"
+  },
+  {
+    "title": "World War Hulk",
+    "publisher": "Marvel Comics",
+    "publishYear": 2007,
+    "pageCount": null,
+    "isbn": null,
+    "coverFileName": "world-war-hulk.jpg",
+    "sourceKey": "openlibrary:14206106",
+    "slug": "world-war-hulk",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/14206106-L.jpg"
+  },
+  {
+    "title": "Wolverine: Enemy of the State",
+    "publisher": "Marvel Comics",
+    "publishYear": 2005,
+    "pageCount": null,
+    "isbn": null,
+    "coverFileName": "wolverine-enemy-of-state.jpg",
+    "sourceKey": "openlibrary:536131",
+    "slug": "wolverine-enemy-of-state",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/536131-L.jpg"
+  }
+]

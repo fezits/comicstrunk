@@ -144,20 +144,41 @@ router.get(
 // Admin CSV import/export (MUST be before /:id)
 // ============================================================================
 
-// GET /export — admin only, download all APPROVED entries as CSV
+// GET /export — admin only, download all APPROVED entries as XLSX (or CSV with ?format=csv)
 router.get(
   '/export',
   authenticate,
   authorize('ADMIN'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (req.query.format === 'csv') {
+        const csvString = await catalogService.exportToCSV();
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="catalogo-${Date.now()}.csv"`);
+        res.send(csvString);
+      } else {
+        const xlsxBuffer = await catalogService.exportToXLSX();
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="catalogo-${Date.now()}.xlsx"`);
+        res.send(xlsxBuffer);
+      }
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// GET /template — download XLSX import template with examples
+router.get(
+  '/template',
+  authenticate,
+  authorize('ADMIN'),
   async (_req: Request, res: Response, next: NextFunction) => {
     try {
-      const csvString = await catalogService.exportToCSV();
-      res.setHeader('Content-Type', 'text/csv');
-      res.setHeader(
-        'Content-Disposition',
-        `attachment; filename="catalog-export-${Date.now()}.csv"`,
-      );
-      res.send(csvString);
+      const xlsxBuffer = await catalogService.getCatalogXlsxTemplate();
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', 'attachment; filename="template-catalogo.xlsx"');
+      res.send(xlsxBuffer);
     } catch (err) {
       next(err);
     }
@@ -173,9 +194,9 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (!req.file) {
-        throw new BadRequestError('No CSV file provided');
+        throw new BadRequestError('Nenhum arquivo fornecido');
       }
-      const result = await catalogService.importFromCSV(req.file.buffer, req.user!.userId);
+      const result = await catalogService.importFromCSV(req.file.buffer, req.user!.userId, req.file.originalname);
       sendSuccess(res, result);
     } catch (err) {
       next(err);

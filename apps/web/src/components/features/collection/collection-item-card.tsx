@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { BookOpen, Eye, EyeOff, Tag, DollarSign } from 'lucide-react';
@@ -7,12 +8,14 @@ import { BookOpen, Eye, EyeOff, Tag, DollarSign } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { CoverImage } from '@/components/ui/cover-image';
 import type { CollectionItem, ItemCondition } from '@/lib/api/collection';
 
 interface CollectionItemCardProps {
   item: CollectionItem;
   onToggleRead?: (id: string, isRead: boolean) => void;
   onToggleSale?: (id: string) => void;
+  onChangeCondition?: (id: string, condition: ItemCondition) => void;
 }
 
 const conditionColors: Record<ItemCondition, string> = {
@@ -23,10 +26,26 @@ const conditionColors: Record<ItemCondition, string> = {
   POOR: 'bg-red-500/10 text-red-600 border-red-500/20',
 };
 
-export function CollectionItemCard({ item, onToggleRead, onToggleSale }: CollectionItemCardProps) {
+const CONDITIONS: ItemCondition[] = ['NEW', 'VERY_GOOD', 'GOOD', 'FAIR', 'POOR'];
+
+export function CollectionItemCard({ item, onToggleRead, onToggleSale, onChangeCondition }: CollectionItemCardProps) {
   const locale = useLocale();
   const t = useTranslations('collection');
   const entry = item.catalogEntry;
+  const [showConditionPicker, setShowConditionPicker] = useState(false);
+  const pickerRef = useRef<HTMLDivElement>(null);
+
+  // Close picker on click outside
+  useEffect(() => {
+    if (!showConditionPicker) return;
+    function handleClick(e: MouseEvent) {
+      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
+        setShowConditionPicker(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [showConditionPicker]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -36,12 +55,12 @@ export function CollectionItemCard({ item, onToggleRead, onToggleSale }: Collect
   };
 
   return (
-    <Card className={`h-full overflow-hidden transition-shadow hover:shadow-lg group${item.isRead ? ' border-l-4 border-l-green-500' : ''}`}>
+    <Card className={`h-full transition-shadow hover:shadow-lg group${item.isRead ? ' border-l-4 border-l-green-500' : ''}`}>
       <Link href={`/${locale}/collection/${item.id}`} className="block">
         {/* Cover */}
-        <div className="aspect-[2/3] bg-muted flex items-center justify-center overflow-hidden relative">
+        <div className="aspect-[2/3] bg-muted flex items-center justify-center overflow-hidden relative rounded-t-lg">
           {entry.coverImageUrl ? (
-            <img
+            <CoverImage
               src={entry.coverImageUrl}
               alt={entry.title}
               className="h-full w-full object-cover transition-transform group-hover:scale-105"
@@ -76,21 +95,46 @@ export function CollectionItemCard({ item, onToggleRead, onToggleSale }: Collect
       <CardContent className="p-4 space-y-2">
         {/* Title */}
         <Link href={`/${locale}/collection/${item.id}`}>
-          <h3 className="font-semibold line-clamp-2 group-hover:text-primary transition-colors">
+          <h3 className="font-semibold text-sm sm:text-base line-clamp-2 group-hover:text-primary transition-colors">
             {entry.title}
           </h3>
         </Link>
 
         {/* Author & Publisher */}
-        <p className="text-sm text-muted-foreground truncate">
+        <p className="text-xs sm:text-sm text-muted-foreground truncate">
           {[entry.author, entry.publisher].filter(Boolean).join(' — ')}
         </p>
 
         {/* Condition & Quantity */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <Badge variant="outline" className={conditionColors[item.condition]}>
+        <div className="flex items-center gap-2 flex-wrap relative" ref={pickerRef}>
+          <Badge
+            variant="outline"
+            className={`${conditionColors[item.condition]} cursor-pointer hover:opacity-80 transition-opacity`}
+            onClick={(e) => {
+              e.preventDefault();
+              setShowConditionPicker(!showConditionPicker);
+            }}
+          >
             {t(`condition.${item.condition}`)}
           </Badge>
+          {showConditionPicker && (
+            <div className="absolute bottom-full left-0 mb-1 z-[100] bg-popover border border-border rounded-md shadow-lg p-1 flex flex-col gap-0.5 min-w-[120px]">
+              {CONDITIONS.map((c) => (
+                <button
+                  key={c}
+                  className={`text-left text-xs px-2 py-1.5 rounded hover:bg-accent transition-colors ${c === item.condition ? 'font-bold' : ''}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (c !== item.condition) onChangeCondition?.(item.id, c);
+                    setShowConditionPicker(false);
+                  }}
+                >
+                  <span className={`inline-block w-2 h-2 rounded-full mr-2 ${conditionColors[c].split(' ')[0].replace('/10', '')}`} />
+                  {t(`condition.${c}`)}
+                </button>
+              ))}
+            </div>
+          )}
           {item.quantity > 1 && (
             <Badge variant="outline" className="text-xs">
               x{item.quantity}

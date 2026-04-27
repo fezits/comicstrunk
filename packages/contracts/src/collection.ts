@@ -18,6 +18,7 @@ export const itemConditionSchema = z.enum(['NEW', 'VERY_GOOD', 'GOOD', 'FAIR', '
 export const COLLECTION_LIMITS = {
   FREE: 1000,
   BASIC: 5000,
+  ADMIN: Infinity,
 } as const;
 
 // === Collection Item Schemas ===
@@ -36,11 +37,13 @@ export const updateCollectionItemSchema = z.object({
   pricePaid: z.number().positive().nullable().optional(),
   condition: itemConditionSchema.optional(),
   notes: z.string().max(2000).trim().nullable().optional(),
+  readAt: z.string().datetime().nullable().optional(),
 });
 
 export const markForSaleSchema = z.object({
   isForSale: z.boolean(),
   salePrice: z.number().positive().optional(),
+  shippingCost: z.number().min(0).optional(),
 });
 
 export const markAsReadSchema = z.object({
@@ -65,6 +68,13 @@ export const collectionSearchSchema = z.object({
     }, z.boolean())
     .optional(),
   seriesId: z.string().cuid().optional(),
+  duplicates: z
+    .preprocess((val) => {
+      if (val === 'true') return true;
+      if (val === 'false') return false;
+      return val;
+    }, z.boolean())
+    .optional(),
   sortBy: z.enum(['title', 'createdAt', 'pricePaid', 'condition']).default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
   page: z.coerce.number().int().positive().default(1),

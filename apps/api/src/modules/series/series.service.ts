@@ -1,4 +1,5 @@
 import { prisma } from '../../shared/lib/prisma';
+import { resolveCoverUrl } from '../../shared/lib/cloudinary';
 import { BadRequestError, NotFoundError } from '../../shared/utils/api-error';
 import { uniqueSlug } from '../../shared/utils/slug';
 import type { CreateSeriesInput, UpdateSeriesInput, SeriesSearchInput } from '@comicstrunk/contracts';
@@ -18,7 +19,7 @@ export async function listSeries(filters: SeriesSearchInput) {
     where.title = { contains: title };
   }
 
-  const [data, total] = await Promise.all([
+  const [rawData, total] = await Promise.all([
     prisma.series.findMany({
       where,
       skip,
@@ -26,10 +27,22 @@ export async function listSeries(filters: SeriesSearchInput) {
       orderBy: { title: 'asc' },
       include: {
         _count: { select: { catalogEntries: true } },
+        catalogEntries: {
+          select: { publishYear: true },
+          where: { publishYear: { not: null } },
+          orderBy: { publishYear: 'asc' },
+          take: 1,
+        },
       },
     }),
     prisma.series.count({ where }),
   ]);
+
+  const data = rawData.map(s => ({
+    ...s,
+    yearBegan: s.catalogEntries[0]?.publishYear ?? null,
+    catalogEntries: undefined,
+  }));
 
   return { data, total, page, limit };
 }
@@ -50,6 +63,7 @@ export async function getSeriesById(id: string) {
           volumeNumber: true,
           editionNumber: true,
           coverImageUrl: true,
+          coverFileName: true,
           author: true,
           publisher: true,
           averageRating: true,
@@ -63,7 +77,7 @@ export async function getSeriesById(id: string) {
     throw new NotFoundError('Series not found');
   }
 
-  return series;
+  return { ...series, catalogEntries: series.catalogEntries.map(resolveCoverUrl) };
 }
 
 // === Get Series by ID or Slug ===
@@ -84,6 +98,7 @@ export async function getSeriesByIdOrSlug(idOrSlug: string) {
           volumeNumber: true,
           editionNumber: true,
           coverImageUrl: true,
+          coverFileName: true,
           author: true,
           publisher: true,
           averageRating: true,
@@ -97,7 +112,7 @@ export async function getSeriesByIdOrSlug(idOrSlug: string) {
     throw new NotFoundError('Series not found');
   }
 
-  return series;
+  return { ...series, catalogEntries: series.catalogEntries.map(resolveCoverUrl) };
 }
 
 // === Create Series ===

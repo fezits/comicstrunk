@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { BookOpen, Check, Loader2, Plus, Repeat2 } from 'lucide-react';
+import { CoverImage } from '@/components/ui/cover-image';
 import { toast } from 'sonner';
 import { AxiosError } from 'axios';
 
@@ -17,9 +18,10 @@ import type { CatalogEntry } from '@/lib/api/catalog';
 interface CatalogCardProps {
   entry: CatalogEntry;
   isOwned?: boolean;
+  onOwnedChange?: (entryId: string, owned: boolean) => void;
 }
 
-export function CatalogCard({ entry, isOwned = false }: CatalogCardProps) {
+export function CatalogCard({ entry, isOwned = false, onOwnedChange }: CatalogCardProps) {
   const locale = useLocale();
   const t = useTranslations('catalog');
   const router = useRouter();
@@ -27,17 +29,18 @@ export function CatalogCard({ entry, isOwned = false }: CatalogCardProps) {
   const [added, setAdded] = useState(isOwned);
   const [adding, setAdding] = useState(false);
 
+  // Sync local state when parent updates the owned status (e.g., after refresh)
+  useEffect(() => {
+    setAdded(isOwned);
+  }, [isOwned]);
+
   return (
     <Link href={`/${locale}/catalog/${entry.slug ?? entry.id}`} className="block group">
       <div className="w-full flex flex-col bg-card text-card-foreground rounded-lg shadow-lg border border-border/50 dark:border-transparent hover:scale-[1.02] transition-transform duration-300 overflow-hidden">
         {/* Cover image */}
         <div className="relative aspect-[2/3] bg-muted overflow-hidden">
           {entry.coverImageUrl ? (
-            <img
-              src={entry.coverImageUrl}
-              alt={entry.title}
-              className="h-full w-full object-cover transition-transform group-hover:scale-105"
-            />
+            <CoverImage src={entry.coverImageUrl} alt={entry.title} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
           ) : (
             <div className="h-full w-full flex items-center justify-center bg-primary/5 dark:bg-muted">
               <BookOpen className="h-16 w-16 text-primary/20" />
@@ -63,7 +66,7 @@ export function CatalogCard({ entry, isOwned = false }: CatalogCardProps) {
               onClick={async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                if (added || adding) return;
+                if (adding) return;
                 if (!isAuthenticated) {
                   router.push(`/${locale}/login`);
                   return;
@@ -72,19 +75,15 @@ export function CatalogCard({ entry, isOwned = false }: CatalogCardProps) {
                 try {
                   await addCollectionItem({ catalogEntryId: entry.id });
                   setAdded(true);
+                  onOwnedChange?.(entry.id, true);
                   toast.success(t('addedToCollection'));
                 } catch (error) {
-                  if (error instanceof AxiosError && error.response?.status === 409) {
-                    setAdded(true);
-                    toast.info(t('alreadyInCollection'));
-                  } else {
-                    toast.error(t('addToCollectionError'));
-                  }
+                  toast.error(t('addToCollectionError'));
                 } finally {
                   setAdding(false);
                 }
               }}
-              disabled={adding || added}
+              disabled={adding}
               title={t('addToCollection')}
             >
               {adding ? (

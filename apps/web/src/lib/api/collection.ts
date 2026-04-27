@@ -46,6 +46,7 @@ export interface CollectionSearchParams {
   isRead?: boolean;
   isForSale?: boolean;
   seriesId?: string;
+  duplicates?: boolean;
   sortBy?: 'title' | 'createdAt' | 'pricePaid' | 'condition';
   sortOrder?: 'asc' | 'desc';
   page?: number;
@@ -69,6 +70,7 @@ export async function getCollectionItems(
   if (params.isRead !== undefined) query.isRead = params.isRead;
   if (params.isForSale !== undefined) query.isForSale = params.isForSale;
   if (params.seriesId) query.seriesId = params.seriesId;
+  if (params.duplicates) query.duplicates = params.duplicates;
   if (params.sortBy) query.sortBy = params.sortBy;
   if (params.sortOrder) query.sortOrder = params.sortOrder;
   if (params.page) query.page = params.page;
@@ -76,6 +78,11 @@ export async function getCollectionItems(
 
   const response = await apiClient.get('/collection', { params: query });
   return response.data;
+}
+
+export async function getOwnedIds(): Promise<{ id: string; catalogEntryId: string }[]> {
+  const response = await apiClient.get('/collection/owned-ids');
+  return response.data.data;
 }
 
 export async function getCollectionItem(id: string): Promise<CollectionItem> {
@@ -145,7 +152,7 @@ export async function exportCollection(): Promise<void> {
   const url = window.URL.createObjectURL(new Blob([response.data]));
   const link = document.createElement('a');
   link.href = url;
-  link.setAttribute('download', 'collection-export.csv');
+  link.setAttribute('download', `colecao-${Date.now()}.xlsx`);
   document.body.appendChild(link);
   link.click();
   link.remove();
@@ -198,13 +205,13 @@ export async function batchAddItems(data: BatchAddInput): Promise<BatchAddResult
 }
 
 export async function getCSVTemplate(): Promise<void> {
-  const response = await apiClient.get('/collection/csv-template', {
+  const response = await apiClient.get('/collection/template', {
     responseType: 'blob',
   });
   const url = window.URL.createObjectURL(new Blob([response.data]));
   const link = document.createElement('a');
   link.href = url;
-  link.setAttribute('download', 'collection-template.csv');
+  link.setAttribute('download', 'template-colecao.xlsx');
   document.body.appendChild(link);
   link.click();
   link.remove();

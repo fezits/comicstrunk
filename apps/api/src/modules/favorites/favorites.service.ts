@@ -1,5 +1,6 @@
 import { prisma } from '../../shared/lib/prisma';
 import { NotFoundError } from '../../shared/utils/api-error';
+import { resolveCoverUrl } from '../../shared/lib/cloudinary';
 
 // === Toggle Favorite ===
 
@@ -57,6 +58,7 @@ export async function getUserFavorites(userId: string, page: number, limit: numb
             author: true,
             publisher: true,
             coverImageUrl: true,
+            coverFileName: true,
             averageRating: true,
             ratingCount: true,
             series: {
@@ -73,7 +75,12 @@ export async function getUserFavorites(userId: string, page: number, limit: numb
     prisma.favorite.count({ where }),
   ]);
 
-  return { data: favorites, total, page, limit };
+  const data = favorites.map((fav) => ({
+    ...fav,
+    catalogEntry: resolveCoverUrl(fav.catalogEntry),
+  }));
+
+  return { data, total, page, limit };
 }
 
 // === Check If Favorited ===

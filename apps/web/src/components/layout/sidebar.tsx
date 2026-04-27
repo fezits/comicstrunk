@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
@@ -12,8 +12,9 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { navGroups, type NavGroup } from './nav-config';
+import { useCollection } from '@/contexts/collection-context';
 
-function NavGroupSection({ group }: { group: NavGroup }) {
+function NavGroupSection({ group, collectionCount }: { group: NavGroup; collectionCount?: number }) {
   const t = useTranslations();
   const pathname = usePathname();
   const locale = useLocale();
@@ -37,9 +38,7 @@ function NavGroupSection({ group }: { group: NavGroup }) {
         <div className="space-y-0.5">
           {group.items.map((item) => {
             const href = `/${locale}${item.href}`;
-            const isActive =
-              pathname === href ||
-              (item.href !== '/' && pathname.startsWith(href));
+            const isActive = pathname === href;
             const Icon = item.icon;
 
             return (
@@ -54,7 +53,12 @@ function NavGroupSection({ group }: { group: NavGroup }) {
                 )}
               >
                 <Icon className="h-4 w-4 shrink-0" />
-                <span>{t(item.titleKey)}</span>
+                <span className="flex-1">{t(item.titleKey)}</span>
+                {item.href === '/collection' && collectionCount != null && collectionCount > 0 && (
+                  <span className="ml-auto text-xs bg-primary/15 text-primary font-semibold px-2 py-0.5 rounded">
+                    {collectionCount.toLocaleString('pt-BR')}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -68,6 +72,7 @@ export function Sidebar() {
   const t = useTranslations();
   const locale = useLocale();
   const { user, isLoading, isAuthenticated, logout } = useAuth();
+  const { collectionCount } = useCollection();
 
   // Filter groups based on auth state and role
   const visibleGroups = navGroups.filter((group) => {
@@ -83,7 +88,7 @@ export function Sidebar() {
           {visibleGroups.map((group, index) => (
             <div key={group.labelKey}>
               {index > 0 && <Separator className="my-2" />}
-              <NavGroupSection group={group} />
+              <NavGroupSection group={group} collectionCount={collectionCount} />
             </div>
           ))}
         </nav>

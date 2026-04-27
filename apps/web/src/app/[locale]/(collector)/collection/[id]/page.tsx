@@ -399,14 +399,45 @@ export default function CollectionItemDetailPage() {
               <h2 className="text-lg font-semibold">{t('detail.collectionInfo')}</h2>
 
               <div className="space-y-2">
-                <div className="flex gap-2 text-sm">
+                <div className="flex gap-2 text-sm items-center">
                   <span className="text-muted-foreground shrink-0">{t('form.quantity')}:</span>
-                  <span>{item.quantity}</span>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-6 w-6"
+                      disabled={item.quantity <= 1}
+                      onClick={async () => {
+                        const newQty = item.quantity - 1;
+                        if (newQty < 1) return;
+                        try {
+                          const updated = await updateCollectionItem(item.id, { quantity: newQty });
+                          setItem(updated);
+                        } catch { toast.error(t('updateError')); }
+                      }}
+                    >
+                      <span className="text-xs font-bold">−</span>
+                    </Button>
+                    <span className="min-w-[2rem] text-center font-semibold">{item.quantity}</span>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={async () => {
+                        try {
+                          const updated = await updateCollectionItem(item.id, { quantity: item.quantity + 1 });
+                          setItem(updated);
+                        } catch { toast.error(t('updateError')); }
+                      }}
+                    >
+                      <span className="text-xs font-bold">+</span>
+                    </Button>
+                  </div>
                 </div>
                 {item.pricePaid != null && (
                   <div className="flex gap-2 text-sm">
                     <span className="text-muted-foreground shrink-0">{t('form.pricePaid')}:</span>
-                    <span>{formatCurrency(item.pricePaid)}</span>
+                    <span>{formatCurrency(Number(item.pricePaid))}</span>
                   </div>
                 )}
                 <div className="flex gap-2 text-sm items-center">
@@ -443,10 +474,33 @@ export default function CollectionItemDetailPage() {
                 {item.isForSale && (
                   <Badge className="bg-green-600 hover:bg-green-700">
                     <DollarSign className="h-3 w-3 mr-1" />
-                    {item.salePrice ? formatCurrency(item.salePrice) : t('forSaleBadge')}
+                    {item.salePrice ? formatCurrency(Number(item.salePrice)) : t('forSaleBadge')}
                   </Badge>
                 )}
               </div>
+
+              {/* Read date — editable */}
+              {item.isRead && (
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-muted-foreground">Lido em:</span>
+                  <input
+                    type="date"
+                    value={item.readAt ? new Date(item.readAt).toISOString().slice(0, 10) : ''}
+                    onChange={async (e) => {
+                      const newDate = e.target.value;
+                      if (!newDate) return;
+                      try {
+                        const updated = await updateCollectionItem(item.id, { readAt: new Date(newDate + 'T12:00:00').toISOString() } as Record<string, unknown>);
+                        setItem(updated);
+                        toast.success('Data de leitura atualizada');
+                      } catch {
+                        toast.error('Erro ao atualizar data');
+                      }
+                    }}
+                    className="bg-transparent border border-border rounded px-2 py-1 text-sm focus:border-primary outline-none"
+                  />
+                </div>
+              )}
 
               {/* Action buttons */}
               <div className="flex items-center gap-2 flex-wrap pt-2">
@@ -472,7 +526,7 @@ export default function CollectionItemDetailPage() {
                   onClick={() => setDeleteDialogOpen(true)}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
-                  {tCommon('delete')}
+                  {t('deleteDialog.title')}
                 </Button>
               </div>
             </div>
@@ -596,7 +650,7 @@ export default function CollectionItemDetailPage() {
               {tCommon('cancel')}
             </Button>
             <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
-              {deleting ? tCommon('loading') : tCommon('delete')}
+              {deleting ? tCommon('loading') : 'Remover'}
             </Button>
           </DialogFooter>
         </DialogContent>

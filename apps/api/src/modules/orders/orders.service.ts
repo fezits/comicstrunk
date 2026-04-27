@@ -10,6 +10,7 @@ import {
 } from '../../shared/utils/api-error';
 import { createNotification } from '../notifications/notifications.service';
 import { sendOrderShippedEmail, sendItemSoldEmail } from '../notifications/email.service';
+import { resolveCoverUrl } from '../../shared/lib/cloudinary';
 
 // === Batch commission rate lookup (avoids N+1 on commissionConfig table) ===
 
@@ -44,12 +45,59 @@ function orderIncludes() {
                 id: true,
                 title: true,
                 coverImageUrl: true,
+                coverFileName: true,
               },
             },
           },
         },
       },
     },
+  };
+}
+
+/**
+ * Resolve URLs de capa + converte campos Decimal (Prisma) para Number.
+ *
+ * Sem essa conversão o frontend recebe `{ d: [...], e: ..., s: ... }` ao invés
+ * de número e exibe "R$ NaN" em /admin/payments, /orders/{id}, etc.
+ */
+function resolveOrderCovers<T extends {
+  totalAmount?: unknown;
+  orderItems: Array<{
+    priceSnapshot?: unknown;
+    commissionRateSnapshot?: unknown;
+    commissionAmountSnapshot?: unknown;
+    sellerNetSnapshot?: unknown;
+    collectionItem: {
+      salePrice?: unknown;
+      pricePaid?: unknown;
+      catalogEntry: { coverImageUrl: string | null; coverFileName?: string | null };
+    } | null;
+    [key: string]: unknown;
+  }>;
+  [key: string]: unknown;
+}>(order: T): T {
+  const num = (v: unknown): number | null => (v == null ? null : Number(v));
+  return {
+    ...order,
+    totalAmount: num(order.totalAmount) as unknown,
+    orderItems: order.orderItems.map((item) => ({
+      ...item,
+      priceSnapshot: num(item.priceSnapshot) as unknown,
+      commissionRateSnapshot: num(item.commissionRateSnapshot) as unknown,
+      commissionAmountSnapshot: num(item.commissionAmountSnapshot) as unknown,
+      sellerNetSnapshot: num(item.sellerNetSnapshot) as unknown,
+      collectionItem: item.collectionItem
+        ? {
+            ...item.collectionItem,
+            salePrice: num(item.collectionItem.salePrice) as unknown,
+            pricePaid: num(item.collectionItem.pricePaid) as unknown,
+            catalogEntry: item.collectionItem.catalogEntry
+              ? resolveCoverUrl(item.collectionItem.catalogEntry)
+              : item.collectionItem.catalogEntry,
+          }
+        : item.collectionItem,
+    })),
   };
 }
 
@@ -130,6 +178,7 @@ export async function createOrder(buyerId: string, shippingAddressId: string) {
 
     // 6. Build order items with price/commission snapshots
     let totalAmount = 0;
+    let shippingTotal = 0;
     const orderItemsData: Array<{
       collectionItemId: string;
       sellerId: string;
@@ -143,6 +192,7 @@ export async function createOrder(buyerId: string, shippingAddressId: string) {
       const { collectionItem } = cartItem;
       const sellerId = collectionItem.userId;
       const price = Number(collectionItem.salePrice ?? 0);
+      const shipping = Number(collectionItem.shippingCost ?? 0);
 
       // Look up seller's plan from the pre-fetched map
       const planType = sellerPlanMap.get(sellerId) ?? 'FREE';
@@ -150,7 +200,7 @@ export async function createOrder(buyerId: string, shippingAddressId: string) {
       // Get commission rate for seller's plan (from pre-fetched map)
       const commissionRate = commissionRateMap.get(planType) ?? 0.1;
 
-      // Calculate commission and seller net
+      // Calculate commission and seller net (commission só sobre price, não sobre frete)
       const { commission, sellerNet } = calculateCommission(price, commissionRate);
 
       orderItemsData.push({
@@ -163,9 +213,11 @@ export async function createOrder(buyerId: string, shippingAddressId: string) {
       });
 
       totalAmount += price;
+      shippingTotal += shipping;
     }
 
-    totalAmount = roundCurrency(totalAmount);
+    totalAmount = roundCurrency(totalAmount + shippingTotal);
+    shippingTotal = roundCurrency(shippingTotal);
 
     // 7. Snapshot shipping address as JSON
     const shippingAddressSnapshot = JSON.parse(JSON.stringify({
@@ -186,6 +238,7 @@ export async function createOrder(buyerId: string, shippingAddressId: string) {
         orderNumber,
         buyerId,
         totalAmount,
+        shippingTotal,
         shippingAddressSnapshot,
         orderItems: {
           create: orderItemsData,
@@ -243,7 +296,7 @@ export async function createOrder(buyerId: string, shippingAddressId: string) {
     }
   })();
 
-  return order;
+  return resolveOrderCovers(order);
 }
 
 // === Get Order by ID ===
@@ -266,7 +319,7 @@ export async function getOrder(userId: string, orderId: string) {
     throw new ForbiddenError('You do not have access to this order');
   }
 
-  return order;
+  return resolveOrderCovers(order);
 }
 
 // === Get Order by Number ===
@@ -288,7 +341,7 @@ export async function getOrderByNumber(userId: string, orderNumber: string) {
     throw new ForbiddenError('You do not have access to this order');
   }
 
-  return order;
+  return resolveOrderCovers(order);
 }
 
 // === List Buyer Orders ===
@@ -304,7 +357,7 @@ export async function listBuyerOrders(
     where.status = status;
   }
 
-  const [orders, total] = await Promise.all([
+  const [rawOrders, total] = await Promise.all([
     prisma.order.findMany({
       where,
       include: {
@@ -317,6 +370,7 @@ export async function listBuyerOrders(
                     id: true,
                     title: true,
                     coverImageUrl: true,
+                    coverFileName: true,
                   },
                 },
               },
@@ -330,6 +384,8 @@ export async function listBuyerOrders(
     }),
     prisma.order.count({ where }),
   ]);
+
+  const orders = rawOrders.map(resolveOrderCovers);
 
   return { orders, total, page, limit };
 }
@@ -352,7 +408,7 @@ export async function listSellerOrders(
     where.status = status;
   }
 
-  const [orders, total] = await Promise.all([
+  const [rawOrders, total] = await Promise.all([
     prisma.order.findMany({
       where,
       include: {
@@ -366,6 +422,7 @@ export async function listSellerOrders(
                     id: true,
                     title: true,
                     coverImageUrl: true,
+                    coverFileName: true,
                   },
                 },
               },
@@ -379,6 +436,8 @@ export async function listSellerOrders(
     }),
     prisma.order.count({ where }),
   ]);
+
+  const orders = rawOrders.map(resolveOrderCovers);
 
   return { orders, total, page, limit };
 }
@@ -412,11 +471,15 @@ export async function updateOrderItemStatus(
     throw new ForbiddenError('You do not have permission to update this order item');
   }
 
-  // Buyers can only confirm delivery or open dispute
+  // Buyers podem: confirmar entrega (DELIVERED), finalizar (COMPLETED) ou abrir
+  // disputa (DISPUTED). Gap #10: incluir DELIVERED — sem isso o comprador
+  // ficava preso porque a state machine exige SHIPPED → DELIVERED → COMPLETED.
   if (isBuyer && !isSeller) {
-    const buyerAllowed = ['COMPLETED', 'DISPUTED'];
+    const buyerAllowed = ['DELIVERED', 'COMPLETED', 'DISPUTED'];
     if (!buyerAllowed.includes(newStatus)) {
-      throw new ForbiddenError('Buyers can only confirm delivery or open disputes');
+      throw new ForbiddenError(
+        'Compradores podem apenas confirmar entrega, finalizar ou abrir disputas',
+      );
     }
   }
 
@@ -439,6 +502,7 @@ export async function updateOrderItemStatus(
   });
 
   // When item reaches COMPLETED: mark collection item as no longer for sale
+  // + credita o sellerNetSnapshot no saldo do vendedor (Gap #7)
   if (newStatus === 'COMPLETED') {
     await prisma.collectionItem.update({
       where: { id: orderItem.collectionItemId },
@@ -447,6 +511,11 @@ export async function updateOrderItemStatus(
         salePrice: null,
       },
     });
+    // Credita saldo (idempotente)
+    const { creditOrderItemToBalance } = await import('../payouts/payouts.service');
+    await creditOrderItemToBalance(orderItemId).catch((err) =>
+      console.error('[orders] Falha ao creditar saldo do vendedor:', err),
+    );
   }
 
   // Fire-and-forget: notify buyer of shipping status changes
@@ -555,10 +624,12 @@ export async function cancelOrder(userId: string, orderId: string) {
   });
 
   // Return updated order
-  return prisma.order.findUnique({
+  const updated = await prisma.order.findUnique({
     where: { id: orderId },
     include: orderIncludes(),
   });
+
+  return updated ? resolveOrderCovers(updated) : null;
 }
 
 // === Helper: Sync Order Status from Items ===

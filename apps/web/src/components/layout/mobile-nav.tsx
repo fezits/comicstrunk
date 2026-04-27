@@ -8,6 +8,8 @@ import { ChevronDown, LogIn, UserPlus, LogOut } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth/use-auth';
+import { useCollection } from '@/contexts/collection-context';
+import { useCart } from '@/contexts/cart-context';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -22,9 +24,13 @@ import { navGroups, type NavGroup } from './nav-config';
 function MobileNavGroup({
   group,
   onNavigate,
+  collectionCount,
+  cartCount,
 }: {
   group: NavGroup;
   onNavigate: () => void;
+  collectionCount?: number;
+  cartCount?: number;
 }) {
   const t = useTranslations();
   const pathname = usePathname();
@@ -49,9 +55,7 @@ function MobileNavGroup({
         <div className="space-y-0.5">
           {group.items.map((item) => {
             const href = `/${locale}${item.href}`;
-            const isActive =
-              pathname === href ||
-              (item.href !== '/' && pathname.startsWith(href));
+            const isActive = pathname === href;
             const Icon = item.icon;
 
             return (
@@ -67,7 +71,17 @@ function MobileNavGroup({
                 )}
               >
                 <Icon className="h-4 w-4 shrink-0" />
-                <span>{t(item.titleKey)}</span>
+                <span className="flex-1">{t(item.titleKey)}</span>
+                {item.href === '/collection' && (collectionCount ?? 0) > 0 && (
+                  <span className="text-xs bg-primary/15 text-primary font-semibold px-2 py-0.5 rounded">
+                    {(collectionCount ?? 0).toLocaleString('pt-BR')}
+                  </span>
+                )}
+                {item.href === '/cart' && (cartCount ?? 0) > 0 && (
+                  <span className="text-xs bg-primary/15 text-primary font-semibold px-2 py-0.5 rounded">
+                    {cartCount}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -86,6 +100,8 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
   const t = useTranslations();
   const locale = useLocale();
   const { user, isAuthenticated, logout } = useAuth();
+  const { collectionCount } = useCollection();
+  const { cartCount } = useCart();
 
   // Filter groups based on auth state and role
   const visibleGroups = navGroups.filter((group) => {
@@ -100,8 +116,8 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="left" className="w-72 p-0">
-        <SheetHeader className="px-4 py-4 border-b border-border">
+      <SheetContent side="left" className="w-72 p-0 flex flex-col h-full">
+        <SheetHeader className="px-4 py-4 border-b border-border shrink-0">
           <SheetTitle className="gradient-text text-lg font-bold">
             {t('common.appName')}
           </SheetTitle>
@@ -109,11 +125,11 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
             {t('nav.openMenu')}
           </SheetDescription>
         </SheetHeader>
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1 min-h-0">
           {visibleGroups.map((group, index) => (
             <div key={group.labelKey}>
               {index > 0 && <Separator className="my-2" />}
-              <MobileNavGroup group={group} onNavigate={handleNavigate} />
+              <MobileNavGroup group={group} onNavigate={handleNavigate} collectionCount={collectionCount} cartCount={cartCount} />
             </div>
           ))}
 

@@ -38,6 +38,53 @@ router.get(
   },
 );
 
+// GET /timeline — reading timeline data
+router.get(
+  '/timeline',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const year = req.query.year ? parseInt(req.query.year as string) : undefined;
+      const month = req.query.month ? parseInt(req.query.month as string) : undefined;
+      const publisher = req.query.publisher as string | undefined;
+      const seriesId = req.query.seriesId as string | undefined;
+      const mode = req.query.mode as string | undefined;
+      const data = await collectionService.getTimeline(req.user!.userId, { year, month, publisher, seriesId, mode });
+      sendSuccess(res, data);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// GET /timeline/filters — available filters for timeline
+router.get(
+  '/timeline/filters',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const data = await collectionService.getTimelineFilters(req.user!.userId);
+      sendSuccess(res, data);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// GET /owned-ids — lightweight: just catalogEntryIds the user owns (single call, no pagination)
+router.get(
+  '/owned-ids',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // Prevent any caching — must always return fresh state
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+      res.setHeader('Pragma', 'no-cache');
+      const ids = await collectionService.getOwnedCatalogEntryIds(req.user!.userId);
+      sendSuccess(res, ids);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
 // GET /series-progress — progress per series
 router.get(
   '/series-progress',
@@ -52,35 +99,51 @@ router.get(
   },
 );
 
-// GET /export — export collection as CSV
+// GET /export — export collection as XLSX (or CSV with ?format=csv)
 router.get(
   '/export',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const csvString = await collectionService.exportCSV(req.user!.userId);
-      res.setHeader('Content-Type', 'text/csv');
-      res.setHeader(
-        'Content-Disposition',
-        `attachment; filename="collection-export-${Date.now()}.csv"`,
-      );
-      res.send(csvString);
+      if (req.query.format === 'csv') {
+        const csvString = await collectionService.exportCSV(req.user!.userId);
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="colecao-${Date.now()}.csv"`);
+        res.send(csvString);
+      } else {
+        const xlsxBuffer = await collectionService.exportXLSX(req.user!.userId);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="colecao-${Date.now()}.xlsx"`);
+        res.send(xlsxBuffer);
+      }
     } catch (err) {
       next(err);
     }
   },
 );
 
-// GET /csv-template — download empty CSV template
+// GET /template — download XLSX import template with examples
+router.get(
+  '/template',
+  async (_req: Request, res: Response, next: NextFunction) => {
+    try {
+      const xlsxBuffer = await collectionService.getXLSXTemplate();
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', 'attachment; filename="template-colecao.xlsx"');
+      res.send(xlsxBuffer);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// GET /csv-template — legacy CSV template (backward compat)
 router.get(
   '/csv-template',
   (_req: Request, res: Response, next: NextFunction) => {
     try {
       const csvString = collectionService.getCSVTemplate();
       res.setHeader('Content-Type', 'text/csv');
-      res.setHeader(
-        'Content-Disposition',
-        'attachment; filename="collection-import-template.csv"',
-      );
+      res.setHeader('Content-Disposition', 'attachment; filename="template-colecao.csv"');
       res.send(csvString);
     } catch (err) {
       next(err);
@@ -88,16 +151,16 @@ router.get(
   },
 );
 
-// POST /import — import collection from CSV
+// POST /import — import collection from XLSX or CSV
 router.post(
   '/import',
   uploadCSV('file'),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (!req.file) {
-        throw new BadRequestError('No CSV file provided');
+        throw new BadRequestError('Nenhum arquivo fornecido');
       }
-      const result = await collectionService.importCSV(req.user!.userId, req.file.buffer);
+      const result = await collectionService.importCSV(req.user!.userId, req.file.buffer, req.file.originalname);
       sendSuccess(res, result);
     } catch (err) {
       next(err);

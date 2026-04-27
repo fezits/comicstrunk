@@ -1,0 +1,65 @@
+{
+  "runId": "2026-04-26-19-03-29",
+  "timestamp": "2026-04-26T19:03:29.840Z",
+  "env": "production",
+  "baseUrl": "https://comicstrunk.com",
+  "apiUrl": "https://api.comicstrunk.com/api/v1",
+  "adminEmail": "admin@comicstrunk.com",
+  "testPrefix": "_e2e_20260426190329_",
+  "entities": {
+    "users": [
+      "cmog4z90w001ekw7pftrtn9n1",
+      "cmog4z9c2001jkw7pea2t1ax5"
+    ],
+    "catalogEntries": [
+      "cmog539f7001wkw7plpbfmxjv"
+    ],
+    "collectionItems": [
+      "cmog539s4001zkw7pj8depo9v"
+    ],
+    "shippingAddresses": [
+      "cmog53dce0022kw7plotlrz8a"
+    ],
+    "bankAccounts": [
+      "cmog535aa001skw7p9mjdp5bp"
+    ],
+    "orders": [
+      "cmog53g0p002akw7pacgmaezp"
+    ],
+    "orderItems": [
+      "cmog53g0p002ckw7pys7ozej7"
+    ],
+    "payments": []
+  },
+  "steps": [
+    {
+      "step": "00-prep",
+      "ok": true,
+      "durationMs": 182268,
+      "note": "sellerId=cmog4z90w001ekw7pftrtn9n1 buyerId=cmog4z9c2001jkw7pea2t1ax5"
+    },
+    {
+      "step": "01-banking",
+      "ok": true,
+      "durationMs": 5335,
+      "note": "bankAccountId=cmog535aa001skw7p9mjdp5bp"
+    },
+    {
+      "step": "02-mark-for-sale",
+      "ok": true,
+      "durationMs": 3084,
+      "note": "collectionItemId=cmog539s4001zkw7pj8depo9v"
+    },
+    {
+      "step": "03-marketplace",
+      "ok": true,
+      "durationMs": 2007
+    },
+    {
+      "step": "04-cart",
+      "ok": true,
+      "durationMs": 1879,
+      "note": "addressId=cmog53dce0022kw7plotlrz8a"
+    }
+  ]
+}

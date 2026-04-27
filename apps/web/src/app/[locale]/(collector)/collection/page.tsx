@@ -31,10 +31,12 @@ import {
   getCollectionStats,
   markAsRead,
   markForSale,
+  updateCollectionItem,
   exportCollection,
   type CollectionItem,
   type CollectionStats as CollectionStatsType,
   type CollectionSearchParams,
+  type ItemCondition,
 } from '@/lib/api/collection';
 import type { PaginationMeta } from '@/lib/api/catalog';
 
@@ -149,6 +151,16 @@ export default function CollectionPage() {
       toast.success(isRead ? t('markedAsRead') : t('markedAsUnread'));
       // Refresh stats
       getCollectionStats().then(setStats).catch(() => {});
+    } catch {
+      toast.error(tCommon('error'));
+    }
+  };
+
+  const handleChangeCondition = async (id: string, condition: ItemCondition) => {
+    try {
+      const updated = await updateCollectionItem(id, { condition });
+      setItems((prev) => prev.map((item) => (item.id === id ? updated : item)));
+      toast.success(t('conditionUpdated'));
     } catch {
       toast.error(tCommon('error'));
     }
@@ -318,6 +330,7 @@ export default function CollectionPage() {
                       item={item}
                       onToggleRead={handleToggleRead}
                       onToggleSale={handleToggleSale}
+                      onChangeCondition={handleChangeCondition}
                     />
                   ))}
                 </div>
@@ -339,6 +352,7 @@ export default function CollectionPage() {
                       item={item}
                       onToggleRead={handleToggleRead}
                       onToggleSale={handleToggleSale}
+                      onChangeCondition={handleChangeCondition}
                     />
                   ))}
                 </div>

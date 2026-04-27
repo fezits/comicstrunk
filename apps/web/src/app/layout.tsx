@@ -8,8 +8,24 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: 'Comics Trunk',
-  description: 'Plataforma para colecionadores de quadrinhos no Brasil',
+  title: {
+    default: 'Comics Trunk — Gerencie sua Colecao de Quadrinhos, HQs e Mangas',
+    template: '%s | Comics Trunk',
+  },
+  description: 'A maior plataforma brasileira para colecionadores de quadrinhos. Gerencie gibis, HQs, mangas e comics. Marketplace, cupons de desconto e ofertas.',
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
+  metadataBase: new URL('https://comicstrunk.com'),
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
+  verification: {
+    google: 'googled488a0e7e65f9d78',
+  },
 };
 
 export default function RootLayout({

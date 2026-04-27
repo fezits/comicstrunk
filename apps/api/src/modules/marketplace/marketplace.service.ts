@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../../shared/lib/prisma';
 import { NotFoundError } from '../../shared/utils/api-error';
+import { resolveCoverUrl } from '../../shared/lib/cloudinary';
 import type { MarketplaceSearchInput } from '@comicstrunk/contracts';
 
 // === Standard includes for marketplace listing queries ===
@@ -14,6 +15,7 @@ function listingIncludes() {
         author: true,
         publisher: true,
         coverImageUrl: true,
+        coverFileName: true,
         seriesId: true,
         volumeNumber: true,
         editionNumber: true,
@@ -129,7 +131,7 @@ export async function searchListings(params: MarketplaceSearchInput) {
   // Map results to include seller info
   const listings = data.map((item) => ({
     id: item.id,
-    catalogEntry: item.catalogEntry,
+    catalogEntry: resolveCoverUrl(item.catalogEntry),
     seller: {
       id: item.user.id,
       name: item.user.name,
@@ -164,7 +166,7 @@ export async function getListingById(id: string) {
 
   return {
     id: item.id,
-    catalogEntry: item.catalogEntry,
+    catalogEntry: resolveCoverUrl(item.catalogEntry),
     seller: {
       id: item.user.id,
       name: item.user.name,

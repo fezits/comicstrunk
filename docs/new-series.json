@@ -1,0 +1,3376 @@
+[
+  {
+    "name": "Yotsuba&!",
+    "entries": [
+      {
+        "id": "cmazmof97n0o65cfa7f2dd15fe1b251",
+        "title": "Yotsuba&!, Volume 4"
+      },
+      {
+        "id": "cmazmof99q90d174ec450eedac5e294",
+        "title": "Yotsuba&!, Volume 11"
+      },
+      {
+        "id": "cmazmof9elna0ca61872608b9ca9403",
+        "title": "Yotsuba&!, Vol. 13: Volume 13"
+      },
+      {
+        "id": "cmazmof9bbtn2ff2ad86dbbb83d0328",
+        "title": "Yotsuba&!, Vol. 12: Volume 12"
+      },
+      {
+        "id": "cmazmof9i4f418d72edc3a698652486",
+        "title": "Yotsuba&!, Vol. 14"
+      },
+      {
+        "id": "cmazmof9gl9qc615190a8a0ab2ba452",
+        "title": "Yotsuba&!, Vol. 15: Volume 15"
+      }
+    ]
+  },
+  {
+    "name": "The Mortal Instruments: The Graphic Novel",
+    "entries": [
+      {
+        "id": "cmazmof21a6i35400c8778dd0dae139",
+        "title": "The Mortal Instruments: The Graphic Novel, Vol. 1: Volume 1"
+      },
+      {
+        "id": "cmazmof9nbps96ce731da531ac42596",
+        "title": "The Mortal Instruments: The Graphic Novel, Vol. 6: Volume 6"
+      },
+      {
+        "id": "cmazmof25ps58f6231369560d8f4227",
+        "title": "The Mortal Instruments: The Graphic Novel, Vol. 9: Volume 9"
+      }
+    ]
+  },
+  {
+    "name": "The Case Study of Vanitas",
+    "entries": [
+      {
+        "id": "cmazmof2i93q75eb93e3638c8e2336",
+        "title": "The Case Study of Vanitas, Vol. 2: Volume 2"
+      },
+      {
+        "id": "cmazmof96fkq779b15184990d462224",
+        "title": "The Case Study of Vanitas, Vol. 10: Volume 10"
+      }
+    ]
+  },
+  {
+    "name": "Under the Oak Tree:",
+    "entries": [
+      {
+        "id": "cmazmof2i2ht98553bfb00360a2d32",
+        "title": "Under the Oak Tree: Volume 1 (the Comic)"
+      },
+      {
+        "id": "cmazmof9belqe5e787915d1d13f7330",
+        "title": "Under the Oak Tree: Volume 2 (the Comic)"
+      }
+    ]
+  },
+  {
+    "name": "Avengers by Jonathan Hickman: The Complete Collection",
+    "entries": [
+      {
+        "id": "cmazmof297893269bc3e2ff9333d307",
+        "title": "Avengers by Jonathan Hickman: The Complete Collection Vol. 1"
+      },
+      {
+        "id": "cmazmof298pz066bad2266909427308",
+        "title": "Avengers by Jonathan Hickman: The Complete Collection Vol. 2"
+      }
+    ]
+  },
+  {
+    "name": "Immortal Thor",
+    "entries": [
+      {
+        "id": "cmazmof96cvn3677122cb525908b222",
+        "title": "Immortal Thor Vol. 1: All Weather Turns to Storm"
+      },
+      {
+        "id": "cmazmof95u2j81984c373deab110211",
+        "title": "Immortal Thor Vol. 2: All Trials Are One"
+      },
+      {
+        "id": "cmazmof9380h78895dec1d9b779b155",
+        "title": "Immortal Thor Vol. 4: The Son of Thor"
+      }
+    ]
+  },
+  {
+    "name": "Captain America by Mark Gruenwald Omnibus",
+    "entries": [
+      {
+        "id": "cmazmof23qg06bff7ca89ba1f302186",
+        "title": "Captain America by Mark Gruenwald Omnibus Vol. 1 Zeck Captain America vs. Wolverine Cover"
+      },
+      {
+        "id": "cmazmof22cxhc9ec06819bd1e779158",
+        "title": "Captain America by Mark Gruenwald Omnibus Vol. 2 Ron Lim Anniversary Cover"
+      }
+    ]
+  },
+  {
+    "name": "X-Factor: The Original X-Men Omnibus",
+    "entries": [
+      {
+        "id": "cmazmof93xak77ad59b6af359f72170",
+        "title": "X-Factor: The Original X-Men Omnibus Vol. 1 Simonson First Issue Cover"
+      },
+      {
+        "id": "cmazmof23b25ffd8c928b34ffbf4178",
+        "title": "X-Factor: The Original X-Men Omnibus Vol. 2 Walter Simonson Inferno Cover"
+      }
+    ]
+  },
+  {
+    "name": "Ultimate X-Men by Peach Momoko",
+    "entries": [
+      {
+        "id": "cmazmof2c3vx382915edd57eec8d371",
+        "title": "Ultimate X-Men by Peach Momoko Vol. 1: Fears and Hates"
+      },
+      {
+        "id": "cmazmof25bhcae067fcff8ea93c3220",
+        "title": "Ultimate X-Men by Peach Momoko Vol. 2: Children of the Atom"
+      },
+      {
+        "id": "cmazmof2e0oy756cb1491459bef5415",
+        "title": "Ultimate X-Men by Peach Momoko Vol. 3: The Realm of the Mind"
+      }
+    ]
+  },
+  {
+    "name": "Ultimate Spider-Man Omnibus",
+    "entries": [
+      {
+        "id": "cmazmof8zzwqcafd2fbebdce277482",
+        "title": "Ultimate Spider-Man Omnibus Vol. 4 Stuart Immonen Symbiote Cover"
+      },
+      {
+        "id": "cmazmof93jbpf4bbc53ff162a846160",
+        "title": "Ultimate Spider-Man Omnibus Vol. 5 David Lafuente Cover"
+      }
+    ]
+  },
+  {
+    "name": "The Sandman Omnibus",
+    "entries": [
+      {
+        "id": "cmazmof9bhc3fa6ce4c304df89a7332",
+        "title": "The Sandman Omnibus Vol. 2"
+      },
+      {
+        "id": "cmazmof9liuwe415f348f13add96561",
+        "title": "The Sandman Omnibus Vol. 3"
+      }
+    ]
+  },
+  {
+    "name": "Gin Tama",
+    "entries": [
+      {
+        "id": "cmazmof96aij8a35d0634efcf7bf220",
+        "title": "Gin Tama, Vol. 6"
+      },
+      {
+        "id": "cmazmof9655x759e6331d76e6189219",
+        "title": "Gin Tama, Volume 21"
+      },
+      {
+        "id": "cmazmof9644h844de4789cd83b04218",
+        "title": "Gin Tama, Vol. 23: Volume 23"
+      }
+    ]
+  },
+  {
+    "name": "Vagabond",
+    "entries": [
+      {
+        "id": "cmazmof22wkcd3cde390f05bd88c167",
+        "title": "Vagabond, Volume 11: Vizbig Edition"
+      },
+      {
+        "id": "cmazmof2534q969f9e7275af2fe9214",
+        "title": "Vagabond, Vol. 12 (Vizbig Edition)"
+      },
+      {
+        "id": "cmazmofqbmpb90918151928eb340678",
+        "title": "Vagabond Vol. 1"
+      }
+    ]
+  },
+  {
+    "name": "Tokyo Ghoul",
+    "entries": [
+      {
+        "id": "cmazmof1y87xc37fd782f725211569",
+        "title": "Tokyo Ghoul, Vol. 1: Volume 1"
+      },
+      {
+        "id": "cmazmof99k7mdae4450e0006c80c290",
+        "title": "Tokyo Ghoul, Vol. 2: Volume 2"
+      },
+      {
+        "id": "cmazmof9i6wh82a6c58360dbc94f488",
+        "title": "Tokyo Ghoul, Vol. 7: Volume 7"
+      }
+    ]
+  },
+  {
+    "name": "One Piece (Omnibus Edition)",
+    "entries": [
+      {
+        "id": "cmazmof943zweb5f30691ef1045d175",
+        "title": "One Piece (Omnibus Edition), Vol. 17: Includes Vols. 49, 50 & 51"
+      },
+      {
+        "id": "cmazmof96rgpfa7629623933c937233",
+        "title": "One Piece (Omnibus Edition), Vol. 18: Includes Vols. 52, 53 & 54"
+      },
+      {
+        "id": "cmazmof95sw68d2816a3b69d7d3a210",
+        "title": "One Piece (Omnibus Edition), Vol. 19: Includes Vols. 55, 56 & 57"
+      },
+      {
+        "id": "cmazmof95f6m78631fe062440b64200",
+        "title": "One Piece (Omnibus Edition), Vol. 15: Includes Vols. 43, 44 & 45"
+      },
+      {
+        "id": "cmazmof95rqm1c2eb5d90c068c18209",
+        "title": "One Piece (Omnibus Edition), Vol. 20: Includes Vols. 58, 59 & 60"
+      }
+    ]
+  },
+  {
+    "name": "Seraph of the End",
+    "entries": [
+      {
+        "id": "cmazmof9jqhu051b9e76f10caa32520",
+        "title": "Seraph of the End, Vol. 11: Vampire Reign"
+      },
+      {
+        "id": "cmazmofpu3vv0bd6d958704e0a71253",
+        "title": "Seraph of the End, Vol. 35 (English Edition)"
+      }
+    ]
+  },
+  {
+    "name": "Dragon Ball Super",
+    "entries": [
+      {
+        "id": "cmazmof91j7cafcedff2048d1d31119",
+        "title": "Dragon Ball Super, Vol. 1: Volume 1"
+      },
+      {
+        "id": "cmazmof9ch3s9571f94d25f2e448355",
+        "title": "Dragon Ball Super, Vol. 13: Volume 13"
+      },
+      {
+        "id": "cmazmof9bd2ce68403c43bcd2acc329",
+        "title": "Dragon Ball Super, Vol. 15: Volume 15"
+      },
+      {
+        "id": "cmazmof1wzwib7c9bf79f90a2eeb66",
+        "title": "Dragon Ball Super, Vol. 24"
+      },
+      {
+        "id": "cmazmofqm3bhdd221eaf95c600a3929",
+        "title": "Dragon Ball Super Vol. 22"
+      },
+      {
+        "id": "cmazmofqjxjnebb6875c186ad308875",
+        "title": "Dragon Ball Super Vol. 23"
+      },
+      {
+        "id": "cmazmofqi94f8de0f80a3b1f52b4834",
+        "title": "Dragon Ball Super Vol. 4"
+      }
+    ]
+  },
+  {
+    "name": "The Legend of Zelda: Twilight Princess",
+    "entries": [
+      {
+        "id": "cmazmof216pr76e57b474b9c34f5136",
+        "title": "The Legend of Zelda: Twilight Princess, Vol. 1: Volume 1"
+      },
+      {
+        "id": "cmazmof9bii67c1fdd61b78a1c5b333",
+        "title": "The Legend of Zelda: Twilight Princess, Vol. 3: Volume 3"
+      },
+      {
+        "id": "cmazmof9ha6p5dea8ea97f23e68d466",
+        "title": "The Legend of Zelda: Twilight Princess, Vol. 4"
+      },
+      {
+        "id": "cmazmof2920ge02a8ce57feae4d5303",
+        "title": "The Legend of Zelda: Twilight Princess, Vol. 5: Volume 5"
+      }
+    ]
+  },
+  {
+    "name": "Dorohedoro",
+    "entries": [
+      {
+        "id": "cmazmof2f6pf4a2b6f419f029b1b442",
+        "title": "Dorohedoro, Vol. 21: Volume 21"
+      },
+      {
+        "id": "cmazmof97ueoaace856985669a6d256",
+        "title": "Dorohedoro, Vol. 23"
+      }
+    ]
+  },
+  {
+    "name": "Kimi Ni Todoke: From Me to You",
+    "entries": [
+      {
+        "id": "cmazmof9hqt6cc1fd3134e893d33479",
+        "title": "Kimi Ni Todoke: From Me to You, Vol. 28"
+      },
+      {
+        "id": "cmazmof9ejipc0aafdb298fa4b72401",
+        "title": "Kimi Ni Todoke: From Me to You, Vol. 29"
+      },
+      {
+        "id": "cmazmof9e47p5cbe8398b000c50d391",
+        "title": "Kimi Ni Todoke: From Me to You, Vol. 30"
+      }
+    ]
+  },
+  {
+    "name": "Fullmetal Alchemist: Fullmetal Edition",
+    "entries": [
+      {
+        "id": "cmazmof27gin8b41fcb03094de8b268",
+        "title": "Fullmetal Alchemist: Fullmetal Edition, Vol. 10"
+      },
+      {
+        "id": "cmazmof26f9h9c9c3bedf25e2244243",
+        "title": "Fullmetal Alchemist: Fullmetal Edition, Vol. 11"
+      },
+      {
+        "id": "cmazmof27i6e5abc61581e26f609269",
+        "title": "Fullmetal Alchemist: Fullmetal Edition, Vol. 12"
+      },
+      {
+        "id": "cmazmof28buh0690a1fb54269cba287",
+        "title": "Fullmetal Alchemist: Fullmetal Edition, Vol. 13"
+      },
+      {
+        "id": "cmazmof280mlde61e809858941bc282",
+        "title": "Fullmetal Alchemist: Fullmetal Edition, Vol. 14: Volume 14"
+      },
+      {
+        "id": "cmazmof24plx2136038883be7d9b205",
+        "title": "Fullmetal Alchemist: Fullmetal Edition, Vol. 15"
+      },
+      {
+        "id": "cmazmof24gmgc47f9c131169f9ce202",
+        "title": "Fullmetal Alchemist: Fullmetal Edition, Vol. 16: Volume 16"
+      },
+      {
+        "id": "cmazmof28ecqd366ed3edd027645289",
+        "title": "Fullmetal Alchemist: Fullmetal Edition, Vol. 17: Volume 17"
+      },
+      {
+        "id": "cmazmof28d8oe7741f925972b6d2288",
+        "title": "Fullmetal Alchemist: Fullmetal Edition, Vol. 18"
+      }
+    ]
+  },
+  {
+    "name": "Sarge Steel",
+    "entries": [
+      {
+        "id": "cmazmof9eifo4dcc7d92e6a1df67400",
+        "title": "Sarge Steel #3: Golden Age Detective Comic"
+      },
+      {
+        "id": "cmazmof9quoz4fffc4d4ee41b790674",
+        "title": "Sarge Steel #4: Golden Age Detective Comic"
+      }
+    ]
+  },
+  {
+    "name": "Blade of the Immortal Deluxe",
+    "entries": [
+      {
+        "id": "cmazmof9n4rbc708160bc5532c16591",
+        "title": "Blade of the Immortal Deluxe Volume 1"
+      },
+      {
+        "id": "cmazmofa92qkeb54e39dfef595907",
+        "title": "Blade of the Immortal Deluxe Volume 3"
+      },
+      {
+        "id": "cmazmof28ic2d0ba662cf11821b4292",
+        "title": "Blade of the Immortal Deluxe Volume 4"
+      },
+      {
+        "id": "cmazmof29373d440e2e3430b0bf0304",
+        "title": "Blade of the Immortal Deluxe Volume 5"
+      }
+    ]
+  },
+  {
+    "name": "Cyberpunk 2077 Omnibus",
+    "entries": [
+      {
+        "id": "cmazmof27tp4968c048cecee3ff9277",
+        "title": "Cyberpunk 2077 Omnibus Volume 1"
+      },
+      {
+        "id": "cmazmofaepwo1555df8946ec6168179",
+        "title": "Cyberpunk 2077 Omnibus Volume 2"
+      }
+    ]
+  },
+  {
+    "name": "Tomahawk Angel",
+    "entries": [
+      {
+        "id": "cmazmof9cx8z475d61ee1a164ac4363",
+        "title": "Tomahawk Angel Volume 1"
+      },
+      {
+        "id": "cmazmof9h40lec517322ab924d4d462",
+        "title": "Tomahawk Angel Volume 2"
+      }
+    ]
+  },
+  {
+    "name": "Lone Wolf and Cub Deluxe Edition",
+    "entries": [
+      {
+        "id": "cmazmof222jd4b8acadcb849e461150",
+        "title": "Lone Wolf and Cub Deluxe Edition Volume 1"
+      },
+      {
+        "id": "cmazmof1u1jy9df2059e7b9744e14",
+        "title": "Lone Wolf and Cub Deluxe Edition Volume 2"
+      }
+    ]
+  },
+  {
+    "name": "Planetes Deluxe Edition Book",
+    "entries": [
+      {
+        "id": "cmazmof90w8f6fef193bacfb69bf102",
+        "title": "Planetes Deluxe Edition Book 1"
+      },
+      {
+        "id": "cmazmof90ik5075907b81657d31595",
+        "title": "Planetes Deluxe Edition Book 2"
+      }
+    ]
+  },
+  {
+    "name": "Invincible: The Ultimate Collection",
+    "entries": [
+      {
+        "id": "cmazmof26komec515c576d99b937247",
+        "title": "Invincible: The Ultimate Collection Volume 11"
+      },
+      {
+        "id": "cmazmof91qvldadc721235cee52b121",
+        "title": "Invincible: The Ultimate Collection Volume 12"
+      },
+      {
+        "id": "cmazmof8zi9519f16f98f438122b72",
+        "title": "Invincible: The Ultimate Collection Volume 3: The Ulitmate Collection"
+      },
+      {
+        "id": "cmazmof93u7i2b99ca60822ab15f168",
+        "title": "Invincible: The Ultimate Collection Volume 5"
+      },
+      {
+        "id": "cmazmof91bac2659721845473162113",
+        "title": "Invincible: The Ultimate Collection Volume 7"
+      },
+      {
+        "id": "cmazmof2ccas1ae99df503ec8409377",
+        "title": "Invincible: The Ultimate Collection Volume 8"
+      },
+      {
+        "id": "cmazmof210pr614043563386718e132",
+        "title": "Invincible: The Ultimate Collection Volume 9"
+      },
+      {
+        "id": "cmazmof2iuae65109ab3d376ce1b49",
+        "title": "Invincible: The Ultimate Collection Volume 10"
+      }
+    ]
+  },
+  {
+    "name": "Invincible Compendium",
+    "entries": [
+      {
+        "id": "cmazmofa8swf74f85211853c686f0",
+        "title": "Invincible Compendium Volume 3"
+      },
+      {
+        "id": "cmazmof1utvd0f6252f8a305617120",
+        "title": "Invincible Compendium Vol. 1 (English Edition)"
+      }
+    ]
+  },
+  {
+    "name": "Stillwater by Zdarsky & Perez",
+    "entries": [
+      {
+        "id": "cmazmof92ec7820209d11ac9aa98137",
+        "title": "Stillwater by Zdarsky & Perez Volume 1: Rage Rage"
+      },
+      {
+        "id": "cmazmof9erxde991627b35ea6270408",
+        "title": "Stillwater by Zdarsky & Perez Volume 2"
+      }
+    ]
+  },
+  {
+    "name": "Newburn",
+    "entries": [
+      {
+        "id": "cmazmof962plb2599d045799c6d2217",
+        "title": "Newburn, Volume 1"
+      },
+      {
+        "id": "cmazmof95m9c85a55e1a2d08f757205",
+        "title": "Newburn Volume 2"
+      }
+    ]
+  },
+  {
+    "name": "G.I. Joe: A Real American Hero Compendium",
+    "entries": [
+      {
+        "id": "cmazmof9d0dm38e50927d8fc9a61365",
+        "title": "G.I. Joe: A Real American Hero Compendium Vol. 2"
+      },
+      {
+        "id": "cmazmof96n8v2a501219814fd5c6230",
+        "title": "G.I. Joe: A Real American Hero Compendium Vol. 3"
+      }
+    ]
+  },
+  {
+    "name": "The Transformers Compendium",
+    "entries": [
+      {
+        "id": "cmazmof90be2e5bcf17f5fc381b490",
+        "title": "The Transformers Compendium Vol. 2"
+      },
+      {
+        "id": "cmazmof9334u70432107016982e2151",
+        "title": "The Transformers Compendium Vol. 1"
+      }
+    ]
+  },
+  {
+    "name": "Monstress",
+    "entries": [
+      {
+        "id": "cmazmof29cn0d3a94614fa1e6e23311",
+        "title": "Monstress Volume 10"
+      },
+      {
+        "id": "cmazmofad6ha0c52e4d5e1416430134",
+        "title": "Monstress Volume 11"
+      },
+      {
+        "id": "cmazmofq1e34b10785ca2aa6d771439",
+        "title": "Monstress #1 (English Edition)"
+      }
+    ]
+  },
+  {
+    "name": "Vinland Saga",
+    "entries": [
+      {
+        "id": "cmazmof9kdc27a1d3bfbdf14d780537",
+        "title": "Vinland Saga, Volume 8"
+      },
+      {
+        "id": "cmazmof9gsu29229cdb379e05783457",
+        "title": "Vinland Saga 9"
+      }
+    ]
+  },
+  {
+    "name": "Witch Hat Atelier",
+    "entries": [
+      {
+        "id": "cmazmof9gmtd0cee294a57dfae84453",
+        "title": "Witch Hat Atelier 3"
+      },
+      {
+        "id": "cmazmof9c8mxa3a29c72b65e4067349",
+        "title": "Witch Hat Atelier 6"
+      },
+      {
+        "id": "cmazmof91x0f831718dee29206a1125",
+        "title": "Witch Hat Atelier 13"
+      }
+    ]
+  },
+  {
+    "name": "The Kingdoms of Ruin",
+    "entries": [
+      {
+        "id": "cmazmof9qtgf08987e3dc62c9646673",
+        "title": "The Kingdoms of Ruin Vol. 4"
+      },
+      {
+        "id": "cmazmof9qs0u578d7001693cd432672",
+        "title": "The Kingdoms of Ruin Vol. 6"
+      },
+      {
+        "id": "cmazmof9enyic0d8b5e5249ec735405",
+        "title": "The Kingdoms of Ruin Vol. 2"
+      },
+      {
+        "id": "cmazmof9qjx58fb3ae0d00cfc835666",
+        "title": "The Kingdoms of Ruin Vol. 8"
+      }
+    ]
+  },
+  {
+    "name": "Darling in the Franxx",
+    "entries": [
+      {
+        "id": "cmazmof1vs20047850a099f2d9d041",
+        "title": "Darling in the Franxx Vol. 1-2"
+      },
+      {
+        "id": "cmazmof1wh4i223b8d186b47415b56",
+        "title": "Darling in the Franxx Vol. 7-8: 4"
+      }
+    ]
+  },
+  {
+    "name": "The Duke of Death and His Maid",
+    "entries": [
+      {
+        "id": "cmazmof95zik4f39f2f1f9a78fb3215",
+        "title": "The Duke of Death and His Maid Vol. 1"
+      },
+      {
+        "id": "cmazmof924dma84f728ae58693a3130",
+        "title": "The Duke of Death and His Maid Vol. 2"
+      }
+    ]
+  },
+  {
+    "name": "Classroom of the Elite: Year 2 (Light Novel)",
+    "entries": [
+      {
+        "id": "cmazmof9q2tyfdb5a9d41ed1558e657",
+        "title": "Classroom of the Elite: Year 2 (Light Novel) Vol. 6: 7"
+      },
+      {
+        "id": "cmazmof9f2tifcce497281bda617417",
+        "title": "Classroom of the Elite: Year 2 (Light Novel) Vol. 5: 6"
+      },
+      {
+        "id": "cmazmof9nzgoc6e73d6547104c6a610",
+        "title": "Classroom of the Elite: Year 2 (Light Novel) Vol. 8: 9"
+      }
+    ]
+  },
+  {
+    "name": "Cells at Work! Code Black",
+    "entries": [
+      {
+        "id": "cmazmof29l5pb6256c92e144343b317",
+        "title": "Cells at Work! Code Black 5"
+      },
+      {
+        "id": "cmazmof2etk6f9fbdde641ce65f9433",
+        "title": "Cells at Work! Code Black 7"
+      }
+    ]
+  },
+  {
+    "name": "A Sign of Affection",
+    "entries": [
+      {
+        "id": "cmazmof2iixm92cc975814cc35a740",
+        "title": "A Sign of Affection 1"
+      },
+      {
+        "id": "cmazmof93m244813139d50861408162",
+        "title": "A Sign of Affection 2"
+      },
+      {
+        "id": "cmazmof93t2x89767728f9e6a793167",
+        "title": "A Sign of Affection 3"
+      },
+      {
+        "id": "cmazmof2irzld67eb49b473c6c5147",
+        "title": "A Sign of Affection 12"
+      }
+    ]
+  },
+  {
+    "name": "Cardcaptor Sakura: Clear Card",
+    "entries": [
+      {
+        "id": "cmazmof9g518e46ab0baa93bd9dd440",
+        "title": "Cardcaptor Sakura: Clear Card 10"
+      },
+      {
+        "id": "cmazmof9gakwc693a2f546a941f0444",
+        "title": "Cardcaptor Sakura: Clear Card 13"
+      }
+    ]
+  },
+  {
+    "name": "Blue Lock",
+    "entries": [
+      {
+        "id": "cmazmof90e03326e5e78c79c963f92",
+        "title": "Blue Lock 2"
+      },
+      {
+        "id": "cmazmof2ho6v330c648cbde4bb3223",
+        "title": "Blue Lock 3"
+      },
+      {
+        "id": "cmazmof97x4a5a740d33fca513a8258",
+        "title": "Blue Lock 6"
+      },
+      {
+        "id": "cmazmof91e0ma74bdd73dca2824b115",
+        "title": "Blue Lock 15"
+      },
+      {
+        "id": "cmazmof2iwxjf97b3ed653774b0751",
+        "title": "Blue Lock 17"
+      },
+      {
+        "id": "cmazmof1td2nbc3c967c4b01c1bf1",
+        "title": "Blue Lock 19"
+      },
+      {
+        "id": "cmazmof93kpj771cf93b22890204161",
+        "title": "Blue Lock 20"
+      },
+      {
+        "id": "cmazmof989ml1e77ba2fe5713e69263",
+        "title": "Blue Lock 21"
+      },
+      {
+        "id": "cmazmof9fqhx92086bd8e3ed0eff432",
+        "title": "Blue Lock 22"
+      },
+      {
+        "id": "cmazmofqcpnt58f769bb68799f5b705",
+        "title": "Blue Lock Vol. 1"
+      },
+      {
+        "id": "cmazmofqj7v74aa1fa15ff9cac21858",
+        "title": "Blue lock vol. 22"
+      },
+      {
+        "id": "cmazmofqhk1e863eacbdc21fd4cf821",
+        "title": "Blue lock vol. 18"
+      },
+      {
+        "id": "cmazmofqieona6074bf7c1fd257f839",
+        "title": "Blue Lock Vol. 30"
+      },
+      {
+        "id": "cmazmofqk7u00c81510f7e881c49883",
+        "title": "Blue Lock Vol. 32"
+      },
+      {
+        "id": "cmazmofqmrm0985ba674de359c8b944",
+        "title": "Blue Lock Vol. 2"
+      },
+      {
+        "id": "cmazmof92s8n72f8efc285e8aae4144",
+        "title": "Blue Lock 23"
+      },
+      {
+        "id": "cmazmof27qptf46802e19e017ffb275",
+        "title": "Blue Lock 24"
+      },
+      {
+        "id": "cmazmof92y7u7b8a6ce2305bdb2d148",
+        "title": "Blue Lock 25"
+      },
+      {
+        "id": "cmazmofpwzzjcf6ad379c4c0b663337",
+        "title": "Blue Lock 35"
+      },
+      {
+        "id": "cmazmofpt6g8c64d377d56075c9b227",
+        "title": "Blue Lock 36"
+      }
+    ]
+  },
+  {
+    "name": "Witch Hat Atelier Kitchen",
+    "entries": [
+      {
+        "id": "cmazmof9onknb7567d51235428fb623",
+        "title": "Witch Hat Atelier Kitchen 1"
+      },
+      {
+        "id": "cmazmof9747h9162f4256f55ea01240",
+        "title": "Witch Hat Atelier Kitchen 2"
+      },
+      {
+        "id": "cmazmof98cq73ed402e5b6decc3d265",
+        "title": "Witch Hat Atelier Kitchen 3"
+      },
+      {
+        "id": "cmazmof8yufrbe0fb080963270bf58",
+        "title": "Witch Hat Atelier Kitchen 4"
+      },
+      {
+        "id": "cmazmof9jfza1b0d9d7d5dff6d56516",
+        "title": "Witch Hat Atelier Kitchen 5"
+      }
+    ]
+  },
+  {
+    "name": "Vinland Saga Deluxe",
+    "entries": [
+      {
+        "id": "cmazmof94qnf78b828cba2c0a44a187",
+        "title": "Vinland Saga Deluxe 1"
+      },
+      {
+        "id": "cmazmof9hjtta8ca8e3e20c78d43473",
+        "title": "Vinland Saga Deluxe 4"
+      }
+    ]
+  },
+  {
+    "name": "Toradora! (Manga)",
+    "entries": [
+      {
+        "id": "cmazmof9qntc29f46ff238906926669",
+        "title": "Toradora! (Manga) Vol. 10"
+      },
+      {
+        "id": "cmazmof9nlq82226fb1fefcac57f600",
+        "title": "Toradora! (Manga) Vol. 11"
+      }
+    ]
+  },
+  {
+    "name": "Yakuza Fiancé Raise Wa Tanin Ga II",
+    "entries": [
+      {
+        "id": "cmazmof9j8kncb73ae9abce7f90e511",
+        "title": "Yakuza Fiancé Raise Wa Tanin Ga II Vol. 1"
+      },
+      {
+        "id": "cmazmofa7teu99e987d13b6f65de0",
+        "title": "Yakuza Fiancé Raise Wa Tanin Ga II Vol. 2: Yakuza Fiancé: Raise Wa Tanin Ga II: Yakuza Fiancé: Raise Wa Tanin Ga II: Yakuza Fiancé: Raise Wa Tanin Ga "
+      },
+      {
+        "id": "cmazmof9nopn9cb9c7a31444a7d3602",
+        "title": "Yakuza Fiancé Raise Wa Tanin Ga II Vol. 3"
+      },
+      {
+        "id": "cmazmof9oulsd8e9fd40c24a10eb628",
+        "title": "Yakuza Fiancé Raise Wa Tanin Ga II Vol. 5"
+      }
+    ]
+  },
+  {
+    "name": "Dai Dark",
+    "entries": [
+      {
+        "id": "cmazmof9pu2i204b361f050df5a2651",
+        "title": "Dai Dark Vol. 6"
+      },
+      {
+        "id": "cmazmof9jk5b6a34be86e4da3910519",
+        "title": "Dai Dark Vol. 7"
+      }
+    ]
+  },
+  {
+    "name": "Homunculus (Omnibus)",
+    "entries": [
+      {
+        "id": "cmazmof983w26d594a26d30416fc260",
+        "title": "Homunculus (Omnibus) Vol. 1-2"
+      },
+      {
+        "id": "cmazmof90fks76e234280927713593",
+        "title": "Homunculus (Omnibus) Vol. 3-4: 2"
+      },
+      {
+        "id": "cmazmof9kq548ef4c343fa1aa1e1544",
+        "title": "Homunculus (Omnibus) Vol. 7-8: 4"
+      },
+      {
+        "id": "cmazmof9q09s5a9437e152e89464655",
+        "title": "Homunculus (Omnibus) Vol. 9-10: 5"
+      }
+    ]
+  },
+  {
+    "name": "Veil",
+    "entries": [
+      {
+        "id": "cmazmof204su0e02c8c731715560112",
+        "title": "Veil Volume 1: Temperature of Orange"
+      },
+      {
+        "id": "cmazmof9k3y46debc8945131b508530",
+        "title": "Veil Volume 2: Calming Noir"
+      },
+      {
+        "id": "cmazmof1w8tn89a8caf66f038ab650",
+        "title": "Veil Volume 3: Graceful White"
+      },
+      {
+        "id": "cmazmofqnnt7b3b8771b85e2a61b962",
+        "title": "Veil Volume 4: Transparent Burns"
+      },
+      {
+        "id": "cmazmofae0mn1e484522d081a552158",
+        "title": "Veil Volume 6: Untangled Rouge"
+      }
+    ]
+  },
+  {
+    "name": "Preacher: The 25th Anniversary Omnibus",
+    "entries": [
+      {
+        "id": "cmazmof265i18003d37601447e66239",
+        "title": "Preacher: The 25th Anniversary Omnibus Vol. 1"
+      },
+      {
+        "id": "cmazmof2e9eoc0c72af3146a1b56422",
+        "title": "Preacher: The 25th Anniversary Omnibus Vol. 2"
+      }
+    ]
+  },
+  {
+    "name": "Batman/Superman: World's Finest",
+    "entries": [
+      {
+        "id": "cmazmof2huqn0f0420d3d93a521b27",
+        "title": "Batman/Superman: World's Finest Vol. 1: The Devil Nezha"
+      },
+      {
+        "id": "cmazmof2gqmbabc8b5bad6ae216d2",
+        "title": "Batman/Superman: World's Finest Vol. 3: Elementary"
+      },
+      {
+        "id": "cmazmof2bux53b2e060c37cae12c364",
+        "title": "Batman/Superman: World's Finest Vol. 5: Secret Origins"
+      },
+      {
+        "id": "cmazmof2io1z02959160f766fa9244",
+        "title": "Batman/Superman: World's Finest Vol. 6 Impossible"
+      },
+      {
+        "id": "cmazmof2imuta42a3e6d99142cef43",
+        "title": "Batman/Superman: World's Finest Vol. 7: Total Eclipso: World's Finest 7; Total Eclipso"
+      }
+    ]
+  },
+  {
+    "name": "Shade, the Changing Man by Peter Milligan and Chris Bachalo Omnibus",
+    "entries": [
+      {
+        "id": "cmazmof2il947f206f48e1aaf31642",
+        "title": "Shade, the Changing Man by Peter Milligan and Chris Bachalo Omnibus Vol. 1"
+      },
+      {
+        "id": "cmazmof23rz4789509798631b05f187",
+        "title": "Shade, the Changing Man by Peter Milligan and Chris Bachalo Omnibus Vol. 2"
+      }
+    ]
+  },
+  {
+    "name": "Batman: The Golden Age Omnibus",
+    "entries": [
+      {
+        "id": "cmazmof9aaof46faecee9307cce1306",
+        "title": "Batman: The Golden Age Omnibus Vol. 2 (2025 Edition)"
+      },
+      {
+        "id": "cmazmof987yee593b4455bd070e6262",
+        "title": "Batman: The Golden Age Omnibus Vol. 3 (New Edition)"
+      }
+    ]
+  },
+  {
+    "name": "The Warlord by Mike Grell Omnibus",
+    "entries": [
+      {
+        "id": "cmazmof947y7d89bcc93c1951915178",
+        "title": "The Warlord by Mike Grell Omnibus Vol. 1"
+      },
+      {
+        "id": "cmazmofpv9z12186a4932bc5fa51289",
+        "title": "The Warlord by Mike Grell Omnibus Vol. 2"
+      }
+    ]
+  },
+  {
+    "name": "Mobile Suit Gundam: The Origin",
+    "entries": [
+      {
+        "id": "cmazmof9boov8a175c8f972bb34b338",
+        "title": "Mobile Suit Gundam: The Origin, Volume 5: Char & Sayla: 05"
+      },
+      {
+        "id": "cmazmof9a4zrf545e5e7bd421eb5302",
+        "title": "Mobile Suit Gundam: The Origin, Volume 6: To War"
+      }
+    ]
+  },
+  {
+    "name": "Glaeolia",
+    "entries": [
+      {
+        "id": "cmazmofptseu6d5272c74dc9f56b244",
+        "title": "Glaeolia 4"
+      },
+      {
+        "id": "cmazmofpts09773fe612de7f723a243",
+        "title": "Glaeolia 5"
+      }
+    ]
+  },
+  {
+    "name": "Oni & Dawn: Bakumatsu High School Girls",
+    "entries": [
+      {
+        "id": "cmazmofacvuz573587270995d8d1127",
+        "title": "Oni & Dawn: Bakumatsu High School Girls, Volume 2"
+      },
+      {
+        "id": "cmazmofaclyu30a0e38f25086547118",
+        "title": "Oni & Dawn: Bakumatsu High School Girls, Volume 3"
+      }
+    ]
+  },
+  {
+    "name": "Magi: The Labyrinth of Magic",
+    "entries": [
+      {
+        "id": "cmazmof20dg4a4b78ff07720ba40118",
+        "title": "Magi: The Labyrinth of Magic, Vol. 33"
+      },
+      {
+        "id": "cmazmof1vad1c76b7718a2ee281b29",
+        "title": "Magi: The Labyrinth of Magic, Vol. 34"
+      },
+      {
+        "id": "cmazmof1v62i31dbe5a6ddc8e89f26",
+        "title": "Magi: The Labyrinth of Magic, Vol. 35"
+      },
+      {
+        "id": "cmazmof1v1qp291ee82fbcee70b223",
+        "title": "Magi: The Labyrinth of Magic, Vol. 36"
+      },
+      {
+        "id": "cmazmof1uw452621807bfd78ac6222",
+        "title": "Magi: The Labyrinth of Magic, Vol. 37"
+      }
+    ]
+  },
+  {
+    "name": "Requiem of the Rose King",
+    "entries": [
+      {
+        "id": "cmazmof27jna126656652b8dcea8270",
+        "title": "Requiem of the Rose King, Vol. 9: Volume 9"
+      },
+      {
+        "id": "cmazmof2b1oe87b8052a74a915e4347",
+        "title": "Requiem of the Rose King, Vol. 10: Volume 10"
+      }
+    ]
+  },
+  {
+    "name": "Ao Haru Ride",
+    "entries": [
+      {
+        "id": "cmazmof9pprw1737fdc44c61eb69648",
+        "title": "Ao Haru Ride, Vol. 1"
+      },
+      {
+        "id": "cmazmof9bnjr7ca83c72b9cf0c70337",
+        "title": "Ao Haru Ride, Vol. 2: Volume 2"
+      },
+      {
+        "id": "cmazmof9orlm09e009c960eb99dc626",
+        "title": "Ao Haru Ride, Vol. 3"
+      }
+    ]
+  },
+  {
+    "name": "Urusei Yatsura",
+    "entries": [
+      {
+        "id": "cmazmof2dthd7a7d42cea85b49ba410",
+        "title": "Urusei Yatsura, Vol. 1"
+      },
+      {
+        "id": "cmazmof29o82defb248ec2c30e4e319",
+        "title": "Urusei Yatsura, Vol. 2"
+      }
+    ]
+  },
+  {
+    "name": "Yu-Gi-Oh! Arc-V",
+    "entries": [
+      {
+        "id": "cmazmof254nyb691e48a89f9026f215",
+        "title": "Yu-Gi-Oh! Arc-V, Vol. 5: The Enemy's Hideout!!"
+      },
+      {
+        "id": "cmazmof2dnhz99138d4a88601aa2406",
+        "title": "Yu-Gi-Oh! Arc-V, Vol. 6: Challenge the Legends!!"
+      },
+      {
+        "id": "cmazmof28r3nfa8e8a5f19160395298",
+        "title": "Yu-Gi-Oh! Arc-V, Vol. 7"
+      }
+    ]
+  },
+  {
+    "name": "Demon Slayer: Kimetsu No Yaiba",
+    "entries": [
+      {
+        "id": "cmazmof21bo6c77706ebb9588703140",
+        "title": "Demon Slayer: Kimetsu No Yaiba, Vol. 7: Volume 7"
+      },
+      {
+        "id": "cmazmof2e4ff1c5cbfa9cd751b3b418",
+        "title": "Demon Slayer: Kimetsu No Yaiba, Vol. 8: Volume 8"
+      },
+      {
+        "id": "cmazmof2a9roe5ac552991896de1331",
+        "title": "Demon Slayer: Kimetsu No Yaiba, Vol. 9: Volume 9"
+      }
+    ]
+  },
+  {
+    "name": "Jojo's Bizarre Adventure: Part 4--Diamond Is Unbreakable",
+    "entries": [
+      {
+        "id": "cmazmof9bgaoeb2392feea73c96a331",
+        "title": "Jojo's Bizarre Adventure: Part 4--Diamond Is Unbreakable, Vol. 3: Volume 3"
+      },
+      {
+        "id": "cmazmof995726eeb224f84eb235a280",
+        "title": "Jojo's Bizarre Adventure: Part 4--Diamond Is Unbreakable, Vol. 4: Volume 4"
+      }
+    ]
+  },
+  {
+    "name": "Fushigi Yûgi: Byakko Senki",
+    "entries": [
+      {
+        "id": "cmazmof29zz77d4fa5ee58974530324",
+        "title": "Fushigi Yûgi: Byakko Senki, Vol. 1"
+      },
+      {
+        "id": "cmazmof28s8l0ac8ece7af7d466a299",
+        "title": "Fushigi Yûgi: Byakko Senki, Vol. 2"
+      },
+      {
+        "id": "cmazmof2dxusa286e4362c1d86ee413",
+        "title": "Fushigi Yûgi: Byakko Senki, Vol. 3: 5"
+      }
+    ]
+  },
+  {
+    "name": "How Do We Relationship?",
+    "entries": [
+      {
+        "id": "cmazmof99rrcd28c3031bf3ab01b295",
+        "title": "How Do We Relationship?, Vol. 1: Volume 1"
+      },
+      {
+        "id": "cmazmof9babbaac22146e8153671327",
+        "title": "How Do We Relationship?, Vol. 2"
+      }
+    ]
+  },
+  {
+    "name": "Persona 5",
+    "entries": [
+      {
+        "id": "cmazmof9micf16a1a5c373ad8ca5583",
+        "title": "Persona 5, Vol. 5"
+      },
+      {
+        "id": "cmazmof9l0iy2d446e2304b412f9551",
+        "title": "Persona 5, Vol. 8: Volume 8"
+      },
+      {
+        "id": "cmazmof9393h3b5dc77a41d2d575156",
+        "title": "Persona 5, Vol. 11"
+      }
+    ]
+  },
+  {
+    "name": "Spy X Family",
+    "entries": [
+      {
+        "id": "cmazmof20t3v8df414c826f8f11c126",
+        "title": "Spy X Family, Vol. 1: Volume 1"
+      },
+      {
+        "id": "cmazmofqidbee68b33404a4e6514838",
+        "title": "Spy x family vol. 16"
+      },
+      {
+        "id": "cmazmofqfx78993f310c3c1c38a2785",
+        "title": "Spy X Family Vol. 1"
+      },
+      {
+        "id": "cmazmofqdujm1b6cfe38d95e5e8c731",
+        "title": "Spy x Family Vol. 7"
+      }
+    ]
+  },
+  {
+    "name": "Haikyu!!",
+    "entries": [
+      {
+        "id": "cmazmof9oiy2d5c66897a6256e7b620",
+        "title": "Haikyu!!, Vol. 41: Volume 41"
+      },
+      {
+        "id": "cmazmof2h5zj4053dc920401882a13",
+        "title": "Haikyu!!, Vol. 45: Volume 45"
+      },
+      {
+        "id": "cmazmofqndyecf9a5bbadddb3ac5957",
+        "title": "Haikyu!! Vol. 10 - Big"
+      },
+      {
+        "id": "cmazmofqiwoy6cec831c036edd40850",
+        "title": "Haikyu!! Vol. 17 - Big"
+      },
+      {
+        "id": "cmazmofqmb8lc8ddbad96ca5773e932",
+        "title": "Haikyu!! Vol. 20 - Big"
+      }
+    ]
+  },
+  {
+    "name": "Chainsaw Man",
+    "entries": [
+      {
+        "id": "cmazmof9frxpd7292818ad2d98bc433",
+        "title": "Chainsaw Man, Vol. 6: Volume 6"
+      },
+      {
+        "id": "cmazmof1vioke28dbb928c87fc7d35",
+        "title": "Chainsaw Man, Vol. 11: Volume 11"
+      },
+      {
+        "id": "cmazmof92zobfb224eac4335b71f149",
+        "title": "Chainsaw Man, Vol. 17"
+      },
+      {
+        "id": "cmazmofqe5ind9537fbc409040d9740",
+        "title": "Chainsaw man Vol. 1"
+      },
+      {
+        "id": "cmazmofqftspba0778938ad63bba782",
+        "title": "Chainsaw man Vol. 3"
+      }
+    ]
+  },
+  {
+    "name": "Hell's Paradise: Jigokuraku",
+    "entries": [
+      {
+        "id": "cmazmof1zxve3dcf8b2e45c66a93107",
+        "title": "Hell's Paradise: Jigokuraku, Vol. 11"
+      },
+      {
+        "id": "cmazmof1yp6w7665be7d7055e14982",
+        "title": "Hell's Paradise: Jigokuraku, Vol. 12: Volume 12"
+      },
+      {
+        "id": "cmazmof1wfm5bcaa66f569c48f5055",
+        "title": "Hell's Paradise: Jigokuraku, Vol. 13"
+      }
+    ]
+  },
+  {
+    "name": "Frieren: Beyond Journey's End",
+    "entries": [
+      {
+        "id": "cmazmof2cqapab8efac0c6693e97384",
+        "title": "Frieren: Beyond Journey's End, Vol. 1: Volume 1"
+      },
+      {
+        "id": "cmazmof9mjtv4e663ff56dc30c02584",
+        "title": "Frieren: Beyond Journey's End, Vol. 11: Emerging Lessons from India and Nigeria 11"
+      },
+      {
+        "id": "cmazmof91ckh5b696b4b30d5225a114",
+        "title": "Frieren: Beyond Journey's End, Vol. 14"
+      },
+      {
+        "id": "cmazmofaehch85a5c16a59491d43172",
+        "title": "Frieren: Beyond Journey's End, Vol. 15"
+      }
+    ]
+  },
+  {
+    "name": "Thus Spoke Rohan Kishibe",
+    "entries": [
+      {
+        "id": "cmazmof98vuk50d16956532b5f46277",
+        "title": "Thus Spoke Rohan Kishibe, Vol. 1: Volume 1"
+      },
+      {
+        "id": "cmazmof98uhj14a3a3bf7f42faf8276",
+        "title": "Thus Spoke Rohan Kishibe, Vol. 2: Volume 2"
+      }
+    ]
+  },
+  {
+    "name": "Kirby Manga Mania",
+    "entries": [
+      {
+        "id": "cmazmof2a8ju9853e30d1d723f48330",
+        "title": "Kirby Manga Mania, Vol. 6: Volume 6"
+      },
+      {
+        "id": "cmazmof2ekaw63f7de5cfa806803427",
+        "title": "Kirby Manga Mania, Vol. 7"
+      }
+    ]
+  },
+  {
+    "name": "Jujutsu Kaisen",
+    "entries": [
+      {
+        "id": "cmazmofa7wem809e75ffe360feb03",
+        "title": "Jujutsu Kaisen, Vol. 18: Volume 18"
+      },
+      {
+        "id": "cmazmof9ccn288fa69da3184ad73352",
+        "title": "Jujutsu Kaisen, Vol. 20: Sendai Colony--The Height of the Feast--"
+      },
+      {
+        "id": "cmazmof1xats29b49cb6858443b768",
+        "title": "Jujutsu Kaisen, Vol. 24"
+      },
+      {
+        "id": "cmazmof9jymxe46f3f758cc752fe526",
+        "title": "Jujutsu Kaisen, Vol. 25"
+      },
+      {
+        "id": "cmazmof1vd6ubb97194ca7682bc431",
+        "title": "Jujutsu Kaisen, Vol. 26"
+      },
+      {
+        "id": "cmazmof2dkpx7753ee42aaeaf667404",
+        "title": "Jujutsu Kaisen, Vol. 27"
+      },
+      {
+        "id": "cmazmof9b99l930e4ca282fa1f00326",
+        "title": "Jujutsu Kaisen, Vol. 28: 23"
+      },
+      {
+        "id": "cmazmof9lqsk15619fc5ba6bdcbb567",
+        "title": "Jujutsu Kaisen, Vol. 29"
+      }
+    ]
+  },
+  {
+    "name": "Yashahime: Princess Half-Demon",
+    "entries": [
+      {
+        "id": "cmazmof9hfso793c616a6ce323bb470",
+        "title": "Yashahime: Princess Half-Demon, Vol. 2: Volume 2"
+      },
+      {
+        "id": "cmazmof1y9d7c54fbf7bf894d42970",
+        "title": "Yashahime: Princess Half-Demon, Vol. 5"
+      },
+      {
+        "id": "cmazmof1w6b6c4ea4545e5ed649c48",
+        "title": "Yashahime: Princess Half-Demon, Vol. 7"
+      },
+      {
+        "id": "cmazmof9c6dd5c06cd868fc0e298347",
+        "title": "Yashahime: Princess Half-Demon, Vol. 8"
+      }
+    ]
+  },
+  {
+    "name": "Blue Box",
+    "entries": [
+      {
+        "id": "cmazmof9d6precbebb1c2cf414f7370",
+        "title": "Blue Box, Vol. 5"
+      },
+      {
+        "id": "cmazmof9ddrse7206dbbef2ccf79375",
+        "title": "Blue Box, Vol. 9"
+      },
+      {
+        "id": "cmazmof9daekc21902f765d0de0b373",
+        "title": "Blue Box, Vol. 11"
+      },
+      {
+        "id": "cmazmofqi2xc29a9cb5b80e5f0e5830",
+        "title": "Blue Box Vol. 01"
+      },
+      {
+        "id": "cmazmofpuy7n81162a80b6e4a499278",
+        "title": "Blue Box, Vol. 22 (English Edition)"
+      }
+    ]
+  },
+  {
+    "name": "Tokyo These Days",
+    "entries": [
+      {
+        "id": "cmazmof27sa964686327844af938276",
+        "title": "Tokyo These Days, Vol. 1"
+      },
+      {
+        "id": "cmazmof2byvk7ae00ce30b6fe5b6367",
+        "title": "Tokyo These Days, Vol. 2: Viz Signature Edition"
+      },
+      {
+        "id": "cmazmof217t800cfac3e0bd33cba137",
+        "title": "Tokyo These Days, Vol. 3"
+      }
+    ]
+  },
+  {
+    "name": "Naruto: Sasuke's Story--The Uchiha and the Heavenly Stardust: The Manga",
+    "entries": [
+      {
+        "id": "cmazmof9nn9e3edd261321552212601",
+        "title": "Naruto: Sasuke's Story--The Uchiha and the Heavenly Stardust: The Manga, Vol. 1"
+      },
+      {
+        "id": "cmazmof9g8705292b9e6aeca5f9f442",
+        "title": "Naruto: Sasuke's Story--The Uchiha and the Heavenly Stardust: The Manga, Vol. 2"
+      }
+    ]
+  },
+  {
+    "name": "I Want to End This Love Game",
+    "entries": [
+      {
+        "id": "cmazmof20c44cf1bf0fe0c701c44117",
+        "title": "I Want to End This Love Game, Vol. 1"
+      },
+      {
+        "id": "cmazmof96jja19e52f0d6cc3ed72227",
+        "title": "I Want to End This Love Game, Vol. 3"
+      },
+      {
+        "id": "cmazmof92onoeeabee51aac076fa141",
+        "title": "I Want to End This Love Game, Vol. 4"
+      },
+      {
+        "id": "cmazmof96i7paa072651eb3cd33f226",
+        "title": "I Want to End This Love Game, Vol. 6"
+      }
+    ]
+  },
+  {
+    "name": "One-Punch Man",
+    "entries": [
+      {
+        "id": "cmazmof2h3c8f2a3ebd449abad1611",
+        "title": "One-Punch Man, Vol. 27"
+      },
+      {
+        "id": "cmazmofqdg4t7a4d6c4ad3204548723",
+        "title": "One-punch man vol. 28"
+      }
+    ]
+  },
+  {
+    "name": "Last Quarter",
+    "entries": [
+      {
+        "id": "cmazmof23c43280e12d37e9ed34b179",
+        "title": "Last Quarter, Vol. 1"
+      },
+      {
+        "id": "cmazmof23os7337bad068c3f1884185",
+        "title": "Last Quarter, Vol. 2"
+      }
+    ]
+  },
+  {
+    "name": "You and I Are Polar Opposites",
+    "entries": [
+      {
+        "id": "cmazmof1woj9f306e808f28716ea61",
+        "title": "You and I Are Polar Opposites, Vol. 1"
+      },
+      {
+        "id": "cmazmof21nuc6818cf3d5e9bc7c4142",
+        "title": "You and I Are Polar Opposites, Vol. 2"
+      },
+      {
+        "id": "cmazmof28ma0eb815461694ad473295",
+        "title": "You and I Are Polar Opposites, Vol. 3"
+      }
+    ]
+  },
+  {
+    "name": "Fool Night",
+    "entries": [
+      {
+        "id": "cmazmof27ai4089645509d2649df263",
+        "title": "Fool Night, Vol. 1"
+      },
+      {
+        "id": "cmazmof28v6ac7f63f9d61845455301",
+        "title": "Fool Night, Vol. 3"
+      }
+    ]
+  },
+  {
+    "name": "Boruto: Two Blue Vortex",
+    "entries": [
+      {
+        "id": "cmazmof9dryk5282f79381bfefd7382",
+        "title": "Boruto: Two Blue Vortex, Vol. 1"
+      },
+      {
+        "id": "cmazmof9fzppda53097042908b18439",
+        "title": "Boruto: Two Blue Vortex, Vol. 4"
+      }
+    ]
+  },
+  {
+    "name": "Destroy All Humans. They Can't Be Regenerated. a Magic: The Gathering Manga",
+    "entries": [
+      {
+        "id": "cmazmof9a96r842ca07c964e6543305",
+        "title": "Destroy All Humans. They Can't Be Regenerated. a Magic: The Gathering Manga, Vol. 1: Limited Edition Magic: The Gathering Card Included in First Printing!"
+      },
+      {
+        "id": "cmazmof9apeo8132d3e993aeafe1315",
+        "title": "Destroy All Humans. They Can't Be Regenerated. a Magic: The Gathering Manga, Vol. 2: Limited Edition Magic: The Gathering Card Included in First Printing!"
+      },
+      {
+        "id": "cmazmof25tta082d24ff521d1fe9230",
+        "title": "Destroy All Humans. They Can't Be Regenerated. a Magic: The Gathering Manga, Vol. 5: Limited Edition Magic: The Gathering Card Included in First Printing!"
+      },
+      {
+        "id": "cmazmof97oja2c514118ac2974f4252",
+        "title": "Destroy All Humans. They Can't Be Regenerated. a Magic: The Gathering Manga, Vol. 6: Limited Edition Magic: The Gathering Card Included in First Printing!"
+      },
+      {
+        "id": "cmazmof2bwop73beb9474fb22e5f365",
+        "title": "Destroy All Humans. They Can't Be Regenerated. a Magic: The Gathering Manga, Vol. 7: Limited Edition Magic: The Gathering Card Included in First Printing!"
+      }
+    ]
+  },
+  {
+    "name": "Sleeping on Paper Boats",
+    "entries": [
+      {
+        "id": "cmazmof22xnke78658851150d8cd168",
+        "title": "Sleeping on Paper Boats, Vol. 1: 26"
+      },
+      {
+        "id": "cmazmof231j4c7115e665366c963171",
+        "title": "Sleeping on Paper Boats, Vol. 2"
+      }
+    ]
+  },
+  {
+    "name": "Tamon's B-Side",
+    "entries": [
+      {
+        "id": "cmazmof2hjz7778ab3047c931dfe20",
+        "title": "Tamon's B-Side, Vol. 7"
+      },
+      {
+        "id": "cmazmof2fcq27ab260231330ffae443",
+        "title": "Tamon's B-Side, Vol. 8"
+      },
+      {
+        "id": "cmazmof2hy0dc7f210717804b42429",
+        "title": "Tamon's B-Side, Vol. 9"
+      },
+      {
+        "id": "cmazmofpv0guf3547c6115d9f358281",
+        "title": "Tamon's B-Side, Vol. 12"
+      }
+    ]
+  },
+  {
+    "name": "Jojo's Bizarre Adventure: Part 7--Steel Ball Run",
+    "entries": [
+      {
+        "id": "cmazmof9aql9a2012116cf512f22316",
+        "title": "Jojo's Bizarre Adventure: Part 7--Steel Ball Run, Vol. 1: Steel Ball Run 1"
+      },
+      {
+        "id": "cmazmof2d5vud0bbd00b1ca5ea96396",
+        "title": "Jojo's Bizarre Adventure: Part 7--Steel Ball Run, Vol. 2"
+      },
+      {
+        "id": "cmazmof24bi125c160994cffcd50199",
+        "title": "Jojo's Bizarre Adventure: Part 7--Steel Ball Run, Vol. 3"
+      },
+      {
+        "id": "cmazmof98egx513f3551b42034e4266",
+        "title": "Jojo's Bizarre Adventure: Part 7--Steel Ball Run, Vol. 5"
+      },
+      {
+        "id": "cmazmof27wrd7feea43ef0e2c9d1279",
+        "title": "Jojo's Bizarre Adventure: Part 7--Steel Ball Run, Vol. 6"
+      }
+    ]
+  },
+  {
+    "name": "Vagabond Definitive Edition",
+    "entries": [
+      {
+        "id": "cmazmof1ur7e3b7a5a6db85f9c4718",
+        "title": "Vagabond Definitive Edition, Vol. 1: Definitive Edition 1"
+      },
+      {
+        "id": "cmazmof22qym03a21f07cec8154c163",
+        "title": "Vagabond Definitive Edition, Vol. 2"
+      },
+      {
+        "id": "cmazmof2h4wk593c21d58472127112",
+        "title": "Vagabond Definitive Edition, Vol. 3"
+      },
+      {
+        "id": "cmazmof9gemo1b21c12cdde1c932447",
+        "title": "Vagabond Definitive Edition, Vol. 4"
+      },
+      {
+        "id": "cmazmof29qzb9d4acfa95246e932321",
+        "title": "Vagabond Definitive Edition, Vol. 5"
+      }
+    ]
+  },
+  {
+    "name": "One Piece: Heroines",
+    "entries": [
+      {
+        "id": "cmazmof9cjwkf7c1dd1473e1645e357",
+        "title": "One Piece: Heroines, Vol. 1"
+      },
+      {
+        "id": "cmazmof98sstafdc8019e53f53c8275",
+        "title": "One Piece: Heroines, Vol. 2"
+      }
+    ]
+  },
+  {
+    "name": "Nana 25th Anniversary Edition",
+    "entries": [
+      {
+        "id": "cmazmof9dqix1fe3de89732f6e89381",
+        "title": "Nana 25th Anniversary Edition, Vol. 1"
+      },
+      {
+        "id": "cmazmof918rc16316f2bf85757d1111",
+        "title": "Nana 25th Anniversary Edition, Vol. 2: 1"
+      },
+      {
+        "id": "cmazmof1zml3e61b1ca836dae380102",
+        "title": "Nana 25th Anniversary Edition, Vol. 3"
+      }
+    ]
+  },
+  {
+    "name": "Kingdom",
+    "entries": [
+      {
+        "id": "cmazmof912no532eaa82650444f0106",
+        "title": "Kingdom, Vol. 1"
+      },
+      {
+        "id": "cmazmof2i5ni35b6ebe31b7b71f334",
+        "title": "Kingdom, Vol. 2: 16"
+      },
+      {
+        "id": "cmazmof212craec7f4f48fb95e2a133",
+        "title": "Kingdom, Vol. 4"
+      },
+      {
+        "id": "cmazmof9im0562f5758fdba9d2e3498",
+        "title": "Kingdom, Vol. 6"
+      }
+    ]
+  },
+  {
+    "name": "Bungo Stray Dogs: Beast",
+    "entries": [
+      {
+        "id": "cmazmof1x10593359e2bd66e720b67",
+        "title": "Bungo Stray Dogs: Beast, Vol. 1: Volume 1"
+      },
+      {
+        "id": "cmazmof2dcgpdd92efe4b01010fc401",
+        "title": "Bungo Stray Dogs: Beast, Vol. 2: Volume 2"
+      },
+      {
+        "id": "cmazmof99b7oe3821315cf3c456c284",
+        "title": "Bungo Stray Dogs: Beast, Vol. 3: Volume 3"
+      },
+      {
+        "id": "cmazmof945qd0dc0a5531cdecb0c176",
+        "title": "Bungo Stray Dogs: Beast, Vol. 4: Volume 4"
+      }
+    ]
+  },
+  {
+    "name": "The Magical Revolution of the Reincarnated Princess and the Genius Young Lady",
+    "entries": [
+      {
+        "id": "cmazmof9ikj42a3ea667ae60c791497",
+        "title": "The Magical Revolution of the Reincarnated Princess and the Genius Young Lady, Vol. 1 (Manga)"
+      },
+      {
+        "id": "cmazmof9i38k360e353a7478a3af485",
+        "title": "The Magical Revolution of the Reincarnated Princess and the Genius Young Lady, Vol. 2 (Manga)"
+      },
+      {
+        "id": "cmazmof9e2t0cf229627c406e4bf390",
+        "title": "The Magical Revolution of the Reincarnated Princess and the Genius Young Lady, Vol. 3 (Manga)"
+      },
+      {
+        "id": "cmazmof9iixq05d42c96e9385162496",
+        "title": "The Magical Revolution of the Reincarnated Princess and the Genius Young Lady, Vol. 4 (Manga)"
+      },
+      {
+        "id": "cmazmof9iha2c1a39b3570001272495",
+        "title": "The Magical Revolution of the Reincarnated Princess and the Genius Young Lady, Vol. 5 (Manga)"
+      },
+      {
+        "id": "cmazmof9ifkpb46e28942ac53a5e494",
+        "title": "The Magical Revolution of the Reincarnated Princess and the Genius Young Lady, Vol. 6 (Manga): Volume 6"
+      },
+      {
+        "id": "cmazmof9djlqa597f93fbe72551b379",
+        "title": "The Magical Revolution of the Reincarnated Princess and the Genius Young Lady, Vol. 7 (Manga): Volume 7"
+      }
+    ]
+  },
+  {
+    "name": "Why Raeliana Ended Up at the Duke's Mansion",
+    "entries": [
+      {
+        "id": "cmazmof1zwe8d339f5d09587132a106",
+        "title": "Why Raeliana Ended Up at the Duke's Mansion, Vol. 1: Volume 1"
+      },
+      {
+        "id": "cmazmof9qhbqdbba35e65694d11f664",
+        "title": "Why Raeliana Ended Up at the Duke's Mansion, Vol. 6: Volume 6"
+      },
+      {
+        "id": "cmazmof26xu04ee2b888c7cd05d7257",
+        "title": "Why Raeliana Ended Up at the Duke's Mansion, Vol. 9: Volume 9"
+      }
+    ]
+  },
+  {
+    "name": "Chained Soldier",
+    "entries": [
+      {
+        "id": "cmazmof24xda8d2616181c8a8e28210",
+        "title": "Chained Soldier, Vol. 2: Volume 2"
+      },
+      {
+        "id": "cmazmof2dsb4ef6c8e483bc04877409",
+        "title": "Chained Soldier, Vol. 3: Volume 3"
+      },
+      {
+        "id": "cmazmof28kns2538a47f556376a4294",
+        "title": "Chained Soldier, Vol. 4: Volume 4"
+      },
+      {
+        "id": "cmazmof26on4162c9166fd0c8f8c250",
+        "title": "Chained Soldier, Vol. 5: Volume 5"
+      },
+      {
+        "id": "cmazmof26n1x9458b4f07d54b598249",
+        "title": "Chained Soldier, Vol. 6: Volume 6"
+      },
+      {
+        "id": "cmazmof26jigec8f7ce381bafbbb246",
+        "title": "Chained Soldier, Vol. 7: Volume 7"
+      },
+      {
+        "id": "cmazmof26lv2bc10408f6f8a8235248",
+        "title": "Chained Soldier, Vol. 8: Volume 8"
+      },
+      {
+        "id": "cmazmof27d23323dbc57822bb4fc265",
+        "title": "Chained Soldier, Vol. 9: Volume 9"
+      },
+      {
+        "id": "cmazmof2c94512ab951101981416375",
+        "title": "Chained Soldier, Vol. 10: Volume 10"
+      },
+      {
+        "id": "cmazmof25l4f141736cf982ec613224",
+        "title": "Chained Soldier, Vol. 11: Volume 11"
+      },
+      {
+        "id": "cmazmof2485ide533870dd9828fa197",
+        "title": "Chained Soldier, Vol. 12: Volume 12"
+      },
+      {
+        "id": "cmazmof24yv28bce13f9610b253f211",
+        "title": "Chained Soldier, Vol. 13: Volume 13"
+      }
+    ]
+  },
+  {
+    "name": "Cheeky Brat",
+    "entries": [
+      {
+        "id": "cmazmof95j8i2cd36f50c8be61e1203",
+        "title": "Cheeky Brat, Vol. 15: Volume 15"
+      },
+      {
+        "id": "cmazmof96gtiada1253b4bdb12c9225",
+        "title": "Cheeky Brat, Vol. 16: Volume 16"
+      }
+    ]
+  },
+  {
+    "name": "Bungo Stray Dogs: Dazai, Chuuya, Age Fifteen",
+    "entries": [
+      {
+        "id": "cmazmof21xbhe00afb349daa1f6d146",
+        "title": "Bungo Stray Dogs: Dazai, Chuuya, Age Fifteen, Vol. 1: Volume 1"
+      },
+      {
+        "id": "cmazmof8yrhv07f897167fcbf47b56",
+        "title": "Bungo Stray Dogs: Dazai, Chuuya, Age Fifteen, Vol. 2: Volume 2"
+      },
+      {
+        "id": "cmazmof9mgzfcde4a63c7d9fe37e582",
+        "title": "Bungo Stray Dogs: Dazai, Chuuya, Age Fifteen, Vol. 3: Volume 3"
+      },
+      {
+        "id": "cmazmof1wbdj1fd42585afa0661b52",
+        "title": "Bungo Stray Dogs: Dazai, Chuuya, Age Fifteen, Vol. 4"
+      }
+    ]
+  },
+  {
+    "name": "Baby (mangá",
+    "entries": [
+      {
+        "id": "cmazmofqodh829bb99943d425e21979",
+        "title": "Baby (mangá volume 3 de 3) + Luva da Coleção"
+      },
+      {
+        "id": "cmazmofqk2xi8cf2d60111451f97879",
+        "title": "Baby (mangá volume 1 de 3)"
+      }
+    ]
+  },
+  {
+    "name": "O verão em que hikaru morreu",
+    "entries": [
+      {
+        "id": "cmazmofqn6gid2ee484e0ea60525952",
+        "title": "O verão em que hikaru morreu 02"
+      },
+      {
+        "id": "cmazmofqb4r6dd89ab276f6ef8a7668",
+        "title": "O verão em que hikaru morreu 01"
+      }
+    ]
+  },
+  {
+    "name": "Wind Breaker",
+    "entries": [
+      {
+        "id": "cmazmofqf7ga058f992223a9fede767",
+        "title": "Wind Breaker 02"
+      },
+      {
+        "id": "cmazmofqen542fcf2336c2c7bca5750",
+        "title": "Wind Breaker 01"
+      }
+    ]
+  },
+  {
+    "name": "Jujutsu kaisen: batalha de feiticeiros",
+    "entries": [
+      {
+        "id": "cmazmofqih6kafbdec0008d1d071841",
+        "title": "Jujutsu kaisen: batalha de feiticeiros vol. 22"
+      },
+      {
+        "id": "cmazmofqch8r839bad8ba9a3bc3a699",
+        "title": "Jujutsu Kaisen: Batalha de Feiticeiros Vol. 25"
+      },
+      {
+        "id": "cmazmofqijbj93f57540a0216a49842",
+        "title": "Jujutsu kaisen: batalha de feiticeiros vol. 23"
+      },
+      {
+        "id": "cmazmofqfo2o0d8a780c72030d9b777",
+        "title": "Jujutsu Kaisen: Batalha de Feiticeiros Vol. 28"
+      },
+      {
+        "id": "cmazmofqhllrd0aefd1b0b4190de822",
+        "title": "Jujutsu Kaisen: Batalha de Feiticeiros Vol. 4"
+      },
+      {
+        "id": "cmazmofqf5p3d6f6d263eb26cf85766",
+        "title": "Jujutsu Kaisen: Batalha de Feiticeiros Vol. 5"
+      },
+      {
+        "id": "cmazmofqhsn1c1349981e023ad5e826",
+        "title": "Jujutsu Kaisen: Batalha de Feiticeiros Vol. 12"
+      },
+      {
+        "id": "cmazmofqgj8yc5f486f66a491e8b798",
+        "title": "Jujutsu kaisen: batalha de feiticeiros vol. 11"
+      },
+      {
+        "id": "cmazmofqg2q4f5847e809e0dc749789",
+        "title": "Jujutsu Kaisen: Batalha de Feiticeiros Vol. 10"
+      },
+      {
+        "id": "cmazmofqn7jz393f089c90d02f1c953",
+        "title": "Jujutsu kaisen: batalha de feiticeiros vol. 9"
+      },
+      {
+        "id": "cmazmofqeg7zb3f6c0e169f0d7aa748",
+        "title": "Jujutsu kaisen: batalha de feiticeiros vol. 8"
+      },
+      {
+        "id": "cmazmofqh3wtf5aaf974f9115f1a810",
+        "title": "Jujutsu kaisen: batalha de feiticeiros vol. 7"
+      }
+    ]
+  },
+  {
+    "name": "Ragna Crimson",
+    "entries": [
+      {
+        "id": "cmazmofqk5svacfa0e41a874098f881",
+        "title": "Ragna Crimson 03"
+      },
+      {
+        "id": "cmazmofpt61sceef86aeefb3e38b226",
+        "title": "Ragna Crimson 16"
+      }
+    ]
+  },
+  {
+    "name": "Pluto: Edição de Luxo",
+    "entries": [
+      {
+        "id": "cmazmofqflblddbeed85c3215e75775",
+        "title": "Pluto: Edição de Luxo 02"
+      },
+      {
+        "id": "cmazmofqicc2921cfa62f37f0930837",
+        "title": "Pluto: Edição de Luxo 01"
+      }
+    ]
+  },
+  {
+    "name": "Kusuriya no Hitorigoto - Diários de uma Apotecária",
+    "entries": [
+      {
+        "id": "cmazmofqbdebc51724a4bd9dce91670",
+        "title": "Kusuriya no Hitorigoto - Diários de uma Apotecária 01"
+      },
+      {
+        "id": "cmazmofqioklf0ea4a5e32a75e7c847",
+        "title": "Kusuriya no hitorigoto - diários de uma apotecária 16"
+      }
+    ]
+  },
+  {
+    "name": "Gachiakuta",
+    "entries": [
+      {
+        "id": "cmazmofqifqi605fe6146f0247b0840",
+        "title": "Gachiakuta 01"
+      },
+      {
+        "id": "cmazmof260ghafa49eaca7723a04235",
+        "title": "Gachiakuta 1"
+      },
+      {
+        "id": "cmazmof9jroh61a1e9a5f07976d1521",
+        "title": "Gachiakuta 3"
+      },
+      {
+        "id": "cmazmof9fmfa255e400b6a765ec0429",
+        "title": "Gachiakuta 4"
+      }
+    ]
+  },
+  {
+    "name": "Superalmanaque Da Turma Da Mônica -",
+    "entries": [
+      {
+        "id": "cmazmofrzdce4aba47a7188de0cc1052",
+        "title": "Superalmanaque Da Turma Da Mônica - 15"
+      },
+      {
+        "id": "cmazmofs0r7lf65cc7afbc5abf851086",
+        "title": "Superalmanaque da Turma da Mônica - 21"
+      },
+      {
+        "id": "cmazmofqrcuz7d72a352d3c3e8201048",
+        "title": "Superalmanaque da turma da mônica - 20"
+      }
+    ]
+  },
+  {
+    "name": "Invencível",
+    "entries": [
+      {
+        "id": "cmazmofqqy7pa0b096c58a146e651036",
+        "title": "Invencível Vol. 02 - Oito é Demais"
+      },
+      {
+        "id": "cmazmofqr2y9876f9547483327da1040",
+        "title": "Invencível Vol. 01 - Negócios de Família"
+      }
+    ]
+  },
+  {
+    "name": "Pokémon X & Y",
+    "entries": [
+      {
+        "id": "cmazmofql3ste455d716529fb94b904",
+        "title": "Pokémon X & Y 01"
+      },
+      {
+        "id": "cmazmofqlq1fcce0bd1a6e4077c6918",
+        "title": "Pokémon X & Y Vol. 02"
+      },
+      {
+        "id": "cmazmofqlr6f5498f03b413cb9f5919",
+        "title": "Pokémon X & Y 03"
+      },
+      {
+        "id": "cmazmofqll6fa9acecb9eda2a742914",
+        "title": "Pokémon X & Y 06"
+      },
+      {
+        "id": "cmazmofqmjyj095c91ccac121de7938",
+        "title": "Pokémon X & Y 04"
+      }
+    ]
+  },
+  {
+    "name": "Tiras clássicas da turma da mônica",
+    "entries": [
+      {
+        "id": "cmazmofs3qgmf3994066bf5d814b1161",
+        "title": "Tiras clássicas da turma da mônica vol. 2"
+      },
+      {
+        "id": "cmazmofs7g6ye36ec1f443d6b2d01250",
+        "title": "Tiras Clássicas da Turma da Mônica Vol. 4"
+      }
+    ]
+  },
+  {
+    "name": "Solo Leveling",
+    "entries": [
+      {
+        "id": "cmazmofqkt9ld24390a408e4a086896",
+        "title": "Solo Leveling 11"
+      },
+      {
+        "id": "cmazmof9jimga02cecc2ca4776fe518",
+        "title": "Solo Leveling, Vol. 10 (Comic)"
+      },
+      {
+        "id": "cmazmof2gzdf1e39982e2d6e78fc8",
+        "title": "Solo Leveling, Vol. 15 (Comic): Side Stories 2"
+      }
+    ]
+  },
+  {
+    "name": "Smilinguido e sua turma em quadrinhos -",
+    "entries": [
+      {
+        "id": "cmazmofs8qwx618b25a3e9633a821283",
+        "title": "Smilinguido e sua turma em quadrinhos - vol. 3"
+      },
+      {
+        "id": "cmazmofs7uc9aef77c32ad94f9ce1261",
+        "title": "Smilinguido e sua turma em quadrinhos - vol. 1"
+      }
+    ]
+  },
+  {
+    "name": "Demon slayer - kimetsu no yaiba",
+    "entries": [
+      {
+        "id": "cmazmofqb11o5dc4a69967d1a79b665",
+        "title": "Demon slayer - kimetsu no yaiba vol. 3"
+      },
+      {
+        "id": "cmazmofqhubnade86f4e958337ef827",
+        "title": "Demon slayer - kimetsu no yaiba vol. 4"
+      },
+      {
+        "id": "cmazmofqn4ul17f351910dac9589951",
+        "title": "Demon slayer - kimetsu no yaiba vol. 5"
+      },
+      {
+        "id": "cmazmofqbw4n0881058cb9238b26686",
+        "title": "Demon slayer - kimetsu no yaiba vol. 11"
+      },
+      {
+        "id": "cmazmofqnm9jc78278719caa0d4e961",
+        "title": "Demon slayer - kimetsu no yaiba vol. 17"
+      },
+      {
+        "id": "cmazmofqbha0c90d63101d9fea59673",
+        "title": "Demon slayer - kimetsu no yaiba vol. 20"
+      },
+      {
+        "id": "cmazmofqfp530d1710891683ad77778",
+        "title": "Demon slayer - kimetsu no yaiba vol. 2"
+      }
+    ]
+  },
+  {
+    "name": "Monster Kanzenban",
+    "entries": [
+      {
+        "id": "cmazmofqohb501290aab84dad2b1982",
+        "title": "Monster Kanzenban Vol. 4"
+      },
+      {
+        "id": "cmazmofqgm3y09ef3edbb7c017f6800",
+        "title": "Monster Kanzenban Vol. 6"
+      },
+      {
+        "id": "cmazmofqjev83199d8e883d85587864",
+        "title": "Monster kanzenban vol. 8"
+      },
+      {
+        "id": "cmazmofqipyj8a2c57938ecac8c4848",
+        "title": "Monster Kanzenban Vol. 1"
+      },
+      {
+        "id": "cmazmofqmnuq138b077117880af2941",
+        "title": "Monster Kanzenban Vol. 2"
+      }
+    ]
+  },
+  {
+    "name": "Sonic The Hedgehog –",
+    "entries": [
+      {
+        "id": "cmazmofqqlo915c2ffc58ad5385d1029",
+        "title": "Sonic The Hedgehog – Volume 1: Depois da guerra ( ACOMPANHA PÔSTER E MARCADOR)"
+      },
+      {
+        "id": "cmazmofs2c3lcc3ac372a2c407821127",
+        "title": "Sonic The Hedgehog – Volume 2: A sina do Dr. Eggman"
+      },
+      {
+        "id": "cmazmofs4sq16e6106906eca7c0b1188",
+        "title": "Sonic The Hedgehog – Volume 5: Cidade em crise ( ACOMPANHA PÔSTER E MARCADOR)"
+      }
+    ]
+  },
+  {
+    "name": "Overlord",
+    "entries": [
+      {
+        "id": "cmazmofqehjkdfdd88cefe95b9fc749",
+        "title": "Overlord Vol. 03 (Mangá)"
+      },
+      {
+        "id": "cmazmofqfw7264f18c24cfea53c6784",
+        "title": "Overlord Vol. 01 (Mangá)"
+      }
+    ]
+  },
+  {
+    "name": "My Hero Academia - Boku No Hero -",
+    "entries": [
+      {
+        "id": "cmazmofqbtxx0ea0942632da0d1c684",
+        "title": "My Hero Academia - Boku No Hero - Vol. 28"
+      },
+      {
+        "id": "cmazmofqjqv2b6111d80c80cf5e4870",
+        "title": "My Hero Academia - Boku no Hero - Vol. 33"
+      },
+      {
+        "id": "cmazmofqjlkr712cc7f34ad1e431869",
+        "title": "My Hero Academia - Boku no Hero - Vol. 34"
+      },
+      {
+        "id": "cmazmofqmp8m73b4c06a13576fb5942",
+        "title": "My Hero Academia - Boku no Hero - Vol. 35"
+      },
+      {
+        "id": "cmazmofqolsj16d2cd6dba167a0c985",
+        "title": "My Hero Academia - Boku no Hero - Vol. 41"
+      },
+      {
+        "id": "cmazmofqd2rf3e09ad961804ac14712",
+        "title": "My Hero Academia - Boku no Hero - Vol. 1"
+      }
+    ]
+  },
+  {
+    "name": "Tokyo Revengers -",
+    "entries": [
+      {
+        "id": "cmazmofqgrz4a93c568c4ca9e674804",
+        "title": "Tokyo Revengers - Vol. 02"
+      },
+      {
+        "id": "cmazmofqf8k8d2eb2d3afd174f6d768",
+        "title": "Tokyo Revengers - Vol. 04"
+      }
+    ]
+  },
+  {
+    "name": "Neon Genesis Evangelion Collector's Edition",
+    "entries": [
+      {
+        "id": "cmazmofqdca027a965ce981ca504720",
+        "title": "Neon Genesis Evangelion Collector's Edition Vol. 01"
+      },
+      {
+        "id": "cmazmofqfsl3f61bb3f441df8f29781",
+        "title": "Neon Genesis Evangelion Collector's Edition Vol. 02"
+      },
+      {
+        "id": "cmazmofqfr80ad4fea91a1d404ae780",
+        "title": "Neon Genesis Evangelion Collector's Edition Vol. 03"
+      },
+      {
+        "id": "cmazmofqdhbs72401b536cae81ab724",
+        "title": "Neon Genesis Evangelion Collector's Edition Vol. 07"
+      }
+    ]
+  },
+  {
+    "name": "Boys Run the Riot",
+    "entries": [
+      {
+        "id": "cmazmofqfivebfacab019de78b4a773",
+        "title": "Boys Run the Riot Vol. 01"
+      },
+      {
+        "id": "cmazmofqlwvp7555a25623ad20cd924",
+        "title": "Boys Run the Riot Vol. 04"
+      }
+    ]
+  },
+  {
+    "name": "LEVIATHAN -",
+    "entries": [
+      {
+        "id": "cmazmofqk07x1d17c1ef74c62e4c877",
+        "title": "LEVIATHAN - Vol. 01"
+      },
+      {
+        "id": "cmazmofqm25od719feaf7b213117928",
+        "title": "LEVIATHAN - Vol. 02"
+      }
+    ]
+  },
+  {
+    "name": "Skip & Loafer",
+    "entries": [
+      {
+        "id": "cmazmofqhnd7fb0c5494449dd3ec823",
+        "title": "Skip & Loafer Vol. 01"
+      },
+      {
+        "id": "cmazmofqinm612d6b63c31175e3b846",
+        "title": "Skip & Loafer Vol. 06"
+      }
+    ]
+  },
+  {
+    "name": "Pink Heart Jam",
+    "entries": [
+      {
+        "id": "cmazmofqd6c7a499a1b50e74c148715",
+        "title": "Pink Heart Jam Vol. 01: Edição Brasileira: 1"
+      },
+      {
+        "id": "cmazmofqf4nrd544fb5bfd379a0b765",
+        "title": "Pink Heart Jam Vol. 02: Edição Brasileira: 2"
+      }
+    ]
+  },
+  {
+    "name": "Cavaleiros do Zodíaco Saint Seiya Final Edition",
+    "entries": [
+      {
+        "id": "cmazmofqmx62a669e1ef86af3bdf948",
+        "title": "Cavaleiros do Zodíaco Saint Seiya Final Edition Vol. 02"
+      },
+      {
+        "id": "cmazmofqh77m4c4e31ed1693223c812",
+        "title": "Cavaleiros do Zodíaco Saint Seiya Final Edition Vol. 07: 7"
+      }
+    ]
+  },
+  {
+    "name": "Hellsing Especial",
+    "entries": [
+      {
+        "id": "cmazmofqd05tfb45f2a4ba3a6940710",
+        "title": "Hellsing Especial Vol. 01: 1"
+      },
+      {
+        "id": "cmazmofql6fre2f2cd9c901d2710906",
+        "title": "Hellsing Especial Vol. 04: 4"
+      }
+    ]
+  },
+  {
+    "name": "Versus",
+    "entries": [
+      {
+        "id": "cmazmofqizm6f5cd6e48a16ce4e5852",
+        "title": "Versus Vol. 01"
+      },
+      {
+        "id": "cmazmofql1ona6f30d53b1e40b71902",
+        "title": "Versus Vol. 02: 2"
+      }
+    ]
+  },
+  {
+    "name": "Disney Twisted-Wonderland: O mangá – Livro de Heartslabyul –",
+    "entries": [
+      {
+        "id": "cmazmofqfger9a9e991f37222448771",
+        "title": "Disney Twisted-Wonderland: O mangá – Livro de Heartslabyul – 1"
+      },
+      {
+        "id": "cmazmofqjui8da24f967f0e3cd34873",
+        "title": "Disney Twisted-Wonderland: o mangá – livro de HeartsLabyul – 3"
+      },
+      {
+        "id": "cmazmofqgwxa6a5497947a3e7c98808",
+        "title": "Disney Twisted-Wonderland: O Mangá – Livro de Heartslabyul – 4"
+      }
+    ]
+  },
+  {
+    "name": "Ataque dos titãs",
+    "entries": [
+      {
+        "id": "cmazmofqikcc6681260a95d75881843",
+        "title": "Ataque dos titãs vol. 34"
+      },
+      {
+        "id": "cmazmofqbsg4d14e8051cba84e56683",
+        "title": "Ataque dos Titãs Vol. 1"
+      }
+    ]
+  },
+  {
+    "name": "Minha história de amor com Yamada-kun nível 999 (",
+    "entries": [
+      {
+        "id": "cmazmofqg1bubcd073ae2ceb6747788",
+        "title": "Minha história de amor com Yamada-kun nível 999 (Vol. 1)"
+      },
+      {
+        "id": "cmazmofqj17yf4cb9eb237ef129a853",
+        "title": "Minha história de amor com Yamada-kun nível 999 (Vol. 2)"
+      }
+    ]
+  },
+  {
+    "name": "Manga Theater",
+    "entries": [
+      {
+        "id": "cmazmofqnukzcb87a14731b0a9d5968",
+        "title": "Manga Theater 03"
+      },
+      {
+        "id": "cmazmofqi7mw6fd6daeba6a9244d833",
+        "title": "Manga Theater 02"
+      },
+      {
+        "id": "cmazmofqk9dbd5d7d0c2606306fa884",
+        "title": "Manga Theater 01"
+      }
+    ]
+  },
+  {
+    "name": "O Grande almanaque Disney -",
+    "entries": [
+      {
+        "id": "cmazmofqqeggf10f36ec54a1a8a51023",
+        "title": "O Grande almanaque Disney - Vol. 34"
+      },
+      {
+        "id": "cmazmofs10lt1a99cffe5d7fd84b1090",
+        "title": "O Grande almanaque Disney - Vol. 35"
+      },
+      {
+        "id": "cmazmofs0vbzae94b0d12913d68a1089",
+        "title": "O Grande almanaque Disney - Vol. 36"
+      },
+      {
+        "id": "cmazmofs3erx0a9c1f7a1026d7f31152",
+        "title": "O Grande Almanaque Disney - Vol. 38"
+      }
+    ]
+  },
+  {
+    "name": "Gash Bell!! -",
+    "entries": [
+      {
+        "id": "cmazmofqjyquf0dd6f7003d66d33876",
+        "title": "Gash Bell!! - Volume 6"
+      },
+      {
+        "id": "cmazmofqly2ra0677ec0f7e59a20925",
+        "title": "Gash Bell!! - Volume 01: Capa Variante"
+      },
+      {
+        "id": "cmazmofqir2q10a02b159470e45f849",
+        "title": "Gash Bell!! - Volume 3"
+      }
+    ]
+  },
+  {
+    "name": "Sense Life -",
+    "entries": [
+      {
+        "id": "cmazmofqdibub478fc4f796f2919725",
+        "title": "Sense Life - Volume 1 (Capa Variante)"
+      },
+      {
+        "id": "cmazmofqh89d89cc6e694094fb0d813",
+        "title": "Sense Life - Volume 2: Capa Variante especial Hexa 2026"
+      }
+    ]
+  },
+  {
+    "name": "Kaoru Hana: The Fragrant Flower Blooms With Dignity -",
+    "entries": [
+      {
+        "id": "cmazmofqd1a86457f2c5c9ba80b6711",
+        "title": "Kaoru Hana: The Fragrant Flower Blooms With Dignity - Volume 01"
+      },
+      {
+        "id": "cmazmofqdzns6fee208b8089f2a0735",
+        "title": "Kaoru Hana: The Fragrant Flower Blooms With Dignity - Volume 02"
+      },
+      {
+        "id": "cmazmofqgnnsa898f800b80a765a801",
+        "title": "Kaoru Hana: The Fragrant Flower Blooms With Dignity - Volume 03"
+      },
+      {
+        "id": "cmazmofqlzkvd3bede2560348ed9926",
+        "title": "Kaoru Hana: The Fragrant Flower Blooms With Dignity - Volume 04"
+      }
+    ]
+  },
+  {
+    "name": "Minha coisa favorita é monstro - Livro",
+    "entries": [
+      {
+        "id": "cmazmofs3n901f9a7ecf8702d8e61158",
+        "title": "Minha coisa favorita é monstro - Livro 2"
+      },
+      {
+        "id": "cmazmofs594y4602dd61936c4c471199",
+        "title": "Minha coisa favorita é monstro - Livro 1"
+      }
+    ]
+  },
+  {
+    "name": "Naruto Gold",
+    "entries": [
+      {
+        "id": "cmazmofqbg8k232807718e369a7b672",
+        "title": "Naruto Gold Vol. 8"
+      },
+      {
+        "id": "cmazmofqgpd30e6cf15827321966802",
+        "title": "Naruto Gold Vol. 9"
+      }
+    ]
+  },
+  {
+    "name": "Dragon Ball Super -",
+    "entries": [
+      {
+        "id": "cmazmofqhpf308f93411fe71610c824",
+        "title": "Dragon Ball Super - 8"
+      },
+      {
+        "id": "cmazmofqbv0w327037c8146228d9685",
+        "title": "Dragon ball super - 9"
+      }
+    ]
+  },
+  {
+    "name": "Sonic The Hedgehog ―",
+    "entries": [
+      {
+        "id": "cmazmofs1rly2ada9cbac9951f3f1110",
+        "title": "Sonic The Hedgehog ― volume 16: Desventuras"
+      },
+      {
+        "id": "cmazmofs2d8ze40d0695ecbf880f1128",
+        "title": "Sonic The Hedgehog ― volume 17: Aventura à vista!"
+      }
+    ]
+  },
+  {
+    "name": "Orange -",
+    "entries": [
+      {
+        "id": "cmazmofqesuz3089118124fd4ff6755",
+        "title": "Orange - Vol. 1"
+      },
+      {
+        "id": "cmazmofqilem302c26baa29848f7844",
+        "title": "Orange - Vol. 2"
+      },
+      {
+        "id": "cmazmofqog81511198e4362f64b4981",
+        "title": "Orange - Vol. 4"
+      },
+      {
+        "id": "cmazmofqlucu59954be5ae33d0bc922",
+        "title": "Orange - Vol. 5"
+      }
+    ]
+  },
+  {
+    "name": "Fullmetal Alchemist - Especial -",
+    "entries": [
+      {
+        "id": "cmazmofqcibm97999ffcfa6b4bee700",
+        "title": "Fullmetal Alchemist - Especial - Vol. 1"
+      },
+      {
+        "id": "cmazmofqdth512053f19ef91456f730",
+        "title": "Fullmetal Alchemist - Especial - Vol. 8"
+      },
+      {
+        "id": "cmazmofqdjo99809cad851e06add726",
+        "title": "Fullmetal Alchemist - Especial - Vol. 10"
+      },
+      {
+        "id": "cmazmofqnrf0e795816d1ceea4a8965",
+        "title": "Fullmetal Alchemist - Especial - Vol. 12"
+      }
+    ]
+  },
+  {
+    "name": "Hunter X Hunter -",
+    "entries": [
+      {
+        "id": "cmazmofqnvmg512cb9730aa90179969",
+        "title": "Hunter X Hunter - Vol. 33"
+      },
+      {
+        "id": "cmazmofqb64z8a6768bebe15e181669",
+        "title": "Hunter X Hunter - Vol. 1"
+      },
+      {
+        "id": "cmazmofqef2x3b0ca7cf13eb756d747",
+        "title": "Hunter X Hunter - Vol. 2"
+      },
+      {
+        "id": "cmazmofqddmz0029e70137635ca1721",
+        "title": "Hunter X Hunter - Vol. 3"
+      },
+      {
+        "id": "cmazmofqfv6j4b922e70cf8a5a45783",
+        "title": "Hunter X Hunter - Vol. 4"
+      },
+      {
+        "id": "cmazmofqf3jff3ecefe6231f7cfe764",
+        "title": "Hunter X Hunter - Vol. 23"
+      }
+    ]
+  },
+  {
+    "name": "Akira -",
+    "entries": [
+      {
+        "id": "cmazmofqernz178c5ae7ba7e6359754",
+        "title": "Akira - Vol. 1"
+      },
+      {
+        "id": "cmazmofqhhoyc02c3b99ed057c8c819",
+        "title": "Akira - Vol. 4"
+      }
+    ]
+  },
+  {
+    "name": "Little Witch Academia -",
+    "entries": [
+      {
+        "id": "cmazmofqdnypee5b374b979e1655729",
+        "title": "Little Witch Academia - Vol. 2"
+      },
+      {
+        "id": "cmazmofqdl571a465376d0d9ab81727",
+        "title": "Little Witch Academia - Vol. 1"
+      }
+    ]
+  },
+  {
+    "name": "O mundo de Sofia em quadrinhos (",
+    "entries": [
+      {
+        "id": "cmazmofqr75r13097437bfa5a4621043",
+        "title": "O mundo de Sofia em quadrinhos (vol. 1): Uma história da filosofia ― De Sócrates a Galileu"
+      },
+      {
+        "id": "cmazmofqqclme08896fd11be01251022",
+        "title": "O mundo de Sofia em quadrinhos (vol. 2): Uma história da filosofia ― De Descartes à atualidade"
+      }
+    ]
+  },
+  {
+    "name": "Gate 7 -",
+    "entries": [
+      {
+        "id": "cmazmofqfmgw384a21018f56e05f776",
+        "title": "Gate 7 - Volume 01"
+      },
+      {
+        "id": "cmazmofqjtgu3cbbc3559e8a159b872",
+        "title": "Gate 7 - Volume 02"
+      }
+    ]
+  },
+  {
+    "name": "Dom Quixote em quadrinhos -",
+    "entries": [
+      {
+        "id": "cmazmofs0p3d34c8b9769aefedfe1084",
+        "title": "Dom Quixote em quadrinhos - Volume 1"
+      },
+      {
+        "id": "cmazmofs4c8m918d01cb523c2c551175",
+        "title": "Dom Quixote em quadrinhos - Volume 2"
+      }
+    ]
+  },
+  {
+    "name": "Card Captor Sakura Especial -",
+    "entries": [
+      {
+        "id": "cmazmofqcg4o2a776d16684ef791698",
+        "title": "Card Captor Sakura Especial - Vol. 1"
+      },
+      {
+        "id": "cmazmofqgkmd324bf25da9af3d8d799",
+        "title": "Card Captor Sakura Especial - Vol. 2"
+      },
+      {
+        "id": "cmazmofqn990107544f554ee32e7954",
+        "title": "Card Captor Sakura Especial - Vol. 7"
+      },
+      {
+        "id": "cmazmofqhxjl18b2c42b7f78b749829",
+        "title": "Card Captor Sakura Especial - Vol. 9"
+      }
+    ]
+  },
+  {
+    "name": "Uma Vida Imortal (To Your Eternity) -",
+    "entries": [
+      {
+        "id": "cmazmofqoc2la313c35fa479b865978",
+        "title": "Uma Vida Imortal (To Your Eternity) - Volume 06"
+      },
+      {
+        "id": "cmazmofqoj7oea6afaf117834ed5983",
+        "title": "Uma Vida Imortal (To Your Eternity) - Volume 13"
+      }
+    ]
+  },
+  {
+    "name": "MADK:",
+    "entries": [
+      {
+        "id": "cmazmofqmqjz0ca44ace88bea406943",
+        "title": "MADK: Volume 1"
+      },
+      {
+        "id": "cmazmofqko9qdd095b5bb2e6c671892",
+        "title": "MADK: Volume 2"
+      },
+      {
+        "id": "cmazmofqokb1f97c66e62c1ee714984",
+        "title": "MADK: Volume 3 (Final)"
+      }
+    ]
+  },
+  {
+    "name": "O cara que estou a fim não é um cara?! -",
+    "entries": [
+      {
+        "id": "cmazmofqcqxw47829a9bd169721c706",
+        "title": "O cara que estou a fim não é um cara?! - Volume 1"
+      },
+      {
+        "id": "cmazmofqbz3z6463052a2ce523e2688",
+        "title": "O cara que estou a fim não é um cara?! - Volume 3"
+      },
+      {
+        "id": "cmazmofqdb7adbd8457d65c13f19719",
+        "title": "O cara que estou a fim não é um cara?! - Volume 2"
+      },
+      {
+        "id": "cmazmofqgf9w3c88bdc72325950c795",
+        "title": "O cara que estou a fim não é um cara?! - Volume 1 (Sobrecapa Variante)"
+      }
+    ]
+  },
+  {
+    "name": "Detective Comics (1937-2011)",
+    "entries": [
+      {
+        "id": "cmazmofq1qmzc62c811deed9f838449",
+        "title": "Detective Comics (1937-2011) #27 (English Edition)"
+      },
+      {
+        "id": "cmazmofpzptf8457c09d66332f7a400",
+        "title": "Detective Comics (1937-2011) #27: Special Edition (Batman 75 Day Comic) (Detective Comics #27 Special Edition (Batman 75 Day Comic 2014) (2014- ) Book"
+      }
+    ]
+  },
+  {
+    "name": "FCBD 2015: Avengers",
+    "entries": [
+      {
+        "id": "cmazmofq6hbpf472110fc0383ae9555",
+        "title": "FCBD 2015: Avengers #1 (All-New, All-Different Avengers (2015-2016)) (English Edition)"
+      },
+      {
+        "id": "cmazmofqaa9j7ae793d556f3ee72647",
+        "title": "FCBD 2015: Avengers #1: (Spanish Edition) (All-New, All-Different Avengers (2015-2016))"
+      }
+    ]
+  },
+  {
+    "name": "[Free] Harlequin Comics Best Selection",
+    "entries": [
+      {
+        "id": "cmazmofq92749c9da9d9ee2e02a2616",
+        "title": "[Free] Harlequin Comics Best Selection Vol. 005 (English Edition)"
+      },
+      {
+        "id": "cmazmofq8gjoa58bc5973803c304604",
+        "title": "[Free] Harlequin Comics Best Selection Vol. 004 (English Edition)"
+      },
+      {
+        "id": "cmazmofq5wdv8166c030f4c073ba544",
+        "title": "[Free] Harlequin Comics Best Selection Vol. 003 (English Edition)"
+      },
+      {
+        "id": "cmazmofq7gpp0e26444e427121bf579",
+        "title": "[Free] Harlequin Comics Best Selection Vol. 002 (English Edition)"
+      },
+      {
+        "id": "cmazmofq83zec291e4a1df3704ff594",
+        "title": "[Free] Harlequin Comics Best Selection Vol. 001 (English Edition)"
+      }
+    ]
+  },
+  {
+    "name": "Fathom",
+    "entries": [
+      {
+        "id": "cmazmofq5gme6268029c40b69cbf534",
+        "title": "Fathom Vol. 1 #0 (English Edition)"
+      },
+      {
+        "id": "cmazmofq3evp2c919fdec3c27c3f488",
+        "title": "Fathom Vol. 2 #0 (English Edition)"
+      },
+      {
+        "id": "cmazmofq782c6ea8a8d1f6a77fdd572",
+        "title": "Fathom Vol. 2: Beginnings (English Edition)"
+      },
+      {
+        "id": "cmazmofq9ijjb2bac63e78377de7628",
+        "title": "Fathom Vol. 3 #0 (English Edition)"
+      },
+      {
+        "id": "cmazmofq76y30f75c5218789bd2b571",
+        "title": "Fathom Vol. 4 #0 (English Edition)"
+      }
+    ]
+  },
+  {
+    "name": "Dracula Everlasting",
+    "entries": [
+      {
+        "id": "cmazmofq3fuza7abca26656f2f52489",
+        "title": "Dracula Everlasting Vol. 1 (English Edition)"
+      },
+      {
+        "id": "cmazmofq4wtja63c36c1f63f6beb523",
+        "title": "Dracula Everlasting Vol. 2 (English Edition)"
+      },
+      {
+        "id": "cmazmofq4z9x90021e763ca6aacf525",
+        "title": "Dracula Everlasting Vol. 3 (English Edition)"
+      }
+    ]
+  },
+  {
+    "name": "Overwatch",
+    "entries": [
+      {
+        "id": "cmazmofq0mus48614a792a3b1b4c421",
+        "title": "Overwatch #1 (English Edition)"
+      },
+      {
+        "id": "cmazmofq26gcd74791f8472d9b6d458",
+        "title": "Overwatch #2 (English Edition)"
+      },
+      {
+        "id": "cmazmofq2bog9a632ff3350a17e7462",
+        "title": "Overwatch #3 (English Edition)"
+      },
+      {
+        "id": "cmazmofq23u134a095ef1cca6902456",
+        "title": "Overwatch #4 (English Edition)"
+      },
+      {
+        "id": "cmazmofq2ir992f00cbd8e80110b467",
+        "title": "Overwatch #5 (English Edition)"
+      },
+      {
+        "id": "cmazmofq2amd2a9ab498f7c566c7461",
+        "title": "Overwatch #6 (English Edition)"
+      },
+      {
+        "id": "cmazmofq27sl01c14122789a25a5459",
+        "title": "Overwatch #7 (English Edition)"
+      },
+      {
+        "id": "cmazmofq2g8357e93c8e702e666e465",
+        "title": "Overwatch #8 (English Edition)"
+      },
+      {
+        "id": "cmazmofq2ekp5e3ad442bba34d2b464",
+        "title": "Overwatch #9 (English Edition)"
+      },
+      {
+        "id": "cmazmofq2hqecb8476d99e9f9a69466",
+        "title": "Overwatch #10 (English Edition)"
+      },
+      {
+        "id": "cmazmofq4tri4ac8b73230320c91521",
+        "title": "Overwatch #12 (English Edition)"
+      },
+      {
+        "id": "cmazmofq4vibb7ed9ccfb82500be522",
+        "title": "Overwatch #13 (English Edition)"
+      },
+      {
+        "id": "cmazmofq4hc58d2e53be67b370c5511",
+        "title": "Overwatch #15 (English Edition)"
+      },
+      {
+        "id": "cmazmofq5acy9584d8d1d9fb1ab3530",
+        "title": "Overwatch #14 (English Edition)"
+      },
+      {
+        "id": "cmazmofq2z294cfc36bc822767fc476",
+        "title": "Overwatch #11 (English Edition)"
+      },
+      {
+        "id": "cmazmofq4kie53e125366727a8cb514",
+        "title": "Overwatch #16 (English Edition)"
+      }
+    ]
+  },
+  {
+    "name": "World of Warcraft: Legion",
+    "entries": [
+      {
+        "id": "cmazmofq6ek3d529094b08fee4b5553",
+        "title": "World of Warcraft: Legion #1 (English Edition)"
+      },
+      {
+        "id": "cmazmofq7zypd2c2692ddfb2eb9b591",
+        "title": "World of Warcraft: Legion #2 (English Edition)"
+      },
+      {
+        "id": "cmazmofq7krh25d88fb41b2c9360582",
+        "title": "World of Warcraft: Legion #3 (English Edition)"
+      },
+      {
+        "id": "cmazmofq6t3u6d5a121e9e570454564",
+        "title": "World of Warcraft: Legion #4 (English Edition)"
+      }
+    ]
+  },
+  {
+    "name": "DC Nation (2018)",
+    "entries": [
+      {
+        "id": "cmazmofq2tvu6a689f323a7cdce7472",
+        "title": "DC Nation (2018) #0 (English Edition)"
+      },
+      {
+        "id": "cmazmofq36wd3628131f5824e535482",
+        "title": "DC Nation (2018) #1 (English Edition)"
+      },
+      {
+        "id": "cmazmofq39gdbb59e77cfbf8f267484",
+        "title": "DC Nation (2018) #2 (English Edition)"
+      },
+      {
+        "id": "cmazmofq3wyx5740658142540109498",
+        "title": "DC Nation (2018) #3 (English Edition)"
+      },
+      {
+        "id": "cmazmofq3ays03657eee7920712a485",
+        "title": "DC Nation (2018) #4 (English Edition)"
+      },
+      {
+        "id": "cmazmofq1opcca7a6f71d6cc4c88448",
+        "title": "DC Nation (2018) #5 (English Edition)"
+      },
+      {
+        "id": "cmazmofq3cgy636d505aba39dded486",
+        "title": "DC Nation (2018) #6 (English Edition)"
+      }
+    ]
+  },
+  {
+    "name": "Sea of Thieves Origins",
+    "entries": [
+      {
+        "id": "cmazmofq8hnq7c0b6b8cae4d3cb7605",
+        "title": "Sea of Thieves Origins #1: The Price of Gold (English Edition)"
+      },
+      {
+        "id": "cmazmofq8luye93c22629587cc5c608",
+        "title": "Sea of Thieves Origins #3: The Vision of Order (English Edition)"
+      }
+    ]
+  },
+  {
+    "name": "Overwatch: Tracer--London Calling",
+    "entries": [
+      {
+        "id": "cmazmofq48gpfe325a59f9a86091507",
+        "title": "Overwatch: Tracer--London Calling #2 (English Edition)"
+      },
+      {
+        "id": "cmazmofq45ym3569544dffdca411505",
+        "title": "Overwatch: Tracer--London Calling #3 (English Edition)"
+      },
+      {
+        "id": "cmazmofq470pcf967b91dc8817aa506",
+        "title": "Overwatch: Tracer--London Calling #4 (English Edition)"
+      },
+      {
+        "id": "cmazmofq43o9b9803c2080d527db503",
+        "title": "Overwatch: Tracer--London Calling #5 (English Edition)"
+      }
+    ]
+  },
+  {
+    "name": "Overwatch: New Blood",
+    "entries": [
+      {
+        "id": "cmazmofq521m865848ab70e7a6f9527",
+        "title": "Overwatch: New Blood #1 (English Edition)"
+      },
+      {
+        "id": "cmazmofq49nm66d3bd5327427232508",
+        "title": "Overwatch: New Blood #2 (English Edition)"
+      },
+      {
+        "id": "cmazmofq5dm2dae449cd4d169424532",
+        "title": "Overwatch: New Blood #3 (English Edition)"
+      },
+      {
+        "id": "cmazmofq4m5j2cb45cf64ac94653515",
+        "title": "Overwatch: New Blood #4 (English Edition)"
+      },
+      {
+        "id": "cmazmofq44td278217330a2df557504",
+        "title": "Overwatch: New Blood #5 (English Edition)"
+      }
+    ]
+  },
+  {
+    "name": "Sítio do Picapau Amarelo Revista em Quadrinhos Edição",
+    "entries": [
+      {
+        "id": "cmazmofs2pvp92b15baee60444241135",
+        "title": "Sítio do Picapau Amarelo Revista em Quadrinhos Edição 01"
+      },
+      {
+        "id": "cmazmofs8cby5e8628c3feb0753a1271",
+        "title": "Sítio do Picapau Amarelo Revista em Quadrinhos Edição 02"
+      }
+    ]
+  },
+  {
+    "name": "Scooby-Doo Revista em Quadrinhos Edição",
+    "entries": [
+      {
+        "id": "cmazmofs1izc1b93939e3d4222861106",
+        "title": "Scooby-Doo Revista em Quadrinhos Edição 01"
+      },
+      {
+        "id": "cmazmofs71sa9695033907d039f91242",
+        "title": "Scooby-Doo Revista em Quadrinhos Edição 02"
+      },
+      {
+        "id": "cmazmofrzmhae47b81d44a94eced1059",
+        "title": "Scooby-Doo Revista em Quadrinhos Edição 05"
+      },
+      {
+        "id": "cmazmofs159hd5289f5f86c084f91094",
+        "title": "Scooby-Doo Revista em Quadrinhos Edição 07"
+      },
+      {
+        "id": "cmazmofqr1sc7f1e0e78ac87603d1039",
+        "title": "Scooby-Doo Revista em Quadrinhos Edição 06"
+      },
+      {
+        "id": "cmazmofqqkifbfcbd8f5357cdb511028",
+        "title": "Scooby-Doo Revista em Quadrinhos Edição 08"
+      }
+    ]
+  },
+  {
+    "name": "Godzilla Library Collection",
+    "entries": [
+      {
+        "id": "cmazmof294prf693bcda48c4eaa5305",
+        "title": "Godzilla Library Collection, Vol. 1"
+      },
+      {
+        "id": "cmazmof2dulfdb5ce400a6942292411",
+        "title": "Godzilla Library Collection, Vol. 2"
+      },
+      {
+        "id": "cmazmof28tmu65051643a0d22ac1300",
+        "title": "Godzilla Library Collection, Vol. 3"
+      },
+      {
+        "id": "cmazmof2axm604b6e19f5ac5ab2f344",
+        "title": "Godzilla Library Collection, Vol. 4"
+      },
+      {
+        "id": "cmazmof2f0s2131043a4c92fa246438",
+        "title": "Godzilla Library Collection, Vol. 5"
+      },
+      {
+        "id": "cmazmof2aofybc64ba439d2e3d84341",
+        "title": "Godzilla Library Collection, Vol. 6"
+      }
+    ]
+  },
+  {
+    "name": "Tomb Raider King",
+    "entries": [
+      {
+        "id": "cmazmof9l9opf41b24d900954600557",
+        "title": "Tomb Raider King, Vol. 4"
+      },
+      {
+        "id": "cmazmof22l5t4b6bf2380d403e75162",
+        "title": "Tomb Raider King, Vol. 5"
+      },
+      {
+        "id": "cmazmof22js1f2fef7c6dd3912d9161",
+        "title": "Tomb Raider King, Vol. 6"
+      },
+      {
+        "id": "cmazmof2f2014648e15f7ca3e2c7439",
+        "title": "Tomb Raider King, Vol. 7"
+      }
+    ]
+  },
+  {
+    "name": "The World After the Fall",
+    "entries": [
+      {
+        "id": "cmazmof9kz9w1998d501ab316f6b550",
+        "title": "The World After the Fall, Vol. 4"
+      },
+      {
+        "id": "cmazmof9kxtt04854c27837d25cc549",
+        "title": "The World After the Fall, Vol. 5"
+      },
+      {
+        "id": "cmazmof9kw7w2903423ef39e8b10548",
+        "title": "The World After the Fall, Vol. 6"
+      },
+      {
+        "id": "cmazmof9kunld1f4fafff6597b5a547",
+        "title": "The World After the Fall, Vol. 8"
+      },
+      {
+        "id": "cmazmof9kt1jc067843c13278cb0546",
+        "title": "The World After the Fall, Vol. 9"
+      },
+      {
+        "id": "cmazmof9krwa1b3f3ef955eaf520545",
+        "title": "The World After the Fall, Vol. 10"
+      }
+    ]
+  },
+  {
+    "name": "The Fragrant Flower Blooms with Dignity",
+    "entries": [
+      {
+        "id": "cmazmof905gu925cef5e8d9a519d86",
+        "title": "The Fragrant Flower Blooms with Dignity 1"
+      },
+      {
+        "id": "cmazmof99irg75b90d52b75c8d09289",
+        "title": "The Fragrant Flower Blooms with Dignity 6"
+      }
+    ]
+  },
+  {
+    "name": "Omniscient Reader's Viewpoint",
+    "entries": [
+      {
+        "id": "cmazmof9j9rpe920b18ec432af22512",
+        "title": "Omniscient Reader's Viewpoint, Vol. 1"
+      },
+      {
+        "id": "cmazmof9qishc9bb786e066295e8665",
+        "title": "Omniscient Reader's Viewpoint, Vol. 2"
+      },
+      {
+        "id": "cmazmof9mm7l0f9653e827bf8b8a586",
+        "title": "Omniscient Reader's Viewpoint, Vol. 3"
+      }
+    ]
+  },
+  {
+    "name": "Os Flintstones Revista em Quadrinhos Edição",
+    "entries": [
+      {
+        "id": "cmazmofs70b57997494d053976bc1241",
+        "title": "Os Flintstones Revista em Quadrinhos Edição 02"
+      },
+      {
+        "id": "cmazmofqpjhwdd726acfbd84d8311005",
+        "title": "Os Flintstones Revista em Quadrinhos Edição 03"
+      }
+    ]
+  },
+  {
+    "name": "Looney Tunes Revista em Quadrinhos Edição",
+    "entries": [
+      {
+        "id": "cmazmofqq2u66dfb8e3fc2fd59e51015",
+        "title": "Looney Tunes Revista em Quadrinhos Edição 02"
+      },
+      {
+        "id": "cmazmofs7yupab95651247b010791264",
+        "title": "Looney Tunes Revista em Quadrinhos Edição 05"
+      }
+    ]
+  },
+  {
+    "name": "Tom e Jerry Revista em Quadrinhos Edição",
+    "entries": [
+      {
+        "id": "cmazmofqrajg9aee6c76bb86043a1046",
+        "title": "Tom e Jerry Revista em Quadrinhos Edição 02"
+      },
+      {
+        "id": "cmazmofs8fnic41a6b73cdfb1ad21274",
+        "title": "Tom e Jerry Revista em Quadrinhos Edição 01"
+      },
+      {
+        "id": "cmazmofs4aq69c8a0f1d569900191174",
+        "title": "Tom e Jerry Revista em Quadrinhos Edição 06"
+      },
+      {
+        "id": "cmazmofs67cf2ba9974a4e5189b61222",
+        "title": "Tom e Jerry Revista em Quadrinhos Edição 04"
+      },
+      {
+        "id": "cmazmofs8ngcec3f1f18a1b367491280",
+        "title": "Tom e Jerry Revista em Quadrinhos Edição 05"
+      }
+    ]
+  },
+  {
+    "name": "The 100 Girlfriends Who Really, Really, Really, Really, Really Love You",
+    "entries": [
+      {
+        "id": "cmazmof2ej0nadd23725d3f8de09426",
+        "title": "The 100 Girlfriends Who Really, Really, Really, Really, Really Love You Vol. 8 (English Edition)"
+      },
+      {
+        "id": "cmazmof2a74cb6593d31a849ec6b329",
+        "title": "The 100 Girlfriends Who Really, Really, Really, Really, Really Love You Vol. 13"
+      }
+    ]
+  },
+  {
+    "name": "Chillin' in Another World with Level 2 Super Cheat Powers (Manga)",
+    "entries": [
+      {
+        "id": "cmazmof9e7lua00e77f02e76cf0e394",
+        "title": "Chillin' in Another World with Level 2 Super Cheat Powers (Manga) Vol. 9"
+      },
+      {
+        "id": "cmazmof9hw7na4da961d709d0d99480",
+        "title": "Chillin' in Another World with Level 2 Super Cheat Powers (Manga) Vol. 10"
+      },
+      {
+        "id": "cmazmof9e18475ca56d881b28c77389",
+        "title": "Chillin' in Another World with Level 2 Super Cheat Powers (Manga) Vol. 11"
+      },
+      {
+        "id": "cmazmof92hfj177e4fd4c06b3d8b139",
+        "title": "Chillin' in Another World with Level 2 Super Cheat Powers (Manga) Vol. 12"
+      }
+    ]
+  },
+  {
+    "name": "Hate Me, But Let Me Stay",
+    "entries": [
+      {
+        "id": "cmazmof9a215932c8cb06ca95032300",
+        "title": "Hate Me, But Let Me Stay Vol. 2"
+      },
+      {
+        "id": "cmazmof9b3d5b506cd5e4a9111f3322",
+        "title": "Hate Me, But Let Me Stay Vol. 6"
+      }
+    ]
+  },
+  {
+    "name": "Imaizumi Brings All the Gals to His House",
+    "entries": [
+      {
+        "id": "cmazmof9p5nxeb592a00d4ab79ca637",
+        "title": "Imaizumi Brings All the Gals to His House Vol. 1"
+      },
+      {
+        "id": "cmazmof9c04zbd8efcbff8596e77343",
+        "title": "Imaizumi Brings All the Gals to His House Vol. 5"
+      }
+    ]
+  },
+  {
+    "name": "Rick and Morty Revista em Quadrinhos Edição",
+    "entries": [
+      {
+        "id": "cmazmofs0jya91d8d420061ab2c71080",
+        "title": "Rick and Morty Revista em Quadrinhos Edição 01"
+      },
+      {
+        "id": "cmazmofs1eht3862ce1b4b8fbffa1102",
+        "title": "Rick and Morty Revista em Quadrinhos Edição 02"
+      },
+      {
+        "id": "cmazmofrzfqj0a006aaabdeb53ce1054",
+        "title": "Rick and Morty Revista em Quadrinhos Edição 03"
+      }
+    ]
+  },
+  {
+    "name": "Tune in to the Midnight Heart",
+    "entries": [
+      {
+        "id": "cmazmof9cyzocaa7a608a79c6d2c364",
+        "title": "Tune in to the Midnight Heart 1"
+      },
+      {
+        "id": "cmazmof9h8qs485e14b139f4ef0c465",
+        "title": "Tune in to the Midnight Heart 2"
+      },
+      {
+        "id": "cmazmof9cmq2fd3f67f4bfba945f359",
+        "title": "Tune in to the Midnight Heart 3"
+      },
+      {
+        "id": "cmazmof9dp2x4ccc6f4efa2d5a9d380",
+        "title": "Tune in to the Midnight Heart 4"
+      },
+      {
+        "id": "cmazmof9gvu965d8be31053a43e4459",
+        "title": "Tune in to the Midnight Heart 5"
+      }
+    ]
+  },
+  {
+    "name": "Rozen Maiden Collector's Edition",
+    "entries": [
+      {
+        "id": "cmazmof9gr6h319c0dc478b09257456",
+        "title": "Rozen Maiden Collector's Edition Vol. 3"
+      },
+      {
+        "id": "cmazmof94tmj0ffe76575a3bcaf2189",
+        "title": "Rozen Maiden Collector's Edition Vol. 4"
+      },
+      {
+        "id": "cmazmof26i5cc4d8e59d9c97a9b3245",
+        "title": "Rozen Maiden Collector's Edition Vol. 5"
+      }
+    ]
+  },
+  {
+    "name": "My Goddess Is Precious Today, Too",
+    "entries": [
+      {
+        "id": "cmazmof2aw16a93e219643a337ed343",
+        "title": "My Goddess Is Precious Today, Too Vol. 1"
+      },
+      {
+        "id": "cmazmof2ez00c6eadb3683e457a1437",
+        "title": "My Goddess Is Precious Today, Too Vol. 2"
+      }
+    ]
+  }
+]

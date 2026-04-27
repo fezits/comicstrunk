@@ -5,7 +5,11 @@ import { BadRequestError } from '../utils/api-error';
 const storage = multer.memoryStorage();
 
 const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const CSV_MIME_TYPES = ['text/csv', 'application/vnd.ms-excel'];
+const CSV_MIME_TYPES = [
+  'text/csv',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+];
 const IMAGE_MAX_SIZE = 5 * 1024 * 1024; // 5MB
 const CSV_MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -19,12 +23,13 @@ function imageFilter(_req: Request, file: Express.Multer.File, cb: FileFilterCal
 
 function csvFilter(_req: Request, file: Express.Multer.File, cb: FileFilterCallback): void {
   const isValidMime = CSV_MIME_TYPES.includes(file.mimetype);
-  const isCSVExtension = file.originalname.toLowerCase().endsWith('.csv');
+  const name = file.originalname.toLowerCase();
+  const isValidExt = name.endsWith('.csv') || name.endsWith('.xlsx');
 
-  if (isValidMime || isCSVExtension) {
+  if (isValidMime || isValidExt) {
     cb(null, true);
   } else {
-    cb(new BadRequestError('Only CSV files are allowed'));
+    cb(new BadRequestError('Apenas arquivos CSV ou XLSX são aceitos'));
   }
 }
 

@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '../../shared/lib/prisma';
 import { uploadImage, deleteImage, localCoverUrl, LOCAL_API_BASE_URL } from '../../shared/lib/cloudinary';
 import { parseCSV, generateCSV } from '../../shared/lib/csv';
+import { parseXLSX, generateXLSX, generateCatalogTemplate, CATALOG_FIELD_MAP, CATALOG_REVERSE } from '../../shared/lib/xlsx';
 import { BadRequestError, NotFoundError } from '../../shared/utils/api-error';
 import { uniqueSlug } from '../../shared/utils/slug';
 import { catalogImportRowSchema } from '@comicstrunk/contracts';
@@ -36,15 +37,24 @@ function resolveCover<T extends { coverImageUrl: string | null; coverFileName: s
   entry: T,
 ): T {
   const url = entry.coverImageUrl;
+
+  // Has coverFileName — always build URL from it (R2 or local)
+  if (entry.coverFileName) {
+    return { ...entry, coverImageUrl: localCoverUrl(entry.coverFileName) };
+  }
+
   // URL from old server (different host/port) — extract filename and rebuild
   if (url && !url.startsWith(LOCAL_API_BASE_URL) && url.includes('/uploads/')) {
     const filename = url.split('/').pop();
     if (filename) return { ...entry, coverImageUrl: localCoverUrl(filename) };
   }
-  // No URL but has local filename — build URL
-  if (!url && entry.coverFileName) {
-    return { ...entry, coverImageUrl: localCoverUrl(entry.coverFileName) };
+
+  // Local server URL — rebuild to use R2 if configured
+  if (url && url.startsWith(LOCAL_API_BASE_URL) && url.includes('/uploads/')) {
+    const filename = url.split('/').pop();
+    if (filename) return { ...entry, coverImageUrl: localCoverUrl(filename) };
   }
+
   return entry;
 }
 
@@ -372,11 +382,19 @@ export async function listCatalogEntries(params: {
 
 const MAX_IMPORT_ROWS = 1000;
 
-export async function importFromCSV(buffer: Buffer, adminId: string) {
-  const { data: rows } = parseCSV<Record<string, string>>(buffer);
+export async function importFromCSV(buffer: Buffer, adminId: string, filename?: string) {
+  // Detect format: XLSX or CSV
+  const isXlsx = filename?.endsWith('.xlsx') || buffer[0] === 0x50; // PK zip magic byte
+  let rows: Record<string, string>[];
+
+  if (isXlsx) {
+    rows = await parseXLSX(buffer, CATALOG_FIELD_MAP);
+  } else {
+    rows = parseCSV<Record<string, string>>(buffer).data;
+  }
 
   if (rows.length > MAX_IMPORT_ROWS) {
-    throw new BadRequestError(`CSV exceeds maximum of ${MAX_IMPORT_ROWS} rows`);
+    throw new BadRequestError(`Arquivo excede o máximo de ${MAX_IMPORT_ROWS} linhas`);
   }
 
   const errors: Array<{ row: number; message: string }> = [];
@@ -438,6 +456,48 @@ export async function importFromCSV(buffer: Buffer, adminId: string) {
   return { created, errors, total: rows.length };
 }
 
+export async function exportToXLSX() {
+  const entries = await prisma.catalogEntry.findMany({
+    where: { approvalStatus: 'APPROVED' },
+    orderBy: { title: 'asc' },
+    include: {
+      series: true,
+      categories: { include: { category: true } },
+      tags: { include: { tag: true } },
+      characters: { include: { character: true } },
+    },
+  });
+
+  const rows = entries.map((entry) => ({
+    title: entry.title,
+    author: entry.author || '',
+    publisher: entry.publisher || '',
+    imprint: entry.imprint || '',
+    seriesTitle: entry.series?.title || '',
+    volumeNumber: entry.volumeNumber ?? '',
+    editionNumber: entry.editionNumber ?? '',
+    isbn: entry.isbn || '',
+    barcode: entry.barcode || '',
+    coverPrice: entry.coverPrice ? Number(entry.coverPrice) : '',
+    publishYear: entry.publishYear ?? '',
+    publishMonth: entry.publishMonth ?? '',
+    pageCount: entry.pageCount ?? '',
+    description: entry.description || '',
+    categories: entry.categories.map((c) => c.category.name).join('; '),
+    tags: entry.tags.map((t) => t.tag.name).join('; '),
+    characters: entry.characters.map((ch) => ch.character.name).join('; '),
+    coverUrl: entry.coverImageUrl || '',
+  }));
+
+  return generateXLSX(rows, CATALOG_FIELD_MAP, CATALOG_REVERSE, { sheetName: 'Catálogo' });
+}
+
+/** Generate empty XLSX template with examples */
+export async function getCatalogXlsxTemplate() {
+  return generateCatalogTemplate();
+}
+
+/** Legacy CSV export (kept for backward compatibility) */
 export async function exportToCSV() {
   const entries = await prisma.catalogEntry.findMany({
     where: { approvalStatus: 'APPROVED' },
@@ -481,12 +541,23 @@ export async function uploadCoverBySourceKey(sourceKey: string, buffer: Buffer) 
 
   // Build filename from sourceKey: rika:123 → rika-123.jpg
   const coverFileName = sourceKey.replace(':', '-') + '.jpg';
+
+  // Try R2 upload first, fallback to local filesystem
+  const { url } = await uploadImage(buffer, 'covers');
+  if (url.includes('covers.comicstrunk.com') || url.includes('r2.cloudflarestorage')) {
+    // R2 upload — store the full URL
+    const updated = await prisma.catalogEntry.update({
+      where: { id: entry.id },
+      data: { coverFileName, coverImageUrl: url },
+    });
+    return { id: updated.id, sourceKey, coverFileName, status: 'created' as const };
+  }
+
+  // Local filesystem fallback
   const coversDir = path.resolve(__dirname, '..', '..', '..', 'uploads', 'covers');
   if (!fs.existsSync(coversDir)) fs.mkdirSync(coversDir, { recursive: true });
 
   const coverPath = path.join(coversDir, coverFileName);
-
-  // Check if already exists
   if (fs.existsSync(coverPath)) {
     return { id: entry.id, sourceKey, coverFileName, status: 'already_exists' as const };
   }

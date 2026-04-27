@@ -1,0 +1,211 @@
+[
+  {
+    "title": "The Hobbit",
+    "author": "J.R.R. Tolkien",
+    "publisher": "Eclipse Comics",
+    "publishYear": 1937,
+    "pageCount": 310,
+    "isbn": "9780061756269",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/14627509-L.jpg",
+    "sourceKey": "openlibrary:14627509",
+    "editionCount": 460
+  },
+  {
+    "title": "Dragonflight",
+    "author": "Anne McCaffrey",
+    "publisher": "Eclipse Comics",
+    "publishYear": 1968,
+    "pageCount": 309,
+    "isbn": "9780593044650",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/10306696-L.jpg",
+    "sourceKey": "openlibrary:10306696",
+    "editionCount": 78
+  },
+  {
+    "title": "Appleseed",
+    "author": "Masamune Shirow",
+    "publisher": "Eclipse Comics",
+    "publishYear": 1990,
+    "pageCount": 146,
+    "isbn": "9781560600817",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/814640-L.jpg",
+    "sourceKey": "openlibrary:814640",
+    "editionCount": 12
+  },
+  {
+    "title": "Dirty Pair",
+    "author": "Adam Warren, Toren Smith",
+    "publisher": "Eclipse Comics",
+    "publishYear": 1990,
+    "pageCount": 130,
+    "isbn": "1569713391",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/815119-L.jpg",
+    "sourceKey": "openlibrary:815119",
+    "editionCount": 10
+  },
+  {
+    "title": "The Rocketeer",
+    "author": "Dave Stevens",
+    "publisher": "Eclipse Comics",
+    "publishYear": 1986,
+    "pageCount": 70,
+    "isbn": "1600105378",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/814656-L.jpg",
+    "sourceKey": "openlibrary:814656",
+    "editionCount": 9
+  },
+  {
+    "title": "Zorro",
+    "author": "Alex Toth",
+    "publisher": "Eclipse Comics",
+    "publishYear": 1988,
+    "pageCount": 248,
+    "isbn": "9781582400143",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/844618-L.jpg",
+    "sourceKey": "openlibrary:844618",
+    "editionCount": 7
+  },
+  {
+    "title": "Miracleman, Book Two",
+    "author": "Alan Moore, Alan Davis, Chuck Beckham",
+    "publisher": "Eclipse Comics",
+    "publishYear": 1990,
+    "pageCount": 224,
+    "isbn": "1560600365",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/10097848-L.jpg",
+    "sourceKey": "openlibrary:10097848",
+    "editionCount": 3
+  },
+  {
+    "title": "What's Michael?",
+    "author": "Makoto Kobayashi, Makoto Kobayshi",
+    "publisher": "Eclipse Comics",
+    "publishYear": 1990,
+    "pageCount": 86,
+    "isbn": "1560600772",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/814762-L.jpg",
+    "sourceKey": "openlibrary:814762",
+    "editionCount": 6
+  },
+  {
+    "title": "Alien worlds",
+    "author": "Bruce Jones",
+    "publisher": "Eclipse Comics",
+    "publishYear": 1988,
+    "pageCount": null,
+    "isbn": "0913035394",
+    "coverImageUrl": "",
+    "sourceKey": "openlibrary:work-OL6044004W",
+    "editionCount": 1
+  },
+  {
+    "title": "Twisted tales",
+    "author": "Bruce Jones",
+    "publisher": "Eclipse Comics",
+    "publishYear": 1987,
+    "pageCount": null,
+    "isbn": "9780913035313",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/8782307-L.jpg",
+    "sourceKey": "openlibrary:8782307",
+    "editionCount": 1
+  },
+  {
+    "title": "Pelléas & Mélisande",
+    "author": "P. Craig Russell",
+    "publisher": "Eclipse Comics",
+    "publishYear": 1985,
+    "pageCount": null,
+    "isbn": null,
+    "coverImageUrl": "",
+    "sourceKey": "openlibrary:work-OL2210404W",
+    "editionCount": 1
+  },
+  {
+    "title": "Total eclipse",
+    "author": "Marv Wolfman",
+    "publisher": "Eclipse Comics",
+    "publishYear": 1988,
+    "pageCount": null,
+    "isbn": null,
+    "coverImageUrl": "",
+    "sourceKey": "openlibrary:work-OL2564989W",
+    "editionCount": 2
+  },
+  {
+    "title": "Rudyard Kipling's red dog",
+    "author": "P. Craig Russell",
+    "publisher": "Eclipse Comics",
+    "publishYear": 1988,
+    "pageCount": 31,
+    "isbn": null,
+    "coverImageUrl": "",
+    "sourceKey": "openlibrary:work-OL2210410W",
+    "editionCount": 1
+  },
+  {
+    "title": "Real War Stories No. 1",
+    "author": "Alan Moore",
+    "publisher": "Eclipse Comics",
+    "publishYear": 1987,
+    "pageCount": 48,
+    "isbn": "9789998588837",
+    "coverImageUrl": "",
+    "sourceKey": "openlibrary:work-OL4381049W",
+    "editionCount": 1
+  },
+  {
+    "title": "The Sisterhood of Steel",
+    "author": "Christy Marx, Peter Ledger",
+    "publisher": "Eclipse Comics",
+    "publishYear": 1987,
+    "pageCount": null,
+    "isbn": "0913035238",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/703984-L.jpg",
+    "sourceKey": "openlibrary:703984",
+    "editionCount": 1
+  },
+  {
+    "title": "The Jack Kirby treasury",
+    "author": "Jack Kirby",
+    "publisher": "Eclipse Comics",
+    "publishYear": 1991,
+    "pageCount": 96,
+    "isbn": "9781560601340",
+    "coverImageUrl": "",
+    "sourceKey": "openlibrary:work-OL763065W",
+    "editionCount": 1
+  },
+  {
+    "title": "Steed and Mrs. Peel",
+    "author": "Grant Morrison",
+    "publisher": "Eclipse Comics",
+    "publishYear": 1992,
+    "pageCount": 43,
+    "isbn": "9781870084956",
+    "coverImageUrl": "https://covers.openlibrary.org/b/id/13617958-L.jpg",
+    "sourceKey": "openlibrary:13617958",
+    "editionCount": 2
+  },
+  {
+    "title": "*Signed* the Sisterhood of Steel, Boronwe",
+    "author": "Christy; Peter Ledger Marx",
+    "publisher": "Eclipse Comics",
+    "publishYear": 1987,
+    "pageCount": null,
+    "isbn": "0913035297",
+    "coverImageUrl": "",
+    "sourceKey": "openlibrary:work-OL9625248W",
+    "editionCount": 1
+  },
+  {
+    "title": "Tales from the plague",
+    "author": "Dennis Cunningham",
+    "publisher": "Eclipse Comics",
+    "publishYear": 1986,
+    "pageCount": 32,
+    "isbn": null,
+    "coverImageUrl": "",
+    "sourceKey": "openlibrary:work-OL32316389W",
+    "editionCount": 1
+  }
+]

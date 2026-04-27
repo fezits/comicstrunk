@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useIsMobile } from '@/hooks/use-is-mobile';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -31,7 +32,10 @@ export default function SeriesPage() {
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
 
   const [searchInput, setSearchInput] = useState(currentTitle);
-  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isMobile = useIsMobile();
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => { setSearchInput(currentTitle); }, [currentTitle]);
 
   // Update URL search params
   const updateParams = useCallback(
@@ -80,15 +84,16 @@ export default function SeriesPage() {
     };
   }, [currentTitle, currentPage, tCommon]);
 
-  // Debounced search
-  const handleSearchChange = (value: string) => {
+  const submitSearch = (value?: string) => {
+    const v = (value ?? searchInput).trim();
+    updateParams(v, 1);
+  };
+
+  const handleSearchInputChange = (value: string) => {
     setSearchInput(value);
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-    }
-    debounceTimer.current = setTimeout(() => {
-      updateParams(value, 1);
-    }, 300);
+    if (isMobile) return;
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => submitSearch(value), 300);
   };
 
   const handlePageChange = (page: number) => {
@@ -109,7 +114,9 @@ export default function SeriesPage() {
         <Input
           placeholder={t('searchPlaceholder')}
           value={searchInput}
-          onChange={(e) => handleSearchChange(e.target.value)}
+          onChange={(e) => handleSearchInputChange(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') submitSearch(); }}
+          onBlur={() => isMobile && submitSearch()}
           className="pl-9"
         />
       </div>

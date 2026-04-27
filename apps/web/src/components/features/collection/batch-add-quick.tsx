@@ -4,12 +4,15 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { Search, Loader2, Check, Plus, X } from 'lucide-react';
+import { Search, Loader2, Check, Plus, X, Minus } from 'lucide-react';
 
+import { useIsMobile } from '@/hooks/use-is-mobile';
 import { Button } from '@/components/ui/button';
+import { CoverImage } from '@/components/ui/cover-image';
 import { Input } from '@/components/ui/input';
 import { searchCatalog, type CatalogEntry } from '@/lib/api/catalog';
-import { batchAddItems, deleteCollectionItem, getCollectionItems } from '@/lib/api/collection';
+import { batchAddItems, addCollectionItem, deleteCollectionItem, getOwnedIds } from '@/lib/api/collection';
+import { useCollection } from '@/contexts/collection-context';
 
 const PAGE_SIZE = 30;
 
@@ -28,6 +31,10 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
+  const [zoomImage, setZoomImage] = useState<{ url: string; title: string } | null>(null);
+  const [sortBy, setSortBy] = useState<'createdAt' | 'title'>('createdAt');
+  const [sortOrder] = useState<'desc' | 'asc'>('desc');
+  const { incrementCount, decrementCount } = useCollection();
   const [totalResults, setTotalResults] = useState(0);
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
   const [addingId, setAddingId] = useState<string | null>(null);
@@ -36,57 +43,71 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
   const [ownedMap, setOwnedMap] = useState<Map<string, string>>(new Map());
   const activeQuery = useRef('');
 
-  // Load user's collection to know what they already have
+  // Track quantity per entry for adding
+  const [quantities, setQuantities] = useState<Map<string, number>>(new Map());
+
+  const getQty = (entryId: string) => quantities.get(entryId) ?? 1;
+  const setQty = (entryId: string, qty: number) => {
+    setQuantities((prev) => { const next = new Map(prev); next.set(entryId, Math.max(1, qty)); return next; });
+  };
+
+  // Load user's full collection to know what they already have
   useEffect(() => {
-    async function loadOwned() {
-      try {
-        const result = await getCollectionItems({ limit: 100 });
+    getOwnedIds()
+      .then((items) => {
         const map = new Map<string, string>();
-        result.data.forEach((item: { id: string; catalogEntryId: string }) => {
-          map.set(item.catalogEntryId, item.id);
-        });
+        items.forEach((item) => map.set(item.catalogEntryId, item.id));
         setOwnedMap(map);
-      } catch {
-        // ignore
-      }
-    }
-    loadOwned();
+      })
+      .catch(() => {});
   }, []);
 
-  // Debounced search (resets to page 1)
-  useEffect(() => {
-    if (!searchQuery.trim() || searchQuery.length < 2) {
+  const isMobile = useIsMobile();
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const submitSearch = useCallback(async (value?: string) => {
+    const q = (value ?? searchQuery).trim();
+    if (!q || q.length < 2) {
       setResults([]);
       setHasMore(false);
       setTotalResults(0);
       return;
     }
+    setSearching(true);
+    setPage(1);
+    activeQuery.current = q;
+    try {
+      const result = await searchCatalog({ title: q, limit: PAGE_SIZE, page: 1, sortBy, sortOrder });
+      setResults(result.data);
+      setTotalResults(result.pagination.total);
+      setHasMore(result.pagination.page < result.pagination.totalPages);
+    } catch {
+      // ignore
+    } finally {
+      setSearching(false);
+    }
+  }, [searchQuery, sortBy, sortOrder]);
 
-    const timer = setTimeout(async () => {
-      setSearching(true);
-      setPage(1);
-      activeQuery.current = searchQuery;
-      try {
-        const result = await searchCatalog({ title: searchQuery, limit: PAGE_SIZE, page: 1 });
-        setResults(result.data);
-        setTotalResults(result.pagination.total);
-        setHasMore(result.pagination.page < result.pagination.totalPages);
-      } catch {
-        // ignore
-      } finally {
-        setSearching(false);
-      }
-    }, 400);
+  const handleSearchInputChange = (value: string) => {
+    setSearchQuery(value);
+    if (isMobile) return;
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => submitSearch(value), 400);
+  };
 
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+  // Re-run search when sort changes (only if there's an active query)
+  useEffect(() => {
+    if (activeQuery.current && activeQuery.current.length >= 2) {
+      submitSearch();
+    }
+  }, [sortBy, sortOrder]);
 
   const loadMore = useCallback(async () => {
     if (loadingMore || !hasMore) return;
     setLoadingMore(true);
     const nextPage = page + 1;
     try {
-      const result = await searchCatalog({ title: activeQuery.current, limit: PAGE_SIZE, page: nextPage });
+      const result = await searchCatalog({ title: activeQuery.current, limit: PAGE_SIZE, page: nextPage, sortBy, sortOrder });
       setResults((prev) => [...prev, ...result.data]);
       setPage(nextPage);
       setHasMore(result.pagination.page < result.pagination.totalPages);
@@ -99,38 +120,32 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
 
   const handleQuickAdd = useCallback(async (entry: CatalogEntry) => {
     setAddingId(entry.id);
+    const qty = getQty(entry.id);
     try {
-      const result = await batchAddItems({
-        catalogEntryIds: [entry.id],
+      const item = await addCollectionItem({
+        catalogEntryId: entry.id,
+        quantity: qty,
         condition: 'VERY_GOOD',
-        isRead: false,
       });
 
-      if (result.added > 0) {
-        setAddedIds((prev) => new Set(prev).add(entry.id));
-        onAdded(1);
-        toast.success(`"${entry.title}" adicionado`);
-
-        // Refresh owned map to get the new collection item ID
-        try {
-          const coll = await getCollectionItems({ limit: 100 });
-          const map = new Map<string, string>();
-          coll.data.forEach((item: { id: string; catalogEntryId: string }) => {
-            map.set(item.catalogEntryId, item.id);
-          });
-          setOwnedMap(map);
-        } catch { /* ignore */ }
-      } else {
+      setAddedIds((prev) => new Set(prev).add(entry.id));
+      setOwnedMap((prev) => { const next = new Map(prev); next.set(entry.id, item.id); return next; });
+      onAdded(1);
+      incrementCount(qty);
+      toast.success(`"${entry.title}" adicionado (${qty}x)`);
+    } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      if (status === 409) {
         setAddedIds((prev) => new Set(prev).add(entry.id));
         toast.info(t('alreadyInCollection'));
+      } else {
+        const message = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+        toast.error(message || 'Erro ao adicionar');
       }
-    } catch (err: unknown) {
-      const message = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
-      toast.error(message || 'Erro ao adicionar');
     } finally {
       setAddingId(null);
     }
-  }, [onAdded, t]);
+  }, [onAdded, t, quantities]);
 
   const handleRemove = useCallback(async (catalogEntryId: string) => {
     const collectionItemId = ownedMap.get(catalogEntryId);
@@ -149,6 +164,7 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
         next.delete(catalogEntryId);
         return next;
       });
+      decrementCount();
       toast.success('Removido da coleção');
     } catch (err: unknown) {
       const message = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
@@ -165,10 +181,29 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => handleSearchInputChange(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitSearch(); } }}
+          onBlur={() => isMobile && submitSearch()}
           placeholder={t('searchCatalog')}
           className="pl-10"
         />
+      </div>
+
+      {/* Sort options */}
+      <div className="flex items-center gap-2 text-sm">
+        <span className="text-muted-foreground">Ordenar:</span>
+        <button
+          className={`px-2 py-1 rounded ${sortBy === 'createdAt' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
+          onClick={() => setSortBy('createdAt')}
+        >
+          Mais recentes
+        </button>
+        <button
+          className={`px-2 py-1 rounded ${sortBy === 'title' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
+          onClick={() => setSortBy('title')}
+        >
+          A-Z
+        </button>
       </div>
 
       {searching && (
@@ -212,14 +247,16 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
                     : 'bg-muted/30 hover:bg-muted/50'
               }`}
             >
-              {/* Cover thumbnail */}
-              <div className="w-10 h-14 bg-muted rounded overflow-hidden flex-shrink-0">
+              {/* Cover thumbnail — click to zoom */}
+              <div
+                className="w-10 h-14 bg-muted rounded overflow-hidden flex-shrink-0 cursor-zoom-in"
+                onClick={() => entry.coverImageUrl && setZoomImage({ url: entry.coverImageUrl, title: entry.title })}
+              >
                 {entry.coverImageUrl ? (
-                  <img
+                  <CoverImage
                     src={entry.coverImageUrl}
                     alt={entry.title}
                     className="h-full w-full object-cover"
-                    loading="lazy"
                   />
                 ) : (
                   <div className="h-full w-full flex items-center justify-center text-[8px] text-muted-foreground">
@@ -228,9 +265,15 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
                 )}
               </div>
 
-              {/* Info */}
+              {/* Info — title links to detail */}
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm truncate">{entry.title}</p>
+                <Link
+                  href={`/${locale}/catalog/${entry.slug || entry.id}`}
+                  target="_blank"
+                  className="font-medium text-xs sm:text-sm truncate block hover:text-primary hover:underline"
+                >
+                  {entry.title}
+                </Link>
                 <p className="text-xs text-muted-foreground">
                   {entry.publisher ?? ''}
                   {entry.publishYear ? ` · ${entry.publishYear}` : ''}
@@ -270,22 +313,43 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
                   </Button>
                 </div>
               ) : (
-                <Button
-                  size="sm"
-                  variant="default"
-                  onClick={() => handleQuickAdd(entry)}
-                  disabled={isAdding}
-                  className="shrink-0 bg-green-600 hover:bg-green-700"
-                >
-                  {isAdding ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <>
-                      <Plus className="h-4 w-4 mr-1" />
-                      {t('add')}
-                    </>
-                  )}
-                </Button>
+                <div className="flex items-center gap-1 shrink-0">
+                  {/* Quantity selector */}
+                  <div className="flex items-center border rounded-md">
+                    <button
+                      className="h-7 w-6 flex items-center justify-center text-muted-foreground hover:text-foreground"
+                      onClick={(e) => { e.stopPropagation(); setQty(entry.id, getQty(entry.id) - 1); }}
+                      disabled={getQty(entry.id) <= 1}
+                    >
+                      <Minus className="h-3 w-3" />
+                    </button>
+                    <span className="h-7 w-6 flex items-center justify-center text-xs font-medium">
+                      {getQty(entry.id)}
+                    </span>
+                    <button
+                      className="h-7 w-6 flex items-center justify-center text-muted-foreground hover:text-foreground"
+                      onClick={(e) => { e.stopPropagation(); setQty(entry.id, getQty(entry.id) + 1); }}
+                    >
+                      <Plus className="h-3 w-3" />
+                    </button>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="default"
+                    onClick={() => handleQuickAdd(entry)}
+                    disabled={isAdding}
+                    className="shrink-0 bg-green-600 hover:bg-green-700"
+                  >
+                    {isAdding ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Plus className="h-4 w-4 mr-1" />
+                        {t('add')}
+                      </>
+                    )}
+                  </Button>
+                </div>
               )}
             </div>
           );
@@ -317,6 +381,26 @@ export function BatchAddQuick({ onAdded, sessionCount }: BatchAddQuickProps) {
           <Button variant="outline" size="sm" asChild>
             <Link href={`/${locale}/collection`}>{t('viewCollection')}</Link>
           </Button>
+        </div>
+      )}
+      {/* Image zoom modal */}
+      {zoomImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setZoomImage(null)}
+        >
+          <button
+            className="absolute top-4 right-4 text-white hover:text-gray-300"
+            onClick={() => setZoomImage(null)}
+          >
+            <X className="h-8 w-8" />
+          </button>
+          <img
+            src={zoomImage.url}
+            alt={zoomImage.title}
+            className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
     </div>

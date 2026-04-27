@@ -5,11 +5,12 @@ import {
   ConflictError,
   ForbiddenError,
 } from '../../shared/utils/api-error';
+import { resolveCoverUrl } from '../../shared/lib/cloudinary';
 
 // === Constants ===
 
 const CART_ITEM_LIMIT = 50;
-const RESERVATION_HOURS = 24;
+const RESERVATION_MINUTES = 30;
 
 // === Cart includes for rich responses ===
 
@@ -22,6 +23,7 @@ function cartItemIncludes() {
             id: true,
             title: true,
             coverImageUrl: true,
+            coverFileName: true,
           },
         },
         user: {
@@ -35,10 +37,65 @@ function cartItemIncludes() {
   };
 }
 
+/**
+ * Normaliza o cart item Prisma (com `collectionItem.catalogEntry` + `user`)
+ * para o shape achatado que o frontend espera:
+ *   collectionItem: { id, title, coverImageUrl, salePrice, condition, seller }
+ *
+ * Sem isso, /cart e /checkout quebram com client-side exception porque
+ * `collectionItem.seller` é undefined.
+ */
+type RawCartItem = {
+  id: string;
+  userId: string;
+  collectionItemId: string;
+  reservedAt: Date;
+  expiresAt: Date;
+  createdAt: Date;
+  collectionItem: {
+    id: string;
+    condition: string;
+    salePrice: unknown;
+    catalogEntry: {
+      id: string;
+      title: string;
+      coverImageUrl: string | null;
+      coverFileName?: string | null;
+    };
+    user: { id: string; name: string };
+  };
+  remainingMs?: number;
+};
+
+function normalizeCartItem(item: RawCartItem) {
+  const resolved = resolveCoverUrl(item.collectionItem.catalogEntry);
+  return {
+    id: item.id,
+    userId: item.userId,
+    collectionItemId: item.collectionItemId,
+    reservedAt: item.reservedAt,
+    expiresAt: item.expiresAt,
+    createdAt: item.createdAt,
+    remainingMs: item.remainingMs,
+    collectionItem: {
+      id: item.collectionItem.id,
+      title: item.collectionItem.catalogEntry.title,
+      coverImageUrl: resolved.coverImageUrl,
+      salePrice:
+        item.collectionItem.salePrice != null ? Number(item.collectionItem.salePrice) : null,
+      condition: item.collectionItem.condition,
+      seller: {
+        id: item.collectionItem.user.id,
+        name: item.collectionItem.user.name,
+      },
+    },
+  };
+}
+
 // === Add to Cart with Atomic Reservation (CART-01, CART-02, CART-06, CART-07) ===
 
 export async function addToCart(userId: string, collectionItemId: string) {
-  return prisma.$transaction(async (tx) => {
+  const cartItem = await prisma.$transaction(async (tx) => {
     // 1. Find the collection item (include user for ownership check)
     const item = await tx.collectionItem.findUnique({
       where: { id: collectionItemId },
@@ -84,8 +141,8 @@ export async function addToCart(userId: string, collectionItemId: string) {
       throw new BadRequestError(`Cart limit reached (maximum ${CART_ITEM_LIMIT} items)`);
     }
 
-    // 6. Create CartItem with 24-hour reservation (CART-01)
-    const expiresAt = new Date(now.getTime() + RESERVATION_HOURS * 60 * 60 * 1000);
+    // 6. Create CartItem with 30-minute reservation
+    const expiresAt = new Date(now.getTime() + RESERVATION_MINUTES * 60 * 1000);
 
     const cartItem = await tx.cartItem.create({
       data: {
@@ -99,6 +156,8 @@ export async function addToCart(userId: string, collectionItemId: string) {
 
     return cartItem;
   });
+
+  return normalizeCartItem(cartItem as unknown as RawCartItem);
 }
 
 // === Get Cart (CART-03, CART-04) ===
@@ -115,11 +174,13 @@ export async function getCart(userId: string) {
     orderBy: { createdAt: 'desc' },
   });
 
-  // Add remaining time info
-  return items.map((item) => ({
-    ...item,
-    remainingMs: item.expiresAt.getTime() - now.getTime(),
-  }));
+  // Normaliza para shape esperado pelo frontend + adiciona remainingMs
+  return items.map((item) =>
+    normalizeCartItem({
+      ...item,
+      remainingMs: item.expiresAt.getTime() - now.getTime(),
+    } as unknown as RawCartItem),
+  );
 }
 
 // === Remove from Cart (CART-05) ===

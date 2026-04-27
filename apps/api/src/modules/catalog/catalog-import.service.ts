@@ -249,10 +249,20 @@ async function ensureLookups(rows: JsonImportRow[]): Promise<{
     if (existing) {
       characterMap.set(name, existing.id);
     } else {
-      const slug = await generateUniqueSlug(name, 'character');
-      const created = await prisma.character.create({ data: { name, slug, description: null } });
-      characterMap.set(name, created.id);
-      charactersCreated.push(name);
+      try {
+        const slug = await generateUniqueSlug(name, 'character');
+        const created = await prisma.character.create({ data: { name, slug, description: null } });
+        characterMap.set(name, created.id);
+        charactersCreated.push(name);
+      } catch {
+        // Slug conflict — find by slug fallback
+        const fallbackSlug = slugify(name, { lower: true, strict: true });
+        const bySlug = await prisma.character.findFirst({ where: { slug: fallbackSlug } });
+        if (bySlug) {
+          characterMap.set(name, bySlug.id);
+        }
+        // If still not found, skip this character (entry will still be imported)
+      }
     }
   }
 
@@ -589,22 +599,22 @@ export async function importFromJSON(
             },
           });
 
-          // Link categories
-          for (const categoryId of categoryIds) {
+          // Link categories (deduplicate IDs to avoid PK conflicts)
+          for (const categoryId of [...new Set(categoryIds)]) {
             await tx.catalogCategory.create({
               data: { catalogEntryId: entry.id, categoryId },
             });
           }
 
           // Link tags
-          for (const tagId of tagIds) {
+          for (const tagId of [...new Set(tagIds)]) {
             await tx.catalogTag.create({
               data: { catalogEntryId: entry.id, tagId },
             });
           }
 
           // Link characters
-          for (const characterId of characterIds) {
+          for (const characterId of [...new Set(characterIds)]) {
             await tx.catalogCharacter.create({
               data: { catalogEntryId: entry.id, characterId },
             });

@@ -146,12 +146,12 @@ export function MarketplaceCard({
           {conditionLabel}
         </Badge>
 
-        {/* Cart button — top-right on hover */}
+        {/* Cart button — top-right, always visible on mobile */}
         {onAddToCart && (
-          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <div className="absolute top-2 right-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
             <Button
               size="icon"
-              className="h-8 w-8 rounded-full"
+              className="h-10 w-10 rounded-full sm:h-8 sm:w-8"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();

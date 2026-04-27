@@ -1,7 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useIsMobile } from '@/hooks/use-is-mobile';
+import Link from 'next/link';
+import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Search, CheckSquare, Square, Loader2 } from 'lucide-react';
 
@@ -16,6 +18,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { getSeries, getSeriesById, type Series, type SeriesDetail, type CatalogEdition } from '@/lib/api/series';
+import { useAuth } from '@/lib/auth/use-auth';
+import { COLLECTION_LIMITS } from '@comicstrunk/contracts';
 
 function extractNumber(edition: CatalogEdition): string {
   if (edition.editionNumber != null) return String(edition.editionNumber);
@@ -28,6 +32,7 @@ function extractNumber(edition: CatalogEdition): string {
   return '?';
 }
 import { batchAddItems, getCollectionStats } from '@/lib/api/collection';
+import { useCollection } from '@/contexts/collection-context';
 
 interface BatchAddBySeriesProps {
   onAdded: (count: number) => void;
@@ -35,11 +40,12 @@ interface BatchAddBySeriesProps {
 
 export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
   const t = useTranslations('batchAdd');
+  const locale = useLocale();
+  const { incrementCount } = useCollection();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [seriesResults, setSeriesResults] = useState<Series[]>([]);
   const [searching, setSearching] = useState(false);
-
   const [selectedSeries, setSelectedSeries] = useState<SeriesDetail | null>(null);
   const [loadingSeries, setLoadingSeries] = useState(false);
 
@@ -56,27 +62,33 @@ export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
     getCollectionStats().then((s) => setTotalItems(s.totalItems)).catch(() => {});
   }, []);
 
-  // Debounced search
-  useEffect(() => {
-    if (!searchQuery.trim() || searchQuery.length < 2) {
+  const isMobile = useIsMobile();
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const submitSearch = useCallback(async (value?: string) => {
+    const q = (value ?? searchQuery).trim();
+    if (!q || q.length < 2) {
       setSeriesResults([]);
       return;
     }
-
-    const timer = setTimeout(async () => {
-      setSearching(true);
-      try {
-        const result = await getSeries({ title: searchQuery, limit: 50 });
-        setSeriesResults(result.data);
-      } catch {
-        // ignore
-      } finally {
-        setSearching(false);
-      }
-    }, 400);
-
-    return () => clearTimeout(timer);
+    setSearching(true);
+    try {
+      const result = await getSeries({ title: q, limit: 100 });
+      setSeriesResults(result.data);
+    } catch {
+      // ignore
+    } finally {
+      setSearching(false);
+    }
   }, [searchQuery]);
+
+  const handleSearchInputChange = (value: string) => {
+    setSearchQuery(value);
+    setSelectedSeries(null);
+    if (isMobile) return;
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => submitSearch(value), 400);
+  };
 
   // Load series detail + owned items
   const handleSelectSeries = useCallback(async (series: Series) => {
@@ -139,11 +151,13 @@ export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
     setSelectedIds(new Set());
   };
 
-  // Plan limit check (1000 for free, validated by backend too)
-  const planLimit = 1000;
+  // Plan limit check — ADMIN has no limit
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
+  const planLimit = isAdmin ? Infinity : COLLECTION_LIMITS.FREE;
   const currentCount = totalItems;
-  const available = planLimit - currentCount;
-  const overLimit = selectedIds.size > available;
+  const available = isAdmin ? Infinity : planLimit - currentCount;
+  const overLimit = !isAdmin && selectedIds.size > available;
 
   const handleBatchAdd = async () => {
     if (selectedIds.size === 0 || overLimit) return;
@@ -156,6 +170,7 @@ export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
       });
       toast.success(t('success', { added: result.added, skipped: result.skipped }));
       onAdded(result.added);
+      incrementCount(result.added);
 
       // Move added items to owned
       setOwnedIds((prev) => {
@@ -182,10 +197,9 @@ export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           value={searchQuery}
-          onChange={(e) => {
-            setSearchQuery(e.target.value);
-            setSelectedSeries(null);
-          }}
+          onChange={(e) => handleSearchInputChange(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitSearch(); } }}
+          onBlur={() => isMobile && submitSearch()}
           placeholder={t('searchSeries')}
           className="pl-10"
         />
@@ -204,6 +218,7 @@ export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
                 <p className="font-medium">{s.title}</p>
                 <p className="text-sm text-muted-foreground">
                   {t('editions', { count: s._count?.catalogEntries ?? s.totalEditions ?? 0 })}
+                  {(s as unknown as { yearBegan?: number }).yearBegan && ` · ${(s as unknown as { yearBegan: number }).yearBegan}`}
                 </p>
               </div>
             </button>
@@ -252,7 +267,7 @@ export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
           </div>
 
           {/* Editions grid */}
-          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2">
             {selectedSeries.catalogEntries.map((edition) => {
               const owned = ownedIds.has(edition.id);
               const selected = selectedIds.has(edition.id);
@@ -300,10 +315,15 @@ export function BatchAddBySeries({ onAdded }: BatchAddBySeriesProps) {
                     </div>
                   )}
 
-                  {/* Edition number */}
-                  <p className="text-center text-[10px] py-0.5 truncate px-1">
+                  {/* Edition title — clickable link */}
+                  <Link
+                    href={`/${locale}/catalog/${edition.slug || edition.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="block text-center text-[10px] py-0.5 truncate px-1 hover:text-primary hover:underline"
+                    target="_blank"
+                  >
                     #{extractNumber(edition)}
-                  </p>
+                  </Link>
                 </button>
               );
             })}

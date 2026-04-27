@@ -1,0 +1,1282 @@
+MANGA IMPORT PLAN
+=================
+Total: 9471 gibis
+Series: 836 (8818 gibis)
+Standalone: 653 gibis
+
+=== TOP 50 SERIES ===
+
+Anime > Do (Escala) — 130 gibis
+  - Anime > Do # 001
+  - Anime > Do # 002
+  - Anime > Do # 003
+  - Anime > Do # 004
+  - Anime > Do # 005
+  ... +125 mais
+
+Neo Tokyo (Escala) — 120 gibis
+  - Neo Tokyo # 001
+  - Neo Tokyo # 002
+  - Neo Tokyo # 003
+  - Neo Tokyo # 004
+  - Neo Tokyo # 005
+  ... +115 mais
+
+Inu-Yasha (JBC) — 112 gibis
+  - Inu-Yasha # 001
+  - Inu-Yasha # 002
+  - Inu-Yasha # 003
+  - Inu-Yasha # 004
+  - Inu-Yasha # 005
+  ... +107 mais
+
+Pokémon Club Evolution (Conrad) — 87 gibis
+  - Pokémon Club Evolution # 01
+  - Pokémon Club Evolution # 02
+  - Pokémon Club Evolution # 03
+  - Pokémon Club Evolution # 04
+  - Pokémon Club Evolution # 05
+  ... +82 mais
+
+Berserk (Panini) — 84 gibis
+  - Berserk # 01
+  - Berserk # 02
+  - Berserk # 03
+  - Berserk # 04
+  - Berserk # 05
+  ... +79 mais
+
+One Piece (Panini) — 71 gibis
+  - One Piece # 001
+  - One Piece # 002
+  - One Piece # 003
+  - One Piece # 004
+  - One Piece # 005
+  ... +66 mais
+
+One Piece (Conrad) — 68 gibis
+  - One Piece # 01
+  - One Piece # 03
+  - One Piece # 04
+  - One Piece # 05
+  - One Piece # 06
+  ... +63 mais
+
+Shaman King (JBC) — 64 gibis
+  - Shaman King # 01
+  - Shaman King # 02
+  - Shaman King # 03
+  - Shaman King # 04
+  - Shaman King # 05
+  ... +59 mais
+
+Revista Level Up! (Level Up!) — 61 gibis
+  - Revista Level Up! # 01
+  - Revista Level Up! # 02
+  - Revista Level Up! # 03
+  - Revista Level Up! # 04
+  - Revista Level Up! # 05
+  ... +56 mais
+
+Bleach (Panini) — 56 gibis
+  - Bleach # 01
+  - Bleach # 02
+  - Bleach # 03
+  - Bleach # 04
+  - Bleach # 05
+  ... +51 mais
+
+Samurai X (JBC) — 56 gibis
+  - Samurai X # 01
+  - Samurai X # 02
+  - Samurai X # 03
+  - Samurai X # 04
+  - Samurai X # 05
+  ... +51 mais
+
+Naruto (Panini) — 54 gibis
+  - Naruto # 02
+  - Naruto # 03
+  - Naruto # 06
+  - Naruto # 07
+  - Naruto # 08
+  ... +49 mais
+
+Tsubasa Reservoir Chronicles (JBC) — 51 gibis
+  - Tsubasa Reservoir Chronicles # 01
+  - Tsubasa Reservoir Chronicles # 02
+  - Tsubasa Reservoir Chronicles # 03
+  - Tsubasa Reservoir Chronicles # 04
+  - Tsubasa Reservoir Chronicles # 05
+  ... +46 mais
+
+Negima (JBC) — 48 gibis
+  - Negima # 01
+  - Negima # 02
+  - Negima # 03
+  - Negima # 04
+  - Negima # 05
+  ... +43 mais
+
+Fullmetal Alchemist (JBC) — 48 gibis
+  - Fullmetal Alchemist # 01
+  - Fullmetal Alchemist # 02
+  - Fullmetal Alchemist # 03
+  - Fullmetal Alchemist # 04
+  - Fullmetal Alchemist # 05
+  ... +43 mais
+
+Dragon Ball Z (Conrad) — 48 gibis
+  - Dragon Ball Z # 02
+  - Dragon Ball Z # 03
+  - Dragon Ball Z # 04
+  - Dragon Ball Z # 05
+  - Dragon Ball Z # 06
+  ... +43 mais
+
+Vagabond (Conrad) — 47 gibis
+  - Vagabond # 01
+  - Vagabond # 02
+  - Vagabond # 03
+  - Vagabond # 04
+  - Vagabond # 05
+  ... +42 mais
+
+Cavaleiros do Zodíaco (Conrad) — 47 gibis
+  - Cavaleiros do Zodíaco # 01
+  - Cavaleiros do Zodíaco # 02
+  - Cavaleiros do Zodíaco # 03
+  - Cavaleiros do Zodíaco # 04
+  - Cavaleiros do Zodíaco # 05
+  ... +42 mais
+
+Holy Avenger (Trama) — 42 gibis
+  - Holy Avenger # 02
+  - Holy Avenger # 05 - COM O BRINDE ORIGINAL
+  - Holy Avenger # 06
+  - Holy Avenger # 06 - COM O BRINDE ORIGINAL
+  - Holy Avenger # 07
+  ... +37 mais
+
+Berserk - 2ª Série (Panini) — 42 gibis
+  - Berserk - 2ª Série # 01
+  - Berserk - 2ª Série # 02
+  - Berserk - 2ª Série # 03
+  - Berserk - 2ª Série # 04
+  - Berserk - 2ª Série # 05
+  ... +37 mais
+
+Tutor Hitman Reborn! (Panini) — 42 gibis
+  - Tutor Hitman Reborn! # 01
+  - Tutor Hitman Reborn! # 02
+  - Tutor Hitman Reborn! # 03
+  - Tutor Hitman Reborn! # 04
+  - Tutor Hitman Reborn! # 05
+  ... +37 mais
+
+Naruto Pocket (Panini) — 42 gibis
+  - Naruto Pocket # 02
+  - Naruto Pocket # 03
+  - Naruto Pocket # 04
+  - Naruto Pocket # 05
+  - Naruto Pocket # 06
+  ... +37 mais
+
+Naruto Gold (Panini) — 40 gibis
+  - Naruto Gold # 01
+  - Naruto Gold # 02
+  - Naruto Gold # 03
+  - Naruto Gold # 04
+  - Naruto Gold # 05
+  ... +35 mais
+
+Angel Sanctuary (Panini) — 40 gibis
+  - Angel Sanctuary # 01
+  - Angel Sanctuary # 02
+  - Angel Sanctuary # 03
+  - Angel Sanctuary # 04
+  - Angel Sanctuary # 05
+  ... +35 mais
+
+My Hero Academia (JBC) — 39 gibis
+  - My Hero Academia # 01
+  - My Hero Academia # 01 - COM O BRINDE ORIGINAL # 1
+  - My Hero Academia # 02
+  - My Hero Academia # 03
+  - My Hero Academia # 04
+  ... +34 mais
+
+Dragon Ball (Panini) — 39 gibis
+  - Dragon Ball # 02
+  - Dragon Ball # 03
+  - Dragon Ball # 04
+  - Dragon Ball # 05
+  - Dragon Ball # 06
+  ... +34 mais
+
+Fushigi Yûgi (Conrad) — 39 gibis
+  - Fushigi Yûgi # 01
+  - Fushigi Yûgi # 01 - COM O BRINDE ORIGINAL
+  - Fushigi Yûgi # 01 - COM O BRINDE ORIGINAL
+  - Fushigi Yûgi # 02
+  - Fushigi Yûgi # 03
+  ... +34 mais
+
+Ultra Jovem (Escala) — 39 gibis
+  - Ultra Jovem # 01
+  - Ultra Jovem # 02
+  - Ultra Jovem # 03
+  - Ultra Jovem # 04
+  - Ultra Jovem # 05
+  ... +34 mais
+
+Vagabond (Panini) — 38 gibis
+  - Vagabond # 01
+  - Vagabond # 02
+  - Vagabond # 02 - COM O BRINDE ORIGINAL
+  - Vagabond # 03
+  - Vagabond # 04
+  ... +33 mais
+
+Blade - A Lâmina do Imortal (Conrad) — 38 gibis
+  - Blade - A Lâmina do Imortal # 01
+  - Blade - A Lâmina do Imortal # 02
+  - Blade - A Lâmina do Imortal # 03
+  - Blade - A Lâmina do Imortal # 04
+  - Blade - A Lâmina do Imortal # 05
+  ... +33 mais
+
+Akira (Globo) — 38 gibis
+  - Akira # 01
+  - Akira # 02
+  - Akira # 03
+  - Akira # 04
+  - Akira # 05
+  ... +33 mais
+
+Ranma 1/2 (JBC) — 38 gibis
+  - Ranma 1/2 # 01
+  - Ranma 1/2 # 02
+  - Ranma 1/2 # 03
+  - Ranma 1/2 # 04
+  - Ranma 1/2 # 05
+  ... +33 mais
+
+Revista Henshin! (JBC) — 38 gibis
+  - Revista Henshin! # 01
+  - Revista Henshin! # 02
+  - Revista Henshin! # 03
+  - Revista Henshin! # 04
+  - Revista Henshin! # 05
+  ... +33 mais
+
+Seven Deadly Sins (JBC) — 37 gibis
+  - Seven Deadly Sins # 01
+  - Seven Deadly Sins # 02
+  - Seven Deadly Sins # 03
+  - Seven Deadly Sins # 04
+  - Seven Deadly Sins # 05
+  ... +32 mais
+
+Food Wars (Panini) — 37 gibis
+  - Food Wars # 01
+  - Food Wars # 02
+  - Food Wars # 02 - COM O BRINDE ORIGINAL
+  - Food Wars # 03
+  - Food Wars # 04
+  ... +32 mais
+
+Air Gear (Panini) — 37 gibis
+  - Air Gear # 01
+  - Air Gear # 02
+  - Air Gear # 03
+  - Air Gear # 04
+  - Air Gear # 05
+  ... +32 mais
+
+Gantz (Panini) — 37 gibis
+  - Gantz # 01
+  - Gantz # 02
+  - Gantz # 03
+  - Gantz # 04
+  - Gantz # 05
+  ... +32 mais
+
+Ataque dos Titãs (Panini) — 36 gibis
+  - Ataque dos Titãs # 01
+  - Ataque dos Titãs # 02
+  - Ataque dos Titãs # 03
+  - Ataque dos Titãs # 04
+  - Ataque dos Titãs # 05
+  ... +31 mais
+
+Fairy Tail (JBC) — 36 gibis
+  - Fairy Tail # 01
+  - Fairy Tail # 02
+  - Fairy Tail # 03
+  - Fairy Tail # 04
+  - Fairy Tail # 05
+  ... +31 mais
+
+Ataque dos Titãs - 2ª Edição (Panini) — 34 gibis
+  - Ataque dos Titãs - 2ª Edição # 01
+  - Ataque dos Titãs - 2ª Edição # 02
+  - Ataque dos Titãs - 2ª Edição # 03
+  - Ataque dos Titãs - 2ª Edição # 04
+  - Ataque dos Titãs - 2ª Edição # 05
+  ... +29 mais
+
+Hunter x Hunter (JBC) — 34 gibis
+  - Hunter x Hunter # 01
+  - Hunter x Hunter # 02
+  - Hunter x Hunter # 03
+  - Hunter x Hunter # 04
+  - Hunter x Hunter # 05
+  ... +29 mais
+
+Super Onze (JBC) — 34 gibis
+  - Super Onze  # 01
+  - Super Onze  # 02
+  - Super Onze  # 03
+  - Super Onze  # 04
+  - Super Onze  # 05
+  ... +29 mais
+
+Fire Force (Panini) — 33 gibis
+  - Fire Force # 01
+  - Fire Force # 02
+  - Fire Force # 03
+  - Fire Force # 04
+  - Fire Force # 05
+  ... +28 mais
+
+Demon Slayer - Kimetsu No Yaiba (Panini) — 32 gibis
+  - Demon Slayer - Kimetsu No Yaiba # 01
+  - Demon Slayer - Kimetsu No Yaiba # 01 - COM O BRINDE ORIGINAL
+  - Demon Slayer - Kimetsu No Yaiba # 02
+  - Demon Slayer - Kimetsu No Yaiba # 03
+  - Demon Slayer - Kimetsu No Yaiba # 03 - COM O BRINDE ORIGINAL
+  ... +27 mais
+
+Tokyo Revengers (JBC) — 32 gibis
+  - Tokyo Revengers # 01
+  - Tokyo Revengers # 01 - COM O BRINDE ORIGINAL
+  - Tokyo Revengers # 02
+  - Tokyo Revengers # 02 - COM O BRINDE ORIGINAL
+  - Tokyo Revengers # 03
+  ... +27 mais
+
+Kimi ni Todoke (Panini) — 31 gibis
+  - Kimi ni Todoke # 01
+  - Kimi ni Todoke # 02
+  - Kimi ni Todoke # 03
+  - Kimi ni Todoke # 04
+  - Kimi ni Todoke # 05
+  ... +26 mais
+
+Slam Dunk (Conrad) — 31 gibis
+  - Slam Dunk # 01
+  - Slam Dunk # 02
+  - Slam Dunk # 03
+  - Slam Dunk # 04
+  - Slam Dunk # 05
+  ... +26 mais
+
+Black Butler (Panini) — 31 gibis
+  - Black Butler # 01
+  - Black Butler # 02
+  - Black Butler # 03
+  - Black Butler # 04
+  - Black Butler # 05
+  ... +26 mais
+
+Cavaleiros do Zodíaco (2ª Edição) (Conrad) — 30 gibis
+  - Cavaleiros do Zodíaco (2ª Edição) # 02
+  - Cavaleiros do Zodíaco (2ª Edição) # 03
+  - Cavaleiros do Zodíaco (2ª Edição) # 04
+  - Cavaleiros do Zodíaco (2ª Edição) # 09
+  - Cavaleiros do Zodíaco (2ª Edição) # 10
+  ... +25 mais
+
+Golden Kamuy (Panini) — 30 gibis
+  - Golden Kamuy # 01
+  - Golden Kamuy # 02
+  - Golden Kamuy # 03
+  - Golden Kamuy # 04
+  - Golden Kamuy # 05
+  ... +25 mais
+
+=== CONRAD (803 gibis) ===
+
+Pokémon Club Evolution (Conrad) — 87 gibis
+  - Pokémon Club Evolution # 01
+  - Pokémon Club Evolution # 02
+  - Pokémon Club Evolution # 03
+  - Pokémon Club Evolution # 04
+  - Pokémon Club Evolution # 05
+  - Pokémon Club Evolution # 06
+  - Pokémon Club Evolution # 07
+  - Pokémon Club Evolution # 08
+  - Pokémon Club Evolution # 09
+  - Pokémon Club Evolution # 10
+  - Pokémon Club Evolution # 11
+  - Pokémon Club Evolution # 12
+  - Pokémon Club Evolution # 13
+  - Pokémon Club Evolution # 14
+  - Pokémon Club Evolution # 15
+  - Pokémon Club Evolution # 16
+  - Pokémon Club Evolution # 17
+  - Pokémon Club Evolution # 18
+  - Pokémon Club Evolution # 19
+  - Pokémon Club Evolution # 20
+  - Pokémon Club Evolution # 21
+  - Pokémon Club Evolution # 22
+  - Pokémon Club Evolution # 23
+  - Pokémon Club Evolution # 24
+  - Pokémon Club Evolution # 25
+  - Pokémon Club Evolution # 26
+  - Pokémon Club Evolution # 27
+  - Pokémon Club Evolution # 28
+  - Pokémon Club Evolution # 29
+  - Pokémon Club Evolution # 30
+  - Pokémon Club Evolution # 31
+  - Pokémon Club Evolution # 32
+  - Pokémon Club Evolution # 33
+  - Pokémon Club Evolution # 34
+  - Pokémon Club Evolution # 35
+  - Pokémon Club Evolution # 36
+  - Pokémon Club Evolution # 37
+  - Pokémon Club Evolution # 38
+  - Pokémon Club Evolution # 39
+  - Pokémon Club Evolution # 40
+  - Pokémon Club Evolution # 41
+  - Pokémon Club Evolution # 42
+  - Pokémon Club Evolution # 43
+  - Pokémon Club Evolution # 44
+  - Pokémon Club Evolution # 45
+  - Pokémon Club Evolution # 46
+  - Pokémon Club Evolution # 47
+  - Pokémon Club Evolution # 48 [SEM CAPA]
+  - Pokémon Club Evolution # 49
+  - Pokémon Club Evolution # 50
+  - Pokémon Club Evolution # 51
+  - Pokémon Club Evolution # 52
+  - Pokémon Club Evolution # 53
+  - Pokémon Club Evolution # 54
+  - Pokémon Club Evolution # 55
+  - Pokémon Club Evolution # 56
+  - Pokémon Club Evolution # 57
+  - Pokémon Club Evolution # 58
+  - Pokémon Club Evolution # 59
+  - Pokémon Club Evolution # 60
+  - Pokémon Club Evolution # 61
+  - Pokémon Club Evolution # 62
+  - Pokémon Club Evolution # 63
+  - Pokémon Club Evolution # 64
+  - Pokémon Club Evolution # 65
+  - Pokémon Club Evolution # 66
+  - Pokémon Club Evolution # 67
+  - Pokémon Club Evolution # 68
+  - Pokémon Club Evolution # 69
+  - Pokémon Club Evolution # 70
+  - Pokémon Club Evolution # 71
+  - Pokémon Club Evolution # 72
+  - Pokémon Club Evolution # 73
+  - Pokémon Club Evolution # 74 [SEM CAPA]
+  - Pokémon Club Evolution # 75 [SEM CAPA]
+  - Pokémon Club Evolution # 76 [SEM CAPA]
+  - Pokémon Club Evolution # 77 [SEM CAPA]
+  - Pokémon Club Evolution # 78 [SEM CAPA]
+  - Pokémon Club Evolution # 79 [SEM CAPA]
+  - Pokémon Club Evolution # 80 [SEM CAPA]
+  - Pokémon Club Evolution # 81
+  - Pokémon Club Evolution # 82 [SEM CAPA]
+  - Pokémon Club Evolution # 83 [SEM CAPA]
+  - Pokémon Club Evolution # 84 [SEM CAPA]
+  - Pokémon Club Evolution # 85 [SEM CAPA]
+  - Pokémon Club Evolution # 86 [SEM CAPA]
+  - Pokémon Club Evolution # 87 [SEM CAPA]
+
+One Piece (Conrad) — 68 gibis
+  - One Piece # 01
+  - One Piece # 03
+  - One Piece # 04
+  - One Piece # 05
+  - One Piece # 06
+  - One Piece # 07
+  - One Piece # 08
+  - One Piece # 09
+  - One Piece # 10
+  - One Piece # 11
+  - One Piece # 12
+  - One Piece # 13
+  - One Piece # 14
+  - One Piece # 15
+  - One Piece # 16
+  - One Piece # 17
+  - One Piece # 18
+  - One Piece # 19
+  - One Piece # 20
+  - One Piece # 21
+  - One Piece # 22
+  - One Piece # 23
+  - One Piece # 24
+  - One Piece # 25
+  - One Piece # 26
+  - One Piece # 27
+  - One Piece # 28
+  - One Piece # 29
+  - One Piece # 30
+  - One Piece # 31
+  - One Piece # 32
+  - One Piece # 33
+  - One Piece # 34
+  - One Piece # 35
+  - One Piece # 36
+  - One Piece # 37
+  - One Piece # 38
+  - One Piece # 39
+  - One Piece # 40
+  - One Piece # 41
+  - One Piece # 42
+  - One Piece # 43
+  - One Piece # 44
+  - One Piece # 45
+  - One Piece # 46
+  - One Piece # 47
+  - One Piece # 48
+  - One Piece # 49
+  - One Piece # 50
+  - One Piece # 51
+  - One Piece # 52
+  - One Piece # 53
+  - One Piece # 54
+  - One Piece # 55
+  - One Piece # 56
+  - One Piece # 57
+  - One Piece # 58
+  - One Piece # 59
+  - One Piece # 60
+  - One Piece # 61
+  - One Piece # 62
+  - One Piece # 63
+  - One Piece # 64
+  - One Piece # 65
+  - One Piece # 66
+  - One Piece # 67
+  - One Piece # 68
+  - One Piece # 70
+
+Dragon Ball Z (Conrad) — 48 gibis
+  - Dragon Ball Z # 02
+  - Dragon Ball Z # 03
+  - Dragon Ball Z # 04
+  - Dragon Ball Z # 05
+  - Dragon Ball Z # 06
+  - Dragon Ball Z # 08
+  - Dragon Ball Z # 09
+  - Dragon Ball Z # 10
+  - Dragon Ball Z # 11
+  - Dragon Ball Z # 12
+  - Dragon Ball Z # 13
+  - Dragon Ball Z # 14
+  - Dragon Ball Z # 15
+  - Dragon Ball Z # 16
+  - Dragon Ball Z # 17
+  - Dragon Ball Z # 18
+  - Dragon Ball Z # 19
+  - Dragon Ball Z # 20
+  - Dragon Ball Z # 21
+  - Dragon Ball Z # 22
+  - Dragon Ball Z # 23
+  - Dragon Ball Z # 24
+  - Dragon Ball Z # 25
+  - Dragon Ball Z # 26
+  - Dragon Ball Z # 27
+  - Dragon Ball Z # 28
+  - Dragon Ball Z # 29
+  - Dragon Ball Z # 30
+  - Dragon Ball Z # 31
+  - Dragon Ball Z # 32
+  - Dragon Ball Z # 33
+  - Dragon Ball Z # 34
+  - Dragon Ball Z # 35
+  - Dragon Ball Z # 36
+  - Dragon Ball Z # 37
+  - Dragon Ball Z # 38
+  - Dragon Ball Z # 39
+  - Dragon Ball Z # 40
+  - Dragon Ball Z # 41
+  - Dragon Ball Z # 42
+  - Dragon Ball Z # 43
+  - Dragon Ball Z # 44
+  - Dragon Ball Z # 45
+  - Dragon Ball Z # 46
+  - Dragon Ball Z # 47
+  - Dragon Ball Z # 48
+  - Dragon Ball Z # 49
+  - Dragon Ball Z # 51
+
+Vagabond (Conrad) — 47 gibis
+  - Vagabond # 01
+  - Vagabond # 02
+  - Vagabond # 03
+  - Vagabond # 04
+  - Vagabond # 05
+  - Vagabond # 06
+  - Vagabond # 07
+  - Vagabond # 07 - COM O BRINDE ORIGINAL
+  - Vagabond # 08
+  - Vagabond # 09
+  - Vagabond # 10
+  - Vagabond # 11
+  - Vagabond # 12
+  - Vagabond # 13
+  - Vagabond # 14
+  - Vagabond # 15
+  - Vagabond # 16
+  - Vagabond # 17
+  - Vagabond # 18
+  - Vagabond # 19
+  - Vagabond # 20
+  - Vagabond # 21
+  - Vagabond # 22
+  - Vagabond # 23
+  - Vagabond # 24
+  - Vagabond # 25
+  - Vagabond # 26
+  - Vagabond # 26 - COM O BRINDE ORIGINAL
+  - Vagabond # 27
+  - Vagabond # 28
+  - Vagabond # 29
+  - Vagabond # 30
+  - Vagabond # 31
+  - Vagabond # 32
+  - Vagabond # 33
+  - Vagabond # 34
+  - Vagabond # 35
+  - Vagabond # 36
+  - Vagabond # 37
+  - Vagabond # 38
+  - Vagabond # 39
+  - Vagabond # 40
+  - Vagabond # 40 - COM O BRINDE ORIGINAL
+  - Vagabond # 41
+  - Vagabond # 42
+  - Vagabond # 43
+  - Vagabond # 44
+
+Cavaleiros do Zodíaco (Conrad) — 47 gibis
+  - Cavaleiros do Zodíaco # 01
+  - Cavaleiros do Zodíaco # 02
+  - Cavaleiros do Zodíaco # 03
+  - Cavaleiros do Zodíaco # 04
+  - Cavaleiros do Zodíaco # 05
+  - Cavaleiros do Zodíaco # 06
+  - Cavaleiros do Zodíaco # 07
+  - Cavaleiros do Zodíaco # 08
+  - Cavaleiros do Zodíaco # 09
+  - Cavaleiros do Zodíaco # 10
+  - Cavaleiros do Zodíaco # 11
+  - Cavaleiros do Zodíaco # 12
+  - Cavaleiros do Zodíaco # 13
+  - Cavaleiros do Zodíaco # 14
+  - Cavaleiros do Zodíaco # 15
+  - Cavaleiros do Zodíaco # 16
+  - Cavaleiros do Zodíaco # 17
+  - Cavaleiros do Zodíaco # 18
+  - Cavaleiros do Zodíaco # 19
+  - Cavaleiros do Zodíaco # 20
+  - Cavaleiros do Zodíaco # 21
+  - Cavaleiros do Zodíaco # 22
+  - Cavaleiros do Zodíaco # 23
+  - Cavaleiros do Zodíaco # 24
+  - Cavaleiros do Zodíaco # 25
+  - Cavaleiros do Zodíaco # 26
+  - Cavaleiros do Zodíaco # 27
+  - Cavaleiros do Zodíaco # 28
+  - Cavaleiros do Zodíaco # 29
+  - Cavaleiros do Zodíaco # 30
+  - Cavaleiros do Zodíaco # 31
+  - Cavaleiros do Zodíaco # 32
+  - Cavaleiros do Zodíaco # 33
+  - Cavaleiros do Zodíaco # 34
+  - Cavaleiros do Zodíaco # 36
+  - Cavaleiros do Zodíaco # 37
+  - Cavaleiros do Zodíaco # 38
+  - Cavaleiros do Zodíaco # 39
+  - Cavaleiros do Zodíaco # 40
+  - Cavaleiros do Zodíaco # 41
+  - Cavaleiros do Zodíaco # 42
+  - Cavaleiros do Zodíaco # 43
+  - Cavaleiros do Zodíaco # 44
+  - Cavaleiros do Zodíaco # 45
+  - Cavaleiros do Zodíaco # 46
+  - Cavaleiros do Zodíaco # 47
+  - Cavaleiros do Zodíaco # 48
+
+Fushigi Yûgi (Conrad) — 39 gibis
+  - Fushigi Yûgi # 01
+  - Fushigi Yûgi # 01 - COM O BRINDE ORIGINAL
+  - Fushigi Yûgi # 01 - COM O BRINDE ORIGINAL
+  - Fushigi Yûgi # 02
+  - Fushigi Yûgi # 03
+  - Fushigi Yûgi # 04
+  - Fushigi Yûgi # 05
+  - Fushigi Yûgi # 06
+  - Fushigi Yûgi # 07
+  - Fushigi Yûgi # 08
+  - Fushigi Yûgi # 09
+  - Fushigi Yûgi # 10
+  - Fushigi Yûgi # 11
+  - Fushigi Yûgi # 12
+  - Fushigi Yûgi # 13
+  - Fushigi Yûgi # 14
+  - Fushigi Yûgi # 15
+  - Fushigi Yûgi # 16
+  - Fushigi Yûgi # 17
+  - Fushigi Yûgi # 18
+  - Fushigi Yûgi # 19
+  - Fushigi Yûgi # 20
+  - Fushigi Yûgi # 21
+  - Fushigi Yûgi # 22
+  - Fushigi Yûgi # 23
+  - Fushigi Yûgi # 24
+  - Fushigi Yûgi # 25
+  - Fushigi Yûgi # 26
+  - Fushigi Yûgi # 27
+  - Fushigi Yûgi # 28
+  - Fushigi Yûgi # 29
+  - Fushigi Yûgi # 30
+  - Fushigi Yûgi # 31
+  - Fushigi Yûgi # 32
+  - Fushigi Yûgi # 32
+  - Fushigi Yûgi # 33
+  - Fushigi Yûgi # 34
+  - Fushigi Yûgi # 35
+  - Fushigi Yûgi # 36
+
+Blade - A Lâmina do Imortal (Conrad) — 38 gibis
+  - Blade - A Lâmina do Imortal # 01
+  - Blade - A Lâmina do Imortal # 02
+  - Blade - A Lâmina do Imortal # 03
+  - Blade - A Lâmina do Imortal # 04
+  - Blade - A Lâmina do Imortal # 05
+  - Blade - A Lâmina do Imortal # 06
+  - Blade - A Lâmina do Imortal # 07
+  - Blade - A Lâmina do Imortal # 08
+  - Blade - A Lâmina do Imortal # 09
+  - Blade - A Lâmina do Imortal # 10
+  - Blade - A Lâmina do Imortal # 11
+  - Blade - A Lâmina do Imortal # 12
+  - Blade - A Lâmina do Imortal # 13
+  - Blade - A Lâmina do Imortal # 14
+  - Blade - A Lâmina do Imortal # 15
+  - Blade - A Lâmina do Imortal # 16
+  - Blade - A Lâmina do Imortal # 17
+  - Blade - A Lâmina do Imortal # 18
+  - Blade - A Lâmina do Imortal # 19
+  - Blade - A Lâmina do Imortal # 20
+  - Blade - A Lâmina do Imortal # 21
+  - Blade - A Lâmina do Imortal # 22
+  - Blade - A Lâmina do Imortal # 23
+  - Blade - A Lâmina do Imortal # 24
+  - Blade - A Lâmina do Imortal # 25
+  - Blade - A Lâmina do Imortal # 26
+  - Blade - A Lâmina do Imortal # 27
+  - Blade - A Lâmina do Imortal # 28
+  - Blade - A Lâmina do Imortal # 29
+  - Blade - A Lâmina do Imortal # 30
+  - Blade - A Lâmina do Imortal # 31
+  - Blade - A Lâmina do Imortal # 32
+  - Blade - A Lâmina do Imortal # 33
+  - Blade - A Lâmina do Imortal # 34
+  - Blade - A Lâmina do Imortal # 35
+  - Blade - A Lâmina do Imortal # 36
+  - Blade - A Lâmina do Imortal # 37
+  - Blade - A Lâmina do Imortal # 38
+
+Slam Dunk (Conrad) — 31 gibis
+  - Slam Dunk # 01
+  - Slam Dunk # 02
+  - Slam Dunk # 03
+  - Slam Dunk # 04
+  - Slam Dunk # 05
+  - Slam Dunk # 06
+  - Slam Dunk # 07
+  - Slam Dunk # 08
+  - Slam Dunk # 09
+  - Slam Dunk # 10
+  - Slam Dunk # 11
+  - Slam Dunk # 12
+  - Slam Dunk # 13
+  - Slam Dunk # 14
+  - Slam Dunk # 15
+  - Slam Dunk # 16
+  - Slam Dunk # 17
+  - Slam Dunk # 18
+  - Slam Dunk # 19
+  - Slam Dunk # 20
+  - Slam Dunk # 21
+  - Slam Dunk # 22
+  - Slam Dunk # 23
+  - Slam Dunk # 24
+  - Slam Dunk # 25
+  - Slam Dunk # 26
+  - Slam Dunk # 27
+  - Slam Dunk # 28
+  - Slam Dunk # 29
+  - Slam Dunk # 30
+  - Slam Dunk # 31
+
+Cavaleiros do Zodíaco (2ª Edição) (Conrad) — 30 gibis
+  - Cavaleiros do Zodíaco (2ª Edição) # 02
+  - Cavaleiros do Zodíaco (2ª Edição) # 03
+  - Cavaleiros do Zodíaco (2ª Edição) # 04
+  - Cavaleiros do Zodíaco (2ª Edição) # 09
+  - Cavaleiros do Zodíaco (2ª Edição) # 10
+  - Cavaleiros do Zodíaco (2ª Edição) # 11
+  - Cavaleiros do Zodíaco (2ª Edição) # 12
+  - Cavaleiros do Zodíaco (2ª Edição) # 13
+  - Cavaleiros do Zodíaco (2ª Edição) # 14
+  - Cavaleiros do Zodíaco (2ª Edição) # 15
+  - Cavaleiros do Zodíaco (2ª Edição) # 16
+  - Cavaleiros do Zodíaco (2ª Edição) # 17
+  - Cavaleiros do Zodíaco (2ª Edição) # 18
+  - Cavaleiros do Zodíaco (2ª Edição) # 19
+  - Cavaleiros do Zodíaco (2ª Edição) # 20
+  - Cavaleiros do Zodíaco (2ª Edição) # 29
+  - Cavaleiros do Zodíaco (2ª Edição) # 32
+  - Cavaleiros do Zodíaco (2ª Edição) # 33
+  - Cavaleiros do Zodíaco (2ª Edição) # 34
+  - Cavaleiros do Zodíaco (2ª Edição) # 35
+  - Cavaleiros do Zodíaco (2ª Edição) # 36
+  - Cavaleiros do Zodíaco (2ª Edição) # 37
+  - Cavaleiros do Zodíaco (2ª Edição) # 40
+  - Cavaleiros do Zodíaco (2ª Edição) # 41
+  - Cavaleiros do Zodíaco (2ª Edição) # 42
+  - Cavaleiros do Zodíaco (2ª Edição) # 43
+  - Cavaleiros do Zodíaco (2ª Edição) # 44
+  - Cavaleiros do Zodíaco (2ª Edição) # 45
+  - Cavaleiros do Zodíaco (2ª Edição) # 46
+  - Cavaleiros do Zodíaco (2ª Edição) # 47
+
+Dragon Ball (Conrad) — 29 gibis
+  - Dragon Ball # 01
+  - Dragon Ball # 02
+  - Dragon Ball # 03
+  - Dragon Ball # 04
+  - Dragon Ball # 05
+  - Dragon Ball # 06
+  - Dragon Ball # 07
+  - Dragon Ball # 08
+  - Dragon Ball # 09
+  - Dragon Ball # 10
+  - Dragon Ball # 11
+  - Dragon Ball # 12
+  - Dragon Ball # 13
+  - Dragon Ball # 14
+  - Dragon Ball # 15
+  - Dragon Ball # 16
+  - Dragon Ball # 17
+  - Dragon Ball # 18
+  - Dragon Ball # 19
+  - Dragon Ball # 20
+  - Dragon Ball # 21
+  - Dragon Ball # 22
+  - Dragon Ball # 23
+  - Dragon Ball # 24
+  - Dragon Ball # 26
+  - Dragon Ball # 27
+  - Dragon Ball # 28
+  - Dragon Ball # 29
+  - Dragon Ball # 31
+
+Neon Genesis Evangelion (Conrad) — 20 gibis
+  - Neon Genesis Evangelion # 01
+  - Neon Genesis Evangelion # 02
+  - Neon Genesis Evangelion # 03
+  - Neon Genesis Evangelion # 04
+  - Neon Genesis Evangelion # 05
+  - Neon Genesis Evangelion # 06
+  - Neon Genesis Evangelion # 07
+  - Neon Genesis Evangelion # 08
+  - Neon Genesis Evangelion # 09
+  - Neon Genesis Evangelion # 10
+  - Neon Genesis Evangelion # 11
+  - Neon Genesis Evangelion # 12
+  - Neon Genesis Evangelion # 13
+  - Neon Genesis Evangelion # 14
+  - Neon Genesis Evangelion # 15
+  - Neon Genesis Evangelion # 16
+  - Neon Genesis Evangelion # 17
+  - Neon Genesis Evangelion # 18
+  - Neon Genesis Evangelion # 19
+  - Neon Genesis Evangelion # 20
+
+Cavaleiros do Zodíaco - Episódio G (Conrad) — 18 gibis
+  - Cavaleiros do Zodíaco - Episódio G # 01
+  - Cavaleiros do Zodíaco - Episódio G # 02
+  - Cavaleiros do Zodíaco - Episódio G # 03
+  - Cavaleiros do Zodíaco - Episódio G # 04
+  - Cavaleiros do Zodíaco - Episódio G # 05
+  - Cavaleiros do Zodíaco - Episódio G # 06
+  - Cavaleiros do Zodíaco - Episódio G # 07
+  - Cavaleiros do Zodíaco - Episódio G # 08
+  - Cavaleiros do Zodíaco - Episódio G # 09
+  - Cavaleiros do Zodíaco - Episódio G # 10
+  - Cavaleiros do Zodíaco - Episódio G # 11
+  - Cavaleiros do Zodíaco - Episódio G # 12
+  - Cavaleiros do Zodíaco - Episódio G # 13
+  - Cavaleiros do Zodíaco - Episódio G # 14
+  - Cavaleiros do Zodíaco - Episódio G # 15
+  - Cavaleiros do Zodíaco - Episódio G # 16
+  - Cavaleiros do Zodíaco - Episódio G # 17
+  - Cavaleiros do Zodíaco - Episódio G # 18
+
+Ragnarok (Conrad) — 17 gibis
+  - Ragnarok # 03
+  - Ragnarok # 04
+  - Ragnarok # 05
+  - Ragnarok # 06
+  - Ragnarok # 07
+  - Ragnarok # 08
+  - Ragnarok # 09
+  - Ragnarok # 11
+  - Ragnarok # 12
+  - Ragnarok # 13
+  - Ragnarok # 14
+  - Ragnarok # 15
+  - Ragnarok # 16
+  - Ragnarok # 17
+  - Ragnarok # 18
+  - Ragnarok # 19
+  - Ragnarok # 20
+
+Dragon Ball - Edição Definitiva (Conrad) — 16 gibis
+  - Dragon Ball - Edição Definitiva # 01
+  - Dragon Ball - Edição Definitiva # 02
+  - Dragon Ball - Edição Definitiva # 03
+  - Dragon Ball - Edição Definitiva # 04
+  - Dragon Ball - Edição Definitiva # 05
+  - Dragon Ball - Edição Definitiva # 06
+  - Dragon Ball - Edição Definitiva # 07
+  - Dragon Ball - Edição Definitiva # 08
+  - Dragon Ball - Edição Definitiva # 09
+  - Dragon Ball - Edição Definitiva # 10
+  - Dragon Ball - Edição Definitiva # 11
+  - Dragon Ball - Edição Definitiva # 12
+  - Dragon Ball - Edição Definitiva # 13
+  - Dragon Ball - Edição Definitiva # 14
+  - Dragon Ball - Edição Definitiva # 15
+  - Dragon Ball - Edição Definitiva # 16
+
+Buda (Conrad) — 15 gibis
+  - Buda Volume # 01
+  - Buda Volume # 02
+  - Buda Volume # 02 - COM O BRINDE ORIGINAL
+  - Buda Volume # 03
+  - Buda Volume # 04
+  - Buda Volume # 05
+  - Buda Volume # 06
+  - Buda Volume # 07
+  - Buda Volume # 08
+  - Buda Volume # 09
+  - Buda Volume # 10
+  - Buda Volume # 11
+  - Buda Volume # 12
+  - Buda Volume # 13
+  - Buda Volume # 14
+
+Battle Royale (Conrad) — 15 gibis
+  - Battle Royale # 01
+  - Battle Royale # 02
+  - Battle Royale # 03
+  - Battle Royale # 04
+  - Battle Royale # 05
+  - Battle Royale # 06
+  - Battle Royale # 07
+  - Battle Royale # 08
+  - Battle Royale # 09
+  - Battle Royale # 10
+  - Battle Royale # 11
+  - Battle Royale # 12
+  - Battle Royale # 13
+  - Battle Royale # 14
+  - Battle Royale # 15
+
+Vagabond - A História de Musashi (Conrad) — 14 gibis
+  - Vagabond - A História de Musashi - Volume 01
+  - Vagabond - A História de Musashi - Volume 02
+  - Vagabond - A História de Musashi - Volume 03
+  - Vagabond - A História de Musashi - Volume 04
+  - Vagabond - A História de Musashi - Volume 05
+  - Vagabond - A História de Musashi - Volume 06
+  - Vagabond - A História de Musashi - Volume 07
+  - Vagabond - A História de Musashi - Volume 08
+  - Vagabond - A História de Musashi - Volume 09
+  - Vagabond - A História de Musashi - Volume 10
+  - Vagabond - A História de Musashi - Volume 11
+  - Vagabond - A História de Musashi - Volume 12
+  - Vagabond - A História de Musashi - Volume 13
+  - Vagabond - A História de Musashi - Volume 14
+
+Chonchu (Conrad) — 14 gibis
+  - Chonchu # 01
+  - Chonchu # 02
+  - Chonchu # 03
+  - Chonchu # 04
+  - Chonchu # 05
+  - Chonchu # 06
+  - Chonchu # 07
+  - Chonchu # 08
+  - Chonchu # 09
+  - Chonchu # 10
+  - Chonchu # 11
+  - Chonchu # 13
+  - Chonchu # 14
+  - Chonchu # 15
+
+Dr. Slump (Conrad) — 14 gibis
+  - Dr. Slump # 01
+  - Dr. Slump # 02
+  - Dr. Slump # 03
+  - Dr. Slump # 04
+  - Dr. Slump # 05
+  - Dr. Slump # 06
+  - Dr. Slump # 07
+  - Dr. Slump # 08
+  - Dr. Slump # 09
+  - Dr. Slump # 10
+  - Dr. Slump # 11
+  - Dr. Slump # 12
+  - Dr. Slump # 13
+  - Dr. Slump # 14
+
+Neon Genesis Evangelion - The Iron Maiden 2nd (Conrad) — 12 gibis
+  - Neon Genesis Evangelion - The Iron Maiden 2nd # 01
+  - Neon Genesis Evangelion - The Iron Maiden 2nd # 02
+  - Neon Genesis Evangelion - The Iron Maiden 2nd # 03
+  - Neon Genesis Evangelion - The Iron Maiden 2nd # 04
+  - Neon Genesis Evangelion - The Iron Maiden 2nd # 05
+  - Neon Genesis Evangelion - The Iron Maiden 2nd # 06
+  - Neon Genesis Evangelion - The Iron Maiden 2nd # 07
+  - Neon Genesis Evangelion - The Iron Maiden 2nd # 08
+  - Neon Genesis Evangelion - The Iron Maiden 2nd # 09
+  - Neon Genesis Evangelion - The Iron Maiden 2nd # 10
+  - Neon Genesis Evangelion - The Iron Maiden 2nd # 11
+  - Neon Genesis Evangelion - The Iron Maiden 2nd # 12
+
+Clube Sakura Card Captors (Conrad) — 11 gibis
+  - Clube Sakura Card Captors # 1
+  - Clube Sakura Card Captors # 1 - COM O BRINDE ORIGINAL
+  - Clube Sakura Card Captors # 2
+  - Clube Sakura Card Captors # 3
+  - Clube Sakura Card Captors # 3 - COM O BRINDE ORIGINAL
+  - Clube Sakura Card Captors # 4
+  - Clube Sakura Card Captors # 5
+  - Clube Sakura Card Captors # 6
+  - Clube Sakura Card Captors # 7
+  - Clube Sakura Card Captors # 8
+  - Clube Sakura Card Captors # 9
+
+Gen Pés Descalços (Conrad) — 10 gibis
+  - Gen Pés Descalços # 01 - O Nascimento de Gen, o Trigo Verde
+  - Gen Pés Descalços # 02 - O Trigo é Pisoteado
+  - Gen Pés Descalços # 03 - Trigo, é Hora de Brotar
+  - Gen Pés Descalços # 04 - Cresça Firme, Trigo Verde
+  - Gen Pés Descalços # 05
+  - Gen Pés Descalços # 06
+  - Gen Pés Descalços # 07
+  - Gen Pés Descalços # 08
+  - Gen Pés Descalços # 09
+  - Gen Pés Descalços # 10
+
+Monster (Conrad) — 10 gibis
+  - Monster # 01
+  - Monster # 02
+  - Monster # 03
+  - Monster # 04
+  - Monster # 05
+  - Monster # 06
+  - Monster # 07
+  - Monster # 08
+  - Monster # 09
+  - Monster # 10
+
+Model (Conrad) — 7 gibis
+  - Model # 1
+  - Model # 2
+  - Model # 3
+  - Model # 4
+  - Model # 5
+  - Model # 6
+  - Model # 7
+
+Yuki (Conrad) — 6 gibis
+  - Yuki # 01
+  - Yuki # 02
+  - Yuki # 03
+  - Yuki # 04
+  - Yuki # 05
+  - Yuki # 06
+
+Sanctuary (Conrad) — 6 gibis
+  - Sanctuary # 01
+  - Sanctuary # 02
+  - Sanctuary # 03
+  - Sanctuary # 04
+  - Sanctuary # 05
+  - Sanctuary # 06
+
+Angry (Conrad) — 6 gibis
+  - Angry # 1
+  - Angry # 2
+  - Angry # 3
+  - Angry # 4
+  - Angry # 5
+  - Angry # 6
+
+Dangu (Conrad) — 6 gibis
+  - Dangu # 2
+  - Dangu # 3
+  - Dangu # 4
+  - Dangu # 7
+  - Dangu # 8
+  - Dangu # 9
+
+Zettai Kareshi (Conrad) — 6 gibis
+  - Zettai Kareshi # 01
+  - Zettai Kareshi # 02
+  - Zettai Kareshi # 03
+  - Zettai Kareshi # 04
+  - Zettai Kareshi # 05
+  - Zettai Kareshi # 06
+
+Megaman NT Warrior (Conrad) — 6 gibis
+  - Megaman NT Warrior # 01
+  - Megaman NT Warrior # 02
+  - Megaman NT Warrior # 03
+  - Megaman NT Warrior # 04
+  - Megaman NT Warrior # 05
+  - Megaman NT Warrior # 06
+
+Paradise Kiss (Conrad) — 5 gibis
+  - Paradise Kiss # 1
+  - Paradise Kiss # 2
+  - Paradise Kiss # 3
+  - Paradise Kiss # 4
+  - Paradise Kiss # 5
+
+Nausicaä do Vale do Vento (Conrad) — 5 gibis
+  - Nausicaä do Vale do Vento - Volume 1
+  - Nausicaä do Vale do Vento - Volume 2
+  - Nausicaä do Vale do Vento - Volume 3
+  - Nausicaä do Vale do Vento - Volume 4
+  - Nausicaä do Vale do Vento - Volume 5
+
+Adolf (Conrad) — 5 gibis
+  - Adolf - Volume 1
+  - Adolf - Volume 2
+  - Adolf - Volume 3
+  - Adolf - Volume 4
+  - Adolf - Volume 5
+
+Gui - O Guerreiro Fantasma (Conrad) — 5 gibis
+  - Gui - O Guerreiro Fantasma # 1
+  - Gui - O Guerreiro Fantasma # 2
+  - Gui - O Guerreiro Fantasma # 3
+  - Gui - O Guerreiro Fantasma # 4
+  - Gui - O Guerreiro Fantasma # 5
+
+Warcraft - Lendas (Conrad) — 5 gibis
+  - Warcraft - Lendas # 1
+  - Warcraft - Lendas # 2
+  - Warcraft - Lendas # 3
+  - Warcraft - Lendas # 4
+  - Warcraft - Lendas # 5
+
+Starcraft - Linha de Frente (Conrad) — 4 gibis
+  - Starcraft - Linha de Frente # 1
+  - Starcraft - Linha de Frente # 2
+  - Starcraft - Linha de Frente # 3
+  - Starcraft - Linha de Frente # 4
+
+Gen - Pés Descalços - Uma História de Hiroshima (Conrad) — 4 gibis
+  - Gen - Pés Descalços - Uma História de Hiroshima # 1
+  - Gen - Pés Descalços - Uma História de Hiroshima # 2 - O Dia Seguinte
+  - Gen - Pés Descalços - Uma História de Hiroshima # 3 - A Vida Após a Bomba
+  - Gen - Pés Descalços - Uma História de Hiroshima # 4 - O Recomeço
+
+Bambi (Conrad) — 4 gibis
+  - Bambi # 1
+  - Bambi # 2
+  - Bambi # 3
+  - Bambi # 4
+
+Osamu Tezuka - Uma Biografia Mangá (Conrad) — 4 gibis
+  - Osamu Tezuka - Uma Biografia Mangá - Volume 1 - 1928-1945 - O Nascimento do Osamushi
+  - Osamu Tezuka - Uma Biografia Mangá - Volume 2 - 1945-1960 - O Surgimento do Mestre
+  - Osamu Tezuka - Uma Biografia Mangá - Volume 3 - 1960-1975 - O Sonho do Artista
+  - Osamu Tezuka - Uma Biografia Mangá - Volume 4 - 1975-1989 - A Consagração do Gênio
+
+Princess Ai (Conrad) — 3 gibis
+  - Princess Ai # 1
+  - Princess Ai # 2
+  - Princess Ai # 3
+
+Preto e Branco (Conrad) — 3 gibis
+  - Preto e Branco # 1
+  - Preto e Branco # 2
+  - Preto e Branco # 3
+
+Uzumaki (Conrad) — 3 gibis
+  - Uzumaki # 1
+  - Uzumaki # 2
+  - Uzumaki # 3
+
+Ooru (Conrad) — 3 gibis
+  - Ooru # 01
+  - Ooru # 02
+  - Ooru # 03
+
+Marusaku (Conrad) — 3 gibis
+  - Marusaku # 1
+  - Marusaku # 2
+  - Marusaku # 3
+
+Delivery Service of Corpse (Conrad) — 3 gibis
+  - Delivery Service of Corpse # 1
+  - Delivery Service of Corpse # 2
+  - Delivery Service of Corpse # 3
+
+Warcraft - A Trilogia da Fonte do Sol (Conrad) — 3 gibis
+  - Warcraft - A Trilogia da Fonte do Sol # 1
+  - Warcraft - A Trilogia da Fonte do Sol # 2
+  - Warcraft - A Trilogia da Fonte do Sol # 3
+
+Herói Manga (Conrad) — 3 gibis
+  - Herói Manga # 1
+  - Herói Manga # 2
+  - Herói Manga # 3
+
+Dragon Ball Z - Aprenda a Desenhar (Conrad) — 3 gibis
+  - Dragon Ball Z - Aprenda a Desenhar # 1 [SEM CAPA]
+  - Dragon Ball Z - Aprenda a Desenhar # 2
+  - Dragon Ball Z - Aprenda a Desenhar # 3
+
+Melodia Infernal (Conrad) — 2 gibis
+  - Melodia Infernal # 1
+  - Melodia Infernal # 2
+
+Jornada ao Oeste (Conrad) — 2 gibis
+  - Jornada ao Oeste - Volume 1 [SEM CAPA]
+  - Jornada ao Oeste - Volume 2
+
+Cavaleiros do Zodíaco - Gigantomaquia (Conrad) — 2 gibis
+  - Cavaleiros do Zodíaco - Gigantomaquia # 1
+  - Cavaleiros do Zodíaco - Gigantomaquia # 2
+
+Ring - O Chamado (Conrad) — 2 gibis
+  - Ring - O Chamado # 1
+  - Ring - O Chamado # 2

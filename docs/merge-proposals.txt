@@ -1,0 +1,2045 @@
+PROPOSTAS DE MERGE DE SÉRIES (sem "Volume" no nome)
+=====================================================
+Total: 250 grupos, 1042 séries seriam unificadas
+
+--- Grupo 1 de 250 ---
+Série sugerida: Contos de Magic (Planeta DeAgostini)
+Qtd gibis: 40
+  - Contos de Magic - Volume 01
+  - Contos de Magic - Volume 02
+  - Contos de Magic - Volume 03
+  - Contos de Magic - Volume 04
+  - Contos de Magic - Volume 05
+  - Contos de Magic - Volume 06
+  - Contos de Magic - Volume 07
+  - Contos de Magic - Volume 08
+  - Contos de Magic - Volume 09
+  - Contos de Magic - Volume 10
+  - Contos de Magic - Volume 11
+  - Contos de Magic - Volume 12
+  - Contos de Magic - Volume 13
+  - Contos de Magic - Volume 14
+  - Contos de Magic - Volume 15
+  - Contos de Magic - Volume 16
+  - Contos de Magic - Volume 17
+  - Contos de Magic - Volume 18
+  - Contos de Magic - Volume 19
+  - Contos de Magic - Volume 20
+  - Contos de Magic - Volume 21
+  - Contos de Magic - Volume 22
+  - Contos de Magic - Volume 23
+  - Contos de Magic - Volume 24
+  - Contos de Magic - Volume 25
+  - Contos de Magic - Volume 26
+  - Contos de Magic - Volume 27
+  - Contos de Magic - Volume 28
+  - Contos de Magic - Volume 29
+  - Contos de Magic - Volume 30
+  - Contos de Magic - Volume 31
+  - Contos de Magic - Volume 32
+  - Contos de Magic - Volume 33
+  - Contos de Magic - Volume 34
+  - Contos de Magic - Volume 35
+  - Contos de Magic - Volume 36
+  - Contos de Magic - Volume 37
+  - Contos de Magic - Volume 38
+  - Contos de Magic - Volume 39
+  - Contos de Magic - Volume 40
+
+--- Grupo 2 de 250 ---
+Série sugerida: A Saga Do Homem-Aranha (Panini)
+Qtd gibis: 24
+  - A Saga Do Homem-Aranha 01
+  - A Saga Do Homem-Aranha 02
+  - A Saga Do Homem-Aranha 03
+  - A Saga Do Homem-Aranha 04
+  - A Saga Do Homem-Aranha 05
+  - A Saga Do Homem-Aranha 06
+  - A Saga Do Homem-Aranha 07
+  - A Saga Do Homem-Aranha 08
+  - A Saga Do Homem-Aranha 09
+  - A Saga Do Homem-Aranha 10
+  - A Saga Do Homem-Aranha 11
+  - A Saga Do Homem-Aranha 12
+  - A Saga Do Homem-Aranha 13
+  - A Saga Do Homem-Aranha 14
+  - A Saga Do Homem-Aranha 15
+  - A Saga Do Homem-Aranha 16
+  - A Saga Do Homem-Aranha 17
+  - A Saga Do Homem-Aranha 18
+  - A Saga Do Homem-Aranha 19
+  - A Saga Do Homem-Aranha 20
+  - A Saga Do Homem-Aranha 21
+  - A Saga Do Homem-Aranha 22
+  - A Saga Do Homem-Aranha 23
+  - A Saga Do Homem-Aranha 24
+
+--- Grupo 3 de 250 ---
+Série sugerida: A Saga Do Flash (Panini)
+Qtd gibis: 19
+  - A Saga Do Flash 01
+  - A Saga Do Flash 02
+  - A Saga Do Flash 03
+  - A Saga Do Flash 04
+  - A Saga Do Flash 05
+  - A Saga Do Flash 06
+  - A Saga Do Flash 07
+  - A Saga Do Flash 08
+  - A Saga Do Flash 09
+  - A Saga Do Flash 10
+  - A Saga Do Flash 11
+  - A Saga Do Flash 12
+  - A Saga Do Flash 13
+  - A Saga Do Flash 14
+  - A Saga Do Flash 15
+  - A Saga Do Flash 16
+  - A Saga Do Flash 17
+  - A Saga Do Flash 18
+  - A Saga Do Flash 19
+
+--- Grupo 4 de 250 ---
+Série sugerida: Lanterna Verde (2024) (Panini)
+Qtd gibis: 19
+  - Lanterna Verde (2024) 01
+  - Lanterna Verde (2024) 02
+  - Lanterna Verde (2024) 03
+  - Lanterna Verde (2024) 04
+  - Lanterna Verde (2024) 05
+  - Lanterna Verde (2024) 06
+  - Lanterna Verde (2024) 07
+  - Lanterna Verde (2024) 08
+  - Lanterna Verde (2024) 09
+  - Lanterna Verde (2024) 10
+  - Lanterna Verde (2024) 11
+  - Lanterna Verde (2024) 12
+  - Lanterna Verde (2024) 13
+  - Lanterna Verde (2024) 14
+  - Lanterna Verde (2024) 15
+  - Lanterna Verde (2024) 16
+  - Lanterna Verde (2024) 17
+  - Lanterna Verde (2024) 18
+  - Lanterna Verde (2024) 19
+
+--- Grupo 5 de 250 ---
+Série sugerida: Mulher-Maravilha/Flash (Panini)
+Qtd gibis: 16
+  - Mulher-Maravilha/Flash 01
+  - Mulher-Maravilha/Flash 02
+  - Mulher-Maravilha/Flash 04
+  - Mulher-Maravilha/Flash 05
+  - Mulher-Maravilha/Flash 06
+  - Mulher-Maravilha/Flash 07
+  - Mulher-Maravilha/Flash 08
+  - Mulher-Maravilha/Flash 09
+  - Mulher-Maravilha/Flash 10
+  - Mulher-Maravilha/Flash 11
+  - Mulher-Maravilha/Flash 12
+  - Mulher-Maravilha/Flash 13
+  - Mulher-Maravilha/Flash 14
+  - Mulher-Maravilha/Flash 15
+  - Mulher-Maravilha/Flash 16
+  - Mulher-Maravilha/Flash 17
+
+--- Grupo 6 de 250 ---
+Série sugerida: Batman (2017) (Panini)
+Qtd gibis: 13
+  - Batman (2017) - 39
+  - Batman (2017) - 41
+  - Batman (2017) - 47
+  - Batman (2017) - 48
+  - Batman (2017) - 49
+  - Batman (2017) - 50
+  - Batman (2017) - 51
+  - Batman (2017) - 52
+  - Batman (2017) - 53
+  - Batman (2017) - 54
+  - Batman (2017) - 55
+  - Batman (2017) - 56
+  - Batman (2017) - 57
+
+--- Grupo 7 de 250 ---
+Série sugerida: Injustiça - Deuses Entre Nós (Panini)
+Qtd gibis: 13 | Anos: 2014, 2015, 2016, 2017, 2018, 2019
+  - Injustiça - Deuses Entre Nós - Volume 01
+  - Injustiça - Deuses Entre Nós - Volume 02
+  - Injustiça - Deuses Entre Nós - Volume 03
+  - Injustiça - Deuses Entre Nós - Volume 04
+  - Injustiça - Deuses Entre Nós - Volume 05
+  - Injustiça - Deuses Entre Nós - Volume 06
+  - Injustiça - Deuses Entre Nós - Volume 07
+  - Injustiça - Deuses Entre Nós - Volume 08
+  - Injustiça - Deuses Entre Nós - Volume 09
+  - Injustiça - Deuses Entre Nós - Volume 10
+  - Injustiça - Deuses Entre Nós - Volume 11
+  - Injustiça - Deuses Entre Nós - Volume 12
+  - Injustiça - Deuses Entre Nós - Volume 13
+
+--- Grupo 8 de 250 ---
+Série sugerida: Preacher (Panini)
+Qtd gibis: 13 | Anos: 2010, 2011, 2012, 2013, 2014, 2020
+  - Preacher - Volume 1 - A Caminho do Texas (1ª Edição)
+  - Preacher - Volume 1 - A Caminho do Texas (2ª Edição)
+  - Preacher - Volume 2 - Até o Fim do Mundo (1ª Edição)
+  - Preacher - Volume 2 - Até o Fim do Mundo (2ª Edição)
+  - Preacher - Volume 3 - Orgulho Americano (1ª Edição)
+  - Preacher - Volume 3 - Orgulho Americano (2ª Edição)
+  - Preacher - Volume 4 - Histórias Antigas
+  - Preacher - Volume 5 - Rumo ao Sul
+  - Preacher - Volume 6 - Guerra ao Sol
+  - Preacher - Volume 7 - Salvação
+  - Preacher - Volume 8 - Às Portas do Inferno
+  - Preacher - Volume 9 - Álamo (1ª Edição)
+  - Preacher - Volume 9 - Álamo (2ª Edição)
+
+--- Grupo 9 de 250 ---
+Série sugerida: Pequenos Heróis Marvel (Panini)
+Qtd gibis: 12
+  - Pequenos Heróis Marvel 01
+  - Pequenos Heróis Marvel 02
+  - Pequenos Heróis Marvel 03
+  - Pequenos Heróis Marvel 04
+  - Pequenos Heróis Marvel 05
+  - Pequenos Heróis Marvel 06
+  - Pequenos Heróis Marvel 07
+  - Pequenos Heróis Marvel 08
+  - Pequenos Heróis Marvel 09
+  - Pequenos Heróis Marvel 10
+  - Pequenos Heróis Marvel 11
+  - Pequenos Heróis Marvel 12
+
+--- Grupo 10 de 250 ---
+Série sugerida: A Saga Do Wolverine (Panini)
+Qtd gibis: 11
+  - A Saga Do Wolverine 01
+  - A Saga Do Wolverine 02
+  - A Saga Do Wolverine 03
+  - A Saga Do Wolverine 04
+  - A Saga Do Wolverine 05
+  - A Saga Do Wolverine 06
+  - A Saga Do Wolverine 07
+  - A Saga Do Wolverine 08
+  - A Saga Do Wolverine 09
+  - A Saga Do Wolverine 10
+  - A Saga Do Wolverine 11
+
+--- Grupo 11 de 250 ---
+Série sugerida: Astro City (Panini)
+Qtd gibis: 11 | Anos: 2015, 2016, 2018, 2019
+  - Astro City - Volume 01 - Vida na Cidade Grande
+  - Astro City - Volume 02 - Confissão
+  - Astro City - Volume 03 - Álbum de Família
+  - Astro City - Volume 04 - O Anjo Maculado
+  - Astro City - Volume 05 - Heróis Locais
+  - Astro City - Volume 07 - A Era das Trevas - Irmãos em Armas
+  - Astro City - Volume 08 - Estrelas Brilhantes
+  - Astro City - Volume 09 - Portas Abertas
+  - Astro City - Volume 10 - Vitória
+  - Astro City - Volume 11 - Vidas Privadas
+  - Astro City - Volume 12 - Corações em Conflito
+
+--- Grupo 12 de 250 ---
+Série sugerida: Conan, O Bárbaro (2024) (Panini)
+Qtd gibis: 11
+  - Conan, O Bárbaro (2024) 01
+  - Conan, O Bárbaro (2024) 02
+  - Conan, O Bárbaro (2024) 03
+  - Conan, O Bárbaro (2024) 04
+  - Conan, O Bárbaro (2024) 05
+  - Conan, O Bárbaro (2024) 06
+  - Conan, O Bárbaro (2024) 07
+  - Conan, O Bárbaro (2024) 08
+  - Conan, O Bárbaro (2024) 09
+  - Conan, O Bárbaro (2024) 10
+  - Conan, O Bárbaro (2024) 11
+
+--- Grupo 13 de 250 ---
+Série sugerida: Jovens Titãs Em Ação (Panini)
+Qtd gibis: 11
+  - Jovens Titãs Em Ação 01
+  - Jovens Titãs Em Ação 02
+  - Jovens Titãs Em Ação 03
+  - Jovens Titãs Em Ação 04
+  - Jovens Titãs Em Ação 05
+  - Jovens Titãs Em Ação 06
+  - Jovens Titãs Em Ação 07
+  - Jovens Titãs Em Ação 08
+  - Jovens Titãs Em Ação 09
+  - Jovens Titãs Em Ação 10
+  - Jovens Titãs Em Ação 11
+
+--- Grupo 14 de 250 ---
+Série sugerida: Wolverine (2025) (Panini)
+Qtd gibis: 11
+  - Wolverine (2025) 01
+  - Wolverine (2025) 02
+  - Wolverine (2025) 03
+  - Wolverine (2025) 04
+  - Wolverine (2025) 05
+  - Wolverine (2025) 06
+  - Wolverine (2025) 07
+  - Wolverine (2025) 08
+  - Wolverine (2025) 09
+  - Wolverine (2025) 10
+  - Wolverine (2025) 11
+
+--- Grupo 15 de 250 ---
+Série sugerida: A Saga Dos Novos Titãs (Panini)
+Qtd gibis: 10
+  - A Saga Dos Novos Titãs 01
+  - A Saga Dos Novos Titãs 02
+  - A Saga Dos Novos Titãs 03
+  - A Saga Dos Novos Titãs 04
+  - A Saga Dos Novos Titãs 05
+  - A Saga Dos Novos Titãs 06
+  - A Saga Dos Novos Titãs 07
+  - A Saga Dos Novos Titãs 08
+  - A Saga Dos Novos Titãs 09
+  - A Saga Dos Novos Titãs 10
+
+--- Grupo 16 de 250 ---
+Série sugerida: Batman - Lendas do Cavaleiro das Trevas - Jim Aparo (Panini)
+Qtd gibis: 10 | Anos: 2015, 2016, 2018
+  - Batman - Lendas do Cavaleiro das Trevas - Jim Aparo - Volume 01
+  - Batman - Lendas do Cavaleiro das Trevas - Jim Aparo - Volume 02
+  - Batman - Lendas do Cavaleiro das Trevas - Jim Aparo - Volume 03
+  - Batman - Lendas do Cavaleiro das Trevas - Jim Aparo - Volume 04
+  - Batman - Lendas do Cavaleiro das Trevas - Jim Aparo - Volume 05
+  - Batman - Lendas do Cavaleiro das Trevas - Jim Aparo - Volume 06
+  - Batman - Lendas do Cavaleiro das Trevas - Jim Aparo - Volume 07
+  - Batman - Lendas do Cavaleiro das Trevas - Jim Aparo - Volume 08
+  - Batman - Lendas do Cavaleiro das Trevas - Jim Aparo - Volume 09
+  - Batman - Lendas do Cavaleiro das Trevas - Jim Aparo - Volume 10
+
+--- Grupo 17 de 250 ---
+Série sugerida: Deadpool (2025) (Panini)
+Qtd gibis: 10
+  - Deadpool (2025) 01
+  - Deadpool (2025) 02
+  - Deadpool (2025) 03
+  - Deadpool (2025) 05
+  - Deadpool (2025) 06
+  - Deadpool (2025) 07
+  - Deadpool (2025) 08
+  - Deadpool (2025) 09
+  - Deadpool (2025) 10
+  - Deadpool (2025) 11
+
+--- Grupo 18 de 250 ---
+Série sugerida: Hellboy - Edição Histórica (Mythos)
+Qtd gibis: 10 | Anos: 2008, 2009, 2012, 2013, 2017, 2018, 2020
+  - Hellboy - Edição Histórica - Volume 1
+  - Hellboy - Edição Histórica - Volume 11
+  - Hellboy - Edição Histórica - Volume 2
+  - Hellboy - Edição Histórica - Volume 3
+  - Hellboy - Edição Histórica - Volume 4
+  - Hellboy - Edição Histórica - Volume 5
+  - Hellboy - Edição Histórica - Volume 6
+  - Hellboy - Edição Histórica - Volume 7
+  - Hellboy - Edição Histórica - Volume 8
+  - Hellboy - Edição Histórica - Volume 9
+
+--- Grupo 19 de 250 ---
+Série sugerida: Os Fabulosos X-Men (2025) (Panini)
+Qtd gibis: 10
+  - Os Fabulosos X-Men (2025) 01
+  - Os Fabulosos X-Men (2025) 02
+  - Os Fabulosos X-Men (2025) 03
+  - Os Fabulosos X-Men (2025) 05
+  - Os Fabulosos X-Men (2025) 06
+  - Os Fabulosos X-Men (2025) 07
+  - Os Fabulosos X-Men (2025) 08
+  - Os Fabulosos X-Men (2025) 09
+  - Os Fabulosos X-Men (2025) 10
+  - Os Fabulosos X-Men (2025) 11
+
+--- Grupo 20 de 250 ---
+Série sugerida: Lanterna Verde (2025) (Panini)
+Qtd gibis: 9
+  - Lanterna Verde (2025) 01
+  - Lanterna Verde (2025) 02
+  - Lanterna Verde (2025) 03
+  - Lanterna Verde (2025) 04
+  - Lanterna Verde (2025) 05
+  - Lanterna Verde (2025) 06
+  - Lanterna Verde (2025) 07
+  - Lanterna Verde (2025) 08
+  - Lanterna Verde (2025) 09
+
+--- Grupo 21 de 250 ---
+Série sugerida: Lendas Marvel (Panini)
+Qtd gibis: 9 | Anos: 2023, 2024
+  - Lendas Marvel - Volume 01 - Demolidor - A Armadura Negra
+  - Lendas Marvel - Volume 01 - Homem-Aranha - A Caçada Perdida
+  - Lendas Marvel - Volume 02 - Surfista Prateado - Renascimento
+  - Lendas Marvel - Volume 03 - Novo Quarteto Fantástico - Ao Inferno Num Piscar de Olhos
+  - Lendas Marvel - Volume 04 - X-Treme X-Men - Um Novo Início
+  - Lendas Marvel - Volume 05 - Warlock - Renascimento
+  - Lendas Marvel - Volume 06 - Genis-Vell - Capitão Marvel
+  - Lendas Marvel - Volume 07 - Hulk - Sr. Tira-Teima
+  - Lendas Marvel - Volume 09 - Surfista Prateado - Renascimento - Legado
+
+--- Grupo 22 de 250 ---
+Série sugerida: Liga Da Justiça Sem Limites (2025) (Panini)
+Qtd gibis: 9
+  - Liga Da Justiça Sem Limites (2025) 01
+  - Liga Da Justiça Sem Limites (2025) 02
+  - Liga Da Justiça Sem Limites (2025) 03
+  - Liga Da Justiça Sem Limites (2025) 04
+  - Liga Da Justiça Sem Limites (2025) 05
+  - Liga Da Justiça Sem Limites (2025) 06
+  - Liga Da Justiça Sem Limites (2025) 07
+  - Liga Da Justiça Sem Limites (2025) 08
+  - Liga Da Justiça Sem Limites (2025) 09
+
+--- Grupo 23 de 250 ---
+Série sugerida: Mulher-Maravilha/Flash (2025) (Panini)
+Qtd gibis: 9
+  - Mulher-Maravilha/Flash (2025) 01
+  - Mulher-Maravilha/Flash (2025) 02
+  - Mulher-Maravilha/Flash (2025) 03
+  - Mulher-Maravilha/Flash (2025) 04
+  - Mulher-Maravilha/Flash (2025) 05
+  - Mulher-Maravilha/Flash (2025) 06
+  - Mulher-Maravilha/Flash (2025) 07
+  - Mulher-Maravilha/Flash (2025) 08
+  - Mulher-Maravilha/Flash (2025) 09
+
+--- Grupo 24 de 250 ---
+Série sugerida: Spawn - Origens (Panini)
+Qtd gibis: 9 | Anos: 2024, 2025
+  - Spawn - Origens - Volume 01
+  - Spawn - Origens - Volume 02
+  - Spawn - Origens - Volume 03
+  - Spawn - Origens - Volume 04
+  - Spawn - Origens - Volume 05
+  - Spawn - Origens - Volume 06
+  - Spawn - Origens - Volume 07
+  - Spawn - Origens - Volume 08
+  - Spawn - Origens - Volume 09
+
+--- Grupo 25 de 250 ---
+Série sugerida: Superman (2025) (Panini)
+Qtd gibis: 9
+  - Superman (2025) 01
+  - Superman (2025) 02
+  - Superman (2025) 03
+  - Superman (2025) 04
+  - Superman (2025) 05
+  - Superman (2025) 06
+  - Superman (2025) 07
+  - Superman (2025) 08
+  - Superman (2025) 09
+
+--- Grupo 26 de 250 ---
+Série sugerida: Venom (2025) (Panini)
+Qtd gibis: 9
+  - Venom (2025) 01
+  - Venom (2025) 02
+  - Venom (2025) 03
+  - Venom (2025) 04
+  - Venom (2025) 05
+  - Venom (2025) 06
+  - Venom (2025) 07
+  - Venom (2025) 08
+  - Venom (2025) 09
+
+--- Grupo 27 de 250 ---
+Série sugerida: A Saga Do Lanterna Verde (Panini)
+Qtd gibis: 8
+  - A Saga Do Lanterna Verde 01
+  - A Saga Do Lanterna Verde 02
+  - A Saga Do Lanterna Verde 03
+  - A Saga Do Lanterna Verde 04
+  - A Saga Do Lanterna Verde 05
+  - A Saga Do Lanterna Verde 06
+  - A Saga Do Lanterna Verde 07
+  - A Saga Do Lanterna Verde 08
+
+--- Grupo 28 de 250 ---
+Série sugerida: A Saga Dos Vingadores (Panini)
+Qtd gibis: 8
+  - A Saga Dos Vingadores 01
+  - A Saga Dos Vingadores 02
+  - A Saga Dos Vingadores 03
+  - A Saga Dos Vingadores 06
+  - A Saga Dos Vingadores 07
+  - A Saga Dos Vingadores 08
+  - A Saga Dos Vingadores 09
+  - A Saga Dos Vingadores 10
+
+--- Grupo 29 de 250 ---
+Série sugerida: Aventuras Marvel (Panini)
+Qtd gibis: 8
+  - Aventuras Marvel 13
+  - Aventuras Marvel 14
+  - Aventuras Marvel 15
+  - Aventuras Marvel 16
+  - Aventuras Marvel 17
+  - Aventuras Marvel 18
+  - Aventuras Marvel 19
+  - Aventuras Marvel 20
+
+--- Grupo 30 de 250 ---
+Série sugerida: B.P.D.P Omnibus (Mythos)
+Qtd gibis: 8 | Anos: 2021, 2022, 2023, 2024
+  - B.P.D.P Omnibus - Volume 1 - Inferno Na Terra
+  - B.P.D.P Omnibus - Volume 1 - Praga dos Sapos
+  - B.P.D.P Omnibus - Volume 2 - Inferno Na Terra
+  - B.P.D.P Omnibus - Volume 2 - Praga dos Sapos
+  - B.P.D.P Omnibus - Volume 3 - Inferno Na Terra
+  - B.P.D.P Omnibus - Volume 3 - Praga dos Sapos
+  - B.P.D.P Omnibus - Volume 4 - Inferno Na Terra
+  - B.P.D.P Omnibus - Volume 4 - Praga dos Sapos
+
+--- Grupo 31 de 250 ---
+Série sugerida: Batman (2025) (Panini)
+Qtd gibis: 8
+  - Batman (2025) 01
+  - Batman (2025) 02
+  - Batman (2025) 03
+  - Batman (2025) 04
+  - Batman (2025) 05
+  - Batman (2025) 06
+  - Batman (2025) 07
+  - Batman (2025) 08
+
+--- Grupo 32 de 250 ---
+Série sugerida: Batman: O Último Dia Das Bruxas (Panini)
+Qtd gibis: 8
+  - Batman: O Último Dia Das Bruxas 01
+  - Batman: O Último Dia Das Bruxas 02
+  - Batman: O Último Dia Das Bruxas 03
+  - Batman: O Último Dia Das Bruxas 04
+  - Batman: O Último Dia Das Bruxas 05
+  - Batman: O Último Dia Das Bruxas 06
+  - Batman: O Último Dia Das Bruxas 07
+  - Batman: O Último Dia Das Bruxas 08
+
+--- Grupo 33 de 250 ---
+Série sugerida: Conan Omnibus (Mythos)
+Qtd gibis: 8 | Anos: 2021, 2022, 2023, 2024
+  - Conan Omnibus - Volume 1 - Nasce Uma Lenda
+  - Conan Omnibus - Volume 2 - A Cidade dos Ladrões
+  - Conan Omnibus - Volume 3 - Deuses e Feiticeiros Ancestrais
+  - Conan Omnibus - Volume 4 - Mercenários e Loucura
+  - Conan Omnibus - Volume 5 - Pirataria e Paixão
+  - Conan Omnibus - Volume 6 - Selvageria e Sofrimento
+  - Conan Omnibus - Volume 7 - Bruxarias e Batalhas
+  - Conan Omnibus - Volume 8 - Desforras e Desfechos
+
+--- Grupo 34 de 250 ---
+Série sugerida: A Saga Da Mulher-Maravilha (Panini)
+Qtd gibis: 7
+  - A Saga Da Mulher-Maravilha 01
+  - A Saga Da Mulher-Maravilha 02
+  - A Saga Da Mulher-Maravilha 03
+  - A Saga Da Mulher-Maravilha 04
+  - A Saga Da Mulher-Maravilha 05
+  - A Saga Da Mulher-Maravilha 06
+  - A Saga Da Mulher-Maravilha 07
+
+--- Grupo 35 de 250 ---
+Série sugerida: Batman/Superman: Os Melhores Do Mundo (2025) (Panini)
+Qtd gibis: 7
+  - Batman/Superman: Os Melhores Do Mundo (2025) 01
+  - Batman/Superman: Os Melhores Do Mundo (2025) 02
+  - Batman/Superman: Os Melhores Do Mundo (2025) 03
+  - Batman/Superman: Os Melhores Do Mundo (2025) 04
+  - Batman/Superman: Os Melhores Do Mundo (2025) 05
+  - Batman/Superman: Os Melhores Do Mundo (2025) 06
+  - Batman/Superman: Os Melhores Do Mundo (2025) 07
+
+--- Grupo 36 de 250 ---
+Série sugerida: Excepcionais X-Men (Panini)
+Qtd gibis: 7
+  - Excepcionais X-Men 1
+  - Excepcionais X-Men 2
+  - Excepcionais X-Men 3
+  - Excepcionais X-Men 4
+  - Excepcionais X-Men 5
+  - Excepcionais X-Men 6
+  - Excepcionais X-Men 7
+
+--- Grupo 37 de 250 ---
+Série sugerida: John Constantine - Hellblazer - Condenado (Panini)
+Qtd gibis: 7 | Anos: 2020, 2021
+  - John Constantine - Hellblazer - Condenado - Volume 1 - Sepulcro Vermelho
+  - John Constantine - Hellblazer - Condenado - Volume 2 - O Curinga
+  - John Constantine - Hellblazer - Condenado - Volume 3 - Olhando Para a Parede
+  - John Constantine - Hellblazer - Condenado - Volume 4 - Via Crúcis
+  - John Constantine - Hellblazer - Condenado - Volume 5 - Razões Para Se Alegrar
+  - John Constantine - Hellblazer - Condenado - Volume 6 - O Dom
+  - John Constantine - Hellblazer - Condenado - Volume 7 - O Convite
+
+--- Grupo 38 de 250 ---
+Série sugerida: Juiz Dredd Essencial (Mythos)
+Qtd gibis: 7 | Anos: 2021, 2022, 2023, 2024
+  - Juiz Dredd Essencial - Volume 1 - A Guerra do Apocalipse
+  - Juiz Dredd Essencial - Volume 2 - América
+  - Juiz Dredd Essencial - Volume 3 - Juiz Dredd x Juiz Morte
+  - Juiz Dredd Essencial - Volume 4 - Necrópole
+  - Juiz Dredd Essencial - Volume 5 - Dia do Julgamento
+  - Juiz Dredd Essencial - Volume 6 - Em Serviço da Lei - Parte I
+  - Juiz Dredd Essencial - Volume 7 - Em Serviço da Lei - Parte II
+
+--- Grupo 39 de 250 ---
+Série sugerida: A Saga Do Hulk (Panini)
+Qtd gibis: 6
+  - A Saga Do Hulk 01
+  - A Saga Do Hulk 02
+  - A Saga Do Hulk 03
+  - A Saga Do Hulk 04
+  - A Saga Do Hulk 05
+  - A Saga Do Hulk 06
+
+--- Grupo 40 de 250 ---
+Série sugerida: Cinema Purgatório (Panini)
+Qtd gibis: 6 | Anos: 2018, 2019, 2020
+  - Cinema Purgatório - Volume 1
+  - Cinema Purgatório - Volume 2
+  - Cinema Purgatório - Volume 3
+  - Cinema Purgatório - Volume 4
+  - Cinema Purgatório - Volume 5
+  - Cinema Purgatório - Volume 6
+
+--- Grupo 41 de 250 ---
+Série sugerida: Conan - O Bárbaro - Omnibus - A Era Marvel (Panini)
+Qtd gibis: 6 | Anos: 2020, 2021, 2022, 2023
+  - Conan - O Bárbaro - Omnibus - A Era Marvel - Volume 01
+  - Conan - O Bárbaro - Omnibus - A Era Marvel - Volume 02
+  - Conan - O Bárbaro - Omnibus - A Era Marvel - Volume 03
+  - Conan - O Bárbaro - Omnibus - A Era Marvel - Volume 04
+  - Conan - O Bárbaro - Omnibus - A Era Marvel - Volume 05
+  - Conan - O Bárbaro - Omnibus - A Era Marvel - Volume 06
+
+--- Grupo 42 de 250 ---
+Série sugerida: DC Vs. Vampiros (Panini)
+Qtd gibis: 6 | Anos: 2023
+  - DC Vs. Vampiros - Volume 1 (Capa Dura)
+  - DC Vs. Vampiros - Volume 2 (Capa Dura)
+  - DC Vs. Vampiros - Volume 3 (Capa Dura)
+  - DC Vs. Vampiros 01
+  - DC Vs. Vampiros 02
+  - DC Vs. Vampiros 03
+
+--- Grupo 43 de 250 ---
+Série sugerida: Estranhos no Paraíso (Devir)
+Qtd gibis: 6 | Anos: 2018, 2019, 2020, 2021
+  - Estranhos no Paraíso - Volume 1 - Um Sonho de Você
+  - Estranhos no Paraíso - Volume 2 - Ama-me Com Ternura
+  - Estranhos no Paraíso - Volume 3 - Santuário
+  - Estranhos no Paraíso - Volume 4 - Admirável Mundo Novo
+  - Estranhos no Paraíso - Volume 5 - O Amanhã Hoje
+  - Estranhos no Paraíso - Volume 6 - Para Sempre
+
+--- Grupo 44 de 250 ---
+Série sugerida: Injustiça (Panini)
+Qtd gibis: 6 | Anos: 2020, 2021
+  - Injustiça 2 - Volume 1
+  - Injustiça 2 - Volume 2
+  - Injustiça 2 - Volume 3
+  - Injustiça 2 - Volume 4
+  - Injustiça 2 - Volume 5
+  - Injustiça 2 - Volume 6
+
+--- Grupo 45 de 250 ---
+Série sugerida: Miles Morales: Homem-Aranha (2025) (Panini)
+Qtd gibis: 6
+  - Miles Morales: Homem-Aranha (2025) 01
+  - Miles Morales: Homem-Aranha (2025) 02
+  - Miles Morales: Homem-Aranha (2025) 06
+  - Miles Morales: Homem-Aranha (2025) 07
+  - Miles Morales: Homem-Aranha (2025) 08
+  - Miles Morales: Homem-Aranha (2025) 09
+
+--- Grupo 46 de 250 ---
+Série sugerida: Mulher-Gato (2023) (Panini)
+Qtd gibis: 6
+  - Mulher-Gato (2023) 01
+  - Mulher-Gato (2023) 02
+  - Mulher-Gato (2023) 03
+  - Mulher-Gato (2023) 04
+  - Mulher-Gato (2023) 05
+  - Mulher-Gato (2023) 06
+
+--- Grupo 47 de 250 ---
+Série sugerida: Os Mistérios De Batman E Scooby-Doo (Panini)
+Qtd gibis: 6
+  - Os Mistérios De Batman E Scooby-Doo 01
+  - Os Mistérios De Batman E Scooby-Doo 02
+  - Os Mistérios De Batman E Scooby-Doo 03
+  - Os Mistérios De Batman E Scooby-Doo 04
+  - Os Mistérios De Batman E Scooby-Doo 05
+  - Os Mistérios De Batman E Scooby-Doo 06
+
+--- Grupo 48 de 250 ---
+Série sugerida: Rex Mundi (Devir)
+Qtd gibis: 6 | Anos: 2010, 2011, 2018
+  - Rex Mundi - Volume 1 - O Guardião do Tempo
+  - Rex Mundi - Volume 2 - O Rio Subterrâneo
+  - Rex Mundi - Volume 3 - Os Reis Perdidos
+  - Rex Mundi - Volume 4 - A Coroa e a Espada
+  - Rex Mundi - Volume 5 - O Vale do Fim do Mundo
+  - Rex Mundi - Volume 6 - Portão de Deus
+
+--- Grupo 49 de 250 ---
+Série sugerida: Saga do Monstro do Pântano - Livro (Panini)
+Qtd gibis: 6 | Anos: 2014, 2015
+  - Saga do Monstro do Pântano - Livro 1
+  - Saga do Monstro do Pântano - Livro 2
+  - Saga do Monstro do Pântano - Livro 3
+  - Saga do Monstro do Pântano - Livro 4
+  - Saga do Monstro do Pântano - Livro 5
+  - Saga do Monstro do Pântano - Livro 6
+
+--- Grupo 50 de 250 ---
+Série sugerida: Star Wars (Panini)
+Qtd gibis: 6 | Anos: 2021, 2022, 2023, 2024
+  - Star Wars - Volume 01 - A Trilha do Destino
+  - Star Wars - Volume 02 - Operação Luz Estelar
+  - Star Wars - Volume 03 - A Guerra dos Caçadores de Recompensas
+  - Star Wars - Volume 04 - Reinado Escarlate
+  - Star Wars - Volume 05 - O Caminho Para a Vitória
+  - Star Wars - Volume 06 - As Buscas da Força
+
+--- Grupo 51 de 250 ---
+Série sugerida: Sweet Tooth - Depois do Apocalipse (Panini)
+Qtd gibis: 6 | Anos: 2012, 2013, 2014
+  - Sweet Tooth - Depois do Apocalipse - Volume 1 - Saindo da Mata
+  - Sweet Tooth - Depois do Apocalipse - Volume 2 - Cativeiro
+  - Sweet Tooth - Depois do Apocalipse - Volume 3 - Exército Animal
+  - Sweet Tooth - Depois do Apocalipse - Volume 4 - Espécia em Extinção
+  - Sweet Tooth - Depois do Apocalipse - Volume 5 - Habitat Anormal
+  - Sweet Tooth - Depois do Apocalipse - Volume 6 - Jogo Selvagem
+
+--- Grupo 52 de 250 ---
+Série sugerida: Tartarugas Ninja - Coleção Clássica (Pipoca e Nanquim)
+Qtd gibis: 6 | Anos: 2020, 2021, 2022
+  - Tartarugas Ninja - Coleção Clássica - Volume 1
+  - Tartarugas Ninja - Coleção Clássica - Volume 2
+  - Tartarugas Ninja - Coleção Clássica - Volume 3
+  - Tartarugas Ninja - Coleção Clássica - Volume 4
+  - Tartarugas Ninja - Coleção Clássica - Volume 5
+  - Tartarugas Ninja - Coleção Clássica - Volume 6
+
+--- Grupo 53 de 250 ---
+Série sugerida: X-Men - A Era do Apocalipse (Panini)
+Qtd gibis: 6 | Anos: 2012
+  - X-Men - A Era do Apocalipse - Volume 1
+  - X-Men - A Era do Apocalipse - Volume 2
+  - X-Men - A Era do Apocalipse - Volume 3
+  - X-Men - A Era do Apocalipse - Volume 4
+  - X-Men - A Era do Apocalipse - Volume 5
+  - X-Men - A Era do Apocalipse - Volume 6
+
+--- Grupo 54 de 250 ---
+Série sugerida: X-Men - Inferno (Panini)
+Qtd gibis: 6 | Anos: 2018, 2019
+  - X-Men - Inferno - Volume 1
+  - X-Men - Inferno - Volume 2
+  - X-Men - Inferno - Volume 3
+  - X-Men - Inferno - Volume 4
+  - X-Men - Inferno - Volume 5
+  - X-Men - Inferno - Volume 6
+
+--- Grupo 55 de 250 ---
+Série sugerida: Absolute Batman (Panini)
+Qtd gibis: 5
+  - Absolute Batman 01
+  - Absolute Batman 02
+  - Absolute Batman 03
+  - Absolute Batman 04
+  - Absolute Batman 05
+
+--- Grupo 56 de 250 ---
+Série sugerida: Batman - Lendas do Cavaleiro das Trevas - Neal Adams (Panini)
+Qtd gibis: 5 | Anos: 2015
+  - Batman - Lendas do Cavaleiro das Trevas - Neal Adams - Volume 1
+  - Batman - Lendas do Cavaleiro das Trevas - Neal Adams - Volume 2
+  - Batman - Lendas do Cavaleiro das Trevas - Neal Adams - Volume 3
+  - Batman - Lendas do Cavaleiro das Trevas - Neal Adams - Volume 4
+  - Batman - Lendas do Cavaleiro das Trevas - Neal Adams - Volume 5
+
+--- Grupo 57 de 250 ---
+Série sugerida: Batman Vs. Robin (Panini)
+Qtd gibis: 5
+  - Batman Vs. Robin 01
+  - Batman Vs. Robin 02
+  - Batman Vs. Robin 03
+  - Batman Vs. Robin 04
+  - Batman Vs. Robin 05
+
+--- Grupo 58 de 250 ---
+Série sugerida: Hellboy Omnibus (Mythos)
+Qtd gibis: 5 | Anos: 2019, 2020, 2021
+  - Hellboy Omnibus - Volume 1 - Histórias Curtas
+  - Hellboy Omnibus - Volume 1 - Sementes da Destruição
+  - Hellboy Omnibus - Volume 2 - Histórias Curtas
+  - Hellboy Omnibus - Volume 2 - Paragens Exóticas
+  - Hellboy Omnibus - Volume 3 - Caçada Selvagem
+
+--- Grupo 59 de 250 ---
+Série sugerida: Hera Venenosa (Panini)
+Qtd gibis: 5
+  - Hera Venenosa 01
+  - Hera Venenosa 02
+  - Hera Venenosa 03
+  - Hera Venenosa 04
+  - Hera Venenosa 05
+
+--- Grupo 60 de 250 ---
+Série sugerida: John Constantine - Hellblazer - Amaldiçoado (Panini)
+Qtd gibis: 5 | Anos: 2018, 2019
+  - John Constantine - Hellblazer - Amaldiçoado - Volume 1 - Inferno na Prisão
+  - John Constantine - Hellblazer - Amaldiçoado - Volume 2 - Boas Intenções
+  - John Constantine - Hellblazer - Amaldiçoado - Volume 3 - Congelado
+  - John Constantine - Hellblazer - Amaldiçoado - Volume 4 - Pecados do Passado
+  - John Constantine - Hellblazer - Amaldiçoado - Volume 5 - Cinzas e Pó na Cidade do Anjos
+
+--- Grupo 61 de 250 ---
+Série sugerida: Juiz Dredd - Os Casos Completos (Mythos)
+Qtd gibis: 5 | Anos: 2022, 2023, 2024, 2025
+  - Juiz Dredd - Os Casos Completos - Volume 1
+  - Juiz Dredd - Os Casos Completos - Volume 2
+  - Juiz Dredd - Os Casos Completos - Volume 3
+  - Juiz Dredd - Os Casos Completos - Volume 4
+  - Juiz Dredd - Os Casos Completos - Volume 5
+
+--- Grupo 62 de 250 ---
+Série sugerida: Kingdom Hearts II: Edição Definitiva (Panini)
+Qtd gibis: 5
+  - Kingdom Hearts II: Edição Definitiva - Volume 1
+  - Kingdom Hearts II: Edição Definitiva - Volume 2
+  - Kingdom Hearts II: Edição Definitiva - Volume 3
+  - Kingdom Hearts II: Edição Definitiva - Volume 4
+  - Kingdom Hearts II: Edição Definitiva - Volume 5
+
+--- Grupo 63 de 250 ---
+Série sugerida: O Espetacular Homem-Aranha (2025) (Panini)
+Qtd gibis: 5
+  - O Espetacular Homem-Aranha (2025) 01
+  - O Espetacular Homem-Aranha (2025) 06
+  - O Espetacular Homem-Aranha (2025) 07
+  - O Espetacular Homem-Aranha (2025) 08
+  - O Espetacular Homem-Aranha (2025) 09
+
+--- Grupo 64 de 250 ---
+Série sugerida: Spirit (L&PM)
+Qtd gibis: 5
+  - Spirit - Volume 1
+  - Spirit - Volume 2
+  - Spirit - Volume 3
+  - Spirit - Volume 4
+  - Spirit - Volume 5
+
+--- Grupo 65 de 250 ---
+Série sugerida: Star Wars - Darth Vader (Panini)
+Qtd gibis: 5 | Anos: 2021, 2022, 2023
+  - Star Wars - Darth Vader - Volume 01 - O Coração Sombrio dos Sith
+  - Star Wars - Darth Vader - Volume 02 - Em Chamas
+  - Star Wars - Darth Vader - Volume 03 - A Guerra dos Caçadores de Recompensas
+  - Star Wars - Darth Vader - Volume 04 - Reinado Escarlate
+  - Star Wars - Darth Vader - Volume 05 - A Sombra da Sombra
+
+--- Grupo 66 de 250 ---
+Série sugerida: Superman - Terra Um (Panini)
+Qtd gibis: 5 | Anos: 2015, 2018
+  - Superman - Terra Um - Volume 1 - 1ª Edição (Capa Dura)
+  - Superman - Terra Um - Volume 1 - 2ª Edição (Capa Dura)
+  - Superman - Terra Um - Volume 2 - 1ª Edição (Capa Dura)
+  - Superman - Terra Um - Volume 2 - 2ª Edição (Capa Dura)
+  - Superman - Terra Um - Volume 3 (Capa Dura)
+
+--- Grupo 67 de 250 ---
+Série sugerida: Absolute Mulher-Maravilha (Panini)
+Qtd gibis: 4
+  - Absolute Mulher-Maravilha 01
+  - Absolute Mulher-Maravilha 02
+  - Absolute Mulher-Maravilha 03
+  - Absolute Mulher-Maravilha 04
+
+--- Grupo 68 de 250 ---
+Série sugerida: Absolute Superman (Panini)
+Qtd gibis: 4
+  - Absolute Superman 01
+  - Absolute Superman 02
+  - Absolute Superman 03
+  - Absolute Superman 04
+
+--- Grupo 69 de 250 ---
+Série sugerida: Arqueiro Verde (2024) (Panini)
+Qtd gibis: 4
+  - Arqueiro Verde (2024) 01
+  - Arqueiro Verde (2024) 02
+  - Arqueiro Verde (2024) 03
+  - Arqueiro Verde (2024) 04
+
+--- Grupo 70 de 250 ---
+Série sugerida: Batman - A Queda do Morcego (Panini)
+Qtd gibis: 4 | Anos: 2020
+  - Batman - A Queda do Morcego - Volume 1
+  - Batman - A Queda do Morcego - Volume 1 - Herói Quebrado
+  - Batman - A Queda do Morcego - Volume 2
+  - Batman - A Queda do Morcego - Volume 3
+
+--- Grupo 71 de 250 ---
+Série sugerida: Batman - Caos em Arkham City (Panini)
+Qtd gibis: 4 | Anos: 2013, 2014, 2015
+  - Batman - Caos em Arkham City - Volume 1
+  - Batman - Caos em Arkham City - Volume 2
+  - Batman - Caos em Arkham City - Volume 3
+  - Batman - Caos em Arkham City - Volume 4
+
+--- Grupo 72 de 250 ---
+Série sugerida: Batman - Terra Um (Panini)
+Qtd gibis: 4 | Anos: 2013, 2016, 2018, 2021
+  - Batman - Terra Um - Volume 1 - 1ª Edição (Capa Dura)
+  - Batman - Terra Um - Volume 1 - 2ª Edição (Capa Dura)
+  - Batman - Terra Um - Volume 2 - 1ª Edição (Capa Dura)
+  - Batman - Terra Um - Volume 3 (Capa Dura)
+
+--- Grupo 73 de 250 ---
+Série sugerida: Batman: Além Do Ponto De Ignição (Panini)
+Qtd gibis: 4
+  - Batman: Além Do Ponto De Ignição 01
+  - Batman: Além Do Ponto De Ignição 02
+  - Batman: Além Do Ponto De Ignição 03
+  - Batman: Além Do Ponto De Ignição 04
+
+--- Grupo 74 de 250 ---
+Série sugerida: Batman: Justiça Presente (Panini)
+Qtd gibis: 4
+  - Batman: Justiça Presente 01
+  - Batman: Justiça Presente 02
+  - Batman: Justiça Presente 03
+  - Batman: Justiça Presente 04
+
+--- Grupo 75 de 250 ---
+Série sugerida: Biblioteca Histórica Marvel - Homem-Aranha (Panini)
+Qtd gibis: 4 | Anos: 2007, 2008, 2009, 2012
+  - Biblioteca Histórica Marvel - Homem-Aranha - Volume 1
+  - Biblioteca Histórica Marvel - Homem-Aranha - Volume 2
+  - Biblioteca Histórica Marvel - Homem-Aranha - Volume 3
+  - Biblioteca Histórica Marvel - Homem-Aranha - Volume 4
+
+--- Grupo 76 de 250 ---
+Série sugerida: Corporação Batman (Panini)
+Qtd gibis: 4 | Anos: 2012, 2013
+  - Corporação Batman - Volume 1
+  - Corporação Batman - Volume 2
+  - Corporação Batman - Volume 3
+  - Corporação Batman - Volume 4
+
+--- Grupo 77 de 250 ---
+Série sugerida: Crise Sombria Nas Infinitas Terras (Panini)
+Qtd gibis: 4
+  - Crise Sombria Nas Infinitas Terras 04
+  - Crise Sombria Nas Infinitas Terras 05
+  - Crise Sombria Nas Infinitas Terras 06
+  - Crise Sombria Nas Infinitas Terras 07
+
+--- Grupo 78 de 250 ---
+Série sugerida: Crônicas de Conan (Mythos)
+Qtd gibis: 4 | Anos: 2016, 2018, 2019
+  - Crônicas de Conan - Volume 1 - A Torre do Elefante e Outras Histórias
+  - Crônicas de Conan - Volume 2 - Inimigos em Casas e Outras Histórias
+  - Crônicas de Conan - Volume 3 - A Imperatriz Verde de Melniboné e Outras Histórias
+  - Crônicas de Conan - Volume 4 - Pregos Vermelhos e Outras Histórias
+
+--- Grupo 79 de 250 ---
+Série sugerida: Crossed (Panini)
+Qtd gibis: 4 | Anos: 2019, 2020
+  - Crossed - Volume 1
+  - Crossed - Volume 2
+  - Crossed - Volume 3
+  - Crossed - Volume 4
+
+--- Grupo 80 de 250 ---
+Série sugerida: Doutor Estranho (2024) (Panini)
+Qtd gibis: 4
+  - Doutor Estranho (2024) 01
+  - Doutor Estranho (2024) 02
+  - Doutor Estranho (2024) 03
+  - Doutor Estranho (2024) 04
+
+--- Grupo 81 de 250 ---
+Série sugerida: Invencível (HQM)
+Qtd gibis: 4 | Anos: 2006, 2007, 2012
+  - Invencível - Volume 1
+  - Invencível - Volume 2
+  - Invencível - Volume 3
+  - Invencível - Volume 4
+
+--- Grupo 82 de 250 ---
+Série sugerida: iZombie (Panini)
+Qtd gibis: 4 | Anos: 2015
+  - iZombie - Volume 1 - Morri pro Mundo
+  - iZombie - Volume 2 - Vc Vampiro
+  - iZombie - Volume 3 - A Sete Palmos e Subindo
+  - iZombie - Volume 4 - Repossessão
+
+--- Grupo 83 de 250 ---
+Série sugerida: Joe Golem (Mythos)
+Qtd gibis: 4 | Anos: 2021, 2022, 2024
+  - Joe Golem - Volume 1
+  - Joe Golem - Volume 2
+  - Joe Golem - Volume 3
+  - Joe Golem - Volume 4
+
+--- Grupo 84 de 250 ---
+Série sugerida: Liga da Justiça - Odisséia (Panini)
+Qtd gibis: 4 | Anos: 2019, 2020, 2021
+  - Liga da Justiça - Odisséia - Volume 1
+  - Liga da Justiça - Odisséia - Volume 2
+  - Liga da Justiça - Odisséia - Volume 3
+  - Liga da Justiça - Odisséia - Volume 4
+
+--- Grupo 85 de 250 ---
+Série sugerida: Liga da Justiça Dark (Panini)
+Qtd gibis: 4 | Anos: 2019, 2020, 2021
+  - Liga da Justiça Dark - Volume 1
+  - Liga da Justiça Dark - Volume 2
+  - Liga da Justiça Dark - Volume 3
+  - Liga da Justiça Dark - Volume 4
+
+--- Grupo 86 de 250 ---
+Série sugerida: Poder Absoluto (Panini)
+Qtd gibis: 4
+  - Poder Absoluto 1
+  - Poder Absoluto 2
+  - Poder Absoluto 3
+  - Poder Absoluto 4
+
+--- Grupo 87 de 250 ---
+Série sugerida: Stormwatch (Panini)
+Qtd gibis: 4 | Anos: 2015
+  - Stormwatch - Volume 1
+  - Stormwatch - Volume 2
+  - Stormwatch - Volume 3
+  - Stormwatch - Volume 4
+
+--- Grupo 88 de 250 ---
+Série sugerida: Superchoque (Panini)
+Qtd gibis: 4
+  - Superchoque 01
+  - Superchoque 02
+  - Superchoque 03
+  - Superchoque 04
+
+--- Grupo 89 de 250 ---
+Série sugerida: Superman - Ano Um (Panini)
+Qtd gibis: 4 | Anos: 2020, 2023
+  - Superman - Ano Um - Edição de Luxo
+  - Superman - Ano Um - Volume 1
+  - Superman - Ano Um - Volume 2
+  - Superman - Ano Um - Volume 3
+
+--- Grupo 90 de 250 ---
+Série sugerida: Vingadores - Tempo Esgotado (Panini)
+Qtd gibis: 4 | Anos: 2018
+  - Vingadores - Tempo Esgotado - Volume 1
+  - Vingadores - Tempo Esgotado - Volume 2
+  - Vingadores - Tempo Esgotado - Volume 3
+  - Vingadores - Tempo Esgotado - Volume 4
+
+--- Grupo 91 de 250 ---
+Série sugerida: Zenith Fase (Pandora)
+Qtd gibis: 4 | Anos: 2003
+  - Zenith Fase 1
+  - Zenith Fase 2
+  - Zenith Fase 3 - Volume 1
+  - Zenith Fase 3 - Volume 2
+
+--- Grupo 92 de 250 ---
+Série sugerida:  (Panini)
+Qtd gibis: 3 | Anos: 2007, 2018, 2022
+  - 1602 - 1ª Edição (Capa Dura)
+  - 1602 - 2ª Edição (Capa Dura)
+  - 1602 - Marvel Grimório (Capa Dura)
+
+--- Grupo 93 de 250 ---
+Série sugerida: A Espada Selvagem De Conan (2024) (Panini)
+Qtd gibis: 3
+  - A Espada Selvagem De Conan (2024) 02
+  - A Espada Selvagem De Conan (2024) 03
+  - A Espada Selvagem De Conan (2024) 04
+
+--- Grupo 94 de 250 ---
+Série sugerida: A Queda De X Especial (Panini)
+Qtd gibis: 3
+  - A Queda De X Especial 01
+  - A Queda De X Especial 02
+  - A Queda De X Especial 03
+
+--- Grupo 95 de 250 ---
+Série sugerida: Alias - 2ª Edição (Panini)
+Qtd gibis: 3 | Anos: 2018
+  - Alias - 2ª Edição - Volume 1 (Capa Dura)
+  - Alias - 2ª Edição - Volume 2 - Volte Pra Casa (Capa Dura)
+  - Alias - 2ª Edição - Volume 3 - A Vida Secreta de Jessica Jones (Capa Dura)
+
+--- Grupo 96 de 250 ---
+Série sugerida: Armagedom Parte (Pixel)
+Qtd gibis: 3
+  - Armagedom Parte 1
+  - Armagedom Parte 2
+  - Armagedom Parte 3
+
+--- Grupo 97 de 250 ---
+Série sugerida: B.P.D.P - Inferno na Terra (Mythos)
+Qtd gibis: 3 | Anos: 2017, 2020, 2021
+  - B.P.D.P - Inferno na Terra - Volume 1
+  - B.P.D.P - Inferno na Terra - Volume 2
+  - B.P.D.P - Inferno na Terra - Volume 3
+
+--- Grupo 98 de 250 ---
+Série sugerida: Batman - Lendas do Cavaleiro das Trevas - Marshall Rogers (Panini)
+Qtd gibis: 3 | Anos: 2015, 2016
+  - Batman - Lendas do Cavaleiro das Trevas - Marshall Rogers - Volume 1
+  - Batman - Lendas do Cavaleiro das Trevas - Marshall Rogers - Volume 2
+  - Batman - Lendas do Cavaleiro das Trevas - Marshall Rogers - Volume 3
+
+--- Grupo 99 de 250 ---
+Série sugerida: Batman - O Último Cavaleiro da Terra - Livro (Panini)
+Qtd gibis: 3 | Anos: 2020
+  - Batman - O Último Cavaleiro da Terra - Livro 1
+  - Batman - O Último Cavaleiro da Terra - Livro 2
+  - Batman - O Último Cavaleiro da Terra - Livro 3
+
+--- Grupo 100 de 250 ---
+Série sugerida: Batman: Silêncio (Panini)
+Qtd gibis: 3
+  - Batman: Silêncio - Edição Definitiva
+  - Batman: Silêncio 2 - 01
+  - Batman: Silêncio 2 - 02
+
+--- Grupo 101 de 250 ---
+Série sugerida: Biblioteca Histórica Marvel - X-Men (Panini)
+Qtd gibis: 3 | Anos: 2007, 2008, 2009
+  - Biblioteca Histórica Marvel - X-Men - Volume 1
+  - Biblioteca Histórica Marvel - X-Men - Volume 2
+  - Biblioteca Histórica Marvel - X-Men - Volume 3
+
+--- Grupo 102 de 250 ---
+Série sugerida: Bone (Todavia)
+Qtd gibis: 3 | Anos: 2018, 2019
+  - Bone - Volume 1
+  - Bone - Volume 2
+  - Bone - Volume 3
+
+--- Grupo 103 de 250 ---
+Série sugerida: Caçada Sangrenta - Tarja Vermelha (Panini)
+Qtd gibis: 3
+  - Caçada Sangrenta - Tarja Vermelha 01
+  - Caçada Sangrenta - Tarja Vermelha 02
+  - Caçada Sangrenta - Tarja Vermelha 03
+
+--- Grupo 104 de 250 ---
+Série sugerida: Caçada Sangrenta (Panini)
+Qtd gibis: 3
+  - Caçada Sangrenta 01
+  - Caçada Sangrenta 02
+  - Caçada Sangrenta 03
+
+--- Grupo 105 de 250 ---
+Série sugerida: Conan - A Lenda (Mythos)
+Qtd gibis: 3 | Anos: 2016, 2017, 2020
+  - Conan - A Lenda - Volume 1
+  - Conan - A Lenda - Volume 2 - E a Invencível Red Sonja
+  - Conan - A Lenda - Volume 3 - As Joias de Gwahlur
+
+--- Grupo 106 de 250 ---
+Série sugerida: Conan - Edição Histórica (Mythos)
+Qtd gibis: 3 | Anos: 2011, 2017, 2018
+  - Conan - Edição Histórica - Volume 1 - Conan - O Libertador
+  - Conan - Edição Histórica - Volume 2 - Conan - O Conquistador
+  - Conan - Edição Histórica - Volume 3 - Conan da Aquilônia
+
+--- Grupo 107 de 250 ---
+Série sugerida: Coringa e Arlequina - Sanidade Criminosa (Panini)
+Qtd gibis: 3 | Anos: 2020, 2021
+  - Coringa e Arlequina - Sanidade Criminosa - Volume 1
+  - Coringa e Arlequina - Sanidade Criminosa - Volume 2
+  - Coringa e Arlequina - Sanidade Criminosa - Volume 3
+
+--- Grupo 108 de 250 ---
+Série sugerida: Coringa: Operação Babá (Panini)
+Qtd gibis: 3
+  - Coringa: Operação Babá 01
+  - Coringa: Operação Babá 02
+  - Coringa: Operação Babá 03
+
+--- Grupo 109 de 250 ---
+Série sugerida: DC X Sonic (Panini)
+Qtd gibis: 3
+  - DC X Sonic 01
+  - DC X Sonic 02
+  - DC X Sonic 03
+
+--- Grupo 110 de 250 ---
+Série sugerida: Demolidor - Fim dos Dias (Panini)
+Qtd gibis: 3 | Anos: 2015, 2023
+  - Demolidor - Fim dos Dias (Capa Dura)
+  - Demolidor - Fim dos Dias - Volume 1
+  - Demolidor - Fim dos Dias - Volume 2
+
+--- Grupo 111 de 250 ---
+Série sugerida: Demolidor por Frank Miller e Klaus Janson (Panini)
+Qtd gibis: 3 | Anos: 2014, 2015, 2016
+  - Demolidor por Frank Miller e Klaus Janson - Volume 1
+  - Demolidor por Frank Miller e Klaus Janson - Volume 2
+  - Demolidor por Frank Miller e Klaus Janson - Volume 3
+
+--- Grupo 112 de 250 ---
+Série sugerida: Escalpo - Livro (Panini)
+Qtd gibis: 3
+  - Escalpo - Livro 2
+  - Escalpo - Livro 4
+  - Escalpo - Livro 5
+
+--- Grupo 113 de 250 ---
+Série sugerida: Fracasso de Público (Gal)
+Qtd gibis: 3 | Anos: 2009, 2010, 2012
+  - Fracasso de Público - Volume 1
+  - Fracasso de Público - Volume 2
+  - Fracasso de Público - Volume 3
+
+--- Grupo 114 de 250 ---
+Série sugerida: Hellboy - Contos Bizarros (Mythos)
+Qtd gibis: 3 | Anos: 2006, 2007, 2025
+  - Hellboy - Contos Bizarros - Edição Especial
+  - Hellboy - Contos Bizarros - Volume 1
+  - Hellboy - Contos Bizarros - Volume 2
+
+--- Grupo 115 de 250 ---
+Série sugerida: Hellboy e o B.P.D.P (Mythos)
+Qtd gibis: 3 | Anos: 2016, 2018, 2019
+  - Hellboy e o B.P.D.P - 1952
+  - Hellboy e o B.P.D.P - 1953
+  - Hellboy e o B.P.D.P - 1954
+
+--- Grupo 116 de 250 ---
+Série sugerida: Justiceiro por Garth Ennis (Panini)
+Qtd gibis: 3 | Anos: 2022, 2023
+  - Justiceiro por Garth Ennis - Volume 1 (Capa Dura)
+  - Justiceiro por Garth Ennis - Volume 2 (Capa Dura)
+  - Justiceiro por Garth Ennis - Volume 3 (Capa Dura)
+
+--- Grupo 117 de 250 ---
+Série sugerida: Marvel Edição Especial Limitada - Capitão América (Salvat)
+Qtd gibis: 3 | Anos: 2018
+  - Marvel Edição Especial Limitada - Capitão América - Volume 1
+  - Marvel Edição Especial Limitada - Capitão América - Volume 2
+  - Marvel Edição Especial Limitada - Capitão América - Volume 3
+
+--- Grupo 118 de 250 ---
+Série sugerida: Marvel Edição Especial Limitada - Os Vingadores (Salvat)
+Qtd gibis: 3 | Anos: 2017
+  - Marvel Edição Especial Limitada - Os Vingadores - Volume 1
+  - Marvel Edição Especial Limitada - Os Vingadores - Volume 2
+  - Marvel Edição Especial Limitada - Os Vingadores - Volume 3
+
+--- Grupo 119 de 250 ---
+Série sugerida: Marvel Edição Especial Limitada - Thor (Salvat)
+Qtd gibis: 3 | Anos: 2018
+  - Marvel Edição Especial Limitada - Thor - Volume 1
+  - Marvel Edição Especial Limitada - Thor - Volume 2
+  - Marvel Edição Especial Limitada - Thor - Volume 3
+
+--- Grupo 120 de 250 ---
+Série sugerida: Monstro do Pântano por Alan Moore - Edição Absoluta (Panini)
+Qtd gibis: 3 | Anos: 2021, 2022
+  - Monstro do Pântano por Alan Moore - Edição Absoluta - Volume 1
+  - Monstro do Pântano por Alan Moore - Edição Absoluta - Volume 2
+  - Monstro do Pântano por Alan Moore - Edição Absoluta - Volume 3
+
+--- Grupo 121 de 250 ---
+Série sugerida: Mulher-Maravilha - Terra Um (Panini)
+Qtd gibis: 3 | Anos: 2016, 2020, 2021
+  - Mulher-Maravilha - Terra Um - Volume 1 (Capa Dura)
+  - Mulher-Maravilha - Terra Um - Volume 2 (Capa Dura)
+  - Mulher-Maravilha - Terra Um - Volume 3 (Capa Dura)
+
+--- Grupo 122 de 250 ---
+Série sugerida: Ordem Mágica (Panini)
+Qtd gibis: 3 | Anos: 2019, 2022, 2023
+  - Ordem Mágica - Volume 1 (Capa Dura)
+  - Ordem Mágica - Volume 2 (Capa Dura)
+  - Ordem Mágica - Volume 3 (Capa Dura)
+
+--- Grupo 123 de 250 ---
+Série sugerida: Pantera Negra - Uma Nação Sob Nossos Pés - Livro (Panini)
+Qtd gibis: 3 | Anos: 2017
+  - Pantera Negra - Uma Nação Sob Nossos Pés - Livro 1
+  - Pantera Negra - Uma Nação Sob Nossos Pés - Livro 2
+  - Pantera Negra - Uma Nação Sob Nossos Pés - Livro 3
+
+--- Grupo 124 de 250 ---
+Série sugerida: Rat Queens (Jambô)
+Qtd gibis: 3 | Anos: 2016, 2019
+  - Rat Queens - Volume 1 - Pancadaria e Feitiçaria
+  - Rat Queens - Volume 2 - Os Tentáculos de N'Rygoth
+  - Rat Queens - Volume 3 - Demônios
+
+--- Grupo 125 de 250 ---
+Série sugerida: Scott Pilgrim Contra o Mundo (Cia das Letras)
+Qtd gibis: 3 | Anos: 2010, 2011
+  - Scott Pilgrim Contra o Mundo - Volume 1
+  - Scott Pilgrim Contra o Mundo - Volume 2
+  - Scott Pilgrim Contra o Mundo - Volume 3
+
+--- Grupo 126 de 250 ---
+Série sugerida: Star Wars - Doutora Aphra (Panini)
+Qtd gibis: 3 | Anos: 2019, 2020
+  - Star Wars - Doutora Aphra - Volume 1 (Capa Dura)
+  - Star Wars - Doutora Aphra - Volume 2 (Capa Dura)
+  - Star Wars - Doutora Aphra - Volume 3 (Capa Dura)
+
+--- Grupo 127 de 250 ---
+Série sugerida: Superman Vs Comida - As Refeições Do Homem De Aço (Panini)
+Qtd gibis: 3
+  - Superman Vs Comida - As Refeições Do Homem De Aço 01
+  - Superman Vs Comida - As Refeições Do Homem De Aço 02
+  - Superman Vs Comida - As Refeições Do Homem De Aço 03
+
+--- Grupo 128 de 250 ---
+Série sugerida: Titãs (2024) (Panini)
+Qtd gibis: 3
+  - Titãs (2024) 2
+  - Titãs (2024) 3
+  - Titãs (2024) 4
+
+--- Grupo 129 de 250 ---
+Série sugerida: Vingadores e X-Men - Eixo - Livro (Panini)
+Qtd gibis: 3 | Anos: 2015, 2016
+  - Vingadores e X-Men - Eixo - Livro 1 - Supremacia Vermelha
+  - Vingadores e X-Men - Eixo - Livro 2 - Inversão
+  - Vingadores e X-Men - Eixo - Livro 3 - Nova Desordem Mundial
+
+--- Grupo 130 de 250 ---
+Série sugerida: VXE: Juízo Final (Panini)
+Qtd gibis: 3
+  - VXE: Juízo Final 01
+  - VXE: Juízo Final 03
+  - VXE: Juízo Final 04
+
+--- Grupo 131 de 250 ---
+Série sugerida: X-Men - Grand Design (Panini)
+Qtd gibis: 3 | Anos: 2020, 2021
+  - X-Men - Grand Design - Volume 1
+  - X-Men - Grand Design - Volume 2 - Segunda Gênese
+  - X-Men - Grand Design - Volume 3 - Extermínio
+
+--- Grupo 132 de 250 ---
+Série sugerida: A Saga Da Liga Da Justiça 01/ (Panini)
+Qtd gibis: 2
+  - A Saga Da Liga Da Justiça 01/17
+  - A Saga Da Liga Da Justiça 01/24
+
+--- Grupo 133 de 250 ---
+Série sugerida: A Saga Da Liga Da Justiça 02/ (Panini)
+Qtd gibis: 2
+  - A Saga Da Liga Da Justiça 02/18
+  - A Saga Da Liga Da Justiça 02/25
+
+--- Grupo 134 de 250 ---
+Série sugerida: A Saga Da Liga Da Justiça 03/ (Panini)
+Qtd gibis: 2
+  - A Saga Da Liga Da Justiça 03/19
+  - A Saga Da Liga Da Justiça 03/26
+
+--- Grupo 135 de 250 ---
+Série sugerida: A Saga Da Liga Da Justiça 04/ (Panini)
+Qtd gibis: 2
+  - A Saga Da Liga Da Justiça 04/20
+  - A Saga Da Liga Da Justiça 04/27
+
+--- Grupo 136 de 250 ---
+Série sugerida: A Saga Da Liga Da Justiça 05/ (Panini)
+Qtd gibis: 2
+  - A Saga Da Liga Da Justiça 05/21
+  - A Saga Da Liga Da Justiça 05/28
+
+--- Grupo 137 de 250 ---
+Série sugerida: A Vingança Do Cavaleiro Da Lua (Panini)
+Qtd gibis: 2
+  - A Vingança Do Cavaleiro Da Lua 01
+  - A Vingança Do Cavaleiro Da Lua 02
+
+--- Grupo 138 de 250 ---
+Série sugerida: Absolute Caçador De Marte (Panini)
+Qtd gibis: 2
+  - Absolute Caçador De Marte 01
+  - Absolute Caçador De Marte 02
+
+--- Grupo 139 de 250 ---
+Série sugerida: Absolute Flash (Panini)
+Qtd gibis: 2
+  - Absolute Flash 01
+  - Absolute Flash 02
+
+--- Grupo 140 de 250 ---
+Série sugerida: Absolute Lanterna Verde (Panini)
+Qtd gibis: 2
+  - Absolute Lanterna Verde 01
+  - Absolute Lanterna Verde 02
+
+--- Grupo 141 de 250 ---
+Série sugerida: Adaptação Oficial do Filme - Homem-Aranha (Panini)
+Qtd gibis: 2 | Anos: 2002, 2004
+  - Adaptação Oficial do Filme - Homem-Aranha
+  - Adaptação Oficial do Filme - Homem-Aranha 2
+
+--- Grupo 142 de 250 ---
+Série sugerida: Agente Secreto X (Devir)
+Qtd gibis: 2 | Anos: 2010
+  - Agente Secreto X-9 - Aventuras Completas de 1934-1935 (capa dura)
+  - Agente Secreto X-9 - Aventuras Completas de 1934-1935 (cartonado)
+
+--- Grupo 143 de 250 ---
+Série sugerida: Aniquilação (Panini)
+Qtd gibis: 2 | Anos: 2008
+  - Aniquilação 2 - A Conquista - Prólogo
+  - Aniquilação 2099
+
+--- Grupo 144 de 250 ---
+Série sugerida: As Maiores Sagas Dos X-Men: Amanhecer Violento Parte (Panini)
+Qtd gibis: 2
+  - As Maiores Sagas Dos X-Men: Amanhecer Violento Parte 1
+  - As Maiores Sagas Dos X-Men: Amanhecer Violento Parte 2
+
+--- Grupo 145 de 250 ---
+Série sugerida: Assassin's Creed (Record)
+Qtd gibis: 2 | Anos: 2013, 2014
+  - Assassin's Creed - Volume 1 - Desmond
+  - Assassin's Creed - Volume 2 - Aquilus
+
+--- Grupo 146 de 250 ---
+Série sugerida: Aventuras de Luther Arkwright (Via Lettera)
+Qtd gibis: 2 | Anos: 2000, 2001
+  - Aventuras de Luther Arkwright - Volume 1
+  - Aventuras de Luther Arkwright - Volume 2
+
+--- Grupo 147 de 250 ---
+Série sugerida: Batman - A Série Animada (Panini)
+Qtd gibis: 2 | Anos: 2024
+  - Batman - A Série Animada - Volume 1
+  - Batman - A Série Animada - Volume 2 - Segunda Temporada
+
+--- Grupo 148 de 250 ---
+Série sugerida: Batman - Lendas do Cavaleiro das Trevas - Alan Davis (Panini)
+Qtd gibis: 2 | Anos: 2014
+  - Batman - Lendas do Cavaleiro das Trevas - Alan Davis - Volume 1
+  - Batman - Lendas do Cavaleiro das Trevas - Alan Davis - Volume 2
+
+--- Grupo 149 de 250 ---
+Série sugerida: Batman - Lendas do Cavaleiro das Trevas - Archie Goodwin (Panini)
+Qtd gibis: 2 | Anos: 2019
+  - Batman - Lendas do Cavaleiro das Trevas - Archie Goodwin - Volume 1
+  - Batman - Lendas do Cavaleiro das Trevas - Archie Goodwin - Volume 2
+
+--- Grupo 150 de 250 ---
+Série sugerida: Batman - Lendas do Cavaleiro das Trevas - Gene Colan (Panini)
+Qtd gibis: 2 | Anos: 2016
+  - Batman - Lendas do Cavaleiro das Trevas - Gene Colan - Volume 1
+  - Batman - Lendas do Cavaleiro das Trevas - Gene Colan - Volume 2
+
+--- Grupo 151 de 250 ---
+Série sugerida: Batman 13/ (Panini)
+Qtd gibis: 2
+  - Batman 13/71
+  - Batman 13/95
+
+--- Grupo 152 de 250 ---
+Série sugerida: Batman 14/ (Panini)
+Qtd gibis: 2
+  - Batman 14/72
+  - Batman 14/96
+
+--- Grupo 153 de 250 ---
+Série sugerida: Batman 15/ (Panini)
+Qtd gibis: 2
+  - Batman 15/73
+  - Batman 15/97
+
+--- Grupo 154 de 250 ---
+Série sugerida: Batman 16/ (Panini)
+Qtd gibis: 2
+  - Batman 16/74
+  - Batman 16/98
+
+--- Grupo 155 de 250 ---
+Série sugerida: Batman 17/ (Panini)
+Qtd gibis: 2
+  - Batman 17/75
+  - Batman 17/99
+
+--- Grupo 156 de 250 ---
+Série sugerida: Batman 18/ (Panini)
+Qtd gibis: 2
+  - Batman 18/100
+  - Batman 18/76
+
+--- Grupo 157 de 250 ---
+Série sugerida: Batman 19/ (Panini)
+Qtd gibis: 2
+  - Batman 19/101
+  - Batman 19/77
+
+--- Grupo 158 de 250 ---
+Série sugerida: Batman 20/ (Panini)
+Qtd gibis: 2
+  - Batman 20/102
+  - Batman 20/78
+
+--- Grupo 159 de 250 ---
+Série sugerida: Batman 21/ (Panini)
+Qtd gibis: 2
+  - Batman 21/103
+  - Batman 21/79
+
+--- Grupo 160 de 250 ---
+Série sugerida: Batman 22/ (Panini)
+Qtd gibis: 2
+  - Batman 22/104
+  - Batman 22/80
+
+--- Grupo 161 de 250 ---
+Série sugerida: Batman 23/ (Panini)
+Qtd gibis: 2
+  - Batman 23/105
+  - Batman 23/81
+
+--- Grupo 162 de 250 ---
+Série sugerida: Batman: A Hora Da Morte (Panini)
+Qtd gibis: 2
+  - Batman: A Hora Da Morte 01
+  - Batman: A Hora Da Morte 03
+
+--- Grupo 163 de 250 ---
+Série sugerida: Batman: Gotham (Panini)
+Qtd gibis: 2
+  - Batman: Gotham 1889 - Edição De Luxo
+  - Batman: Gotham 1893 - A Era Kryptoniana
+
+--- Grupo 164 de 250 ---
+Série sugerida: Batman: Gotham Knights - A Cidade Dourada (Panini)
+Qtd gibis: 2
+  - Batman: Gotham Knights - A Cidade Dourada 1
+  - Batman: Gotham Knights - A Cidade Dourada 3
+
+--- Grupo 165 de 250 ---
+Série sugerida: Batman: O Cavaleiro (Panini)
+Qtd gibis: 2
+  - Batman: O Cavaleiro 01
+  - Batman: O Cavaleiro 02
+
+--- Grupo 166 de 250 ---
+Série sugerida: Bela Casa do Lago (Panini)
+Qtd gibis: 2 | Anos: 2023
+  - Bela Casa do Lago - Volume 1 (Capa Dura)
+  - Bela Casa do Lago - Volume 2 (Capa Dura)
+
+--- Grupo 167 de 250 ---
+Série sugerida: Biblioteca Histórica Marvel - Invencível Homem de Ferro (Panini)
+Qtd gibis: 2 | Anos: 2008, 2010
+  - Biblioteca Histórica Marvel - Invencível Homem de Ferro - Volume 1
+  - Biblioteca Histórica Marvel - Invencível Homem de Ferro - Volume 2
+
+--- Grupo 168 de 250 ---
+Série sugerida: Biblioteca Histórica Marvel - Surfista Prateado (Panini)
+Qtd gibis: 2 | Anos: 2010, 2018
+  - Biblioteca Histórica Marvel - Surfista Prateado - Volume 1
+  - Biblioteca Histórica Marvel - Surfista Prateado - Volume 2
+
+--- Grupo 169 de 250 ---
+Série sugerida: Biblioteca Histórica Marvel - Vingadores (Panini)
+Qtd gibis: 2 | Anos: 2007, 2009
+  - Biblioteca Histórica Marvel - Vingadores - Volume 1
+  - Biblioteca Histórica Marvel - Vingadores - Volume 2
+
+--- Grupo 170 de 250 ---
+Série sugerida: Bloodshot Renascido (Jambô)
+Qtd gibis: 2 | Anos: 2018, 2020
+  - Bloodshot Renascido - Volume 1
+  - Bloodshot Renascido - Volume 2
+
+--- Grupo 171 de 250 ---
+Série sugerida: Capitão América: Steve Rogers (Panini)
+Qtd gibis: 2
+  - Capitão América: Steve Rogers
+  - Capitão América: Steve Rogers 2
+
+--- Grupo 172 de 250 ---
+Série sugerida: Círculo de Júpiter (Panini)
+Qtd gibis: 2 | Anos: 2019, 2020
+  - Círculo de Júpiter - Volume 1
+  - Círculo de Júpiter - Volume 2
+
+--- Grupo 173 de 250 ---
+Série sugerida: Conan - As Tiras de Jornal (Panini)
+Qtd gibis: 2 | Anos: 2022, 2023
+  - Conan - As Tiras de Jornal - Volume 1 - 1978-1979
+  - Conan - As Tiras de Jornal - Volume 2 - 1979-1981
+
+--- Grupo 174 de 250 ---
+Série sugerida: Conan - O Bárbaro - A Espada Selvagem em Cores (Panini)
+Qtd gibis: 2 | Anos: 2023
+  - Conan - O Bárbaro - A Espada Selvagem em Cores - Volume 1 (Capa Dura)
+  - Conan - O Bárbaro - A Espada Selvagem em Cores - Volume 2 (Capa Dura)
+
+--- Grupo 175 de 250 ---
+Série sugerida: Conan o Cimério - V. (Conrad)
+Qtd gibis: 2
+  - Conan o Cimério - V. 1
+  - Conan o Cimério - V. 2
+
+--- Grupo 176 de 250 ---
+Série sugerida: Coração do Império (Pixel)
+Qtd gibis: 2
+  - Coração do Império - Volume 1
+  - Coração do Império - Volume 2
+
+--- Grupo 177 de 250 ---
+Série sugerida: Criminal (Panini)
+Qtd gibis: 2 | Anos: 2010, 2011
+  - Criminal - Volume 1 - Covarde
+  - Criminal - Volume 2 - Lawless
+
+--- Grupo 178 de 250 ---
+Série sugerida: Crise Sombria (Panini)
+Qtd gibis: 2
+  - Crise Sombria 01
+  - Crise Sombria 03
+
+--- Grupo 179 de 250 ---
+Série sugerida: Crônicas de Excalibur (Mythos)
+Qtd gibis: 2 | Anos: 2019, 2021
+  - Crônicas de Excalibur - Volume 1
+  - Crônicas de Excalibur - Volume 2
+
+--- Grupo 180 de 250 ---
+Série sugerida: Danger Girl (Devir)
+Qtd gibis: 2 | Anos: 2006
+  - Danger Girl - Volume 1
+  - Danger Girl - Volume 2
+
+--- Grupo 181 de 250 ---
+Série sugerida: Deadpool (2023) (Panini)
+Qtd gibis: 2
+  - Deadpool (2023) 01
+  - Deadpool (2023) 02
+
+--- Grupo 182 de 250 ---
+Série sugerida: Despertar - Parte (Panini)
+Qtd gibis: 2 | Anos: 2015
+  - Despertar - Parte 1
+  - Despertar - Parte 2
+
+--- Grupo 183 de 250 ---
+Série sugerida: Doutor Estranho (2023) (Panini)
+Qtd gibis: 2
+  - Doutor Estranho (2023) 01
+  - Doutor Estranho (2023) 02
+
+--- Grupo 184 de 250 ---
+Série sugerida: Duende Vermelho (Panini)
+Qtd gibis: 2
+  - Duende Vermelho 01
+  - Duende Vermelho 02
+
+--- Grupo 185 de 250 ---
+Série sugerida: Elfos (Mythos)
+Qtd gibis: 2 | Anos: 2018
+  - Elfos - Volume 1
+  - Elfos - Volume 2
+
+--- Grupo 186 de 250 ---
+Série sugerida: Elric (Mythos)
+Qtd gibis: 2 | Anos: 2017, 2021
+  - Elric - Volume 1 - O Trono de Rubi
+  - Elric - Volume 2 - O Lobo Branco
+
+--- Grupo 187 de 250 ---
+Série sugerida: Espetacular Homem-Aranha - Corredor Polonês (Panini)
+Qtd gibis: 2 | Anos: 2024
+  - Espetacular Homem-Aranha - Corredor Polonês - Volume 1
+  - Espetacular Homem-Aranha - Corredor Polonês - Volume 2
+
+--- Grupo 188 de 250 ---
+Série sugerida: Espinho Rubro (Panini)
+Qtd gibis: 2 | Anos: 2018
+  - Espinho Rubro - Volume 1 - O Beijo de Glasgow
+  - Espinho Rubro - Volume 2 - Deuses Insanos e Escoceses
+
+--- Grupo 189 de 250 ---
+Série sugerida: Estranhas Aventuras (Panini)
+Qtd gibis: 2 | Anos: 2021
+  - Estranhas Aventuras - Volume 1
+  - Estranhas Aventuras - Volume 2
+
+--- Grupo 190 de 250 ---
+Série sugerida: Excalibur - Uma Aventura no Tempo (Panini)
+Qtd gibis: 2 | Anos: 2017, 2018
+  - Excalibur - Uma Aventura no Tempo - Volume 1
+  - Excalibur - Uma Aventura no Tempo - Volume 2
+
+--- Grupo 191 de 250 ---
+Série sugerida: Faith (Jambô)
+Qtd gibis: 2 | Anos: 2017, 2019
+  - Faith - Volume 1
+  - Faith - Volume 2
+
+--- Grupo 192 de 250 ---
+Série sugerida: Frequência Global (Panini)
+Qtd gibis: 2 | Anos: 2009, 2012
+  - Frequência Global - Volume 1
+  - Frequência Global - Volume 2
+
+--- Grupo 193 de 250 ---
+Série sugerida: Fury por Garth Ennis (Panini)
+Qtd gibis: 2 | Anos: 2023
+  - Fury por Garth Ennis - Volume 1 (Capa Dura)
+  - Fury por Garth Ennis - Volume 2 (Capa Dura)
+
+--- Grupo 194 de 250 ---
+Série sugerida: Grandes Encontros DC Comics/Dark Horse (Panini)
+Qtd gibis: 2 | Anos: 2018
+  - Grandes Encontros DC Comics/Dark Horse - Volume 1 - Liga da Justiça
+  - Grandes Encontros DC Comics/Dark Horse - Volume 2 - Batman Vs. Predador
+
+--- Grupo 195 de 250 ---
+Série sugerida: Grandes Eventos DC: Lanterna Verde: O Dia Mais Claro (Panini)
+Qtd gibis: 2
+  - Grandes Eventos DC: Lanterna Verde: O Dia Mais Claro 01
+  - Grandes Eventos DC: Lanterna Verde: O Dia Mais Claro 02
+
+--- Grupo 196 de 250 ---
+Série sugerida: Groo - Amigos e Inimigos (Mythos)
+Qtd gibis: 2 | Anos: 2016, 2018
+  - Groo - Amigos e Inimigos - Volume 1
+  - Groo - Amigos e Inimigos - Volume 2
+
+--- Grupo 197 de 250 ---
+Série sugerida: Guerra Pela Terra (Panini)
+Qtd gibis: 2 | Anos: 2022
+  - Guerra Pela Terra 3
+  - Guerra Pela Terra-3
+
+--- Grupo 198 de 250 ---
+Série sugerida: Hellboy - No Inferno (Mythos)
+Qtd gibis: 2 | Anos: 2015, 2018
+  - Hellboy - No Inferno - Volume 1
+  - Hellboy - No Inferno - Volume 2
+
+--- Grupo 199 de 250 ---
+Série sugerida: Hellboy Apresenta - Abe Sapien - Sombrio e Terrível (Mythos)
+Qtd gibis: 2 | Anos: 2023
+  - Hellboy Apresenta - Abe Sapien - Sombrio e Terrível - Volume 1
+  - Hellboy Apresenta - Abe Sapien - Sombrio e Terrível - Volume 2
+
+--- Grupo 200 de 250 ---
+Série sugerida: Hellboy Apresenta - B.P.D.P. - Bureau de Pesquisas e Defesa Paranormal (Mythos)
+Qtd gibis: 2 | Anos: 2010
+  - Hellboy Apresenta - B.P.D.P. - Bureau de Pesquisas e Defesa Paranormal - Volume 1
+  - Hellboy Apresenta - B.P.D.P. - Bureau de Pesquisas e Defesa Paranormal - Volume 2
+
+--- Grupo 201 de 250 ---
+Série sugerida: Heroes (Panini)
+Qtd gibis: 2 | Anos: 2008, 2009
+  - Heroes - Volume 1 (Capa Dura)
+  - Heroes - Volume 2 (Capa Dura)
+
+--- Grupo 202 de 250 ---
+Série sugerida: Homem de Ferro (Panini)
+Qtd gibis: 2 | Anos: 2013, 2020
+  - Homem de Ferro 2020 - O Homem do Ano
+  - Homem de Ferro 3 - Prelúdio
+
+--- Grupo 203 de 250 ---
+Série sugerida: Homem-Aranha (Panini)
+Qtd gibis: 2 | Anos: 2013, 2024
+  - Homem-Aranha 2099 - Início
+  - Homem-Aranha 2099 - Terror Atemporal
+
+--- Grupo 204 de 250 ---
+Série sugerida: Homem-Aranha: Potestade (Panini)
+Qtd gibis: 2
+  - Homem-Aranha: Potestade
+  - Homem-Aranha: Potestade 2
+
+--- Grupo 205 de 250 ---
+Série sugerida: Inescrito - Apocalipse (Panini)
+Qtd gibis: 2 | Anos: 2015
+  - Inescrito - Apocalipse - Volume 1
+  - Inescrito - Apocalipse - Volume 2
+
+--- Grupo 206 de 250 ---
+Série sugerida: Jogos de Poder (Devir)
+Qtd gibis: 2 | Anos: 2008, 2010
+  - Jogos de Poder - Volume 1
+  - Jogos de Poder - Volume 2
+
+--- Grupo 207 de 250 ---
+Série sugerida: Jonah Hex Showcase (Mythos)
+Qtd gibis: 2 | Anos: 2006
+  - Jonah Hex Showcase - Volume 1
+  - Jonah Hex Showcase - Volume 2
+
+--- Grupo 208 de 250 ---
+Série sugerida: Jovens Titãs - Terra Um (Panini)
+Qtd gibis: 2 | Anos: 2020
+  - Jovens Titãs - Terra Um - Volume 1 (Capa Dura)
+  - Jovens Titãs - Terra Um - Volume 2 (Capa Dura)
+
+--- Grupo 209 de 250 ---
+Série sugerida: Juiz Dredd - Dia do Caos (Mythos)
+Qtd gibis: 2 | Anos: 2017
+  - Juiz Dredd - Dia do Caos - Volume 1
+  - Juiz Dredd - Dia do Caos - Volume 2
+
+--- Grupo 210 de 250 ---
+Série sugerida: Juiz Dredd - Mega-City Zero (Novo Século)
+Qtd gibis: 2 | Anos: 2020, 2021
+  - Juiz Dredd - Mega-City Zero - Volume 1
+  - Juiz Dredd - Mega-City Zero - Volume 2
+
+--- Grupo 211 de 250 ---
+Série sugerida: Juiz Dredd Megazine - Especial de Natal (Mythos)
+Qtd gibis: 2 | Anos: 2013, 2019
+  - Juiz Dredd Megazine - Especial de Natal
+  - Juiz Dredd Megazine - Especial de Natal - Volume 2
+
+--- Grupo 212 de 250 ---
+Série sugerida: Lanterna Verde - Setor Final (Panini)
+Qtd gibis: 2 | Anos: 2021
+  - Lanterna Verde - Setor Final - Volume 1
+  - Lanterna Verde - Setor Final - Volume 2
+
+--- Grupo 213 de 250 ---
+Série sugerida: Lanterna Verde - Terra Um (Panini)
+Qtd gibis: 2 | Anos: 2020, 2021
+  - Lanterna Verde - Terra Um - Volume 1 (Capa Dura)
+  - Lanterna Verde - Terra Um - Volume 2 (Capa Dura)
+
+--- Grupo 214 de 250 ---
+Série sugerida: Legado de Júpiter (Panini)
+Qtd gibis: 2 | Anos: 2016, 2018
+  - Legado de Júpiter - Volume 1
+  - Legado de Júpiter - Volume 2
+
+--- Grupo 215 de 250 ---
+Série sugerida: Lex Luthor - O Anel Negro (Panini)
+Qtd gibis: 2 | Anos: 2012
+  - Lex Luthor - O Anel Negro - Volume 1
+  - Lex Luthor - O Anel Negro - Volume 2
+
+--- Grupo 216 de 250 ---
+Série sugerida: Liga Extraordinária - Século (Devir)
+Qtd gibis: 2 | Anos: 2010, 2011
+  - Liga Extraordinária - Século 1910 (Capa Dura)
+  - Liga Extraordinária - Século 1969 (Capa Dura)
+
+--- Grupo 217 de 250 ---
+Série sugerida: Liga Extraordinária (Devir)
+Qtd gibis: 2
+  - Liga Extraordinária - Volume 1
+  - Liga Extraordinária - Volume 2
+
+--- Grupo 218 de 250 ---
+Série sugerida: Marvels - Retratos (Panini)
+Qtd gibis: 2 | Anos: 2021
+  - Marvels - Retratos - Volume 1
+  - Marvels - Retratos - Volume 2
+
+--- Grupo 219 de 250 ---
+Série sugerida: Miles Morales (Panini)
+Qtd gibis: 2 | Anos: 2021, 2023
+  - Miles Morales - Volume 1 - Ondas de Choque (Capa Dura)
+  - Miles Morales - Volume 2 - Maré de Azar (Capa Dura)
+
+--- Grupo 220 de 250 ---
+Série sugerida: Pantera Negra - Vingadores do Novo Mundo (Panini)
+Qtd gibis: 2 | Anos: 2018, 2019
+  - Pantera Negra - Vingadores do Novo Mundo - Volume 1
+  - Pantera Negra - Vingadores do Novo Mundo - Volume 2
+
+--- Grupo 221 de 250 ---
+Série sugerida: Pixel Preview (Pixel)
+Qtd gibis: 2 | Anos: 2007, 2008
+  - Pixel Preview 2007
+  - Pixel Preview 2008
+
+--- Grupo 222 de 250 ---
+Série sugerida: Quarteto Fantástico por John Byrne - Omnibus (Panini)
+Qtd gibis: 2 | Anos: 2020, 2021
+  - Quarteto Fantástico por John Byrne - Omnibus - Volume 1
+  - Quarteto Fantástico por John Byrne - Omnibus - Volume 2
+
+--- Grupo 223 de 250 ---
+Série sugerida: Ragnarök (Mythos)
+Qtd gibis: 2 | Anos: 2017, 2018
+  - Ragnarök - Volume 1 - O Último Deus
+  - Ragnarök - Volume 2 - Senhor dos Mortos
+
+--- Grupo 224 de 250 ---
+Série sugerida: Rei Conan Omnibus (Mythos)
+Qtd gibis: 2 | Anos: 2024, 2025
+  - Rei Conan Omnibus - Volume 1
+  - Rei Conan Omnibus - Volume 2
+
+--- Grupo 225 de 250 ---
+Série sugerida: Rei Spawn (Panini)
+Qtd gibis: 2 | Anos: 2024, 2025
+  - Rei Spawn - Volume 01
+  - Rei Spawn - Volume 02
+
+--- Grupo 226 de 250 ---
+Série sugerida: Rick and Morty Vs. Dungeons and Dragons (Panini)
+Qtd gibis: 2 | Anos: 2019, 2020
+  - Rick and Morty Vs. Dungeons and Dragons - Volume 1 (Capa Dura)
+  - Rick and Morty Vs. Dungeons and Dragons - Volume 2 - Supliciorama (Capa Dura)
+
+--- Grupo 227 de 250 ---
+Série sugerida: Samurai (Devir)
+Qtd gibis: 2 | Anos: 2010
+  - Samurai - Volume 1
+  - Samurai - Volume 2
+
+--- Grupo 228 de 250 ---
+Série sugerida: Silenciadora (Panini)
+Qtd gibis: 2 | Anos: 2019
+  - Silenciadora - Volume 1
+  - Silenciadora Vol. 1
+
+--- Grupo 229 de 250 ---
+Série sugerida: Sin City - Inferno (Pandora)
+Qtd gibis: 2 | Anos: 2003
+  - Sin City - Inferno - Volume 1
+  - Sin City - Inferno - Volume 2
+
+--- Grupo 230 de 250 ---
+Série sugerida: Sombra (Mythos)
+Qtd gibis: 2 | Anos: 2013, 2015
+  - Sombra - Volume 1 - O Fogo da Criação
+  - Sombra - Volume 2 - Revolução
+
+--- Grupo 231 de 250 ---
+Série sugerida: Spawn - Origem (Pixel)
+Qtd gibis: 2 | Anos: 2007, 2008
+  - Spawn - Origem - Volume 1
+  - Spawn - Origem - Volume 2
+
+--- Grupo 232 de 250 ---
+Série sugerida: Star Wars - Caçadores de Recompensas (Panini)
+Qtd gibis: 2 | Anos: 2021, 2023
+  - Star Wars - Caçadores de Recompensas - Volume 02 - Alvo - Valance
+  - Star Wars - Caçadores de Recompensas - Volume 04 - Reinado Escarlate
+
+--- Grupo 233 de 250 ---
+Série sugerida: Star Wars - Han Solo e Chewbacca (Panini)
+Qtd gibis: 2 | Anos: 2023
+  - Star Wars - Han Solo e Chewbacca - Volume 1
+  - Star Wars - Han Solo e Chewbacca - Volume 2
+
+--- Grupo 234 de 250 ---
+Série sugerida: Star Wars - Poe Dameron (Panini)
+Qtd gibis: 2 | Anos: 2019, 2020
+  - Star Wars - Poe Dameron
+  - Star Wars - Poe Dameron - Volume 2
+
+--- Grupo 235 de 250 ---
+Série sugerida: Star Wars - The Mandalorian (Panini)
+Qtd gibis: 2 | Anos: 2023
+  - Star Wars - The Mandalorian - Volume 01
+  - Star Wars - The Mandalorian - Volume 02
+
+--- Grupo 236 de 250 ---
+Série sugerida: Superalmanaque Batman (Mythos)
+Qtd gibis: 2
+  - Superalmanaque Batman
+  - Superalmanaque Batman 2
+
+--- Grupo 237 de 250 ---
+Série sugerida: Superman - Lendas do Homem de Aço - José Luis García-López (Panini)
+Qtd gibis: 2 | Anos: 2016
+  - Superman - Lendas do Homem de Aço - José Luis García-López - Volume 1
+  - Superman - Lendas do Homem de Aço - José Luis García-López - Volume 2
+
+--- Grupo 238 de 250 ---
+Série sugerida: Superman 12/ (Panini)
+Qtd gibis: 2
+  - Superman 12/70
+  - Superman 12/89
+
+--- Grupo 239 de 250 ---
+Série sugerida: Superman 13/ (Panini)
+Qtd gibis: 2
+  - Superman 13/71
+  - Superman 13/90
+
+--- Grupo 240 de 250 ---
+Série sugerida: Superman 16/ (Panini)
+Qtd gibis: 2
+  - Superman 16/74
+  - Superman 16/93
+
+--- Grupo 241 de 250 ---
+Série sugerida: Superman 17/ (Panini)
+Qtd gibis: 2
+  - Superman 17/75
+  - Superman 17/94
+
+--- Grupo 242 de 250 ---
+Série sugerida: Superman 18/ (Panini)
+Qtd gibis: 2
+  - Superman 18/76
+  - Superman 18/95
+
+--- Grupo 243 de 250 ---
+Série sugerida: Superman 19/ (Panini)
+Qtd gibis: 2
+  - Superman 19/77
+  - Superman 19/96
+
+--- Grupo 244 de 250 ---
+Série sugerida: Tom Strong (Devir)
+Qtd gibis: 2
+  - Tom Strong - Volume 1
+  - Tom Strong - Volume 2
+
+--- Grupo 245 de 250 ---
+Série sugerida: Top (Devir)
+Qtd gibis: 2 | Anos: 2005, 2006
+  - Top 10 - Assuntos Internos
+  - Top 10 - Contra o Crime
+
+--- Grupo 246 de 250 ---
+Série sugerida: Ultra - Sete Dias (Pixel)
+Qtd gibis: 2 | Anos: 2005, 2006
+  - Ultra - Sete Dias - Volume 1
+  - Ultra - Sete Dias - Volume 2
+
+--- Grupo 247 de 250 ---
+Série sugerida: X-Men Widescreen (Panini)
+Qtd gibis: 2 | Anos: 2003
+  - X-Men Widescreen 1
+  - X-Men Widescreen 2
+
+--- Grupo 248 de 250 ---
+Série sugerida: X-Men: Carrascos (Panini)
+Qtd gibis: 2
+  - X-Men: Carrascos 01
+  - X-Men: Carrascos 02
+
+--- Grupo 249 de 250 ---
+Série sugerida: X-O Manowar (HQM)
+Qtd gibis: 2 | Anos: 2014, 2015
+  - X-O Manowar - Volume 1
+  - X-O Manowar - Volume 2
+
+--- Grupo 250 de 250 ---
+Série sugerida: Zenith (Mythos)
+Qtd gibis: 2 | Anos: 2017
+  - Zenith - Volume 1
+  - Zenith - Volume 2

@@ -1,133 +1,59 @@
-'use client';
+import type { Metadata } from 'next';
+import { CatalogDetailPageContent } from './page-content';
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { useLocale, useTranslations } from 'next-intl';
-import { ArrowLeft, Star } from 'lucide-react';
+// Use internal URL for SSR (avoids Cloudflare bot detection on server-to-server calls)
+const API_URL = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'https://api.comicstrunk.com/api/v1';
+const SITE_URL = 'https://comicstrunk.com';
 
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Separator } from '@/components/ui/separator';
-import { CatalogDetail } from '@/components/features/catalog/catalog-detail';
-import { CatalogReviewList } from '@/components/features/reviews/catalog-review-list';
-import { CommentThread } from '@/components/features/comments/comment-thread';
-import { getCatalogEntryById, type CatalogEntry } from '@/lib/api/catalog';
-
-function isCuid(str: string): boolean {
-  return /^c[a-z0-9]{24}$/.test(str);
+interface Props {
+  params: Promise<{ id: string; locale: string }>;
 }
 
-export default function CatalogDetailPage() {
-  const t = useTranslations('catalog');
-  const tReviews = useTranslations('reviews');
-  const locale = useLocale();
-  const params = useParams();
-  const router = useRouter();
-  const idOrSlug = params.id as string;
+// Server-side metadata for SEO — Google sees title, description, image
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id, locale } = await params;
 
-  const [entry, setEntry] = useState<CatalogEntry | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  try {
+    const res = await fetch(`${API_URL}/catalog/${id}`, {
+      headers: { 'x-internal-key': 'comicstrunk-ssr-2026' },
+      next: { revalidate: 3600 }, // Cache 1h
+    });
 
-  useEffect(() => {
-    let cancelled = false;
+    if (!res.ok) return { title: 'Gibi não encontrado — Comics Trunk' };
+    const data = await res.json();
+    const entry = data.data;
+    if (!entry) return { title: 'Gibi não encontrado — Comics Trunk' };
 
-    async function fetchEntry() {
-      setLoading(true);
-      setNotFound(false);
-      try {
-        const data = await getCatalogEntryById(idOrSlug);
-        if (!cancelled) {
-          // Redirect CUID URLs to slug URLs (301-equivalent on client)
-          if (isCuid(idOrSlug) && data.slug) {
-            router.replace(`/${locale}/catalog/${data.slug}`);
-            return;
-          }
-          setEntry(data);
-        }
-      } catch (err: unknown) {
-        if (!cancelled) {
-          const status = (err as { response?: { status?: number } })?.response?.status;
-          if (status === 404) setNotFound(true);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
+    const title = `${entry.title}${entry.publisher ? ` — ${entry.publisher}` : ''} | Comics Trunk`;
+    const description = entry.description
+      || `${entry.title}${entry.author ? ` de ${entry.author}` : ''}${entry.publisher ? `, ${entry.publisher}` : ''}. Encontre no Comics Trunk.`;
 
-    fetchEntry();
-    return () => {
-      cancelled = true;
+    return {
+      title,
+      description: description.slice(0, 160),
+      openGraph: {
+        title,
+        description: description.slice(0, 160),
+        url: `${SITE_URL}/${locale}/catalog/${entry.slug || id}`,
+        siteName: 'Comics Trunk',
+        type: 'article',
+        ...(entry.coverImageUrl && {
+          images: [{ url: entry.coverImageUrl, alt: entry.title }],
+        }),
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: entry.title,
+        description: description.slice(0, 160),
+        ...(entry.coverImageUrl && { images: [entry.coverImageUrl] }),
+      },
     };
-  }, [idOrSlug, locale, router]);
-
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-6 w-48" />
-        <div className="flex flex-col md:flex-row gap-8">
-          <Skeleton className="w-64 aspect-[2/3] rounded-lg" />
-          <div className="flex-1 space-y-4">
-            <Skeleton className="h-8 w-96" />
-            <Skeleton className="h-4 w-64" />
-            <Skeleton className="h-4 w-48" />
-            <Skeleton className="h-32 w-full" />
-          </div>
-        </div>
-      </div>
-    );
+  } catch {
+    return { title: 'Comics Trunk — Catálogo' };
   }
+}
 
-  if (notFound || !entry) {
-    return (
-      <div className="text-center py-16 space-y-4">
-        <h2 className="text-2xl font-bold">{t('detail.notFound')}</h2>
-        <p className="text-muted-foreground">{t('detail.notFoundDescription')}</p>
-        <Button asChild variant="outline">
-          <Link href={`/${locale}/catalog`}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            {t('backToCatalog')}
-          </Link>
-        </Button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Link href={`/${locale}/catalog`} className="hover:text-foreground transition-colors">
-          {t('title')}
-        </Link>
-        <span>/</span>
-        <span className="text-foreground truncate">{entry.title}</span>
-      </nav>
-
-      <CatalogDetail entry={entry} />
-
-      <Separator className="my-8" />
-
-      {/* Reviews Section */}
-      <section id="reviews">
-        <div className="flex items-center gap-2 mb-6">
-          <Star className="h-5 w-5" />
-          <h2 className="text-xl font-semibold">{tReviews('title')}</h2>
-        </div>
-        <CatalogReviewList
-          catalogEntryId={entry.id}
-          averageRating={entry.averageRating}
-          ratingCount={entry.ratingCount}
-        />
-      </section>
-
-      <Separator className="my-8" />
-
-      {/* Comments Section */}
-      <section id="comments">
-        <CommentThread catalogEntryId={entry.id} />
-      </section>
-    </div>
-  );
+export default async function CatalogDetailPage({ params }: Props) {
+  const { id } = await params;
+  return <CatalogDetailPageContent idOrSlug={id} />;
 }

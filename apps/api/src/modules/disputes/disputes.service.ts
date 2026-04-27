@@ -8,6 +8,7 @@ import {
 } from '../../shared/utils/api-error';
 import { createNotification } from '../notifications/notifications.service';
 import { refundPayment } from '../payments/payments.service';
+import { resolveCoverUrl } from '../../shared/lib/cloudinary';
 import type {
   CreateDisputeInput,
   SubmitDisputeResponseInput,
@@ -42,6 +43,7 @@ function disputeIncludes() {
                 id: true,
                 title: true,
                 coverImageUrl: true,
+                coverFileName: true,
               },
             },
           },
@@ -77,6 +79,27 @@ function disputeIncludes() {
         },
       },
       orderBy: { createdAt: 'asc' as const },
+    },
+  };
+}
+
+/** Resolve cover URLs for the catalog entry nested inside a dispute's orderItem */
+function resolveDisputeCovers<T extends {
+  orderItem: {
+    collectionItem: { catalogEntry: { coverImageUrl: string | null; coverFileName?: string | null } } | null;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}>(dispute: T): T {
+  if (!dispute.orderItem?.collectionItem?.catalogEntry) return dispute;
+  return {
+    ...dispute,
+    orderItem: {
+      ...dispute.orderItem,
+      collectionItem: {
+        ...dispute.orderItem.collectionItem,
+        catalogEntry: resolveCoverUrl(dispute.orderItem.collectionItem.catalogEntry),
+      },
     },
   };
 }
@@ -184,7 +207,7 @@ export async function createDispute(buyerId: string, data: CreateDisputeInput) {
     metadata: { disputeId: dispute.id, orderId: dispute.orderId },
   }).catch(() => {});
 
-  return dispute;
+  return resolveDisputeCovers(dispute);
 }
 
 // === Get Dispute by ID ===
@@ -208,7 +231,7 @@ export async function getDispute(disputeId: string, userId: string, role: string
     throw new ForbiddenError('Você não tem acesso a esta disputa');
   }
 
-  return dispute;
+  return resolveDisputeCovers(dispute);
 }
 
 // === List Buyer Disputes ===
@@ -224,7 +247,7 @@ export async function listBuyerDisputes(
     where.status = status;
   }
 
-  const [disputes, total] = await Promise.all([
+  const [rawDisputes, total] = await Promise.all([
     prisma.dispute.findMany({
       where,
       include: disputeIncludes(),
@@ -234,6 +257,8 @@ export async function listBuyerDisputes(
     }),
     prisma.dispute.count({ where }),
   ]);
+
+  const disputes = rawDisputes.map(resolveDisputeCovers);
 
   return { disputes, total, page, limit };
 }
@@ -251,7 +276,7 @@ export async function listSellerDisputes(
     where.status = status;
   }
 
-  const [disputes, total] = await Promise.all([
+  const [rawDisputes, total] = await Promise.all([
     prisma.dispute.findMany({
       where,
       include: disputeIncludes(),
@@ -261,6 +286,8 @@ export async function listSellerDisputes(
     }),
     prisma.dispute.count({ where }),
   ]);
+
+  const disputes = rawDisputes.map(resolveDisputeCovers);
 
   return { disputes, total, page, limit };
 }
@@ -391,7 +418,7 @@ export async function cancelDispute(disputeId: string, buyerId: string) {
     return cancelledDispute;
   });
 
-  return updated;
+  return resolveDisputeCovers(updated);
 }
 
 // === Seller Response to Dispute ===
@@ -461,7 +488,7 @@ export async function respondToDispute(
   }).catch(() => {});
 
   return {
-    ...updated,
+    ...resolveDisputeCovers(updated),
     lateResponse: isLateResponse,
   };
 }
@@ -641,7 +668,7 @@ export async function resolveDispute(
     },
   }).catch(() => {});
 
-  return result;
+  return resolveDisputeCovers(result);
 }
 
 // === Admin: List All Disputes ===
@@ -658,7 +685,7 @@ export async function listAllDisputes(filters: {
     where.status = status;
   }
 
-  const [disputes, total] = await Promise.all([
+  const [rawDisputes, total] = await Promise.all([
     prisma.dispute.findMany({
       where,
       include: disputeIncludes(),
@@ -668,6 +695,8 @@ export async function listAllDisputes(filters: {
     }),
     prisma.dispute.count({ where }),
   ]);
+
+  const disputes = rawDisputes.map(resolveDisputeCovers);
 
   return { disputes, total, page, limit };
 }

@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useIsMobile } from '@/hooks/use-is-mobile';
 import { useTranslations } from 'next-intl';
 import { Filter, X } from 'lucide-react';
 
@@ -53,7 +54,13 @@ function FilterSection({
 
 export function CollectionFilters({ filters, onFiltersChange }: CollectionFiltersProps) {
   const t = useTranslations('collection');
-  const queryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [searchInput, setSearchInput] = useState(filters.query ?? '');
+  const isMobile = useIsMobile();
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setSearchInput(filters.query ?? '');
+  }, [filters.query]);
 
   const update = useCallback(
     (partial: Partial<CollectionSearchParams>) => {
@@ -62,11 +69,16 @@ export function CollectionFilters({ filters, onFiltersChange }: CollectionFilter
     [filters, onFiltersChange],
   );
 
-  const handleSearchChange = (value: string) => {
-    if (queryTimer.current) clearTimeout(queryTimer.current);
-    queryTimer.current = setTimeout(() => {
-      update({ query: value || undefined });
-    }, 300);
+  const submitSearch = (value?: string) => {
+    const v = (value ?? searchInput).trim();
+    update({ query: v || undefined });
+  };
+
+  const handleSearchInputChange = (value: string) => {
+    setSearchInput(value);
+    if (isMobile) return;
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => submitSearch(value), 300);
   };
 
   const clearAll = () => {
@@ -78,7 +90,8 @@ export function CollectionFilters({ filters, onFiltersChange }: CollectionFilter
     filters.condition ||
     filters.isRead !== undefined ||
     filters.isForSale !== undefined ||
-    filters.seriesId;
+    filters.seriesId ||
+    filters.duplicates;
 
   return (
     <div className="space-y-1">
@@ -99,8 +112,10 @@ export function CollectionFilters({ filters, onFiltersChange }: CollectionFilter
       <FilterSection title={t('searchPlaceholder')}>
         <Input
           placeholder={t('searchPlaceholder')}
-          defaultValue={filters.query ?? ''}
-          onChange={(e) => handleSearchChange(e.target.value)}
+          value={searchInput}
+          onChange={(e) => handleSearchInputChange(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') submitSearch(); }}
+          onBlur={() => isMobile && submitSearch()}
           className="h-8 text-sm"
         />
       </FilterSection>
@@ -180,6 +195,18 @@ export function CollectionFilters({ filters, onFiltersChange }: CollectionFilter
             />
             <Label htmlFor="filter-not-sale" className="text-sm cursor-pointer">
               {t('onlyNotForSale')}
+            </Label>
+          </div>
+          <div className="flex items-center gap-2 pt-2 border-t">
+            <Checkbox
+              id="filter-duplicates"
+              checked={filters.duplicates === true}
+              onCheckedChange={(checked) =>
+                update({ duplicates: checked === true ? true : undefined })
+              }
+            />
+            <Label htmlFor="filter-duplicates" className="text-sm cursor-pointer">
+              Duplicados na coleção
             </Label>
           </div>
         </div>

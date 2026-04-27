@@ -8,8 +8,6 @@ import {
   ArrowUpDown,
   ChevronUp,
   Filter,
-  LayoutGrid,
-  List,
   Search,
   X,
 } from 'lucide-react';
@@ -18,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { ViewToggle, type ViewMode } from '@/components/ui/view-toggle';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { CatalogCard } from '@/components/features/catalog/catalog-card';
+import { CatalogCardCompact } from '@/components/features/catalog/catalog-card-compact';
 import { CatalogListItem } from '@/components/features/catalog/catalog-list-item';
 import { CatalogFilters } from '@/components/features/catalog/catalog-filters';
 import {
@@ -35,13 +35,12 @@ import {
 } from '@/lib/api/catalog';
 import { getCategories, getCharacters, type Category, type Character } from '@/lib/api/taxonomy';
 import { getSeries, type Series } from '@/lib/api/series';
-import { getCollectionItems } from '@/lib/api/collection';
+import { getOwnedIds } from '@/lib/api/collection';
+import { useIsMobile } from '@/hooks/use-is-mobile';
 import { useAuth } from '@/lib/auth/use-auth';
 import { PageSizeSelect } from '@/components/ui/page-size-select';
 
 const DEFAULT_LIMIT = 20;
-
-type ViewMode = 'grid' | 'list';
 
 function parseFiltersFromParams(sp: URLSearchParams): CatalogSearchParams {
   return {
@@ -99,20 +98,23 @@ export default function CatalogPage() {
   const [ownedIds, setOwnedIds] = useState<Set<string>>(new Set());
   const { isAuthenticated } = useAuth();
 
-  // Load user's collection IDs to show "Tenho" badge
+  // Load user's owned catalog entry IDs in a single lightweight call
   useEffect(() => {
     if (!isAuthenticated) return;
-    getCollectionItems({ limit: 100 })
-      .then((res) => {
-        const ids = new Set<string>(res.data.map((item: { catalogEntryId: string }) => item.catalogEntryId));
-        setOwnedIds(ids);
-      })
+    getOwnedIds()
+      .then((items) => setOwnedIds(new Set(items.map((i) => i.catalogEntryId))))
       .catch(() => {});
   }, [isAuthenticated]);
 
+  const filters = parseFiltersFromParams(searchParams);
+  const [searchInput, setSearchInput] = useState(filters.title ?? '');
+  const isMobile = useIsMobile();
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const filters = parseFiltersFromParams(searchParams);
+  // Sync local input when URL changes externally
+  useEffect(() => {
+    setSearchInput(filters.title ?? '');
+  }, [filters.title]);
 
   const { data: categories = [] } = useQuery({
     queryKey: ['taxonomy', 'categories'],
@@ -170,11 +172,17 @@ export default function CatalogPage() {
     handleFiltersChange({ ...filters, page });
   };
 
-  const handleSearchChange = (value: string) => {
+  const submitSearch = (value?: string) => {
+    const v = (value ?? searchInput).trim();
+    handleFiltersChange({ ...filters, title: v || undefined, page: 1 });
+  };
+
+  const handleSearchInputChange = (value: string) => {
+    setSearchInput(value);
+    if (isMobile) return; // mobile: wait for Enter/blur
+    // desktop: debounce 400ms
     if (searchTimer.current) clearTimeout(searchTimer.current);
-    searchTimer.current = setTimeout(() => {
-      handleFiltersChange({ ...filters, title: value || undefined, page: 1 });
-    }, 400);
+    searchTimer.current = setTimeout(() => submitSearch(value), 400);
   };
 
   const handleSortChange = (sortBy: CatalogSearchParams['sortBy']) => {
@@ -254,26 +262,7 @@ export default function CatalogPage() {
       <div className="flex flex-col sm:flex-row justify-between space-y-4 sm:space-y-0 sm:items-center px-1">
         <div className="flex items-center gap-4">
           {/* View switcher */}
-          <div className="flex items-center rounded-md border border-border">
-            <Button
-              variant={view === 'grid' ? 'default' : 'ghost'}
-              size="sm"
-              className="h-9 px-2.5 rounded-r-none"
-              onClick={() => setView('grid')}
-              title={t('cards')}
-            >
-              <LayoutGrid className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={view === 'list' ? 'default' : 'ghost'}
-              size="sm"
-              className="h-9 px-2.5 rounded-l-none"
-              onClick={() => setView('list')}
-              title={t('list')}
-            >
-              <List className="h-4 w-4" />
-            </Button>
-          </div>
+          <ViewToggle value={view} onChange={setView} />
 
           {pagination && !loading && (
             <span className="text-sm text-muted-foreground">
@@ -347,8 +336,10 @@ export default function CatalogPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={t('searchPlaceholder')}
-            defaultValue={filters.title ?? ''}
-            onChange={(e) => handleSearchChange(e.target.value)}
+            value={searchInput}
+            onChange={(e) => handleSearchInputChange(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') submitSearch(); }}
+            onBlur={() => isMobile && submitSearch()}
             className="pl-9 h-10 focus-visible:ring-2 focus-visible:ring-primary"
           />
         </div>
@@ -418,6 +409,31 @@ export default function CatalogPage() {
         </div>
       )}
 
+      {/* Pagination top */}
+      {pagination && pagination.totalPages > 1 && !loading && (
+        <div className="flex items-center justify-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={currentPage <= 1}
+            onClick={() => handlePageChange(currentPage - 1)}
+          >
+            {t('previousPage')}
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            {t('pageOf', { current: currentPage, total: pagination.totalPages })}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={currentPage >= pagination.totalPages}
+            onClick={() => handlePageChange(currentPage + 1)}
+          >
+            {t('nextPage')}
+          </Button>
+        </div>
+      )}
+
       {/* Results */}
       <div className="h-full overflow-auto pb-20">
         {loading ? (
@@ -443,13 +459,32 @@ export default function CatalogPage() {
           </div>
         ) : (
           <>
-            {view === 'grid' ? (
+            {view === 'grid' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                 {entries.map((entry) => (
-                  <CatalogCard key={entry.id} entry={entry} isOwned={ownedIds.has(entry.id)} />
+                  <CatalogCard
+                    key={entry.id}
+                    entry={entry}
+                    isOwned={ownedIds.has(entry.id)}
+                    onOwnedChange={(id, owned) => {
+                      setOwnedIds((prev) => {
+                        const next = new Set(prev);
+                        if (owned) next.add(id); else next.delete(id);
+                        return next;
+                      });
+                    }}
+                  />
                 ))}
               </div>
-            ) : (
+            )}
+            {view === 'compact' && (
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-2">
+                {entries.map((entry) => (
+                  <CatalogCardCompact key={entry.id} entry={entry} isOwned={ownedIds.has(entry.id)} />
+                ))}
+              </div>
+            )}
+            {view === 'list' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {entries.map((entry) => (
                   <CatalogListItem key={entry.id} entry={entry} />

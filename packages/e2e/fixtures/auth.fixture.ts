@@ -8,6 +8,7 @@ const TEST_CREDENTIALS = {
   admin: { email: 'admin@comicstrunk.com', password: 'Admin123!' },
   user: { email: 'user@test.com', password: 'Test1234' },
   subscriber: { email: 'subscriber@test.com', password: 'Test1234' },
+  seller: { email: 'seller@test.com', password: 'Test1234' },
 } as const;
 
 type AuthUser = {
@@ -79,6 +80,7 @@ export type AuthFixtures = {
   loginAsUser: () => Promise<AuthUser>;
   loginAsAdmin: () => Promise<AuthUser>;
   loginAsSubscriber: () => Promise<AuthUser>;
+  loginAsSeller: () => Promise<AuthUser>;
   loginAsFreshUser: (nameSuffix?: string) => Promise<AuthUser>;
   authenticateContext: (context: BrowserContext, authUser: AuthUser) => Promise<void>;
   authedPage: Page;
@@ -96,6 +98,10 @@ export const test = base.extend<AuthFixtures>({
 
   loginAsSubscriber: async ({}, use) => {
     await use(() => doLogin(TEST_CREDENTIALS.subscriber.email, TEST_CREDENTIALS.subscriber.password));
+  },
+
+  loginAsSeller: async ({}, use) => {
+    await use(() => doLogin(TEST_CREDENTIALS.seller.email, TEST_CREDENTIALS.seller.password));
   },
 
   loginAsFreshUser: async ({}, use) => {

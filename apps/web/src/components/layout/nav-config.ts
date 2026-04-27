@@ -26,6 +26,8 @@ import {
   Mail,
   Clock,
   ListPlus,
+  ImageIcon,
+  Copy,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -60,6 +62,7 @@ export const navGroups: NavGroup[] = [
     requiresAuth: true,
     items: [
       { titleKey: 'nav.collection', href: '/collection', icon: BookOpen },
+      { titleKey: 'nav.timeline', href: '/collection/timeline', icon: Clock },
       { titleKey: 'nav.batchAdd', href: '/collection/add-batch', icon: ListPlus },
       { titleKey: 'nav.seriesProgress', href: '/collection/series-progress', icon: BarChart3 },
       { titleKey: 'nav.favorites', href: '/favorites', icon: Heart },
@@ -99,6 +102,9 @@ export const navGroups: NavGroup[] = [
       { titleKey: 'nav.adminDashboard', href: '/admin', icon: LayoutDashboard },
       { titleKey: 'nav.adminCatalog', href: '/admin/catalog', icon: Library },
       { titleKey: 'nav.adminRecentCatalog', href: '/admin/catalog/recent', icon: Clock },
+      { titleKey: 'nav.adminCovers', href: '/admin/covers', icon: ImageIcon },
+      { titleKey: 'nav.adminCoverSubmissions', href: '/admin/cover-submissions', icon: ImageIcon },
+      { titleKey: 'nav.adminDuplicates', href: '/admin/duplicates', icon: Copy },
       { titleKey: 'nav.adminUsers', href: '/admin/users', icon: Users },
       { titleKey: 'nav.adminContent', href: '/admin/content', icon: FileText },
       { titleKey: 'nav.adminPayments', href: '/admin/payments', icon: CreditCard },

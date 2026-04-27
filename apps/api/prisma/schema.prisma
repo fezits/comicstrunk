@@ -97,14 +97,22 @@ enum BillingInterval {
 enum NotificationType {
   WELCOME
   PAYMENT_CONFIRMED
+  PAYMENT_REJECTED
   ORDER_SHIPPED
   ITEM_SOLD
+  ORDER_DELIVERED
+  ORDER_AUTO_COMPLETED
+  DISPUTE_WINDOW_CLOSING
   PASSWORD_RESET
   DISPUTE_OPENED
   DISPUTE_RESPONDED
   DISPUTE_RESOLVED
   SUBSCRIPTION_PAYMENT_FAILED
   SUBSCRIPTION_EXPIRED
+  PAYOUT_REQUESTED
+  PAYOUT_APPROVED
+  PAYOUT_PAID
+  PAYOUT_REJECTED
 }
 
 enum DealType {
@@ -205,6 +213,11 @@ model User {
 
   // Payment relations (seller banking)
   bankAccounts BankAccount[]
+
+  // Payout relations (Gap #7)
+  sellerBalance     SellerBalance?
+  payoutsRequested  PayoutRequest[] @relation("SellerPayouts")
+  payoutsProcessed  PayoutRequest[] @relation("AdminPayouts")
 
   // Subscription relations
   subscriptions Subscription[]
@@ -434,6 +447,7 @@ model CollectionItem {
   readAt         DateTime?     @map("read_at")
   isForSale      Boolean       @default(false) @map("is_for_sale")
   salePrice      Decimal?      @map("sale_price") @db.Decimal(10, 2)
+  shippingCost   Decimal?      @map("shipping_cost") @db.Decimal(10, 2)
   photoUrls      Json?         @map("photo_urls")
   createdAt      DateTime      @default(now()) @map("created_at")
   updatedAt      DateTime      @updatedAt @map("updated_at")
@@ -516,6 +530,7 @@ model Order {
   buyerId                 String      @map("buyer_id")
   status                  OrderStatus @default(PENDING)
   shippingAddressSnapshot Json        @map("shipping_address_snapshot")
+  shippingTotal           Decimal     @default(0) @map("shipping_total") @db.Decimal(10, 2)
   totalAmount             Decimal     @map("total_amount") @db.Decimal(10, 2)
   createdAt               DateTime    @default(now()) @map("created_at")
   updatedAt               DateTime    @updatedAt @map("updated_at")
@@ -569,7 +584,8 @@ model OrderItem {
 
 model Payment {
   id                String        @id @default(cuid())
-  orderId           String        @map("order_id")
+  orderId           String?       @map("order_id")
+  subscriptionId    String?       @map("subscription_id")
   method            PaymentMethod @default(PIX)
   providerPaymentId String?       @map("provider_payment_id")
   providerStatus    String?       @map("provider_status")
@@ -582,9 +598,11 @@ model Payment {
   createdAt         DateTime      @default(now()) @map("created_at")
   updatedAt         DateTime      @updatedAt @map("updated_at")
 
-  order Order @relation(fields: [orderId], references: [id])
+  order        Order?        @relation(fields: [orderId], references: [id])
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id])
 
   @@index([orderId])
+  @@index([subscriptionId])
   @@index([providerPaymentId])
   @@map("payments")
 }
@@ -596,10 +614,14 @@ model WebhookEvent {
   eventType   String    @map("event_type")
   payload     Json
   processedAt DateTime? @map("processed_at")
+  attempts    Int       @default(0)
+  lastError   String?   @map("last_error") @db.Text
+  lastAttemptAt DateTime? @map("last_attempt_at")
   createdAt   DateTime  @default(now()) @map("created_at")
 
   @@unique([provider, eventId])
   @@index([eventType])
+  @@index([processedAt])
   @@map("webhook_events")
 }
 
@@ -645,6 +667,85 @@ model BankAccount {
 }
 
 // ============================================================================
+// SELLER PAYOUT (Gap #7 - manual via admin)
+// ============================================================================
+
+enum PayoutStatus {
+  REQUESTED
+  APPROVED
+  PAID
+  REJECTED
+}
+
+enum BalanceEntryKind {
+  SALE_CREDIT
+  PAYOUT_DEBIT
+  REFUND_DEBIT
+  ADJUSTMENT
+}
+
+model SellerBalance {
+  id            String   @id @default(cuid())
+  userId        String   @unique @map("user_id")
+  available     Decimal  @default(0) @db.Decimal(10, 2)
+  pending       Decimal  @default(0) @db.Decimal(10, 2)
+  totalEarned   Decimal  @default(0) @map("total_earned") @db.Decimal(10, 2)
+  totalPaidOut  Decimal  @default(0) @map("total_paid_out") @db.Decimal(10, 2)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  user    User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entries SellerBalanceEntry[]
+
+  @@map("seller_balances")
+}
+
+model SellerBalanceEntry {
+  id          String           @id @default(cuid())
+  balanceId   String           @map("balance_id")
+  userId      String           @map("user_id")
+  kind        BalanceEntryKind
+  amount      Decimal          @db.Decimal(10, 2)
+  orderItemId String?          @map("order_item_id")
+  payoutId    String?          @map("payout_id")
+  notes       String?          @db.Text
+  createdAt   DateTime         @default(now()) @map("created_at")
+
+  balance SellerBalance  @relation(fields: [balanceId], references: [id], onDelete: Cascade)
+  payout  PayoutRequest? @relation(fields: [payoutId], references: [id])
+
+  @@index([userId])
+  @@index([orderItemId])
+  @@index([payoutId])
+  @@map("seller_balance_entries")
+}
+
+model PayoutRequest {
+  id              String       @id @default(cuid())
+  sellerId        String       @map("seller_id")
+  amount          Decimal      @db.Decimal(10, 2)
+  status          PayoutStatus @default(REQUESTED)
+  bankSnapshot    Json         @map("bank_snapshot")
+  adminNotes      String?      @map("admin_notes") @db.Text
+  externalReceipt String?      @map("external_receipt") @db.Text
+  requestedAt     DateTime     @default(now()) @map("requested_at")
+  approvedAt      DateTime?    @map("approved_at")
+  paidAt          DateTime?    @map("paid_at")
+  rejectedAt      DateTime?    @map("rejected_at")
+  processedById   String?      @map("processed_by_id")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  seller      User                 @relation("SellerPayouts", fields: [sellerId], references: [id])
+  processedBy User?                @relation("AdminPayouts", fields: [processedById], references: [id])
+  entries     SellerBalanceEntry[]
+
+  @@index([sellerId])
+  @@index([status])
+  @@map("payout_requests")
+}
+
+// ============================================================================
 // SUBSCRIPTIONS (Phase 6)
 // ============================================================================
 
@@ -653,6 +754,7 @@ model Subscription {
   userId               String             @map("user_id")
   stripeCustomerId     String?            @map("stripe_customer_id")
   stripeSubscriptionId String?            @map("stripe_subscription_id")
+  paymentMethod        String?            @map("payment_method") // 'stripe' | 'pix'
   planType             PlanType           @default(FREE) @map("plan_type")
   status               SubscriptionStatus @default(ACTIVE)
   currentPeriodStart   DateTime?          @map("current_period_start")
@@ -661,7 +763,8 @@ model Subscription {
   createdAt            DateTime           @default(now()) @map("created_at")
   updatedAt            DateTime           @updatedAt @map("updated_at")
 
-  user User @relation(fields: [userId], references: [id])
+  user     User      @relation(fields: [userId], references: [id])
+  payments Payment[]
 
   @@index([userId])
   @@index([stripeCustomerId])

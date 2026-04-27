@@ -1,0 +1,33 @@
+{
+  "_note": "Probes manuais criados durante setup do teste (curl direto na API). Adicionar ao rollback junto com o run principal.",
+  "timestamp": "2026-04-26",
+  "env": "production",
+  "entities": {
+    "users": [
+      "cmog4jsij0002kw7prs57whk4",
+      "cmog4mk8i000pkw7p8vbjgmgv",
+      "cmog4lndc0009kw7pcuyw1gd5",
+      "cmog4lo0k000gkw7ply136200",
+      "cmog9dgfe007nkw7plox6mx65",
+      "cmog9s1a9009tkw7p01h71wrj",
+      "cmoganbd30003xge5nxgm1p4x"
+    ],
+    "bankAccounts": ["cmog4mkjc000wkw7pmdp7dgrn"],
+    "collectionItems": ["cmoganlnc000fxge5kameq15l"]
+  },
+  "probes": [
+    {
+      "type": "signup-curl",
+      "email": "_e2e_probe_test_2026apr26@e2e-test.invalid",
+      "userId": "cmog4jsij0002kw7prs57whk4",
+      "purpose": "Confirmar que CORS bloqueia sem header Origin"
+    },
+    {
+      "type": "signup+banking-curl",
+      "email": "_probe_<timestamp>@e2e-test.invalid",
+      "userId": "cmog4mk8i000pkw7p8vbjgmgv",
+      "bankAccountId": "cmog4mkjc000wkw7pmdp7dgrn",
+      "purpose": "Validar schema do banking endpoint (CPF e accountNumber)"
+    }
+  ]
+}

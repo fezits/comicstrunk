@@ -13,7 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { StarRating } from './star-rating';
 import { FavoriteButton } from '@/components/features/favorites/favorite-button';
 import { useAuth } from '@/lib/auth/use-auth';
-import { addCollectionItem, getCollectionItems, deleteCollectionItem } from '@/lib/api/collection';
+import { addCollectionItem, getOwnedIds, deleteCollectionItem } from '@/lib/api/collection';
 import type { CatalogEntry } from '@/lib/api/catalog';
 
 interface CatalogDetailProps {
@@ -45,12 +45,12 @@ export function CatalogDetail({ entry }: CatalogDetailProps) {
   // Check if user already owns this entry
   useEffect(() => {
     if (!isAuthenticated) return;
-    getCollectionItems({ limit: 100 })
-      .then((res) => {
-        const item = res.data.find((i: { catalogEntryId: string }) => i.catalogEntryId === entry.id);
-        if (item) {
+    getOwnedIds()
+      .then((items) => {
+        const owned = items.find((i) => i.catalogEntryId === entry.id);
+        if (owned) {
           setAdded(true);
-          setCollectionItemId(item.id);
+          setCollectionItemId(owned.id);
         }
       })
       .catch(() => {});
@@ -78,13 +78,7 @@ export function CatalogDetail({ entry }: CatalogDetailProps) {
       setCollectionItemId(item.id);
       toast.success(tCollection('addSuccess'));
     } catch (err: unknown) {
-      const status = (err as { response?: { status?: number } })?.response?.status;
-      if (status === 409) {
-        setAdded(true);
-        toast.info(t('alreadyInCollection'));
-      } else {
-        toast.error(tCollection('addError'));
-      }
+      toast.error(tCollection('addError'));
     } finally {
       setAdding(false);
     }

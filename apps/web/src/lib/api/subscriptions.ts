@@ -64,3 +64,10 @@ export async function cancelSubscription(): Promise<SubscriptionStatus> {
   const response = await apiClient.post('/subscriptions/cancel');
   return response.data.data;
 }
+
+// === PIX Subscription ===
+
+export async function createPixSubscription(planConfigId: string) {
+  const response = await apiClient.post('/subscriptions/pix', { planConfigId });
+  return response.data.data;
+}

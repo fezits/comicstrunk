@@ -1,8 +1,10 @@
 import { Prisma, type PrismaClient } from '@prisma/client';
 import { prisma } from '../../shared/lib/prisma';
 import { parseCSV, generateCSV } from '../../shared/lib/csv';
-import { uploadImage, deleteImage } from '../../shared/lib/cloudinary';
+import { uploadImage, deleteImage, resolveCoverUrl } from '../../shared/lib/cloudinary';
+import { parseXLSX, generateXLSX, generateCollectionTemplate, COLLECTION_FIELD_MAP, COLLECTION_REVERSE } from '../../shared/lib/xlsx';
 import { BadRequestError, NotFoundError, ConflictError } from '../../shared/utils/api-error';
+import { previewCommission } from '../commission/commission.service';
 import { collectionImportRowSchema, COLLECTION_LIMITS } from '@comicstrunk/contracts';
 import type {
   CreateCollectionItemInput,
@@ -30,6 +32,7 @@ function collectionIncludes() {
         author: true,
         publisher: true,
         coverImageUrl: true,
+        coverFileName: true,
         seriesId: true,
         volumeNumber: true,
         editionNumber: true,
@@ -39,6 +42,32 @@ function collectionIncludes() {
   };
 }
 
+/** Resolve cover URLs + converte Decimals (salePrice, pricePaid, shippingCost) pra Number */
+function resolveItemCover<T extends {
+  catalogEntry?: { coverImageUrl: string | null; coverFileName?: string | null } | null;
+  salePrice?: unknown;
+  pricePaid?: unknown;
+  shippingCost?: unknown;
+}>(item: T): T {
+  const num = (v: unknown): number | null => (v == null ? null : Number(v));
+  return {
+    ...item,
+    salePrice: num(item.salePrice) as unknown,
+    pricePaid: num(item.pricePaid) as unknown,
+    shippingCost: num(item.shippingCost) as unknown,
+    catalogEntry: item.catalogEntry ? resolveCoverUrl(item.catalogEntry) : item.catalogEntry,
+  };
+}
+
+// === Owned IDs (lightweight, single query) ===
+
+export async function getOwnedCatalogEntryIds(userId: string): Promise<{ id: string; catalogEntryId: string }[]> {
+  return prisma.collectionItem.findMany({
+    where: { userId },
+    select: { id: true, catalogEntryId: true },
+  });
+}
+
 // === Plan Limit Check (returns structured data) ===
 
 async function checkPlanLimit(
@@ -46,7 +75,8 @@ async function checkPlanLimit(
   userId: string,
   additionalItems = 1,
 ): Promise<{ currentCount: number; limit: number; planType: string }> {
-  const currentCount = await tx.collectionItem.count({ where: { userId } });
+  const agg = await tx.collectionItem.aggregate({ where: { userId }, _sum: { quantity: true } });
+  const currentCount = Number(agg._sum.quantity ?? 0);
 
   // Check subscription — default to FREE if none
   // TRIALING status grants same benefits as ACTIVE (Phase 6 subscription support)
@@ -54,6 +84,12 @@ async function checkPlanLimit(
     where: { userId, status: { in: ['ACTIVE', 'TRIALING'] } },
     orderBy: { createdAt: 'desc' },
   });
+
+  // Check if user is ADMIN — unlimited collection
+  const user = await tx.user.findUnique({ where: { id: userId }, select: { role: true } });
+  if (user?.role === 'ADMIN') {
+    return { currentCount, limit: Infinity, planType: 'ADMIN' };
+  }
 
   const planType = subscription?.planType ?? 'FREE';
   const limit =
@@ -82,13 +118,19 @@ export async function addItem(userId: string, data: CreateCollectionItemInput) {
       throw new NotFoundError('Catalog entry not found or not approved');
     }
 
-    // Check for duplicate (same user + same catalog entry)
+    // If user already has this item, increment quantity instead of erroring
     const existing = await tx.collectionItem.findFirst({
       where: { userId, catalogEntryId: data.catalogEntryId },
+      include: collectionIncludes(),
     });
 
     if (existing) {
-      throw new ConflictError('This item is already in your collection');
+      const updated = await tx.collectionItem.update({
+        where: { id: existing.id },
+        data: { quantity: existing.quantity + (data.quantity ?? 1) },
+        include: collectionIncludes(),
+      });
+      return resolveItemCover(updated);
     }
 
     // Check plan limit atomically within the transaction
@@ -108,7 +150,7 @@ export async function addItem(userId: string, data: CreateCollectionItemInput) {
       include: collectionIncludes(),
     });
 
-    return item;
+    return resolveItemCover(item);
   });
 }
 
@@ -195,16 +237,19 @@ export async function updateItem(userId: string, itemId: string, data: UpdateCol
     throw new NotFoundError('Collection item not found');
   }
 
-  return prisma.collectionItem.update({
+  const updated = await prisma.collectionItem.update({
     where: { id: itemId },
     data: {
       ...(data.quantity !== undefined && { quantity: data.quantity }),
       ...(data.pricePaid !== undefined && { pricePaid: data.pricePaid }),
       ...(data.condition !== undefined && { condition: data.condition }),
       ...(data.notes !== undefined && { notes: data.notes }),
+      ...((data as Record<string, unknown>).readAt !== undefined && { readAt: (data as Record<string, unknown>).readAt ? new Date((data as Record<string, unknown>).readAt as string) : null }),
     },
     include: collectionIncludes(),
   });
+
+  return resolveItemCover(updated);
 }
 
 export async function deleteItem(userId: string, itemId: string) {
@@ -232,8 +277,8 @@ export async function deleteItem(userId: string, itemId: string) {
   await prisma.collectionItem.delete({ where: { id: itemId } });
 }
 
-export async function getItems(userId: string, filters: CollectionSearchInput) {
-  const { query, condition, isRead, isForSale, seriesId, sortBy, sortOrder, page, limit } =
+export async function getItems(userId: string, filters: CollectionSearchInput & { duplicates?: boolean }) {
+  const { query, condition, isRead, isForSale, seriesId, sortBy, sortOrder, page, limit, duplicates } =
     filters;
   const skip = (page - 1) * limit;
 
@@ -264,6 +309,22 @@ export async function getItems(userId: string, filters: CollectionSearchInput) {
     };
   }
 
+  // Duplicates filter: items where this user has the same catalog entry
+  // multiple times (either quantity > 1 OR multiple rows for same entry)
+  if (duplicates) {
+    const dupRows = await prisma.$queryRaw<Array<{ catalog_entry_id: string }>>`
+      SELECT catalog_entry_id FROM collection_items
+      WHERE user_id = ${userId}
+      GROUP BY catalog_entry_id
+      HAVING COUNT(*) > 1 OR SUM(quantity) > 1
+    `;
+    const dupIds = dupRows.map((r) => r.catalog_entry_id);
+    if (dupIds.length === 0) {
+      return { data: [], total: 0, page, limit };
+    }
+    where.catalogEntryId = { in: dupIds };
+  }
+
   // Map sort fields
   const sortFieldMap: Record<string, Prisma.CollectionItemOrderByWithRelationInput> = {
     title: { catalogEntry: { title: sortOrder } },
@@ -273,7 +334,7 @@ export async function getItems(userId: string, filters: CollectionSearchInput) {
   };
   const orderBy = sortFieldMap[sortBy] || { createdAt: 'desc' };
 
-  const [data, total] = await Promise.all([
+  const [rawData, total] = await Promise.all([
     prisma.collectionItem.findMany({
       where,
       skip,
@@ -283,6 +344,8 @@ export async function getItems(userId: string, filters: CollectionSearchInput) {
     }),
     prisma.collectionItem.count({ where }),
   ]);
+
+  const data = rawData.map(resolveItemCover);
 
   return { data, total, page, limit };
 }
@@ -301,7 +364,7 @@ export async function getItem(userId: string, itemId: string) {
     throw new NotFoundError('Collection item not found');
   }
 
-  return item;
+  return resolveItemCover(item);
 }
 
 // === Toggle Read ===
@@ -317,7 +380,7 @@ export async function markAsRead(userId: string, itemId: string, isRead: boolean
     throw new NotFoundError('Collection item not found');
   }
 
-  return prisma.collectionItem.update({
+  const updated = await prisma.collectionItem.update({
     where: { id: itemId },
     data: {
       isRead,
@@ -325,6 +388,7 @@ export async function markAsRead(userId: string, itemId: string, isRead: boolean
     },
     include: collectionIncludes(),
   });
+  return resolveItemCover(updated);
 }
 
 // === Toggle For Sale ===
@@ -344,10 +408,22 @@ export async function markForSale(userId: string, itemId: string, data: MarkForS
     throw new BadRequestError('Sale price is required when marking for sale');
   }
 
-  const commission =
+  // Gap #1: Vendedor precisa ter conta bancária cadastrada antes de listar
+  if (data.isForSale) {
+    const bankAccount = await prisma.bankAccount.findFirst({ where: { userId } });
+    if (!bankAccount) {
+      throw new BadRequestError(
+        'Cadastre uma conta bancária antes de listar itens à venda. Acesse /seller/banking',
+      );
+    }
+  }
+
+  // Gap #3: Usa CommissionConfig (com fallback) em vez de COMMISSION_RATE hardcoded
+  const preview =
     data.isForSale && data.salePrice
-      ? Number((data.salePrice * COMMISSION_RATE).toFixed(2))
+      ? await previewCommission(data.salePrice, userId)
       : null;
+  const commission = preview?.commissionAmount ?? null;
 
   return prisma.collectionItem
     .update({
@@ -355,26 +431,34 @@ export async function markForSale(userId: string, itemId: string, data: MarkForS
       data: {
         isForSale: data.isForSale,
         salePrice: data.isForSale ? data.salePrice : null,
+        shippingCost: data.isForSale ? (data.shippingCost ?? null) : null,
       },
       include: collectionIncludes(),
     })
     .then((updated) => ({
-      ...updated,
+      ...resolveItemCover(updated),
       commission,
-      sellerNet:
-        data.isForSale && data.salePrice && commission
-          ? Number((data.salePrice - commission).toFixed(2))
-          : null,
+      sellerNet: preview?.sellerNet ?? null,
     }));
 }
 
 // === Stats ===
 
 export async function getStats(userId: string) {
-  const [totalItems, totalRead, totalForSale, valuePaid, valueForSale] = await Promise.all([
+  const [uniqueItems, totalQuantity, totalRead, totalForSale, valuePaid, valueForSale] = await Promise.all([
     prisma.collectionItem.count({ where: { userId } }),
-    prisma.collectionItem.count({ where: { userId, isRead: true } }),
-    prisma.collectionItem.count({ where: { userId, isForSale: true } }),
+    prisma.collectionItem.aggregate({
+      where: { userId },
+      _sum: { quantity: true },
+    }),
+    prisma.collectionItem.aggregate({
+      where: { userId, isRead: true },
+      _sum: { quantity: true },
+    }),
+    prisma.collectionItem.aggregate({
+      where: { userId, isForSale: true },
+      _sum: { quantity: true },
+    }),
     prisma.collectionItem.aggregate({
       where: { userId, pricePaid: { not: null } },
       _sum: { pricePaid: true },
@@ -385,13 +469,192 @@ export async function getStats(userId: string) {
     }),
   ]);
 
+  const totalItems = Number(totalQuantity._sum.quantity ?? 0);
+  const readCount = Number(totalRead._sum.quantity ?? 0);
+  const forSaleCount = Number(totalForSale._sum.quantity ?? 0);
+
   return {
     totalItems,
-    totalRead,
-    totalUnread: totalItems - totalRead,
-    totalForSale,
+    uniqueTitles: uniqueItems,
+    totalRead: readCount,
+    totalUnread: totalItems - readCount,
+    totalForSale: forSaleCount,
     totalValuePaid: Number(valuePaid._sum.pricePaid ?? 0),
     totalValueForSale: Number(valueForSale._sum.salePrice ?? 0),
+  };
+}
+
+// === Reading Timeline ===
+
+export async function getTimeline(
+  userId: string,
+  params: { year?: number; month?: number; publisher?: string; seriesId?: string; mode?: string },
+) {
+  const mode = params.mode || 'read'; // 'read' | 'added' | 'both'
+  const dateField = mode === 'added' ? 'createdAt' : 'readAt';
+
+  const where: Record<string, unknown> = { userId };
+
+  if (mode === 'read') {
+    where.isRead = true;
+    where.readAt = { not: null };
+  }
+  // 'added' and 'both': fetch all items
+
+  // Apply filters
+  if (params.publisher || params.seriesId) {
+    const catalogWhere: Record<string, unknown> = {};
+    if (params.publisher) catalogWhere.publisher = { contains: params.publisher };
+    if (params.seriesId) catalogWhere.seriesId = params.seriesId;
+    where.catalogEntry = catalogWhere;
+  }
+
+  // Date range filter
+  if (params.year) {
+    const start = new Date(params.year, params.month ? params.month - 1 : 0, 1);
+    const end = params.month
+      ? new Date(params.year, params.month, 0, 23, 59, 59)
+      : new Date(params.year, 11, 31, 23, 59, 59);
+    where[dateField] = { gte: start, lte: end };
+  }
+
+  const items = await prisma.collectionItem.findMany({
+    where,
+    select: {
+      id: true,
+      readAt: true,
+      createdAt: true,
+      catalogEntry: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          coverImageUrl: true,
+          coverFileName: true,
+          publisher: true,
+          seriesId: true,
+          series: { select: { title: true } },
+        },
+      },
+    },
+    orderBy: { readAt: 'asc' },
+  });
+
+  // Resolve cover URLs
+  const resolved = items.map(item => ({
+    ...item,
+    catalogEntry: resolveCoverUrl(item.catalogEntry),
+  }));
+
+  // Group by period
+  const groups = new Map<string, { key: string; label: string; count: number; items: unknown[] }>();
+
+  for (const item of resolved) {
+    const dateValue = mode === 'added' ? item.createdAt : item.readAt;
+    if (!dateValue) continue;
+    const d = new Date(dateValue);
+    let key: string;
+    let label: string;
+
+    if (params.year && params.month) {
+      const day = d.getDate();
+      key = String(day);
+      label = String(day);
+    } else if (params.year) {
+      const month = d.getMonth();
+      const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+      key = String(month + 1);
+      label = monthNames[month];
+    } else {
+      key = String(d.getFullYear());
+      label = String(d.getFullYear());
+    }
+
+    if (!groups.has(key)) {
+      groups.set(key, { key, label, count: 0, items: [] });
+    }
+    const group = groups.get(key)!;
+    group.count++;
+    {
+      group.items.push({
+        id: item.catalogEntry.id,
+        title: item.catalogEntry.title,
+        slug: item.catalogEntry.slug,
+        coverImageUrl: item.catalogEntry.coverImageUrl,
+        publisher: item.catalogEntry.publisher,
+        seriesName: item.catalogEntry.series?.title ?? null,
+        readAt: item.readAt,
+        addedAt: item.createdAt,
+      });
+    }
+  }
+
+  // Find period range
+  const dateFn = (i: typeof resolved[0]) => mode === 'added' ? i.createdAt : i.readAt;
+  const allDates = resolved.filter(i => dateFn(i)).map(i => new Date(dateFn(i)!));
+  const periodStart = allDates.length ? allDates[0].toISOString().slice(0, 10) : null;
+  const periodEnd = allDates.length ? allDates[allDates.length - 1].toISOString().slice(0, 10) : null;
+
+  // For 'both' mode: build per-day read and added counts
+  let readCounts: Record<string, number> | undefined;
+  let addedCounts: Record<string, number> | undefined;
+
+  if (mode === 'both') {
+    readCounts = {};
+    addedCounts = {};
+    for (const item of resolved) {
+      // Added count by createdAt
+      const addedDate = new Date(item.createdAt);
+      const addedKey = `${addedDate.getFullYear()}-${addedDate.getMonth() + 1}-${addedDate.getDate()}`;
+      addedCounts[addedKey] = (addedCounts[addedKey] || 0) + 1;
+
+      // Read count by readAt
+      if (item.readAt) {
+        const readDate = new Date(item.readAt);
+        const readKey = `${readDate.getFullYear()}-${readDate.getMonth() + 1}-${readDate.getDate()}`;
+        readCounts[readKey] = (readCounts[readKey] || 0) + 1;
+      }
+    }
+  }
+
+  return {
+    totalRead: resolved.length,
+    periodStart,
+    periodEnd,
+    groups: Array.from(groups.values()).sort((a, b) => Number(a.key) - Number(b.key)),
+    ...(mode === 'both' && { readCounts, addedCounts }),
+  };
+}
+
+// === Available filters for timeline ===
+
+export async function getTimelineFilters(userId: string) {
+  const items = await prisma.collectionItem.findMany({
+    where: { userId, isRead: true, readAt: { not: null } },
+    select: {
+      catalogEntry: {
+        select: {
+          publisher: true,
+          seriesId: true,
+          series: { select: { id: true, title: true } },
+        },
+      },
+    },
+  });
+
+  const publishers = new Set<string>();
+  const seriesMap = new Map<string, string>();
+
+  for (const item of items) {
+    if (item.catalogEntry.publisher) publishers.add(item.catalogEntry.publisher);
+    if (item.catalogEntry.seriesId && item.catalogEntry.series) {
+      seriesMap.set(item.catalogEntry.series.id, item.catalogEntry.series.title);
+    }
+  }
+
+  return {
+    publishers: Array.from(publishers).sort(),
+    series: Array.from(seriesMap.entries()).map(([id, title]) => ({ id, title })).sort((a, b) => a.title.localeCompare(b.title)),
   };
 }
 
@@ -464,6 +727,7 @@ export async function getMissingEditions(userId: string, seriesId: string) {
       editionNumber: true,
       volumeNumber: true,
       coverImageUrl: true,
+      coverFileName: true,
     },
     orderBy: { editionNumber: 'asc' },
   });
@@ -480,7 +744,7 @@ export async function getMissingEditions(userId: string, seriesId: string) {
   const ownedIds = new Set(ownedItems.map((i) => i.catalogEntryId));
 
   // Return editions NOT in the user's collection
-  return allEditions.filter((e) => !ownedIds.has(e.id));
+  return allEditions.filter((e) => !ownedIds.has(e.id)).map(resolveCoverUrl);
 }
 
 // === Photo Management ===
@@ -502,11 +766,12 @@ export async function addPhoto(userId: string, itemId: string, photoUrl: string)
     );
   }
 
-  return prisma.collectionItem.update({
+  const updated = await prisma.collectionItem.update({
     where: { id: itemId },
     data: { photoUrls: [...currentPhotos, photoUrl] },
     include: collectionIncludes(),
   });
+  return resolveItemCover(updated);
 }
 
 export async function removePhoto(userId: string, itemId: string, photoIndex: number) {
@@ -544,26 +809,34 @@ export async function removePhoto(userId: string, itemId: string, photoIndex: nu
 
   const updatedPhotos = currentPhotos.filter((_, idx) => idx !== photoIndex);
 
-  return prisma.collectionItem.update({
+  const updated = await prisma.collectionItem.update({
     where: { id: itemId },
     data: { photoUrls: updatedPhotos.length > 0 ? updatedPhotos : Prisma.JsonNull },
     include: collectionIncludes(),
   });
+  return resolveItemCover(updated);
 }
 
 // === CSV Import ===
 
 const MAX_IMPORT_ROWS = 500;
 
-export async function importCSV(userId: string, buffer: Buffer) {
-  const { data: rows } = parseCSV<Record<string, string>>(buffer);
+export async function importCSV(userId: string, buffer: Buffer, filename?: string) {
+  const isXlsx = filename?.endsWith('.xlsx') || buffer[0] === 0x50;
+  let rows: Record<string, string>[];
+
+  if (isXlsx) {
+    rows = await parseXLSX(buffer, COLLECTION_FIELD_MAP);
+  } else {
+    rows = parseCSV<Record<string, string>>(buffer).data;
+  }
 
   if (rows.length === 0) {
-    throw new BadRequestError('CSV file is empty');
+    throw new BadRequestError('Arquivo vazio');
   }
 
   if (rows.length > MAX_IMPORT_ROWS) {
-    throw new BadRequestError(`CSV exceeds maximum of ${MAX_IMPORT_ROWS} rows`);
+    throw new BadRequestError(`Arquivo excede o máximo de ${MAX_IMPORT_ROWS} linhas`);
   }
 
   return prisma.$transaction(async (tx) => {
@@ -676,7 +949,47 @@ export async function exportCSV(userId: string) {
   return generateCSV(rows);
 }
 
-// === CSV Template ===
+/** Export collection as XLSX with friendly pt-BR headers */
+export async function exportXLSX(userId: string) {
+  const items = await prisma.collectionItem.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+    include: {
+      catalogEntry: {
+        select: {
+          title: true,
+          author: true,
+          publisher: true,
+          series: { select: { title: true } },
+          volumeNumber: true,
+          editionNumber: true,
+        },
+      },
+    },
+  });
+
+  const rows = items.map((item) => ({
+    catalogEntryTitle: item.catalogEntry.title,
+    quantity: item.quantity,
+    pricePaid: item.pricePaid ? Number(item.pricePaid) : '',
+    condition: item.condition,
+    notes: item.notes || '',
+    isRead: item.isRead,
+    isForSale: item.isForSale,
+    salePrice: item.salePrice ? Number(item.salePrice) : '',
+  }));
+
+  return generateXLSX(rows, COLLECTION_FIELD_MAP, COLLECTION_REVERSE, {
+    sheetName: 'Minha Coleção',
+    dropdowns: {
+      'Estado': ['Novo', 'Muito Bom', 'Bom', 'Regular', 'Ruim'],
+      'Já Leu?': ['Sim', 'Não'],
+      'À Venda?': ['Sim', 'Não'],
+    },
+  });
+}
+
+// === Templates ===
 
 export function getCSVTemplate() {
   return generateCSV([
@@ -689,4 +1002,9 @@ export function getCSVTemplate() {
       isRead: 'false',
     },
   ]);
+}
+
+/** XLSX template with examples and instructions */
+export async function getXLSXTemplate() {
+  return generateCollectionTemplate();
 }

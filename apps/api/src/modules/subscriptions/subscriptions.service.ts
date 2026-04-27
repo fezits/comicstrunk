@@ -1,6 +1,7 @@
 import { prisma } from '../../shared/lib/prisma';
 import { stripe, isStripeConfigured } from '../../shared/lib/stripe';
-import { BadRequestError, NotFoundError } from '../../shared/utils/api-error';
+import { generatePixPayment, isPixConfigured } from '../../shared/lib/pix';
+import { BadRequestError, NotFoundError, ConflictError } from '../../shared/utils/api-error';
 import type {
   AdminActivateSubscriptionInput,
   AdminSubscriptionListInput,
@@ -425,4 +426,128 @@ export async function adminUpdatePlan(id: string, data: UpdatePlanConfigInput) {
     price: Number(plan.price),
     commissionRate: Number(plan.commissionRate),
   };
+}
+
+// ============================================================================
+// PIX SUBSCRIPTION
+// ============================================================================
+
+const BILLING_DAYS: Record<string, number> = {
+  MONTHLY: 30,
+  QUARTERLY: 90,
+  SEMIANNUAL: 180,
+  ANNUAL: 365,
+};
+
+export async function createPixSubscription(userId: string, planConfigId: string) {
+  if (!isPixConfigured()) {
+    throw new BadRequestError('PIX payment is not configured on this server');
+  }
+
+  const planConfig = await prisma.planConfig.findUnique({ where: { id: planConfigId } });
+  if (!planConfig || !planConfig.isActive || planConfig.planType === 'FREE') {
+    throw new NotFoundError('Plan not found or not available');
+  }
+
+  // Check for existing active subscription
+  const existing = await prisma.subscription.findFirst({
+    where: { userId, status: { in: ['ACTIVE', 'TRIALING'] } },
+  });
+  if (existing && existing.paymentMethod === 'pix') {
+    throw new ConflictError('You already have an active PIX subscription');
+  }
+
+  const amount = Number(planConfig.price);
+  const txid = `sub${Date.now()}`.slice(0, 25);
+
+  // Generate PIX
+  const pixData = await generatePixPayment(amount, txid, `Assinatura ${planConfig.name}`);
+
+  // Create subscription (PAST_DUE until admin confirms payment)
+  const subscription = await prisma.subscription.upsert({
+    where: { id: existing?.id ?? '' },
+    create: {
+      userId,
+      planType: planConfig.planType,
+      status: 'PAST_DUE',
+      paymentMethod: 'pix',
+    },
+    update: {
+      planType: planConfig.planType,
+      status: 'PAST_DUE',
+      paymentMethod: 'pix',
+      cancelledAt: null,
+    },
+  });
+
+  // Create payment record
+  const payment = await prisma.payment.create({
+    data: {
+      subscriptionId: subscription.id,
+      method: 'PIX',
+      amount: planConfig.price,
+      pixQrCode: pixData.pixQrCode,
+      pixCopyPaste: pixData.pixCopyPaste,
+      pixExpiresAt: new Date(Date.now() + 30 * 60 * 1000),
+      providerPaymentId: `pix-sub-${txid}`,
+      providerStatus: 'pending',
+    },
+  });
+
+  return {
+    subscription,
+    payment: {
+      id: payment.id,
+      pixQrCode: payment.pixQrCode,
+      pixCopyPaste: payment.pixCopyPaste,
+      pixExpiresAt: payment.pixExpiresAt,
+      amount,
+    },
+  };
+}
+
+export async function confirmPixSubscriptionPayment(paymentId: string) {
+  const payment = await prisma.payment.findUnique({
+    where: { id: paymentId },
+    include: { subscription: true },
+  });
+
+  if (!payment || !payment.subscriptionId || !payment.subscription) {
+    throw new NotFoundError('Subscription payment not found');
+  }
+
+  if (payment.paidAt) {
+    throw new BadRequestError('Payment already confirmed');
+  }
+
+  const subscription = payment.subscription;
+  const planConfig = await prisma.planConfig.findFirst({
+    where: { planType: subscription.planType, isActive: true },
+    orderBy: { price: 'asc' },
+  });
+
+  const days = planConfig ? (BILLING_DAYS[planConfig.billingInterval] ?? 30) : 30;
+  const now = new Date();
+  const periodEnd = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+
+  await prisma.payment.update({
+    where: { id: paymentId },
+    data: { paidAt: now, providerStatus: 'approved' },
+  });
+
+  const updated = await prisma.subscription.update({
+    where: { id: subscription.id },
+    data: {
+      status: 'ACTIVE',
+      currentPeriodStart: now,
+      currentPeriodEnd: periodEnd,
+    },
+  });
+
+  await prisma.user.update({
+    where: { id: subscription.userId },
+    data: { role: 'SUBSCRIBER' },
+  });
+
+  return updated;
 }

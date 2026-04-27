@@ -49,12 +49,13 @@ export function Header() {
               href={`/${locale}`}
               className="flex items-center gap-2 text-white font-bold text-lg hover:opacity-90 transition-opacity"
             >
-              <span className="text-xl">{t('common.appName')}</span>
+              <img src="/logo-header.png" alt="Comics Trunk" className="h-8 w-auto" />
+              <span className="text-base sm:text-xl">{t('common.appName')}</span>
             </Link>
           </div>
 
           {/* Right: auth buttons + notifications + cart + theme toggle + user menu */}
-          <div className="flex items-center gap-2 [&_button]:text-white [&_button]:hover:bg-white/10 [&_button]:hover:text-white">
+          <div className="flex items-center gap-1 sm:gap-2 [&_button]:text-white [&_button]:hover:bg-white/10 [&_button]:hover:text-white">
             {isLoading ? (
               <Skeleton className="h-8 w-20 bg-white/20 rounded-md" />
             ) : isAuthenticated ? (

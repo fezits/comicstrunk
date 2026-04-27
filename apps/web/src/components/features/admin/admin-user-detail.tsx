@@ -122,14 +122,21 @@ export function AdminUserDetail({ userId }: { userId: string }) {
 
   const handleSuspend = async () => {
     if (!user || !suspendReason.trim()) return;
+    if (suspendReason.trim().length < 10) {
+      toast.error('O motivo precisa ter pelo menos 10 caracteres');
+      return;
+    }
     setSuspending(true);
     try {
       await suspendUser(user.id, suspendReason);
       toast.success('Usuario suspenso');
       setSuspendDialogOpen(false);
       fetchUser();
-    } catch {
-      toast.error('Erro ao suspender usuario');
+    } catch (err) {
+      const msg =
+        (err as { response?: { data?: { error?: { message?: string } } } })
+          ?.response?.data?.error?.message ?? 'Erro ao suspender usuario';
+      toast.error(msg);
     } finally {
       setSuspending(false);
     }

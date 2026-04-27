@@ -204,22 +204,6 @@ export function ListingDetail({ id }: ListingDetailProps) {
             </span>
           </div>
 
-          {/* Commission transparency */}
-          {commission && (
-            <div className="bg-muted/50 rounded-lg p-4 space-y-1">
-              <p className="text-sm text-muted-foreground">
-                <span className="font-medium">{t('commission')}:</span>{' '}
-                {formatPrice(commission.commission)}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                <span className="font-medium">{t('sellerReceives')}:</span>{' '}
-                <span className="text-foreground font-semibold">
-                  {formatPrice(commission.sellerNet)}
-                </span>
-              </p>
-            </div>
-          )}
-
           {/* Details grid */}
           <div className="space-y-2 text-sm">
             {listing.catalogEntry.author && (
@@ -272,7 +256,7 @@ export function ListingDetail({ id }: ListingDetailProps) {
           <div className="flex flex-col sm:flex-row gap-3">
             <Button
               size="lg"
-              className="gap-2 flex-1 sm:flex-initial"
+              className="gap-2 flex-1 h-12 text-base"
               onClick={handleAddToCart}
               disabled={addingToCart || !!isOwnItem}
             >
@@ -283,7 +267,7 @@ export function ListingDetail({ id }: ListingDetailProps) {
                   ? t('ownItem')
                   : t('addToCart')}
             </Button>
-            <Button variant="outline" size="lg" asChild>
+            <Button variant="outline" size="lg" className="h-12" asChild>
               <Link href={`/${locale}/seller/${listing.seller.id}`}>
                 {t('viewSeller')}
               </Link>

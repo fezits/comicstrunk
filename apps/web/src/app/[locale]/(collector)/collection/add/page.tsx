@@ -7,6 +7,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { ArrowLeft, Search, BookOpen, Upload, Download } from 'lucide-react';
 
+import { useIsMobile } from '@/hooks/use-is-mobile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -46,8 +47,6 @@ export default function AddCollectionItemPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<CatalogEntry[]>([]);
   const [searching, setSearching] = useState(false);
-  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   // Selection state
   const [selectedEntry, setSelectedEntry] = useState<CatalogEntry | null>(null);
 
@@ -64,36 +63,35 @@ export default function AddCollectionItemPage() {
   const [importing, setImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Debounced search
-  const handleSearchChange = useCallback((value: string) => {
-    setSearchQuery(value);
-    if (searchTimer.current) clearTimeout(searchTimer.current);
+  const isMobile = useIsMobile();
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    if (!value.trim()) {
+  const submitSearch = useCallback(async (value?: string) => {
+    const v = (value ?? searchQuery).trim();
+    if (!v) {
       setSearchResults([]);
       setSearching(false);
       return;
     }
-
     setSearching(true);
-    searchTimer.current = setTimeout(async () => {
-      try {
-        const res = await searchCatalog({ title: value, limit: 12 });
-        setSearchResults(res.data);
-      } catch {
-        setSearchResults([]);
-      } finally {
-        setSearching(false);
-      }
-    }, 400);
-  }, []);
+    try {
+      const res = await searchCatalog({ title: v, limit: 12 });
+      setSearchResults(res.data);
+    } catch {
+      setSearchResults([]);
+    } finally {
+      setSearching(false);
+    }
+  }, [searchQuery]);
 
-  // Cleanup timer on unmount
-  useEffect(() => {
-    return () => {
-      if (searchTimer.current) clearTimeout(searchTimer.current);
-    };
-  }, []);
+  const handleSearchInputChange = (value: string) => {
+    setSearchQuery(value);
+    if (isMobile) return;
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    if (!value.trim()) { setSearchResults([]); setSearching(false); return; }
+    setSearching(true);
+    searchTimer.current = setTimeout(() => { submitSearch(value); }, 400);
+  };
 
   const handleSelectEntry = (entry: CatalogEntry) => {
     setSelectedEntry(entry);
@@ -210,7 +208,7 @@ export default function AddCollectionItemPage() {
               <Input
                 ref={fileInputRef}
                 type="file"
-                accept=".csv"
+                accept=".csv,.xlsx"
                 onChange={(e) => setImportFile(e.target.files?.[0] ?? null)}
               />
             </div>
@@ -260,7 +258,9 @@ export default function AddCollectionItemPage() {
               <Input
                 placeholder={t('searchCatalogPlaceholder')}
                 value={searchQuery}
-                onChange={(e) => handleSearchChange(e.target.value)}
+                onChange={(e) => handleSearchInputChange(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitSearch(); } }}
+                onBlur={() => isMobile && submitSearch()}
                 className="pl-10"
               />
             </div>
