@@ -91,6 +91,35 @@ async function assertWithinDailyLimit(userId: string): Promise<void> {
   }
 }
 
+// === Fallback regex para extrair numero da edicao quando VLM nao identificou ===
+// VLM as vezes retorna issue_number=null mesmo havendo numero visivel.
+// Procura padroes comuns no texto cru (titulo + ocr_text).
+function extractIssueNumberFallback(rec: RecognizedCover): number | null {
+  if (rec.issue_number !== null) return rec.issue_number;
+
+  const haystacks = [rec.title ?? '', rec.series ?? '', rec.ocr_text].filter(Boolean);
+  // Padroes em ordem de confianca:
+  //   "Vol. 2", "Volume 02", "Tomo 3", "Tome 4", "#5", "No. 6", "N. 7",
+  //   "Numero 8", "Number 9", "Edicao 10", "Edicion 11", "Issue 12"
+  const patterns = [
+    /\b(?:vol(?:ume)?|tomo|tome)\.?\s*(\d{1,4})\b/i,
+    /\b(?:n(?:[°ºoO])?|num(?:ero|ber)?|issue|edi[çc][aã]o|edici[oó]n)\.?\s*(\d{1,4})\b/i,
+    /#\s*(\d{1,4})\b/,
+  ];
+
+  for (const text of haystacks) {
+    for (const re of patterns) {
+      const match = text.match(re);
+      if (match) {
+        const n = parseInt(match[1], 10);
+        if (n > 0 && n < 10000) return n;
+      }
+    }
+  }
+
+  return null;
+}
+
 // === Tokens do VLM em duas categorias ===
 // "must" = filtros obrigatorios (AND no WHERE). Usar pouco e seletivo.
 // "boost" = tokens que contam apenas no score (sem entrar no WHERE).
@@ -174,6 +203,10 @@ export async function recognizeFromImage(
   // 1. Chamar VLM
   const recognized = await recognizeCoverImage(input.imageBase64);
 
+  // 1.5. Fallback de numero: se VLM nao retornou issue_number, tentar extrair
+  // de title/ocr_text via regex.
+  const effectiveIssueNumber = extractIssueNumberFallback(recognized);
+
   // 2. Tokens do VLM em duas categorias
   const { must, boost } = buildTokenBuckets(recognized);
   const allScoringTokens = [...must, ...boost];
@@ -199,12 +232,11 @@ export async function recognizeFromImage(
       };
     });
 
-    // Numero da edicao (issue_number do VLM) entra como filtro AND adicional
-    // quando VLM retornou um numero. Se VLM errar o numero, zera o resultado —
-    // mas isso eh aceitavel: pra capas onde o numero esta visivel, eh um sinal
-    // muito mais forte que tokens de titulo.
-    if (recognized.issue_number !== null) {
-      filters.push({ editionNumber: recognized.issue_number });
+    // Numero da edicao (do VLM ou regex de fallback) entra como filtro AND
+    // adicional. Se errar, zera o resultado — mas pra capas com numero visivel
+    // eh sinal muito mais forte que tokens de titulo.
+    if (effectiveIssueNumber !== null) {
+      filters.push({ editionNumber: effectiveIssueNumber });
     }
 
     const where: Prisma.CatalogEntryWhereInput = {
@@ -227,7 +259,7 @@ export async function recognizeFromImage(
       take: 80,
     });
 
-    const candidateNumber = recognized.issue_number ?? undefined;
+    const candidateNumber = effectiveIssueNumber ?? undefined;
 
     candidates = entries
       .map((e) => ({
@@ -250,7 +282,7 @@ export async function recognizeFromImage(
       userId,
       rawText: recognized.raw_response.slice(0, 5000),
       ocrTokens: `[must] ${must.join(' ')} [boost] ${boost.join(' ')}`.slice(0, 5000),
-      candidateNumber: recognized.issue_number ?? null,
+      candidateNumber: effectiveIssueNumber,
       candidatesShown: candidates.map((c) => ({ id: c.id, title: c.title, score: c.score })),
       durationMs: input.durationMs ?? null,
     },

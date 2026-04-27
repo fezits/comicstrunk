@@ -37,7 +37,8 @@ Regras:
 - Retorne APENAS um objeto JSON valido, sem markdown, sem explicacoes.
 - Se nao tiver certeza de algum campo, use null para esse campo (exceto "ocr_text", que sempre tem string).
 - "confidence" reflete o quanto voce esta certo do "title".
-- "ocr_text" deve listar TODO texto que voce conseguir ler na capa, mesmo que parcial — separado por quebras de linha.
+- "ocr_text" deve listar TODO texto visivel na capa, INCLUINDO numeros, "Vol", "Tomo", "#", subtitulos, creditos. Separe por quebras de linha. Nao filtre nada.
+- "issue_number" eh o numero da edicao/volume/tomo. Procure ATIVAMENTE por padroes como "#5", "Vol. 2", "Tomo 3", "Numero 7", "N. 12", "Edicao 4". Se ver apenas um numero isolado destacado na capa, provavelmente eh ele. Se nao houver numero algum visivel, use null.
 - Idiomas comuns: pt-BR, en, jp, es. Se incerto, use "outro".
 
 Schema:
