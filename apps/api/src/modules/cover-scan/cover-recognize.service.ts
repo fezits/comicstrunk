@@ -104,36 +104,48 @@ interface TokenBuckets {
 }
 
 function buildTokenBuckets(rec: RecognizedCover): TokenBuckets {
-  const splitWords = (s: string): string[] => s.split(/[\s\n\r\t.,!?;:()\[\]{}'"\/]+/);
+  const splitWords = (s: string): string[] => s.split(/[\s\n\r\t.,!?;()\[\]{}'"\/]+/);
+
+  // VLM costuma alucinar subtitulos depois de ":" ou " - ". Pegar apenas a
+  // parte principal do titulo evita injetar tokens fantasmas no MUST.
+  const stripSubtitle = (s: string): string => {
+    const colonIdx = s.indexOf(':');
+    const dashIdx = s.indexOf(' - ');
+    const cut = [colonIdx, dashIdx].filter((i) => i >= 0).sort((a, b) => a - b)[0];
+    return cut !== undefined && cut > 0 ? s.slice(0, cut) : s;
+  };
 
   // Filtragem agressiva de stopwords curtas em ingles e portugues.
   // Sao tokens com >= 3 chars MAS muito genericos que poluem AND/score.
   const STOPWORDS = new Set([
     'the', 'and', 'for', 'with', 'from', 'that', 'this',
-    'comic', 'comics', 'edicao',
-    'edi', 'eng',
+    'comic', 'comics', 'edicao', 'edition', 'volume',
+    'edi', 'eng', 'vol',
     'por', 'pra', 'que', 'pelo', 'pela',
   ]);
   const isUseful = (t: string): boolean => !STOPWORDS.has(t.toLowerCase());
 
-  // MUST: apenas o titulo (e series, se diferente). Pegar tokens normalizados
-  // unicos, max 4. Esses sao o sinal mais forte que VLM da.
-  const titleSources: string[] = [];
-  if (rec.title) titleSources.push(rec.title);
-  if (rec.series && rec.series !== rec.title) titleSources.push(rec.series);
+  // MUST: titulo principal apenas (sem subtitulo apos ":" ou " - ").
+  // Pegar tokens normalizados unicos, max 3. Sinal mais confiavel do VLM.
+  const titleMain = rec.title ? stripSubtitle(rec.title) : '';
+  const seriesMain = rec.series && rec.series !== rec.title ? stripSubtitle(rec.series) : '';
 
-  const mustRaw = titleSources.flatMap(splitWords);
+  const mustRaw = [titleMain, seriesMain].filter(Boolean).flatMap(splitWords);
   const must = Array.from(
     new Set(
       mustRaw
         .map((t) => normalizeToken(t))
         .filter((t) => t.length >= 3 && isUseful(t))
-        .slice(0, 4),
+        .slice(0, 3),
     ),
   );
 
-  // BOOST: autores, publisher, ocr_text. Contam pro score mas nao filtram.
+  // BOOST: TUDO o que sobrou. Inclui o subtitulo descartado (pode ajudar pro
+  // ranking quando bate por sorte), autores, publisher, ocr_text. Contam pro
+  // score mas nao filtram.
   const boostSources: string[] = [];
+  if (rec.title) boostSources.push(rec.title); // titulo completo (com subtitulo) entra como fonte de tokens extra
+  if (rec.series) boostSources.push(rec.series);
   for (const author of rec.authors) boostSources.push(author);
   if (rec.publisher) boostSources.push(rec.publisher);
   if (rec.ocr_text) boostSources.push(rec.ocr_text);
@@ -144,9 +156,9 @@ function buildTokenBuckets(rec: RecognizedCover): TokenBuckets {
       boostRaw
         .map((t) => normalizeToken(t))
         .filter((t) => t.length >= 3 && isUseful(t))
-        .slice(0, 12),
+        .slice(0, 14),
     ),
-  ).filter((t) => !must.includes(t)); // sem duplicar com os must
+  ).filter((t) => !must.includes(t));
 
   return { must, boost };
 }
@@ -166,19 +178,38 @@ export async function recognizeFromImage(
   const { must, boost } = buildTokenBuckets(recognized);
   const allScoringTokens = [...must, ...boost];
 
+  // === Fuzzy stem para casar variantes morfologicas ===
+  // Catalogo brasileiro traduz "absolute" -> "absoluta"; "deluxe" -> "deluxe";
+  // "definitive" -> "definitiva". Buscar pelo prefixo de 5 chars pega ambas as
+  // formas. Tokens com < 5 chars usam o token completo.
+  const fuzzyStem = (t: string): string => (t.length >= 5 ? t.slice(0, 5) : t);
+
   // 3. Buscar candidatos
   let candidates: CoverScanCandidate[] = [];
 
   if (must.length > 0) {
+    const filters: Prisma.CatalogEntryWhereInput[] = must.map((token) => {
+      const stem = fuzzyStem(token);
+      return {
+        OR: [
+          { title: { contains: stem } },
+          { publisher: { contains: stem } },
+          { author: { contains: stem } },
+        ],
+      };
+    });
+
+    // Numero da edicao (issue_number do VLM) entra como filtro AND adicional
+    // quando VLM retornou um numero. Se VLM errar o numero, zera o resultado —
+    // mas isso eh aceitavel: pra capas onde o numero esta visivel, eh um sinal
+    // muito mais forte que tokens de titulo.
+    if (recognized.issue_number !== null) {
+      filters.push({ editionNumber: recognized.issue_number });
+    }
+
     const where: Prisma.CatalogEntryWhereInput = {
       approvalStatus: 'APPROVED',
-      AND: must.map((token) => ({
-        OR: [
-          { title: { contains: token } },
-          { publisher: { contains: token } },
-          { author: { contains: token } },
-        ],
-      })),
+      AND: filters,
     };
 
     const entries = await prisma.catalogEntry.findMany({
