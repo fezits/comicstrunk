@@ -38,4 +38,4 @@ router.post(
   },
 );
 
-export const coverScanRoutes = router;
+export const coverScanRoutes: Router = router;

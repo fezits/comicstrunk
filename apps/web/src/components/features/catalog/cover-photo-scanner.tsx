@@ -26,7 +26,7 @@ function extractCandidateNumber(text: string): number | undefined {
 
 function tokenize(text: string): string[] {
   return text
-    .split(/[\s\n\r\t.,!?;:()\[\]{}'"]+/)
+    .split(/[\s\n\r\t.,!?;:()[\]{}'"]+/)
     .filter((t) => t.length >= 3 && t.length <= 50)
     .slice(0, 50);
 }
