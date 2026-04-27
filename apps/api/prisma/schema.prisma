@@ -445,11 +445,11 @@ model CoverScanLog {
   id              String   @id @default(cuid())
   userId          String   @map("user_id")
   rawText         String   @map("raw_text") @db.Text
-  ocrTokens       String   @map("ocr_tokens") @db.Text
-  candidateNumber Int?     @map("candidate_number")
-  candidatesShown String   @map("candidates_shown") @db.Text
-  chosenEntryId   String?  @map("chosen_entry_id")
-  durationMs      Int?     @map("duration_ms")
+  ocrTokens       String   @map("ocr_tokens") @db.Text  // tokens parseados separados por espaço
+  candidateNumber Int?     @map("candidate_number")     // número de edição extraído via regex (se houver)
+  candidatesShown Json     @map("candidates_shown")     // [{id, title, score}] (Json nativo em vez de Text)
+  chosenEntryId   String?  @map("chosen_entry_id")     // catalogEntryId escolhido (null = nenhum)
+  durationMs      Int?     @map("duration_ms")          // tempo total de processamento (cliente reporta opcional)
   createdAt       DateTime @default(now()) @map("created_at")
 
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
