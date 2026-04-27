@@ -148,22 +148,38 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
 
       {stage === 'results' && (
         <div className="space-y-3">
-          {identified && identified.title && (
-            <div className="rounded border border-primary/30 bg-primary/5 p-3 text-sm">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                {t('identifiedAs')}
-              </p>
-              <p className="mt-1 font-medium">
-                {identified.title}
-                {identified.issueNumber !== null && identified.issueNumber !== undefined && (
-                  <span className="text-muted-foreground"> #{identified.issueNumber}</span>
-                )}
-              </p>
-              {(identified.publisher || identified.series) && (
-                <p className="text-xs text-muted-foreground">
-                  {[identified.series, identified.publisher].filter(Boolean).join(' • ')}
-                </p>
+          {(previewUrl || (identified && identified.title)) && (
+            <div className="flex items-stretch gap-3 rounded border border-primary/30 bg-primary/5 p-3 text-sm">
+              {previewUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={previewUrl}
+                  alt={t('preview')}
+                  className="h-24 w-16 flex-none rounded border object-cover"
+                />
               )}
+              <div className="flex-1 min-w-0">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                  {t('identifiedAs')}
+                </p>
+                {identified && identified.title ? (
+                  <>
+                    <p className="mt-1 line-clamp-2 font-medium">
+                      {identified.title}
+                      {identified.issueNumber !== null && identified.issueNumber !== undefined && (
+                        <span className="text-muted-foreground"> #{identified.issueNumber}</span>
+                      )}
+                    </p>
+                    {(identified.publisher || identified.series) && (
+                      <p className="line-clamp-1 text-xs text-muted-foreground">
+                        {[identified.series, identified.publisher].filter(Boolean).join(' • ')}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <p className="mt-1 text-xs text-muted-foreground">{t('noIdentification')}</p>
+                )}
+              </div>
             </div>
           )}
 
