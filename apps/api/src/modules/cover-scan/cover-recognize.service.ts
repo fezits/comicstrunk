@@ -91,21 +91,64 @@ async function assertWithinDailyLimit(userId: string): Promise<void> {
   }
 }
 
-// === Build tokens enriquecidos a partir do output do VLM ===
+// === Tokens do VLM em duas categorias ===
+// "must" = filtros obrigatorios (AND no WHERE). Usar pouco e seletivo.
+// "boost" = tokens que contam apenas no score (sem entrar no WHERE).
+// Razao: VLM as vezes acerta o titulo em ingles (ex: "Absolute Batman") mas
+// o catalogo so tem em portugues ("Batman Absoluto"). Forcar AND em todos
+// os tokens (titulo + autores + ocr) zera o resultado.
 
-function buildEnrichedTokens(rec: RecognizedCover): string[] {
-  const sources: string[] = [];
-  if (rec.title) sources.push(rec.title);
-  if (rec.series && rec.series !== rec.title) sources.push(rec.series);
-  for (const author of rec.authors) sources.push(author);
-  if (rec.publisher) sources.push(rec.publisher);
-  if (rec.ocr_text) sources.push(rec.ocr_text);
+interface TokenBuckets {
+  must: string[];
+  boost: string[];
+}
 
-  const tokens: string[] = [];
-  for (const s of sources) {
-    tokens.push(...s.split(/[\s\n\r\t.,!?;:()\[\]{}'"\/]+/));
-  }
-  return tokens;
+function buildTokenBuckets(rec: RecognizedCover): TokenBuckets {
+  const splitWords = (s: string): string[] => s.split(/[\s\n\r\t.,!?;:()\[\]{}'"\/]+/);
+
+  // Filtragem agressiva de stopwords curtas em ingles e portugues.
+  // Sao tokens com >= 3 chars MAS muito genericos que poluem AND/score.
+  const STOPWORDS = new Set([
+    'the', 'and', 'for', 'with', 'from', 'that', 'this',
+    'comic', 'comics', 'edicao',
+    'edi', 'eng',
+    'por', 'pra', 'que', 'pelo', 'pela',
+  ]);
+  const isUseful = (t: string): boolean => !STOPWORDS.has(t.toLowerCase());
+
+  // MUST: apenas o titulo (e series, se diferente). Pegar tokens normalizados
+  // unicos, max 4. Esses sao o sinal mais forte que VLM da.
+  const titleSources: string[] = [];
+  if (rec.title) titleSources.push(rec.title);
+  if (rec.series && rec.series !== rec.title) titleSources.push(rec.series);
+
+  const mustRaw = titleSources.flatMap(splitWords);
+  const must = Array.from(
+    new Set(
+      mustRaw
+        .map((t) => normalizeToken(t))
+        .filter((t) => t.length >= 3 && isUseful(t))
+        .slice(0, 4),
+    ),
+  );
+
+  // BOOST: autores, publisher, ocr_text. Contam pro score mas nao filtram.
+  const boostSources: string[] = [];
+  for (const author of rec.authors) boostSources.push(author);
+  if (rec.publisher) boostSources.push(rec.publisher);
+  if (rec.ocr_text) boostSources.push(rec.ocr_text);
+
+  const boostRaw = boostSources.flatMap(splitWords);
+  const boost = Array.from(
+    new Set(
+      boostRaw
+        .map((t) => normalizeToken(t))
+        .filter((t) => t.length >= 3 && isUseful(t))
+        .slice(0, 12),
+    ),
+  ).filter((t) => !must.includes(t)); // sem duplicar com os must
+
+  return { must, boost };
 }
 
 // === Main service ===
@@ -119,17 +162,17 @@ export async function recognizeFromImage(
   // 1. Chamar VLM
   const recognized = await recognizeCoverImage(input.imageBase64);
 
-  // 2. Construir tokens enriquecidos para busca textual
-  const rawTokens = buildEnrichedTokens(recognized);
-  const tokens = pickSearchableTokens(rawTokens);
+  // 2. Tokens do VLM em duas categorias
+  const { must, boost } = buildTokenBuckets(recognized);
+  const allScoringTokens = [...must, ...boost];
 
   // 3. Buscar candidatos
   let candidates: CoverScanCandidate[] = [];
 
-  if (tokens.length > 0) {
+  if (must.length > 0) {
     const where: Prisma.CatalogEntryWhereInput = {
       approvalStatus: 'APPROVED',
-      AND: tokens.map((token) => ({
+      AND: must.map((token) => ({
         OR: [
           { title: { contains: token } },
           { publisher: { contains: token } },
@@ -163,7 +206,7 @@ export async function recognizeFromImage(
         publisher: e.publisher,
         editionNumber: e.editionNumber,
         coverImageUrl: resolveCoverUrl(e.coverImageUrl, e.coverFileName),
-        score: scoreCandidate(e, tokens, candidateNumber),
+        score: scoreCandidate(e, allScoringTokens, candidateNumber),
       }))
       .filter((c) => c.score > 0)
       .sort((a, b) => b.score - a.score)
@@ -175,7 +218,7 @@ export async function recognizeFromImage(
     data: {
       userId,
       rawText: recognized.raw_response.slice(0, 5000),
-      ocrTokens: tokens.join(' ').slice(0, 5000),
+      ocrTokens: `[must] ${must.join(' ')} [boost] ${boost.join(' ')}`.slice(0, 5000),
       candidateNumber: recognized.issue_number ?? null,
       candidatesShown: candidates.map((c) => ({ id: c.id, title: c.title, score: c.score })),
       durationMs: input.durationMs ?? null,
