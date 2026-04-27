@@ -37,6 +37,7 @@ import { contactRoutes } from './modules/contact/contact.routes';
 import { legalRoutes } from './modules/legal/legal.routes';
 import { adminRoutes } from './modules/admin/admin.routes';
 import { coverSubmissionsUserRoutes, coverSubmissionsAdminRoutes } from './modules/cover-submissions/cover-submissions.routes';
+import { coverScanRoutes } from './modules/cover-scan/cover-scan.routes';
 import { lgpdRoutes } from './modules/lgpd/lgpd.routes';
 // sync module unified into catalog — see /catalog/import-json, /catalog/stats, /catalog/by-source-key/:sk/cover
 import { errorHandler } from './shared/middleware/error-handler';
@@ -287,6 +288,7 @@ export function createApp(): Express {
   app.use('/api/v1/tags', tagsRoutes);
   app.use('/api/v1/characters', charactersRoutes);
   app.use('/api/v1/catalog', catalogRoutes);
+  app.use('/api/v1/cover-scan', coverScanRoutes);
   app.use('/api/v1/collection', collectionRoutes);
   app.use('/api/v1/commission', commissionRoutes);
   app.use('/api/v1/marketplace', marketplaceRoutes);
