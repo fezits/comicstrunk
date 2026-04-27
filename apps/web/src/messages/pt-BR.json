@@ -1045,6 +1045,24 @@
     "error": "Ocorreu um erro. Tente novamente.",
     "cancel": "Cancelar"
   },
+  "scanCapa": {
+    "title": "Buscar gibi por foto da capa",
+    "subtitle": "Tire uma foto ou envie uma imagem da capa. Vamos achar no catálogo.",
+    "uploadHint": "Toque para tirar foto ou enviar imagem da capa",
+    "chooseFile": "Escolher foto",
+    "preview": "Pré-visualização",
+    "reading": "Lendo a capa...",
+    "searching": "Procurando no catálogo...",
+    "foundCount": "{count, plural, =0 {Nenhum candidato} =1 {1 candidato encontrado} other {# candidatos encontrados}}",
+    "noMatches": "Nenhum gibi do catálogo bateu com o texto detectado. Tente outra foto ou busque manualmente.",
+    "noneMatch": "Nenhum dos resultados é o que procuro",
+    "tryAgain": "Tentar de novo",
+    "errorNoText": "Não consegui ler texto na imagem. Tente uma foto mais nítida ou com melhor iluminação.",
+    "errorGeneric": "Algo deu errado ao processar a imagem.",
+    "close": "Fechar",
+    "menuLabel": "Buscar por foto",
+    "rateLimitMessage": "Você atingiu o limite de scans diários. Tente novamente em 24h."
+  },
   "comments": {
     "title": "Comentarios",
     "writeComment": "Escreva um comentario...",
