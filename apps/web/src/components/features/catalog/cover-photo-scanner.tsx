@@ -164,8 +164,10 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
                 <li key={c.id}>
                   <button
                     onClick={() => handleChoose(c)}
-                    className={`block w-full rounded border bg-card p-2 text-left hover:border-primary ${
-                      c.isExternal ? 'border-amber-400/40 border-dashed' : ''
+                    className={`block w-full rounded border-2 bg-card p-2 text-left transition-colors hover:border-primary ${
+                      c.isExternal
+                        ? 'border-amber-500 border-dashed bg-amber-500/5'
+                        : 'border-border'
                     }`}
                   >
                     <div className="aspect-[2/3] w-full overflow-hidden rounded">

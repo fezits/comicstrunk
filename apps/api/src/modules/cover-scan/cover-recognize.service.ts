@@ -152,6 +152,8 @@ function buildTokenBuckets(rec: RecognizedCover): TokenBuckets {
     'comic', 'comics', 'edicao', 'edition', 'volume',
     'edi', 'eng', 'vol',
     'por', 'pra', 'que', 'pelo', 'pela',
+    // Valores literais do enum do prompt do VLM que ele as vezes ecoa como dado:
+    'outro', 'null', 'none', 'unknown', 'nenhum',
   ]);
   const isUseful = (t: string): boolean => !STOPWORDS.has(t.toLowerCase());
 
@@ -278,10 +280,18 @@ export async function recognizeFromImage(
       .slice(0, TOP_N);
   }
 
-  // 3.5. Buscar externamente em paralelo (Promise.allSettled - fail open)
+  // 3.5. Buscar externamente em paralelo (Promise.allSettled - fail open).
+  // IMPORTANTE: passamos uma copia de `recognized` com issue_number sobrescrito
+  // pelo effectiveIssueNumber (regex de fallback). Sem isso, busca externa
+  // usaria o issue_number cru do VLM que pode ser null mesmo quando o numero
+  // esta visivel na capa, e Metron/Rika trariam todas as edicoes da serie.
   let externalCandidates: CoverScanCandidate[] = [];
   try {
-    externalCandidates = await searchExternal(recognized);
+    const recognizedForExternal = {
+      ...recognized,
+      issue_number: effectiveIssueNumber,
+    };
+    externalCandidates = await searchExternal(recognizedForExternal);
   } catch {
     // fail open: erro nao quebra scan
   }
