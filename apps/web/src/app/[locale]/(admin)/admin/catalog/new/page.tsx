@@ -24,8 +24,12 @@ export default function NewCatalogEntryPage() {
       }
       toast.success(t('createSuccess'));
       router.push(`/${locale}/admin/catalog`);
-    } catch {
-      toast.error(t('createError'));
+    } catch (err) {
+      const msg =
+        (err as { response?: { data?: { error?: { message?: string } } } })
+          ?.response?.data?.error?.message ?? t('createError');
+      toast.error(msg);
+      console.error('[admin/catalog/new] create failed:', err);
     } finally {
       setLoading(false);
     }

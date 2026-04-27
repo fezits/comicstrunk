@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
@@ -18,15 +18,21 @@ import type { CatalogEntry } from '@/lib/api/catalog';
 interface CatalogCardProps {
   entry: CatalogEntry;
   isOwned?: boolean;
+  onOwnedChange?: (entryId: string, owned: boolean) => void;
 }
 
-export function CatalogCard({ entry, isOwned = false }: CatalogCardProps) {
+export function CatalogCard({ entry, isOwned = false, onOwnedChange }: CatalogCardProps) {
   const locale = useLocale();
   const t = useTranslations('catalog');
   const router = useRouter();
   const { isAuthenticated } = useAuth();
   const [added, setAdded] = useState(isOwned);
   const [adding, setAdding] = useState(false);
+
+  // Sync local state when parent updates the owned status (e.g., after refresh)
+  useEffect(() => {
+    setAdded(isOwned);
+  }, [isOwned]);
 
   return (
     <Link href={`/${locale}/catalog/${entry.slug ?? entry.id}`} className="block group">
@@ -69,6 +75,7 @@ export function CatalogCard({ entry, isOwned = false }: CatalogCardProps) {
                 try {
                   await addCollectionItem({ catalogEntryId: entry.id });
                   setAdded(true);
+                  onOwnedChange?.(entry.id, true);
                   toast.success(t('addedToCollection'));
                 } catch (error) {
                   toast.error(t('addToCollectionError'));

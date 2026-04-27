@@ -29,6 +29,7 @@ vi.mock('next/link', () => ({
 
 const mockEntry: CatalogEntry = {
   id: 'entry-2',
+  slug: 'one-piece-vol-100',
   title: 'One Piece Vol. 100',
   author: 'Eiichiro Oda',
   publisher: 'Panini',
@@ -50,6 +51,7 @@ const mockEntry: CatalogEntry = {
   createdAt: '2025-06-01T00:00:00.000Z',
   series: {
     id: 'series-op',
+    slug: 'one-piece',
     title: 'One Piece',
     description: null,
     totalEditions: 109,

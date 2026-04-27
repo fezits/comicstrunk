@@ -31,6 +31,7 @@ export default function AdminDuplicatesPage() {
   const [bulkRemoving, setBulkRemoving] = useState(false);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [mode, setMode] = useState<'pattern' | 'title'>('pattern');
   const [zoomedImage, setZoomedImage] = useState<{ url: string; title: string } | null>(null);
 
   const totalPages = Math.ceil(total / LIMIT);
@@ -39,7 +40,7 @@ export default function AdminDuplicatesPage() {
     setLoading(true);
     setSelected(new Set());
     try {
-      const res = await apiClient.get(`/admin/duplicates?page=${page}&limit=${LIMIT}`);
+      const res = await apiClient.get(`/admin/duplicates?page=${page}&limit=${LIMIT}&mode=${mode}`);
       setPairs(res.data.data || []);
       setTotal(res.data.pagination?.total || 0);
     } catch {
@@ -47,7 +48,7 @@ export default function AdminDuplicatesPage() {
     } finally {
       setLoading(false);
     }
-  }, [page]);
+  }, [page, mode]); // eslint-disable-line
 
   useEffect(() => {
     fetchDuplicates();
@@ -107,7 +108,12 @@ export default function AdminDuplicatesPage() {
       setTotal((t) => t - 1);
       setSelected((prev) => { const next = new Set(prev); next.delete(id); return next; });
     } catch (err) {
-      toast.error('Erro ao remover');
+      const msg =
+        (err as { response?: { data?: { error?: { message?: string } } } })
+          ?.response?.data?.error?.message ?? 'Erro ao remover';
+      toast.error(msg);
+      // Refresh pra confirmar o estado real
+      fetchDuplicates();
     } finally {
       setRemovingId(null);
     }
@@ -118,8 +124,29 @@ export default function AdminDuplicatesPage() {
       <div>
         <h1 className="text-2xl font-bold">Possíveis Duplicatas</h1>
         <p className="text-sm text-muted-foreground">
-          {total.toLocaleString('pt-BR')} pares — GCD (americano) vs Rika/Panini (brasileiro). Ano comparado (±1).
+          {total.toLocaleString('pt-BR')} pares encontrados.
         </p>
+      </div>
+
+      {/* Mode toggle */}
+      <div className="flex items-center gap-2 border rounded-md p-2 bg-muted/30">
+        <span className="text-xs text-muted-foreground">Modo:</span>
+        <Button
+          variant={mode === 'pattern' ? 'default' : 'outline'}
+          size="sm"
+          className="text-xs h-7"
+          onClick={() => { setMode('pattern'); setPage(1); }}
+        >
+          Padrão GCD #issue
+        </Button>
+        <Button
+          variant={mode === 'title' ? 'default' : 'outline'}
+          size="sm"
+          className="text-xs h-7"
+          onClick={() => { setMode('title'); setPage(1); }}
+        >
+          Mesmo título (qualquer fonte)
+        </Button>
       </div>
 
       {/* Toolbar */}

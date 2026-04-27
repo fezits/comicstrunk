@@ -90,7 +90,8 @@ export function CollectionFilters({ filters, onFiltersChange }: CollectionFilter
     filters.condition ||
     filters.isRead !== undefined ||
     filters.isForSale !== undefined ||
-    filters.seriesId;
+    filters.seriesId ||
+    filters.duplicates;
 
   return (
     <div className="space-y-1">
@@ -194,6 +195,18 @@ export function CollectionFilters({ filters, onFiltersChange }: CollectionFilter
             />
             <Label htmlFor="filter-not-sale" className="text-sm cursor-pointer">
               {t('onlyNotForSale')}
+            </Label>
+          </div>
+          <div className="flex items-center gap-2 pt-2 border-t">
+            <Checkbox
+              id="filter-duplicates"
+              checked={filters.duplicates === true}
+              onCheckedChange={(checked) =>
+                update({ duplicates: checked === true ? true : undefined })
+              }
+            />
+            <Label htmlFor="filter-duplicates" className="text-sm cursor-pointer">
+              Duplicados na coleção
             </Label>
           </div>
         </div>

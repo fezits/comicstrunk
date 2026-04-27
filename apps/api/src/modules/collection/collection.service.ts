@@ -4,6 +4,7 @@ import { parseCSV, generateCSV } from '../../shared/lib/csv';
 import { uploadImage, deleteImage, resolveCoverUrl } from '../../shared/lib/cloudinary';
 import { parseXLSX, generateXLSX, generateCollectionTemplate, COLLECTION_FIELD_MAP, COLLECTION_REVERSE } from '../../shared/lib/xlsx';
 import { BadRequestError, NotFoundError, ConflictError } from '../../shared/utils/api-error';
+import { previewCommission } from '../commission/commission.service';
 import { collectionImportRowSchema, COLLECTION_LIMITS } from '@comicstrunk/contracts';
 import type {
   CreateCollectionItemInput,
@@ -267,8 +268,8 @@ export async function deleteItem(userId: string, itemId: string) {
   await prisma.collectionItem.delete({ where: { id: itemId } });
 }
 
-export async function getItems(userId: string, filters: CollectionSearchInput) {
-  const { query, condition, isRead, isForSale, seriesId, sortBy, sortOrder, page, limit } =
+export async function getItems(userId: string, filters: CollectionSearchInput & { duplicates?: boolean }) {
+  const { query, condition, isRead, isForSale, seriesId, sortBy, sortOrder, page, limit, duplicates } =
     filters;
   const skip = (page - 1) * limit;
 
@@ -297,6 +298,22 @@ export async function getItems(userId: string, filters: CollectionSearchInput) {
       ...((where.catalogEntry as Prisma.CatalogEntryWhereInput) ?? {}),
       seriesId,
     };
+  }
+
+  // Duplicates filter: items where this user has the same catalog entry
+  // multiple times (either quantity > 1 OR multiple rows for same entry)
+  if (duplicates) {
+    const dupRows = await prisma.$queryRaw<Array<{ catalog_entry_id: string }>>`
+      SELECT catalog_entry_id FROM collection_items
+      WHERE user_id = ${userId}
+      GROUP BY catalog_entry_id
+      HAVING COUNT(*) > 1 OR SUM(quantity) > 1
+    `;
+    const dupIds = dupRows.map((r) => r.catalog_entry_id);
+    if (dupIds.length === 0) {
+      return { data: [], total: 0, page, limit };
+    }
+    where.catalogEntryId = { in: dupIds };
   }
 
   // Map sort fields
@@ -385,10 +402,22 @@ export async function markForSale(userId: string, itemId: string, data: MarkForS
     throw new BadRequestError('Sale price is required when marking for sale');
   }
 
-  const commission =
+  // Gap #1: Vendedor precisa ter conta bancária cadastrada antes de listar
+  if (data.isForSale) {
+    const bankAccount = await prisma.bankAccount.findFirst({ where: { userId } });
+    if (!bankAccount) {
+      throw new BadRequestError(
+        'Cadastre uma conta bancária antes de listar itens à venda. Acesse /seller/banking',
+      );
+    }
+  }
+
+  // Gap #3: Usa CommissionConfig (com fallback) em vez de COMMISSION_RATE hardcoded
+  const preview =
     data.isForSale && data.salePrice
-      ? Number((data.salePrice * COMMISSION_RATE).toFixed(2))
+      ? await previewCommission(data.salePrice, userId)
       : null;
+  const commission = preview?.commissionAmount ?? null;
 
   return prisma.collectionItem
     .update({
@@ -396,16 +425,14 @@ export async function markForSale(userId: string, itemId: string, data: MarkForS
       data: {
         isForSale: data.isForSale,
         salePrice: data.isForSale ? data.salePrice : null,
+        shippingCost: data.isForSale ? (data.shippingCost ?? null) : null,
       },
       include: collectionIncludes(),
     })
     .then((updated) => ({
       ...resolveItemCover(updated),
       commission,
-      sellerNet:
-        data.isForSale && data.salePrice && commission
-          ? Number((data.salePrice - commission).toFixed(2))
-          : null,
+      sellerNet: preview?.sellerNet ?? null,
     }));
 }
 

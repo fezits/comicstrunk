@@ -1,0 +1,23 @@
+{
+  "runId": "2026-04-26-19-13-02",
+  "timestamp": "2026-04-26T19:13:02.161Z",
+  "env": "production",
+  "baseUrl": "https://comicstrunk.com",
+  "apiUrl": "https://api.comicstrunk.com/api/v1",
+  "adminEmail": "admin@comicstrunk.com",
+  "testPrefix": "_e2e_20260426191302_",
+  "entities": {
+    "users": [
+      "cmog5bigk004zkw7p6mxv1llv",
+      "cmog5biry0054kw7pfgfiarkl"
+    ],
+    "catalogEntries": [],
+    "collectionItems": [],
+    "shippingAddresses": [],
+    "bankAccounts": [],
+    "orders": [],
+    "orderItems": [],
+    "payments": []
+  },
+  "steps": []
+}

@@ -69,6 +69,7 @@ vi.mock('next/link', () => ({
 const mockEntries: CatalogEntry[] = [
   {
     id: 'e1',
+    slug: 'dragon-ball-vol-1',
     title: 'Dragon Ball Vol. 1',
     author: 'Akira Toriyama',
     publisher: 'Panini',
@@ -88,13 +89,14 @@ const mockEntries: CatalogEntry[] = [
     pageCount: null,
     coverFileName: null,
     createdAt: '2025-01-01T00:00:00.000Z',
-    series: { id: 's1', title: 'Dragon Ball', description: null, totalEditions: 42 },
+    series: { id: 's1', slug: 'dragon-ball', title: 'Dragon Ball', description: null, totalEditions: 42 },
     categories: [],
     tags: [],
     characters: [],
   },
   {
     id: 'e2',
+    slug: 'naruto-vol-1',
     title: 'Naruto Vol. 1',
     author: 'Masashi Kishimoto',
     publisher: 'Panini',
@@ -114,7 +116,7 @@ const mockEntries: CatalogEntry[] = [
     pageCount: null,
     coverFileName: null,
     createdAt: '2025-02-01T00:00:00.000Z',
-    series: { id: 's2', title: 'Naruto', description: null, totalEditions: 72 },
+    series: { id: 's2', slug: 'naruto', title: 'Naruto', description: null, totalEditions: 72 },
     categories: [],
     tags: [],
     characters: [],

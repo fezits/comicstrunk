@@ -462,7 +462,18 @@ export default function CatalogPage() {
             {view === 'grid' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                 {entries.map((entry) => (
-                  <CatalogCard key={entry.id} entry={entry} isOwned={ownedIds.has(entry.id)} />
+                  <CatalogCard
+                    key={entry.id}
+                    entry={entry}
+                    isOwned={ownedIds.has(entry.id)}
+                    onOwnedChange={(id, owned) => {
+                      setOwnedIds((prev) => {
+                        const next = new Set(prev);
+                        if (owned) next.add(id); else next.delete(id);
+                        return next;
+                      });
+                    }}
+                  />
                 ))}
               </div>
             )}

@@ -13,20 +13,22 @@ import { disputeResolvedEmailTemplate } from '../../shared/email-templates/dispu
 
 async function sendEmail(to: string, subject: string, html: string): Promise<void> {
   if (!isResendConfigured() || !resend) {
-    console.log(`[EMAIL] Resend not configured, skipping: ${subject} -> ${to}`);
+    console.warn(
+      `[EMAIL] DESABILITADO — RESEND_API_KEY não configurada. Email "${subject}" para ${to} NÃO foi enviado. Configure RESEND_API_KEY no cPanel para ativar.`,
+    );
     return;
   }
 
   try {
-    await resend.emails.send({
+    const result = await resend.emails.send({
       from: RESEND_FROM_EMAIL,
       to,
       subject,
       html,
     });
+    console.log(`[EMAIL] Enviado "${subject}" -> ${to} (id=${result.data?.id ?? 'unknown'})`);
   } catch (error) {
-    console.error(`[EMAIL] Failed to send email: ${subject} -> ${to}`, error);
-    // Fire-and-forget: never throw from email sending
+    console.error(`[EMAIL] Falha ao enviar "${subject}" -> ${to}:`, error);
   }
 }
 

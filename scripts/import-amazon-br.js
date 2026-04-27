@@ -85,10 +85,10 @@ async function flushBatch(batch) {
   if (batch.length === 0) return 0;
   const sql = buildInsertSQL(batch);
   const tmpFile = path.join(__dirname, '..', 'docs', '.batch-insert.sql');
-  fs.writeFileSync(tmpFile, sql);
-  // Upload via SCP and execute
+  fs.writeFileSync(tmpFile, sql, { encoding: 'utf8' });
   execSync(`scp ${tmpFile} ferna5257@server34.integrator.com.br:/tmp/.batch.sql`, { stdio: 'pipe' });
-  execSync(`ssh ferna5257@server34.integrator.com.br "mysql -u ferna5257_comics -p'ComicsComics@123' ferna5257_comicstrunk_db < /tmp/.batch.sql"`, { stdio: 'pipe' });
+  // CRITICAL: --default-character-set=utf8mb4 to prevent mojibake on accented chars
+  execSync(`ssh ferna5257@server34.integrator.com.br "mysql --default-character-set=utf8mb4 -u ferna5257_comics -p'ComicsComics@123' ferna5257_comicstrunk_db < /tmp/.batch.sql"`, { stdio: 'pipe' });
   fs.unlinkSync(tmpFile);
   return batch.length;
 }
@@ -135,10 +135,10 @@ async function run() {
 
       const entry = {
         id: genCuid() + i,
-        title: p.title,
-        slug: `${slugify(p.title)}-${p.asin.toLowerCase()}`,
-        publisher: publisher || null,
-        author: p.author || null,
+        title: p.title.substring(0, 150),
+        slug: `${slugify(p.title)}-${p.asin.toLowerCase()}`.substring(0, 250),
+        publisher: publisher ? publisher.substring(0, 190) : null,
+        author: p.author ? p.author.substring(0, 190) : null,
         sourceKey: `amazon:${p.asin}`,
         coverImageUrl,
         coverFileName,

@@ -21,6 +21,7 @@ import { cartRoutes } from './modules/cart/cart.routes';
 import { shippingRoutes } from './modules/shipping/shipping.routes';
 import { ordersRoutes } from './modules/orders/orders.routes';
 import { bankingRoutes } from './modules/banking/banking.routes';
+import { payoutsRoutes } from './modules/payouts/payouts.routes';
 import { paymentsRoutes } from './modules/payments/payments.routes';
 import { webhookRoutes } from './modules/payments/webhook.routes';
 import { subscriptionRoutes } from './modules/subscriptions/subscriptions.routes';
@@ -35,6 +36,7 @@ import { homepageRoutes } from './modules/homepage/homepage.routes';
 import { contactRoutes } from './modules/contact/contact.routes';
 import { legalRoutes } from './modules/legal/legal.routes';
 import { adminRoutes } from './modules/admin/admin.routes';
+import { coverSubmissionsUserRoutes, coverSubmissionsAdminRoutes } from './modules/cover-submissions/cover-submissions.routes';
 import { lgpdRoutes } from './modules/lgpd/lgpd.routes';
 // sync module unified into catalog — see /catalog/import-json, /catalog/stats, /catalog/by-source-key/:sk/cover
 import { errorHandler } from './shared/middleware/error-handler';
@@ -292,6 +294,7 @@ export function createApp(): Express {
   app.use('/api/v1/shipping', shippingRoutes);
   app.use('/api/v1/orders', ordersRoutes);
   app.use('/api/v1/banking', bankingRoutes);
+  app.use('/api/v1/payouts', payoutsRoutes);
   app.use('/api/v1/payments', paymentsRoutes);
   app.use('/api/v1/webhooks/mercadopago', webhookRoutes);
   app.use('/api/v1/subscriptions', subscriptionRoutes);
@@ -305,6 +308,8 @@ export function createApp(): Express {
   app.use('/api/v1/contact', contactRoutes);
   app.use('/api/v1/legal', legalRoutes);
   app.use('/api/v1/admin', adminRoutes);
+  app.use('/api/v1/admin', coverSubmissionsAdminRoutes);
+  app.use('/api/v1', coverSubmissionsUserRoutes);
   app.use('/api/v1/lgpd', lgpdRoutes);
   // sync routes removed — unified into /catalog
 

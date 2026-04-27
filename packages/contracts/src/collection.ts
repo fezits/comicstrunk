@@ -43,6 +43,7 @@ export const updateCollectionItemSchema = z.object({
 export const markForSaleSchema = z.object({
   isForSale: z.boolean(),
   salePrice: z.number().positive().optional(),
+  shippingCost: z.number().min(0).optional(),
 });
 
 export const markAsReadSchema = z.object({
@@ -67,6 +68,13 @@ export const collectionSearchSchema = z.object({
     }, z.boolean())
     .optional(),
   seriesId: z.string().cuid().optional(),
+  duplicates: z
+    .preprocess((val) => {
+      if (val === 'true') return true;
+      if (val === 'false') return false;
+      return val;
+    }, z.boolean())
+    .optional(),
   sortBy: z.enum(['title', 'createdAt', 'pricePaid', 'condition']).default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
   page: z.coerce.number().int().positive().default(1),

@@ -74,6 +74,9 @@ router.get(
   '/owned-ids',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
+      // Prevent any caching — must always return fresh state
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+      res.setHeader('Pragma', 'no-cache');
       const ids = await collectionService.getOwnedCatalogEntryIds(req.user!.userId);
       sendSuccess(res, ids);
     } catch (err) {

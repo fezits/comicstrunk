@@ -1,0 +1,101 @@
+{
+  "runId": "2026-04-26-21-42-48",
+  "timestamp": "2026-04-26T21:42:48.734Z",
+  "env": "production",
+  "baseUrl": "https://comicstrunk.com",
+  "apiUrl": "https://api.comicstrunk.com/api/v1",
+  "adminEmail": "admin@comicstrunk.com",
+  "testPrefix": "_e2e_20260426214248_",
+  "entities": {
+    "users": [
+      "cmogao4nx000gxge551qzdath",
+      "cmogao4zj000lxge53chdqqds"
+    ],
+    "catalogEntries": [
+      "cmogao997000yxge5bjjrud06"
+    ],
+    "collectionItems": [
+      "cmogao9mo0011xge5c5fab3fi"
+    ],
+    "shippingAddresses": [
+      "cmogaoct70016xge5zx4nd29a"
+    ],
+    "bankAccounts": [
+      "cmogao5k7000uxge5aywh0wal"
+    ],
+    "orders": [
+      "cmogaofqs001gxge5mhib62c2"
+    ],
+    "orderItems": [
+      "cmogaofqs001ixge573es32zy"
+    ],
+    "payments": [
+      "cmogaofwg001mxge5kabmaibl"
+    ]
+  },
+  "steps": [
+    {
+      "step": "00-prep",
+      "ok": true,
+      "durationMs": 1428,
+      "note": "sellerId=cmogao4nx000gxge551qzdath buyerId=cmogao4zj000lxge53chdqqds"
+    },
+    {
+      "step": "01-banking",
+      "ok": true,
+      "durationMs": 4773,
+      "note": "bankAccountId=cmogao5k7000uxge5aywh0wal"
+    },
+    {
+      "step": "02-mark-for-sale",
+      "ok": true,
+      "durationMs": 2752,
+      "note": "collectionItemId=cmogao9mo0011xge5c5fab3fi"
+    },
+    {
+      "step": "03-marketplace",
+      "ok": true,
+      "durationMs": 1838
+    },
+    {
+      "step": "04-cart",
+      "ok": true,
+      "durationMs": 2074,
+      "note": "addressId=cmogaoct70016xge5zx4nd29a"
+    },
+    {
+      "step": "05-order",
+      "ok": true,
+      "durationMs": 1883,
+      "note": "order=ORD-20260426-D9FB7A status=PENDING"
+    },
+    {
+      "step": "06-pix",
+      "ok": true,
+      "durationMs": 1921
+    },
+    {
+      "step": "07-admin-pending",
+      "ok": true,
+      "durationMs": 2006
+    },
+    {
+      "step": "08-admin-approve",
+      "ok": true,
+      "durationMs": 2008,
+      "note": "ORD-20260426-D9FB7A -> PAID"
+    },
+    {
+      "step": "09-shipping",
+      "ok": true,
+      "durationMs": 3975,
+      "note": "tracking=CT123456789BR carrier=Correios"
+    },
+    {
+      "step": "10-completed",
+      "ok": true,
+      "durationMs": 6084,
+      "note": "ORD-20260426-D9FB7A -> COMPLETED (via seller-DELIVERED workaround)"
+    }
+  ]
+}

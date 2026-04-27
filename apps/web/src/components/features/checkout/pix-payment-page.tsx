@@ -193,7 +193,7 @@ export function PixPaymentPage() {
                 </p>
               )}
               {payment && (
-                <p className="text-lg font-semibold">{BRL.format(payment.amount / 100)}</p>
+                <p className="text-lg font-semibold">{BRL.format(payment.amount)}</p>
               )}
             </div>
             <Button
@@ -285,7 +285,7 @@ export function PixPaymentPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-primary">{BRL.format(payment.amount / 100)}</p>
+            <p className="text-2xl font-bold text-primary">{BRL.format(payment.amount)}</p>
           </CardContent>
         </Card>
       )}

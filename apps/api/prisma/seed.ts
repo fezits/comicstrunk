@@ -209,6 +209,39 @@ async function main() {
   });
   console.log(`  Admin user: ${admin.email} (${admin.id})`);
 
+  // Create test seller user (for E2E + manual testing of marketplace flows)
+  const sellerPasswordHash = hashSync('Test1234', 12);
+  const seller = await prisma.user.upsert({
+    where: { email: 'seller@test.com' },
+    update: {},
+    create: {
+      email: 'seller@test.com',
+      name: 'Test Seller',
+      passwordHash: sellerPasswordHash,
+      role: UserRole.USER,
+      acceptedTermsAt: new Date(),
+    },
+  });
+  console.log(`  Seller user: ${seller.email} (${seller.id})`);
+
+  // Pre-configure bank account so seller can list items immediately
+  const sellerBank = await prisma.bankAccount.findFirst({ where: { userId: seller.id } });
+  if (!sellerBank) {
+    await prisma.bankAccount.create({
+      data: {
+        userId: seller.id,
+        bankName: 'Banco do Brasil',
+        branchNumber: '0001',
+        accountNumber: '12345-6',
+        cpf: '12345678900',
+        holderName: 'Test Seller',
+        accountType: 'CHECKING',
+        isPrimary: true,
+      },
+    });
+    console.log('  Seller bank account configured');
+  }
+
   // Create sync service user
   const syncPasswordHash = hashSync('SyncService2026!', 12);
   const syncUser = await prisma.user.upsert({
