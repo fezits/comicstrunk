@@ -76,6 +76,11 @@ export function createApp(): Express {
   // Increased JSON limit for bulk import endpoint — must be before general parser
   app.use('/api/v1/catalog/import-json', express.json({ limit: '50mb' }));
 
+  // Cover scan endpoints recebem imagem em base64 (~150-400 KB tipico).
+  // Default do express.json() eh 100kb — limite estourava em fotos comuns.
+  app.use('/api/v1/cover-scan/recognize', express.json({ limit: '5mb' }));
+  app.use('/api/v1/cover-scan/import', express.json({ limit: '5mb' }));
+
   // === Anti-Scraping: Block suspicious API access ===
   // Real browsers send Origin/Referer. Scripts (curl, python, etc.) usually don't.
   // We allow: authenticated requests, webhooks, auth endpoints, and requests with valid browser context.
