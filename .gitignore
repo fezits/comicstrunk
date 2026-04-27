@@ -42,3 +42,6 @@ test-results/
 # Debug logs
 npm-debug.log*
 pnpm-debug.log*
+
+# Claude Code harness lock (local-only)
+.claude/scheduled_tasks.lock
