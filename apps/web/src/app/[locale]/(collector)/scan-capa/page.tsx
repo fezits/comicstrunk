@@ -24,6 +24,10 @@ export default function ScanCapaPage() {
       </header>
 
       <CoverPhotoScanner onChoose={handleChoose} />
+
+      <footer className="mt-8 text-center text-xs text-muted-foreground/60">
+        {t('poweredByMetron')}
+      </footer>
     </div>
   );
 }

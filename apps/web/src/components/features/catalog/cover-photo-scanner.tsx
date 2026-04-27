@@ -4,7 +4,7 @@ import { useState, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { CoverImage } from '@/components/ui/cover-image';
-import { recognize, recordChoice } from '@/lib/api/cover-scan';
+import { recognize, recordChoice, importExternal } from '@/lib/api/cover-scan';
 import { compressImageToDataUri } from '@/lib/utils/compress-image';
 import type { CoverScanCandidate } from '@comicstrunk/contracts';
 
@@ -57,14 +57,40 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
   }
 
   async function handleChoose(candidate: CoverScanCandidate | null) {
-    if (scanLogId) {
-      try {
-        await recordChoice({ scanLogId, chosenEntryId: candidate?.id ?? null });
-      } catch {
-        // telemetria — falha silenciosa
+    if (!candidate) {
+      if (scanLogId) {
+        await recordChoice({ scanLogId, chosenEntryId: null }).catch(() => {});
       }
+      return;
     }
-    if (candidate) onChoose?.(candidate);
+
+    // Externo: importar primeiro (cria entry PENDING + adiciona a colecao)
+    if (candidate.isExternal && candidate.externalSource && candidate.externalRef && scanLogId) {
+      try {
+        const importResult = await importExternal({
+          scanLogId,
+          externalSource: candidate.externalSource,
+          externalRef: candidate.externalRef,
+        });
+        // Repassar pro onChoose com o id real da entry recem-criada
+        onChoose?.({
+          ...candidate,
+          id: importResult.catalogEntryId,
+          isExternal: false,
+        });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : t('errorGeneric');
+        setErrorMsg(msg);
+        setStage('error');
+      }
+      return;
+    }
+
+    // Interno: fluxo existente
+    if (scanLogId) {
+      await recordChoice({ scanLogId, chosenEntryId: candidate.id }).catch(() => {});
+    }
+    onChoose?.(candidate);
   }
 
   function reset() {
@@ -138,7 +164,9 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
                 <li key={c.id}>
                   <button
                     onClick={() => handleChoose(c)}
-                    className="block w-full rounded border bg-card p-2 text-left hover:border-primary"
+                    className={`block w-full rounded border bg-card p-2 text-left hover:border-primary ${
+                      c.isExternal ? 'border-amber-400/40 border-dashed' : ''
+                    }`}
                   >
                     <div className="aspect-[2/3] w-full overflow-hidden rounded">
                       <CoverImage

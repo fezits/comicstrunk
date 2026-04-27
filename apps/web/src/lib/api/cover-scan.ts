@@ -5,6 +5,8 @@ import type {
   CoverScanChooseInput,
   CoverScanRecognizeInput,
   CoverScanRecognizeResponse,
+  CoverScanImportInput,
+  CoverScanImportResponse,
 } from '@comicstrunk/contracts';
 
 export async function searchByText(
@@ -22,5 +24,10 @@ export async function recognize(
   input: CoverScanRecognizeInput,
 ): Promise<CoverScanRecognizeResponse> {
   const { data } = await apiClient.post('/cover-scan/recognize', input);
+  return data.data;
+}
+
+export async function importExternal(input: CoverScanImportInput): Promise<CoverScanImportResponse> {
+  const { data } = await apiClient.post('/cover-scan/import', input);
   return data.data;
 }
