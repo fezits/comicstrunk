@@ -80,7 +80,7 @@ Se não:
 Banco local roda em Docker. Execute (ajustar credenciais conforme `apps/api/.env` se diferentes):
 
 ```bash
-docker exec comicstrunk-mysql mysqldump -uroot -padmin comicstrunk_dev > docs/backups/backup-pre-scan-capa-$(date +%Y%m%d-%H%M).sql
+docker exec comicstrunk-mysql mysqldump -uroot -padmin comicstrunk > docs/backups/backup-pre-scan-capa-$(date +%Y%m%d-%H%M).sql
 ```
 
 Crie o diretório se não existir:
@@ -190,7 +190,7 @@ Esperado: prisma cria diretório `apps/api/prisma/migrations/<timestamp>_add_cov
 - [ ] **Step 5: Verificar migration aplicada**
 
 ```bash
-docker exec comicstrunk-mysql mysql -uroot -padmin comicstrunk_dev -e "DESCRIBE cover_scan_logs;"
+docker exec comicstrunk-mysql mysql -uroot -padmin comicstrunk -e "DESCRIBE cover_scan_logs;"
 ```
 
 Esperado: lista de colunas com `id, user_id, raw_text, ocr_tokens, candidate_number, candidates_shown, chosen_entry_id, duration_ms, created_at`.
@@ -1597,7 +1597,7 @@ Subir API + Web (`corepack pnpm dev`), logar como `vai_q_eh@yahoo.com.br` (senha
 5. Voltar e tentar 31x para confirmar bloqueio (ou setar `COVER_SCAN_DAILY_LIMIT=2` no `.env` da API e fazer 3 scans).
 6. Verificar `cover_scan_logs` na DB:
    ```bash
-   docker exec comicstrunk-mysql mysql -uroot -padmin comicstrunk_dev \
+   docker exec comicstrunk-mysql mysql -uroot -padmin comicstrunk \
      -e "SELECT id, raw_text, candidates_shown, chosen_entry_id, created_at FROM cover_scan_logs ORDER BY created_at DESC LIMIT 5;"
    ```
 
