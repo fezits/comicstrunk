@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { PrismaClient } from '@prisma/client';
-import { request, loginAs, TEST_USER } from '../setup';
+import { request, loginAs, TEST_USER, TEST_ADMIN } from '../setup';
 
 const prisma = new PrismaClient();
 
@@ -70,6 +70,63 @@ describe('POST /api/v1/cover-scan/search', () => {
     } finally {
       await prisma.catalogEntry.delete({ where: { id: entry.id } });
     }
+  });
+
+  it('records user choice and updates chosen_entry_id', async () => {
+    const entry = await prisma.catalogEntry.create({
+      data: {
+        title: 'Test Choice Entry',
+        publisher: 'Test',
+        approvalStatus: 'APPROVED',
+        createdById: userId,
+      },
+    });
+
+    try {
+      const search = await request
+        .post('/api/v1/cover-scan/search')
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({ rawText: 'Test', ocrTokens: ['Test'] });
+
+      const scanLogId = search.body.data.scanLogId;
+      createdLogIds.push(scanLogId);
+
+      const choose = await request
+        .post('/api/v1/cover-scan/choose')
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({ scanLogId, chosenEntryId: entry.id });
+
+      expect(choose.status).toBe(200);
+
+      const log = await prisma.coverScanLog.findUnique({ where: { id: scanLogId } });
+      expect(log?.chosenEntryId).toBe(entry.id);
+    } finally {
+      await prisma.catalogEntry.delete({ where: { id: entry.id } });
+    }
+  });
+
+  it('rejects choose if scanLog belongs to another user', async () => {
+    const adminLogin = await loginAs(TEST_ADMIN.email, TEST_ADMIN.password);
+    void adminLogin; // token não necessário aqui
+    const adminUser = await prisma.user.findUnique({ where: { email: TEST_ADMIN.email } });
+    if (!adminUser) throw new Error('admin user not found in test DB');
+
+    const log = await prisma.coverScanLog.create({
+      data: {
+        userId: adminUser.id,
+        rawText: 'X',
+        ocrTokens: 'x',
+        candidatesShown: [],
+      },
+    });
+    createdLogIds.push(log.id);
+
+    const res = await request
+      .post('/api/v1/cover-scan/choose')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ scanLogId: log.id, chosenEntryId: null });
+
+    expect(res.status).toBe(404);
   });
 
   it('rejects with 429 when daily limit exceeded', async () => {

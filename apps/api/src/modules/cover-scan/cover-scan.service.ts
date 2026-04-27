@@ -1,11 +1,12 @@
 import type { Prisma } from '@prisma/client';
 import { prisma } from '../../shared/lib/prisma';
 import { localCoverUrl, LOCAL_API_BASE_URL } from '../../shared/lib/cloudinary';
-import { TooManyRequestsError } from '../../shared/utils/api-error';
+import { NotFoundError, TooManyRequestsError } from '../../shared/utils/api-error';
 import type {
   CoverScanSearchInput,
   CoverScanSearchResponse,
   CoverScanCandidate,
+  CoverScanChooseInput,
 } from '@comicstrunk/contracts';
 import { COVER_SCAN_DAILY_LIMIT_DEFAULT } from '@comicstrunk/contracts';
 
@@ -157,4 +158,35 @@ export async function searchByText(
   });
 
   return { candidates, scanLogId: log.id };
+}
+
+// === Choose: registra a escolha do usuário ===
+
+export async function recordChoice(
+  userId: string,
+  input: CoverScanChooseInput,
+): Promise<void> {
+  const log = await prisma.coverScanLog.findUnique({
+    where: { id: input.scanLogId },
+    select: { id: true, userId: true },
+  });
+
+  if (!log || log.userId !== userId) {
+    throw new NotFoundError('Scan log nao encontrado');
+  }
+
+  if (input.chosenEntryId) {
+    const entry = await prisma.catalogEntry.findUnique({
+      where: { id: input.chosenEntryId },
+      select: { id: true },
+    });
+    if (!entry) {
+      throw new NotFoundError('Catalog entry nao encontrado');
+    }
+  }
+
+  await prisma.coverScanLog.update({
+    where: { id: input.scanLogId },
+    data: { chosenEntryId: input.chosenEntryId },
+  });
 }
