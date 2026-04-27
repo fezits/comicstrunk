@@ -160,30 +160,79 @@ A feature é construída em fases com **portões claros** entre elas, para evita
 
 ---
 
-### Fase 3 — Refinamento (futuro, só se Fase 2 não bastar)
+### Fase 3 — Busca federada externa (Rika + MetronDB)
 
-**Objetivo:** se a Fase 2 (Llama Vision) ficar abaixo de 75% de top-1 após 200+ scans, ou se o custo virar problema, refinar com técnicas adicionais.
+**Objetivo:** quando o catálogo local não tem o gibi (ou IA leu errado os tokens), buscar em fontes externas com licença comercial OK. Usuário pode adicionar à coleção pessoal mesmo gibis externos (entry vira `PENDING` até admin aprovar para ficar público).
 
-**Direções possíveis (a decidir conforme dados reais):**
+**Fontes escolhidas (após análise de licenciamento):**
 
-1. **Cache de prompt** no Cloudflare AI Gateway: requisições com prompts repetidos pagam menos. Prompt sistema fica idêntico — só a imagem muda. Reduz custo ~30%.
-2. **Reranking LLM**: pegar top 8 candidatos do Llama Vision e passar por Claude Haiku 4.5 com lista dos candidatos pra escolher o melhor (~R$ 0,002 extra por scan).
-3. **Embeddings reais (CLIP via outro provedor)**: se busca visual pura virar essencial, integrar Hugging Face ou self-host onnxruntime-node (requer migração pra VPS).
-4. **Fine-tuning** de modelo open-source com pares `(foto_real_do_usuario, capa_oficial_do_catalogo)` capturados nos logs `cover_scan_logs` (precisa opt-in do user pra guardar foto).
-5. **Variantes de capa**: detectar A/B/C do mesmo número — exige metadado novo no catálogo.
-6. **"Capas similares"** como feature de descoberta no detalhe do produto.
+- **Rika** — scraper HTTP do site rika.com.br. Foco em gibis/mangás brasileiros (Panini, JBC, Skript, Devir). Sem auth, sem custo, scrapers já existem em `scripts/scrape-rika*.js` e podem ser adaptados.
+- **MetronDB** — `metron.cloud`. Database curada por comunidade, dados CC BY-SA 4.0 (uso comercial OK com atribuição). Cobre Marvel, DC, Image, Dark Horse e indies americanos. Auth: HTTP Basic com username/password do site (free signup).
 
-**Critério para iniciar:** Fase 2 em produção há ≥4 semanas, métricas de sucesso/falha coletadas, decisão tomada com dados reais.
+**Fontes descartadas (com motivo):**
+
+- ~~ComicVine~~ — ToS proibe uso comercial.
+- ~~Open Library~~ — qualidade ruim para gibis brasileiros.
+- ~~Mercado Livre~~ — dados sujos (vendedores escrevem qualquer coisa).
+- ~~Amazon PA-API~~ — exige conta Associates aprovada (Fernando não tem como criador de conteúdo no momento).
+- ~~Marvel API~~ — só Marvel (bom mas redundante com MetronDB que já cobre Marvel).
+- ~~GCD live API~~ — rate limit muito baixo (20 req/h), inviável para volume B.
+
+**Como funciona:**
+
+1. Frontend envia foto → endpoint `/cover-scan/recognize` (já existente da Fase 2) chama VLM e busca local.
+2. Em paralelo (mesma requisição), endpoint chama o novo service `searchExternal(recognized)` que dispara Rika + Metron em paralelo (Promise.all).
+3. **Dedup** com dados estruturados das fontes externas: para cada candidato externo, busca no catálogo local por (a) ISBN/barcode exato, (b) `title` fuzzy + `editionNumber` exato + `publisher` parcial, (c) match de confiança alta. Se encontrar local correspondente → SUBSTITUI o candidato externo pelo local.
+4. Resposta final: lista única de candidatos, alguns com flag `isExternal: true`, outros sem. Frontend renderiza todos no mesmo grid; **borda diferenciada sutil** distingue externos (sem texto explicando a fonte).
+5. Quando user clica num candidato externo → endpoint novo `POST /cover-scan/import` cria entry `CatalogEntry` com `approval_status='PENDING'`, baixa a capa para R2, registra origem em campo `sourceKey` (ex: `metron:129167`, `rika:abc123`), e **adiciona à coleção pessoal do user imediatamente**.
+
+**Mudança comportamental no `addItem` (collection.service.ts):**
+
+- Atualmente: aceita apenas entries `APPROVED` na coleção (linha 117).
+- Nova regra: aceita tudo **exceto `REJECTED`** (admin disse não → bloqueado). `PENDING` e `DRAFT` viram OK.
+- Filtros do catálogo público (em `searchCatalog`, listagem, séries, etc.) **continuam exigindo `APPROVED`** — catálogo público fica limpo.
+- Resultado: usuário adiciona qualquer gibi à coleção pessoal dele, mas só `APPROVED` aparece globalmente.
+
+**Componentes novos:**
+
+- `apps/api/src/shared/lib/metron.ts` — cliente fino com HTTP Basic Auth, monitoramento de rate limits (`X-RateLimit-Burst-Remaining`, `X-RateLimit-Sustained-Remaining`), cache LRU em memória (TTL 1h, max 500 buscas).
+- `apps/api/src/shared/lib/rika.ts` — cliente fino que reaproveita lógica dos scrapers existentes em `scripts/scrape-rika*.js`. Sem auth.
+- `apps/api/src/modules/cover-scan/external-search.service.ts` — orquestra chamadas paralelas + dedup contra catálogo local.
+- `apps/api/src/modules/cover-scan/cover-import.service.ts` — cria `CatalogEntry` PENDING a partir de candidato externo, baixa capa para R2.
+- `apps/api/src/modules/cover-scan/cover-scan.routes.ts` — atualizar `/recognize` para incluir externos no resultado, adicionar `POST /import`.
+- `packages/contracts/src/cover-scan.ts` — adicionar campo `isExternal?: boolean` em `CoverScanCandidate`, schema do `coverScanImportSchema`.
+- `apps/web/src/components/features/catalog/cover-photo-scanner.tsx` — borda condicional (`border-amber-400/40` para `isExternal: true`), handler de click distingue interno/externo (chama `/import` antes de redirect).
+- Atribuição "Powered by Metron" discreto no footer da página `/scan-capa`.
+- Migration `addItem` em `collection.service.ts` (mudança de regra; sem alteração de schema).
+
+**Custos e limites:**
+
+- Rika: gratuito, sem rate limit publicado, com User-Agent identificado e delay 200-500ms entre chamadas (boa cidadania).
+- Metron: gratuito, 5.000 chamadas/dia (cobre ~1.600 scans/dia com 3 chamadas cada). Cache reduz drasticamente chamadas repetidas.
+- Sem mudanças de Workers AI vs Fase 2 (~R$ 11/mês mantém).
+
+**Limitações conhecidas:**
+
+- Metron não cobre bem gibis em português brasileiro (foco em US comics). Rika cobre BR.
+- Capa cabeçalho específico ("Capa Dura", "Edição Especial") pode gerar PENDING duplicado se IA leu metadados ligeiramente diferentes em scans separados — admin precisa lidar com merge no /admin/catalog.
+- Se Metron sair do ar ou rate limit estourar, scan continua funcionando só com interno + Rika (Promise.all com `allSettled` para não falhar tudo).
+
+**Critério para promover à Fase 4 (futuro, sem prazo):**
+
+- Adoção real medida em logs.
+- Se taxa de "criar PENDING externo" muito alta indica catálogo local pobre → considerar import dump GCD completo (CC0).
+- Se Metron rate limit estourar com frequência → cache mais agressivo OU outra fonte (Marvel API como complemento).
 
 ---
 
 ## 4. Resumo de custos por fase
 
-| Fase | Custo recorrente | Esforço (dev) | Precisão esperada | Status |
+| Fase | Custo recorrente | Esforço (dev) | Precisão / Cobertura | Status |
 |---|---|---|---|---|
 | **1 — MVP OCR + texto** | R$ 0 | ~2 dias | ~70% em capas legíveis | ✅ Implementada (Tesseract.js); falha em capas estilizadas |
-| **2 — Llama 3.2 Vision (Workers AI)** | ~R$ 11/mês | ~3–4 dias | ~88–92% geral | 🚧 Em planejamento (substituiu CLIP+CF que foi removido) |
-| **3 — Refinamento** | a definir | ~1–2 semanas | ~95%+ | Futuro, conforme métricas |
+| **2 — Llama 3.2 Vision (Workers AI)** | ~R$ 11/mês | ~3–4 dias | ~88–92% para capas no catálogo local | ✅ Implementada e validada |
+| **3 — Busca externa (Rika + MetronDB)** | ~R$ 11/mês (mantém) | ~2 dias | Cobre lacunas do catálogo local | 🚧 Em implementação |
+| **4 — GCD dump expand / Marvel API** | a definir | a definir | ~95%+ | Futuro, conforme adoção real |
 
 ---
 
@@ -196,6 +245,14 @@ A feature é construída em fases com **portões claros** entre elas, para evita
 5. **Logging desde a Fase 1** (`cover_scan_logs`). Mesma tabela serve as duas fases — só os campos `rawText` e `ocrTokens` mudam de semântica (na Fase 2 viram o JSON do Llama e tokens enriquecidos).
 6. **Endpoint `/recognize` novo, separado do `/search`.** Mantém a Fase 1 acessível como fallback se Workers AI estiver indisponível ou se quisermos comparar resultados. Frontend chama `/recognize`; se erro 5xx, oferece "tentar busca por OCR (mais simples)" que cai no `/search`.
 7. **Token Cloudflare com permissão Workers AI Read+Edit**, sem outras permissões (princípio de menor privilégio). Token vive em env var, nunca commitado.
+
+8. **Fase 3: candidatos externos podem entrar na coleção pessoal sem aprovação prévia.** Fluxo: usuário escolhe externo → entry criada com `approval_status='PENDING'` → adicionada à coleção do user. Admin aprova depois para visibilidade pública. Mudança em `collection.service.ts:117` (relax `addItem`); filtros públicos não mudam (continuam exigindo `APPROVED`).
+
+9. **Dedup explícito antes de criar entry externa.** Antes de criar `PENDING` a partir de candidato externo, busca local com dados estruturados (ISBN/barcode, title fuzzy + edition + publisher). Se achar match de confiança alta → reusa entry existente. Evita duplicatas quando IA leu errado mas o gibi existia local.
+
+10. **Promise.allSettled** nas chamadas externas (não `Promise.all`). Se uma fonte cair (Metron offline, Rika timeout), as outras continuam.
+
+11. **Atribuição CC BY-SA 4.0 do Metron** via texto pequeno "Powered by Metron" no footer da página `/scan-capa`.
 
 ---
 
