@@ -61,7 +61,7 @@ describe('POST /api/v1/cover-scan/recognize', () => {
     const entry = await prisma.catalogEntry.create({
       data: {
         title: 'Transmetropolitan',
-        publisher: 'Panini',
+        publisher: 'Panini Comics',
         editionNumber: 1,
         approvalStatus: 'APPROVED',
         createdById: userId,
@@ -72,11 +72,11 @@ describe('POST /api/v1/cover-scan/recognize', () => {
       title: 'Transmetropolitan',
       issue_number: 1,
       publisher: 'Panini',
-      authors: ['Warren Ellis', 'Darick Robertson'],
+      authors: [],
       series: 'Transmetropolitan',
       language: 'pt-BR',
       confidence: 'alta',
-      ocr_text: 'TRANSMETROPOLITAN\nPanini\nWarren Ellis',
+      ocr_text: 'TRANSMETROPOLITAN PANINI COMICS',
       raw_response: '{}',
     });
 

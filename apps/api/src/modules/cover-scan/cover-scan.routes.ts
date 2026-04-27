@@ -1,10 +1,11 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
-import { coverScanSearchSchema, coverScanChooseSchema } from '@comicstrunk/contracts';
-import type { CoverScanSearchInput, CoverScanChooseInput } from '@comicstrunk/contracts';
+import { coverScanSearchSchema, coverScanChooseSchema, coverScanRecognizeSchema } from '@comicstrunk/contracts';
+import type { CoverScanSearchInput, CoverScanChooseInput, CoverScanRecognizeInput } from '@comicstrunk/contracts';
 import { authenticate } from '../../shared/middleware/authenticate';
 import { validate } from '../../shared/middleware/validate';
 import { sendSuccess } from '../../shared/utils/response';
 import * as coverScanService from './cover-scan.service';
+import * as coverRecognizeService from './cover-recognize.service';
 
 const router = Router();
 
@@ -32,6 +33,21 @@ router.post(
       const input = req.body as CoverScanChooseInput;
       await coverScanService.recordChoice(req.user!.userId, input);
       sendSuccess(res, { ok: true });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+router.post(
+  '/recognize',
+  authenticate,
+  validate(coverScanRecognizeSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const input = req.body as CoverScanRecognizeInput;
+      const result = await coverRecognizeService.recognizeFromImage(req.user!.userId, input);
+      sendSuccess(res, result);
     } catch (err) {
       next(err);
     }
