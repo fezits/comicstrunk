@@ -48,20 +48,22 @@ function resolveCoverUrl(
   return coverImageUrl;
 }
 
-// === Score: 1 ponto por hit em title; 0.5 por hit em publisher; +5 se editionNumber bate ===
+// === Score: 1 ponto por hit em title; 0.5 por hit em publisher/author; +5 se editionNumber bate ===
 
 function scoreCandidate(
-  entry: { title: string; publisher: string | null; editionNumber: number | null },
+  entry: { title: string; publisher: string | null; author: string | null; editionNumber: number | null },
   tokens: string[],
   candidateNumber: number | undefined,
 ): number {
   const titleNorm = normalizeToken(entry.title);
   const publisherNorm = entry.publisher ? normalizeToken(entry.publisher) : '';
+  const authorNorm = entry.author ? normalizeToken(entry.author) : '';
   let score = 0;
 
   for (const token of tokens) {
     if (titleNorm.includes(token)) score += 1;
     if (publisherNorm.includes(token)) score += 0.5;
+    if (authorNorm.includes(token)) score += 0.5;
   }
 
   if (candidateNumber !== undefined && entry.editionNumber === candidateNumber) {
@@ -111,6 +113,7 @@ export async function searchByText(
         OR: [
           { title: { contains: token } },
           { publisher: { contains: token } },
+          { author: { contains: token } },
         ],
       })),
     };
@@ -122,6 +125,7 @@ export async function searchByText(
         slug: true,
         title: true,
         publisher: true,
+        author: true,
         editionNumber: true,
         coverImageUrl: true,
         coverFileName: true,
