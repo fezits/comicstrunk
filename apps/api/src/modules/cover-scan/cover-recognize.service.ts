@@ -9,6 +9,7 @@ import {
   type CoverScanCandidate,
 } from '@comicstrunk/contracts';
 import type { Prisma } from '@prisma/client';
+import { searchExternal } from './external-search.service';
 
 const TOP_N = 8;
 
@@ -270,11 +271,26 @@ export async function recognizeFromImage(
         editionNumber: e.editionNumber,
         coverImageUrl: resolveCoverUrl(e.coverImageUrl, e.coverFileName),
         score: scoreCandidate(e, allScoringTokens, candidateNumber),
+        isExternal: false as const,
       }))
       .filter((c) => c.score > 0)
       .sort((a, b) => b.score - a.score)
       .slice(0, TOP_N);
   }
+
+  // 3.5. Buscar externamente em paralelo (Promise.allSettled - fail open)
+  let externalCandidates: CoverScanCandidate[] = [];
+  try {
+    externalCandidates = await searchExternal(recognized);
+  } catch {
+    // fail open: erro nao quebra scan
+  }
+
+  // Mesclar locais e externos. Locais ja deduplificaram externos via
+  // dedupExternal (tarefa do searchExternal). Aqui basta concatenar e ordenar.
+  const merged = [...candidates, ...externalCandidates]
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 12); // max 12 candidatos no total
 
   // 4. Persistir log
   const log = await prisma.coverScanLog.create({
@@ -283,11 +299,16 @@ export async function recognizeFromImage(
       rawText: recognized.raw_response.slice(0, 5000),
       ocrTokens: `[must] ${must.join(' ')} [boost] ${boost.join(' ')}`.slice(0, 5000),
       candidateNumber: effectiveIssueNumber,
-      candidatesShown: candidates.map((c) => ({ id: c.id, title: c.title, score: c.score })),
+      candidatesShown: merged.map((c) => ({
+        id: c.id,
+        title: c.title,
+        score: c.score,
+        isExternal: c.isExternal ?? false,
+      })),
       durationMs: input.durationMs ?? null,
     },
     select: { id: true },
   });
 
-  return { candidates, scanLogId: log.id };
+  return { candidates: merged, scanLogId: log.id };
 }

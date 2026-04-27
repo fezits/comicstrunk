@@ -7,6 +7,11 @@ vi.mock('../../shared/lib/cloudflare-ai', () => ({
   recognizeCoverImage: vi.fn(),
 }));
 
+// Mock do searchExternal para evitar chamadas reais a Metron/Rika nos testes
+vi.mock('../../modules/cover-scan/external-search.service', () => ({
+  searchExternal: vi.fn().mockResolvedValue([]),
+}));
+
 import { recognizeCoverImage } from '../../shared/lib/cloudflare-ai';
 
 const prisma = new PrismaClient();

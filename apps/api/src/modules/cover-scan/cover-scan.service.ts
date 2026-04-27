@@ -142,6 +142,7 @@ export async function searchByText(
         editionNumber: e.editionNumber,
         coverImageUrl: resolveCoverUrl(e.coverImageUrl, e.coverFileName),
         score: scoreCandidate(e, tokens, input.candidateNumber),
+        isExternal: false as const,
       }))
       .filter((c) => c.score > 0)
       .sort((a, b) => b.score - a.score)
