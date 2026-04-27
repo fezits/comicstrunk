@@ -71,4 +71,41 @@ describe('POST /api/v1/cover-scan/search', () => {
       await prisma.catalogEntry.delete({ where: { id: entry.id } });
     }
   });
+
+  it('rejects with 429 when daily limit exceeded', async () => {
+    const originalLimit = process.env.COVER_SCAN_DAILY_LIMIT;
+    process.env.COVER_SCAN_DAILY_LIMIT = '2';
+
+    try {
+      await prisma.coverScanLog.deleteMany({ where: { userId } });
+
+      for (let i = 0; i < 2; i++) {
+        const res = await request
+          .post('/api/v1/cover-scan/search')
+          .set('Authorization', `Bearer ${userToken}`)
+          .send({ rawText: 'X', ocrTokens: ['xxx'] });
+        expect(res.status).toBe(200);
+        if (res.body.data?.scanLogId) createdLogIds.push(res.body.data.scanLogId);
+      }
+
+      const blocked = await request
+        .post('/api/v1/cover-scan/search')
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({ rawText: 'X', ocrTokens: ['xxx'] });
+      expect(blocked.status).toBe(429);
+      // O code do error pode ser COVER_SCAN_LIMIT (preferido) ou TOO_MANY_REQUESTS (default).
+      // Aceitar ambos no teste pra ser tolerante à API do TooManyRequestsError.
+      const err = blocked.body.error;
+      expect(err).toBeDefined();
+      if (err.code) {
+        expect(['COVER_SCAN_LIMIT', 'TOO_MANY_REQUESTS']).toContain(err.code);
+      }
+    } finally {
+      if (originalLimit === undefined) {
+        delete process.env.COVER_SCAN_DAILY_LIMIT;
+      } else {
+        process.env.COVER_SCAN_DAILY_LIMIT = originalLimit;
+      }
+    }
+  });
 });

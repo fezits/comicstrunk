@@ -1,11 +1,13 @@
 import type { Prisma } from '@prisma/client';
 import { prisma } from '../../shared/lib/prisma';
 import { localCoverUrl, LOCAL_API_BASE_URL } from '../../shared/lib/cloudinary';
+import { TooManyRequestsError } from '../../shared/utils/api-error';
 import type {
   CoverScanSearchInput,
   CoverScanSearchResponse,
   CoverScanCandidate,
 } from '@comicstrunk/contracts';
+import { COVER_SCAN_DAILY_LIMIT_DEFAULT } from '@comicstrunk/contracts';
 
 const TOP_N = 8;
 
@@ -68,12 +70,35 @@ function scoreCandidate(
   return score;
 }
 
+// === Rate limit ===
+
+function getDailyLimit(): number {
+  const raw = process.env.COVER_SCAN_DAILY_LIMIT;
+  if (!raw) return COVER_SCAN_DAILY_LIMIT_DEFAULT;
+  const parsed = parseInt(raw, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : COVER_SCAN_DAILY_LIMIT_DEFAULT;
+}
+
+export async function assertWithinDailyLimit(userId: string): Promise<void> {
+  const limit = getDailyLimit();
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const count = await prisma.coverScanLog.count({
+    where: { userId, createdAt: { gte: since } },
+  });
+  if (count >= limit) {
+    throw new TooManyRequestsError(
+      `Limite de ${limit} scans por dia atingido. Tente novamente em 24h.`,
+    );
+  }
+}
+
 // === Main service ===
 
 export async function searchByText(
   userId: string,
   input: CoverScanSearchInput,
 ): Promise<CoverScanSearchResponse> {
+  await assertWithinDailyLimit(userId);
   const tokens = pickSearchableTokens(input.ocrTokens);
 
   let candidates: CoverScanCandidate[] = [];
