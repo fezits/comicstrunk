@@ -1065,6 +1065,7 @@
     "close": "Fechar",
     "menuLabel": "Buscar por foto",
     "rateLimitMessage": "Você atingiu o limite de scans diários. Tente novamente em 24h.",
+    "identifiedAs": "Identifiquei como",
     "poweredByMetron": "Catálogo enriquecido com dados de metron.cloud (CC BY-SA 4.0)"
   },
   "comments": {

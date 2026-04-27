@@ -10,14 +10,22 @@ const TOP_EXTERNAL_PER_SOURCE = 5;
  * Busca em fontes externas (Rika + Metron) em paralelo. Aplica dedup contra
  * catalogo local: candidatos externos que ja existem no catalogo viram
  * candidatos internos (com seus ids reais).
+ *
+ * Estrategia de query:
+ * - Prefere `title` (sem subtitulo apos ":") porque eh o nome do gibi mesmo.
+ * - VLM as vezes preenche `series` com info editorial vaga (ex: "DC Compact
+ *   Comics" para a linha de produtos, em vez do nome da serie real).
+ * - Se title vazio, cai pro series.
  */
 export async function searchExternal(rec: RecognizedCover): Promise<CoverScanCandidate[]> {
-  const seriesQuery = rec.series ?? rec.title ?? '';
-  if (!seriesQuery.trim()) return [];
+  const titleQuery = rec.title ? stripSubtitle(rec.title) : '';
+  const seriesQuery = rec.series ?? '';
+  const primaryQuery = titleQuery || stripSubtitle(seriesQuery);
+  if (!primaryQuery.trim()) return [];
 
   const [metronResult, rikaResult] = await Promise.allSettled([
     searchMetronIssues({
-      seriesName: stripSubtitle(seriesQuery),
+      seriesName: primaryQuery,
       number: rec.issue_number ?? undefined,
     }),
     searchRika(buildRikaQuery(rec), { limit: TOP_EXTERNAL_PER_SOURCE }),

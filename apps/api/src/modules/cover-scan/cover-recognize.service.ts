@@ -154,6 +154,10 @@ function buildTokenBuckets(rec: RecognizedCover): TokenBuckets {
     'por', 'pra', 'que', 'pelo', 'pela',
     // Valores literais do enum do prompt do VLM que ele as vezes ecoa como dado:
     'outro', 'null', 'none', 'unknown', 'nenhum',
+    // Linhas editoriais / formatos genericos que poluem busca textual:
+    'compact', 'compacto', 'deluxe', 'definitive', 'definitiva',
+    'collection', 'colecao', 'omnibus', 'tpb', 'graphic', 'novel',
+    'adventure', 'adventures', 'special', 'especial',
   ]);
   const isUseful = (t: string): boolean => !STOPWORDS.has(t.toLowerCase());
 
@@ -320,5 +324,15 @@ export async function recognizeFromImage(
     select: { id: true },
   });
 
-  return { candidates: merged, scanLogId: log.id };
+  return {
+    candidates: merged,
+    scanLogId: log.id,
+    identified: {
+      title: recognized.title,
+      issueNumber: effectiveIssueNumber,
+      publisher: recognized.publisher,
+      series: recognized.series,
+      confidence: recognized.confidence,
+    },
+  };
 }

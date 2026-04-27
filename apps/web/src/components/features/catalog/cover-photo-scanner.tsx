@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { CoverImage } from '@/components/ui/cover-image';
 import { recognize, recordChoice, importExternal } from '@/lib/api/cover-scan';
 import { compressImageToDataUri } from '@/lib/utils/compress-image';
-import type { CoverScanCandidate } from '@comicstrunk/contracts';
+import type { CoverScanCandidate, CoverScanIdentified } from '@comicstrunk/contracts';
 
 type Stage = 'idle' | 'compressing' | 'analyzing' | 'searching' | 'results' | 'error';
 
@@ -20,6 +20,7 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
   const [stage, setStage] = useState<Stage>('idle');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [candidates, setCandidates] = useState<CoverScanCandidate[]>([]);
+  const [identified, setIdentified] = useState<CoverScanIdentified | null>(null);
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [scanLogId, setScanLogId] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -41,6 +42,7 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
 
       setCandidates(result.candidates);
       setScanLogId(result.scanLogId);
+      setIdentified(result.identified ?? null);
       setStage('results');
     } catch (err) {
       const status = (err as { response?: { status?: number } })?.response?.status;
@@ -97,6 +99,7 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
     setStage('idle');
     setPreviewUrl(null);
     setCandidates([]);
+    setIdentified(null);
     setErrorMsg('');
     setScanLogId('');
   }
@@ -145,6 +148,25 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
 
       {stage === 'results' && (
         <div className="space-y-3">
+          {identified && identified.title && (
+            <div className="rounded border border-primary/30 bg-primary/5 p-3 text-sm">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                {t('identifiedAs')}
+              </p>
+              <p className="mt-1 font-medium">
+                {identified.title}
+                {identified.issueNumber !== null && identified.issueNumber !== undefined && (
+                  <span className="text-muted-foreground"> #{identified.issueNumber}</span>
+                )}
+              </p>
+              {(identified.publisher || identified.series) && (
+                <p className="text-xs text-muted-foreground">
+                  {[identified.series, identified.publisher].filter(Boolean).join(' • ')}
+                </p>
+              )}
+            </div>
+          )}
+
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
               {t('foundCount', { count: candidates.length })}

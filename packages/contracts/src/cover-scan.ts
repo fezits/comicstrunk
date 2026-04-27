@@ -26,9 +26,24 @@ export const coverScanCandidateSchema = z.object({
 });
 export type CoverScanCandidate = z.infer<typeof coverScanCandidateSchema>;
 
+// Info de identificacao do VLM, exposta ao usuario para diagnostico ("Procurando por: X").
+// Os campos sao opcionais porque podem nao estar presentes em todos os scans (ex: VLM
+// nao identificou titulo), e a interface de busca textual da Fase 1 nao preenche.
+export const coverScanIdentifiedSchema = z
+  .object({
+    title: z.string().nullable().optional(),
+    issueNumber: z.number().int().nullable().optional(),
+    publisher: z.string().nullable().optional(),
+    series: z.string().nullable().optional(),
+    confidence: z.enum(['alta', 'media', 'baixa']).optional(),
+  })
+  .optional();
+export type CoverScanIdentified = z.infer<typeof coverScanIdentifiedSchema>;
+
 export const coverScanSearchResponseSchema = z.object({
   candidates: z.array(coverScanCandidateSchema),
   scanLogId: z.string(),
+  identified: coverScanIdentifiedSchema,
 });
 export type CoverScanSearchResponse = z.infer<typeof coverScanSearchResponseSchema>;
 
