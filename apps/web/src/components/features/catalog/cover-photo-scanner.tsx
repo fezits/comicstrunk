@@ -4,31 +4,15 @@ import { useState, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { CoverImage } from '@/components/ui/cover-image';
-import { searchByText, recordChoice } from '@/lib/api/cover-scan';
-import type {
-  CoverScanCandidate,
-  CoverScanSearchInput,
-} from '@comicstrunk/contracts';
+import { recognize, recordChoice } from '@/lib/api/cover-scan';
+import { compressImageToDataUri } from '@/lib/utils/compress-image';
+import type { CoverScanCandidate } from '@comicstrunk/contracts';
 
-type Stage = 'idle' | 'reading' | 'searching' | 'results' | 'error';
+type Stage = 'idle' | 'compressing' | 'analyzing' | 'searching' | 'results' | 'error';
 
 interface Props {
   onChoose?: (candidate: CoverScanCandidate) => void;
   onClose?: () => void;
-}
-
-function extractCandidateNumber(text: string): number | undefined {
-  const match = text.match(/(?:#|n[oº]\.?\s*|edi[çc][aã]o\s*)?(\d{1,4})\b/i);
-  if (!match) return undefined;
-  const n = parseInt(match[1], 10);
-  return n > 0 && n < 10000 ? n : undefined;
-}
-
-function tokenize(text: string): string[] {
-  return text
-    .split(/[\s\n\r\t.,!?;:()[\]{}'"]+/)
-    .filter((t) => t.length >= 3 && t.length <= 50)
-    .slice(0, 50);
 }
 
 export function CoverPhotoScanner({ onChoose, onClose }: Props) {
@@ -42,44 +26,32 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
   const startedAtRef = useRef<number>(0);
 
   async function handleFile(file: File) {
-    setStage('reading');
+    setStage('compressing');
     setPreviewUrl(URL.createObjectURL(file));
     startedAtRef.current = Date.now();
 
     try {
-      // Lazy import — só baixa o Tesseract no clique do usuário
-      const { createWorker } = await import('tesseract.js');
-      const worker = await createWorker(['por', 'eng'], 1, {
-        logger: () => {}, // silencia console
+      const dataUri = await compressImageToDataUri(file);
+      setStage('analyzing');
+
+      const result = await recognize({
+        imageBase64: dataUri,
+        durationMs: Date.now() - startedAtRef.current,
       });
 
-      const { data } = await worker.recognize(file);
-      const rawText = data.text || '';
-      await worker.terminate();
-
-      const tokens = tokenize(rawText);
-      if (tokens.length === 0) {
-        setErrorMsg(t('errorNoText'));
-        setStage('error');
-        return;
-      }
-
-      setStage('searching');
-      const candidateNumber = extractCandidateNumber(rawText);
-      const input: CoverScanSearchInput = {
-        rawText: rawText.slice(0, 5000),
-        ocrTokens: tokens,
-        ...(candidateNumber !== undefined && { candidateNumber }),
-        durationMs: Date.now() - startedAtRef.current,
-      };
-
-      const result = await searchByText(input);
       setCandidates(result.candidates);
       setScanLogId(result.scanLogId);
       setStage('results');
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'unknown';
-      setErrorMsg(msg);
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      if (status === 429) {
+        setErrorMsg(t('rateLimitMessage'));
+      } else if (status && status >= 500) {
+        setErrorMsg(t('errorServer'));
+      } else {
+        const msg = err instanceof Error ? err.message : 'unknown';
+        setErrorMsg(msg);
+      }
       setStage('error');
     }
   }
@@ -89,12 +61,10 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
       try {
         await recordChoice({ scanLogId, chosenEntryId: candidate?.id ?? null });
       } catch {
-        // não bloqueia o fluxo se falhar — choice é só telemetria
+        // telemetria — falha silenciosa
       }
     }
-    if (candidate) {
-      onChoose?.(candidate);
-    }
+    if (candidate) onChoose?.(candidate);
   }
 
   function reset() {
@@ -121,13 +91,11 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
               if (file) handleFile(file);
             }}
           />
-          <Button onClick={() => fileInputRef.current?.click()}>
-            {t('chooseFile')}
-          </Button>
+          <Button onClick={() => fileInputRef.current?.click()}>{t('chooseFile')}</Button>
         </div>
       )}
 
-      {(stage === 'reading' || stage === 'searching') && (
+      {(stage === 'compressing' || stage === 'analyzing' || stage === 'searching') && (
         <div className="flex flex-col items-center gap-3">
           {previewUrl && (
             // eslint-disable-next-line @next/next/no-img-element
@@ -140,7 +108,11 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
             />
           )}
           <p className="text-sm text-muted-foreground">
-            {stage === 'reading' ? t('reading') : t('searching')}
+            {stage === 'compressing'
+              ? t('compressing')
+              : stage === 'analyzing'
+                ? t('analyzing')
+                : t('searching')}
           </p>
         </div>
       )}
@@ -202,11 +174,14 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
         </div>
       )}
 
-      {onClose && stage !== 'reading' && stage !== 'searching' && (
-        <Button variant="ghost" onClick={onClose} className="w-full">
-          {t('close')}
-        </Button>
-      )}
+      {onClose &&
+        stage !== 'compressing' &&
+        stage !== 'analyzing' &&
+        stage !== 'searching' && (
+          <Button variant="ghost" onClick={onClose} className="w-full">
+            {t('close')}
+          </Button>
+        )}
     </div>
   );
 }
