@@ -56,7 +56,9 @@ const USER_PROMPT = 'Identifique este gibi pela capa.';
 
 interface WorkersAIResponse {
   result?: {
-    response?: string;
+    // Cloudflare as vezes parseia o JSON automaticamente e retorna objeto;
+    // outras vezes retorna a string crua do modelo. Tratamos ambos os casos.
+    response?: string | Record<string, unknown>;
     usage?: {
       prompt_tokens: number;
       completion_tokens: number;
@@ -117,16 +119,24 @@ export async function recognizeCoverImage(
     throw new InternalError(`Workers AI falhou: ${errMsg}`);
   }
 
-  const responseText = json.result?.response ?? '';
-  if (!responseText) {
+  const responseRaw = json.result?.response;
+  if (responseRaw === undefined || responseRaw === null || responseRaw === '') {
     throw new InternalError('Workers AI retornou response vazio');
   }
 
-  // Llama as vezes envolve o JSON em ```json ... ``` ou texto extra.
-  // Extrair o primeiro { ... } valido.
-  const parsed = extractJson(responseText);
-  if (!parsed) {
-    throw new InternalError(`Workers AI retornou JSON invalido: ${responseText.slice(0, 200)}`);
+  // Cloudflare Workers AI as vezes parseia o JSON automaticamente (retorna
+  // objeto), outras vezes retorna a string crua do modelo. Tratamos ambos.
+  let parsed: Record<string, unknown> | null;
+  let rawForLog: string;
+  if (typeof responseRaw === 'string') {
+    parsed = extractJson(responseRaw);
+    rawForLog = responseRaw;
+    if (!parsed) {
+      throw new InternalError(`Workers AI retornou JSON invalido: ${responseRaw.slice(0, 200)}`);
+    }
+  } else {
+    parsed = responseRaw as Record<string, unknown>;
+    rawForLog = JSON.stringify(responseRaw);
   }
 
   return {
@@ -143,7 +153,7 @@ export async function recognizeCoverImage(
         ? parsed.confidence
         : 'baixa',
     ocr_text: typeof parsed.ocr_text === 'string' ? parsed.ocr_text : '',
-    raw_response: responseText,
+    raw_response: rawForLog,
   };
 }
 
