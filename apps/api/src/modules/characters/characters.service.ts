@@ -5,11 +5,16 @@ import type { CreateCharacterInput, UpdateCharacterInput } from '@comicstrunk/co
 
 // === List Characters ===
 
-export async function listCharacters(page = 1, limit = 20) {
+export async function listCharacters(page = 1, limit = 20, search?: string) {
   const skip = (page - 1) * limit;
+
+  const where = search && search.trim().length > 0
+    ? { name: { contains: search.trim() } }
+    : undefined;
 
   const [data, total] = await Promise.all([
     prisma.character.findMany({
+      where,
       skip,
       take: limit,
       orderBy: { name: 'asc' },
@@ -17,7 +22,7 @@ export async function listCharacters(page = 1, limit = 20) {
         _count: { select: { catalogEntries: true } },
       },
     }),
-    prisma.character.count(),
+    prisma.character.count({ where }),
   ]);
 
   return { data, total, page, limit };

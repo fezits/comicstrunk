@@ -15,7 +15,8 @@ router.get('/', cachePublic(300), async (req: Request, res: Response, next: Next
   try {
     const page = Math.max(1, Number(req.query.page) || 1);
     const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
-    const result = await charactersService.listCharacters(page, limit);
+    const search = typeof req.query.search === 'string' ? req.query.search : undefined;
+    const result = await charactersService.listCharacters(page, limit, search);
     sendPaginated(res, result.data, {
       page: result.page,
       limit: result.limit,

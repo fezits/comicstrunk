@@ -19,9 +19,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { getCategories, getCharacters, getTags, type Category, type Character } from '@/lib/api/taxonomy';
+import { getCategories, getTags, type Category } from '@/lib/api/taxonomy';
 import { getSeries, type Series } from '@/lib/api/series';
 import type { CatalogEntry } from '@/lib/api/catalog';
+import { CharacterMultiSelect } from './character-multi-select';
 
 interface Tag {
   id: string;
@@ -42,7 +43,6 @@ export function CatalogForm({ entry, onSubmit, onCancel, loading }: CatalogFormP
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
-  const [characters, setCharacters] = useState<Character[]>([]);
   const [seriesList, setSeriesList] = useState<Series[]>([]);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(entry?.coverImageUrl ?? null);
@@ -63,7 +63,10 @@ export function CatalogForm({ entry, onSubmit, onCancel, loading }: CatalogFormP
       barcode: entry?.barcode ?? '',
       isbn: entry?.isbn ?? '',
       description: entry?.description ?? '',
-      seriesId: entry?.series?.id ?? '',
+      // seriesId precisa ser undefined quando nao tem (Zod cuid() rejeita
+      // string vazia e o submit nem dispara — botao "Salvar" parecia nao
+      // funcionar).
+      seriesId: entry?.series?.id ?? undefined,
       volumeNumber: entry?.volumeNumber ?? undefined,
       editionNumber: entry?.editionNumber ?? undefined,
       categoryIds: entry?.categories.map((c) => c.categoryId) ?? [],
@@ -78,11 +81,13 @@ export function CatalogForm({ entry, onSubmit, onCancel, loading }: CatalogFormP
   const selectedCharacterIds = watch('characterIds') ?? [];
 
   useEffect(() => {
-    Promise.all([getCategories(), getTags(), getCharacters(1, 100), getSeries({ limit: 100 })]).then(
-      ([cats, tgs, chars, ser]) => {
+    // Personagens nao sao mais carregados em lote — o CharacterMultiSelect
+    // busca server-side conforme o admin digita. Categories/tags continuam
+    // pequenos (poucas dezenas), tudo bem carregar todos.
+    Promise.all([getCategories(), getTags(), getSeries({ limit: 100 })]).then(
+      ([cats, tgs, ser]) => {
         setCategories(cats);
         setTags(tgs);
-        setCharacters(chars.data);
         setSeriesList(ser.data);
       },
     );
@@ -186,7 +191,7 @@ export function CatalogForm({ entry, onSubmit, onCancel, loading }: CatalogFormP
         <Label>{t('form.series')}</Label>
         <Select
           value={selectedSeriesId || '_none'}
-          onValueChange={(v) => setValue('seriesId', v === '_none' ? '' : v)}
+          onValueChange={(v) => setValue('seriesId', v === '_none' ? undefined : v)}
         >
           <SelectTrigger>
             <SelectValue placeholder={t('form.noSeries')} />
@@ -266,25 +271,13 @@ export function CatalogForm({ entry, onSubmit, onCancel, loading }: CatalogFormP
         </div>
       </div>
 
-      {/* Characters */}
+      {/* Characters — picker com busca server-side (catalog tem 12k+) */}
       <div className="space-y-2">
         <Label>{t('form.characters')}</Label>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-48 overflow-y-auto border rounded-md p-3">
-          {characters.map((char) => (
-            <div key={char.id} className="flex items-center gap-2">
-              <Checkbox
-                id={`form-char-${char.id}`}
-                checked={selectedCharacterIds.includes(char.id)}
-                onCheckedChange={(checked) =>
-                  toggleArrayItem('characterIds', char.id, checked === true)
-                }
-              />
-              <Label htmlFor={`form-char-${char.id}`} className="text-sm cursor-pointer">
-                {char.name}
-              </Label>
-            </div>
-          ))}
-        </div>
+        <CharacterMultiSelect
+          value={selectedCharacterIds}
+          onChange={(ids) => setValue('characterIds', ids, { shouldValidate: true })}
+        />
       </div>
 
       {/* Actions */}
