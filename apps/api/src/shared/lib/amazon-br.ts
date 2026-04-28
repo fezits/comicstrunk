@@ -131,13 +131,25 @@ export async function searchAmazonBR(
 function parseAmazonSearch(html: string, limit: number): AmazonBRProductSummary[] {
   const products: AmazonBRProductSummary[] = [];
 
-  // 1) Quebra o HTML em cards de search-result usando data-asin como ancora.
-  // Essa abordagem eh mais robusta que tentar regex unica enorme.
-  const cardRegex = /<div[^>]*data-component-type="s-search-result"[^>]*data-asin="([A-Z0-9]{10,})"[^>]*>([\s\S]*?)(?=<div[^>]*data-component-type="s-search-result"|<\/span><\/div><\/div><\/div><\/span><\/div><\/div><\/div><\/span><\/div>$|$)/gi;
+  // Localizar inicio de cada card (independente da ordem dos atributos:
+  // Amazon as vezes coloca data-asin antes de data-component-type, e vice-versa).
+  const STARTER = /<div\b[^>]*\bdata-component-type="s-search-result"[^>]*>/gi;
+  const ASIN_RE = /\bdata-asin="([A-Z0-9]{10,})"/i;
 
-  let match;
-  while ((match = cardRegex.exec(html)) !== null && products.length < limit) {
-    const [, asin, body] = match;
+  const starts: { tagStart: number; tagEnd: number; asin: string }[] = [];
+  let m: RegExpExecArray | null;
+  while ((m = STARTER.exec(html)) !== null) {
+    const tagStart = m.index;
+    const tagEnd = m.index + m[0].length;
+    const asinMatch = ASIN_RE.exec(m[0]);
+    if (!asinMatch) continue;
+    starts.push({ tagStart, tagEnd, asin: asinMatch[1] });
+  }
+
+  for (let i = 0; i < starts.length && products.length < limit; i++) {
+    const { tagEnd, asin } = starts[i];
+    const bodyEnd = i + 1 < starts.length ? starts[i + 1].tagStart : Math.min(html.length, tagEnd + 8000);
+    const body = html.slice(tagEnd, bodyEnd);
     const product = parseCard(asin, body);
     if (product) products.push(product);
   }
