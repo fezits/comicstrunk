@@ -7,6 +7,8 @@ import type {
   CoverScanRecognizeResponse,
   CoverScanImportInput,
   CoverScanImportResponse,
+  CoverScanConfirmInput,
+  CoverScanConfirmResponse,
 } from '@comicstrunk/contracts';
 
 export async function searchByText(
@@ -29,5 +31,12 @@ export async function recognize(
 
 export async function importExternal(input: CoverScanImportInput): Promise<CoverScanImportResponse> {
   const { data } = await apiClient.post('/cover-scan/import', input);
+  return data.data;
+}
+
+export async function confirmCandidate(
+  input: CoverScanConfirmInput,
+): Promise<CoverScanConfirmResponse> {
+  const { data } = await apiClient.post('/cover-scan/confirm', input);
   return data.data;
 }

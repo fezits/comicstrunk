@@ -2,9 +2,19 @@
 
 import { useState, useRef } from 'react';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
+import { BookOpen, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CoverImage } from '@/components/ui/cover-image';
-import { recognize, recordChoice, importExternal } from '@/lib/api/cover-scan';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { recognize, recordChoice, confirmCandidate } from '@/lib/api/cover-scan';
 import { compressImageToDataUri } from '@/lib/utils/compress-image';
 import type { CoverScanCandidate, CoverScanIdentified } from '@comicstrunk/contracts';
 
@@ -15,6 +25,13 @@ interface Props {
   onClose?: () => void;
 }
 
+const SOURCE_LABEL: Record<string, string> = {
+  metron: 'Metron',
+  rika: 'Rika',
+  amazon: 'Amazon BR',
+  fandom: 'Fandom Wiki',
+};
+
 export function CoverPhotoScanner({ onChoose, onClose }: Props) {
   const t = useTranslations('scanCapa');
   const [stage, setStage] = useState<Stage>('idle');
@@ -23,6 +40,12 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
   const [identified, setIdentified] = useState<CoverScanIdentified | null>(null);
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [scanLogId, setScanLogId] = useState<string>('');
+  const [photoDataUri, setPhotoDataUri] = useState<string>('');
+
+  // Modal de confirmacao
+  const [modalCandidate, setModalCandidate] = useState<CoverScanCandidate | null>(null);
+  const [confirming, setConfirming] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const startedAtRef = useRef<number>(0);
 
@@ -33,6 +56,7 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
 
     try {
       const dataUri = await compressImageToDataUri(file);
+      setPhotoDataUri(dataUri);
       setStage('analyzing');
 
       const result = await recognize({
@@ -45,64 +69,76 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
       setIdentified(result.identified ?? null);
       setStage('results');
     } catch (err) {
-      const errAny = err as { response?: { status?: number; data?: { error?: { message?: string } } }; message?: string };
+      const errAny = err as {
+        response?: { status?: number; data?: { error?: { message?: string } } };
+        message?: string;
+      };
       const status = errAny.response?.status;
       const apiMsg = errAny.response?.data?.error?.message;
-      if (status === 429) {
-        setErrorMsg(t('rateLimitMessage'));
-      } else if (status === 413) {
-        setErrorMsg(apiMsg || 'Imagem muito grande. Tente uma foto menor.');
-      } else if (apiMsg) {
-        setErrorMsg(apiMsg);
-      } else if (status && status >= 500) {
-        setErrorMsg(t('errorServer'));
-      } else {
-        setErrorMsg(errAny.message || 'unknown');
-      }
+      if (status === 429) setErrorMsg(t('rateLimitMessage'));
+      else if (status === 413) setErrorMsg(apiMsg || 'Imagem muito grande. Tente uma foto menor.');
+      else if (apiMsg) setErrorMsg(apiMsg);
+      else if (status && status >= 500) setErrorMsg(t('errorServer'));
+      else setErrorMsg(errAny.message || 'unknown');
       setStage('error');
     }
   }
 
-  async function handleChoose(candidate: CoverScanCandidate | null) {
-    if (!candidate) {
-      if (scanLogId) {
-        await recordChoice({ scanLogId, chosenEntryId: null }).catch(() => {});
-      }
-      return;
-    }
+  function openConfirm(candidate: CoverScanCandidate) {
+    setModalCandidate(candidate);
+  }
 
-    // Externo: importar primeiro (cria entry PENDING + adiciona a colecao)
-    if (candidate.isExternal && candidate.externalSource && candidate.externalRef && scanLogId) {
-      try {
-        const importResult = await importExternal({
-          scanLogId,
-          externalSource: candidate.externalSource,
-          externalRef: candidate.externalRef,
-        });
-        // Repassar pro onChoose com o id real da entry recem-criada
-        onChoose?.({
-          ...candidate,
-          id: importResult.catalogEntryId,
-          isExternal: false,
-        });
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : t('errorGeneric');
-        setErrorMsg(msg);
-        setStage('error');
-      }
-      return;
-    }
+  async function handleConfirm() {
+    if (!modalCandidate || !scanLogId) return;
+    setConfirming(true);
+    try {
+      const result = await confirmCandidate({
+        scanLogId,
+        candidate: {
+          id: modalCandidate.id,
+          slug: modalCandidate.slug,
+          title: modalCandidate.title,
+          publisher: modalCandidate.publisher,
+          editionNumber: modalCandidate.editionNumber,
+          coverImageUrl: modalCandidate.coverImageUrl,
+          isExternal: modalCandidate.isExternal,
+          externalSource: modalCandidate.externalSource,
+          externalRef: modalCandidate.externalRef,
+        },
+        userPhotoBase64: photoDataUri || undefined,
+      });
 
-    // Interno: fluxo existente
+      if (result.alreadyInCollection) {
+        toast.info(result.message);
+      } else {
+        toast.success(result.message);
+      }
+      onChoose?.(modalCandidate);
+      setModalCandidate(null);
+      reset();
+    } catch (err) {
+      const errAny = err as {
+        response?: { status?: number; data?: { error?: { message?: string } } };
+        message?: string;
+      };
+      const apiMsg = errAny.response?.data?.error?.message;
+      toast.error(apiMsg || errAny.message || t('errorGeneric'));
+    } finally {
+      setConfirming(false);
+    }
+  }
+
+  async function handleNoneMatch() {
     if (scanLogId) {
-      await recordChoice({ scanLogId, chosenEntryId: candidate.id }).catch(() => {});
+      await recordChoice({ scanLogId, chosenEntryId: null }).catch(() => {});
     }
-    onChoose?.(candidate);
+    reset();
   }
 
   function reset() {
     setStage('idle');
     setPreviewUrl(null);
+    setPhotoDataUri('');
     setCandidates([]);
     setIdentified(null);
     setErrorMsg('');
@@ -204,7 +240,7 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
               {candidates.map((c) => (
                 <li key={c.id}>
                   <button
-                    onClick={() => handleChoose(c)}
+                    onClick={() => openConfirm(c)}
                     className={`block w-full rounded border-2 bg-card p-2 text-left transition-colors hover:border-primary ${
                       c.isExternal
                         ? 'border-amber-500 border-dashed bg-amber-500/5'
@@ -222,13 +258,18 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
                     {c.publisher && (
                       <p className="text-xs text-muted-foreground">{c.publisher}</p>
                     )}
+                    {c.isExternal && c.externalSource && (
+                      <p className="mt-0.5 text-[10px] uppercase tracking-wider text-amber-600">
+                        Fonte externa · {SOURCE_LABEL[c.externalSource] ?? c.externalSource}
+                      </p>
+                    )}
                   </button>
                 </li>
               ))}
             </ul>
           )}
 
-          <Button variant="outline" onClick={() => handleChoose(null)} className="w-full">
+          <Button variant="outline" onClick={handleNoneMatch} className="w-full">
             {t('noneMatch')}
           </Button>
         </div>
@@ -253,6 +294,90 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
             {t('close')}
           </Button>
         )}
+
+      {/* Modal de confirmacao */}
+      <Dialog
+        open={!!modalCandidate}
+        onOpenChange={(open) => {
+          if (!open && !confirming) setModalCandidate(null);
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>É esse mesmo?</DialogTitle>
+            <DialogDescription>
+              Confirme se este é o gibi que você scaneou. Vamos adicionar à sua coleção.
+            </DialogDescription>
+          </DialogHeader>
+
+          {modalCandidate && (
+            <div className="flex gap-3">
+              <div className="aspect-[2/3] w-32 flex-none overflow-hidden rounded border bg-muted">
+                {modalCandidate.coverImageUrl ? (
+                  <img
+                    src={modalCandidate.coverImageUrl}
+                    alt={modalCandidate.title}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <BookOpen className="h-8 w-8 text-muted-foreground/40" />
+                  </div>
+                )}
+              </div>
+              <dl className="flex-1 space-y-2 text-sm">
+                <div>
+                  <dt className="text-xs uppercase tracking-wider text-muted-foreground">Título</dt>
+                  <dd className="font-medium">{modalCandidate.title}</dd>
+                </div>
+                {modalCandidate.publisher && (
+                  <div>
+                    <dt className="text-xs uppercase tracking-wider text-muted-foreground">Editora</dt>
+                    <dd>{modalCandidate.publisher}</dd>
+                  </div>
+                )}
+                {modalCandidate.editionNumber !== null &&
+                  modalCandidate.editionNumber !== undefined && (
+                    <div>
+                      <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+                        Edição
+                      </dt>
+                      <dd>#{modalCandidate.editionNumber}</dd>
+                    </div>
+                  )}
+                <div>
+                  <dt className="text-xs uppercase tracking-wider text-muted-foreground">Origem</dt>
+                  <dd className="text-xs">
+                    {modalCandidate.isExternal && modalCandidate.externalSource
+                      ? `Externa: ${SOURCE_LABEL[modalCandidate.externalSource] ?? modalCandidate.externalSource} (será importada)`
+                      : 'Catálogo interno'}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setModalCandidate(null)}
+              disabled={confirming}
+            >
+              Cancelar
+            </Button>
+            <Button onClick={handleConfirm} disabled={confirming}>
+              {confirming ? (
+                'Salvando...'
+              ) : (
+                <>
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  Confirmar
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

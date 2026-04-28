@@ -93,6 +93,45 @@ export interface CoverScanImportResponse {
   message: string;
 }
 
+// === Confirm endpoint — usuario viu o modal e confirmou que aquele candidato eh
+// o gibi correto. Backend cria entry (se externo) + adiciona a colecao + opcionalmente
+// salva a foto que o usuario tirou no upload. ===
+
+const MAX_USER_PHOTO_LENGTH = 1_400_000; // mesmo limite do imageBase64 do recognize
+
+export const coverScanConfirmSchema = z.object({
+  scanLogId: z.string().min(1),
+  candidate: z.object({
+    id: z.string(),
+    slug: z.string().nullable().optional(),
+    title: z.string().min(1),
+    publisher: z.string().nullable().optional(),
+    editionNumber: z.number().int().nullable().optional(),
+    coverImageUrl: z.string().nullable().optional(),
+    isExternal: z.boolean().optional(),
+    externalSource: z.enum(['metron', 'rika', 'amazon', 'fandom']).optional(),
+    externalRef: z.string().optional(),
+  }),
+  // foto que o usuario tirou na hora do scan; data URI base64. Salva como
+  // photo do CollectionItem pra ele lembrar como veio o gibi dele.
+  userPhotoBase64: z
+    .string()
+    .max(MAX_USER_PHOTO_LENGTH, 'Foto do usuario muito grande')
+    .refine(
+      (s) => !s || s.startsWith('data:image/'),
+      'userPhotoBase64 deve ser data URI ou string vazia',
+    )
+    .optional(),
+});
+export type CoverScanConfirmInput = z.infer<typeof coverScanConfirmSchema>;
+
+export interface CoverScanConfirmResponse {
+  catalogEntryId: string;
+  collectionItemId: string;
+  alreadyInCollection: boolean;
+  message: string;
+}
+
 // === Daily limit constant ===
 
 export const COVER_SCAN_DAILY_LIMIT_DEFAULT = 30;
