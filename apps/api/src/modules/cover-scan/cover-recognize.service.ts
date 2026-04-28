@@ -1,7 +1,7 @@
 import { prisma } from '../../shared/lib/prisma';
 import { recognizeCoverImage, type RecognizedCover } from '../../shared/lib/cloudflare-ai';
 import { localCoverUrl } from '../../shared/lib/cloudinary';
-import { TooManyRequestsError } from '../../shared/utils/api-error';
+import { TooManyRequestsError, BadRequestError } from '../../shared/utils/api-error';
 import { logger } from '../../shared/lib/logger';
 import {
   COVER_SCAN_DAILY_LIMIT_DEFAULT,
@@ -203,6 +203,38 @@ function buildTokenBuckets(rec: RecognizedCover): TokenBuckets {
   return { must, boost };
 }
 
+/**
+ * Heuristica: a leitura do VLM tem sinal suficiente pra valer a busca?
+ * VLM as vezes devolve title=null + ocr_text="" quando a foto eh ruim
+ * (borrada, escura, capa virada). Quando isso acontece, qualquer busca
+ * vira ruido — melhor pedir nova foto.
+ *
+ * Aceitamos tres sinais alternativos:
+ *  - title >= 2 chars (nome real do gibi)
+ *  - series >= 2 chars
+ *  - ocr_text com >= 5 chars uteis (ignorando espacos)
+ *
+ * Tambem rejeitamos placeholders genericos do VLM ("unknown", "untitled",
+ * "n/a") que aparecem quando o modelo decide encher campo no esquema.
+ */
+function hasRecognizableText(rec: RecognizedCover): boolean {
+  const PLACEHOLDERS = new Set([
+    'unknown', 'untitled', 'n/a', 'na', 'none', 'null',
+    'desconhecido', 'sem titulo', 'sem título',
+  ]);
+  const isPlaceholder = (s: string | null) => {
+    if (!s) return true;
+    const norm = s.trim().toLowerCase();
+    return norm.length === 0 || PLACEHOLDERS.has(norm);
+  };
+
+  const titleOk = !isPlaceholder(rec.title) && (rec.title ?? '').trim().length >= 2;
+  const seriesOk = !isPlaceholder(rec.series) && (rec.series ?? '').trim().length >= 2;
+  const ocrOk = (rec.ocr_text ?? '').replace(/\s+/g, '').length >= 5;
+
+  return titleOk || seriesOk || ocrOk;
+}
+
 // === Main service ===
 
 export async function recognizeFromImage(
@@ -212,8 +244,25 @@ export async function recognizeFromImage(
 ): Promise<CoverScanRecognizeResponse> {
   await assertWithinDailyLimit(userId, userRole);
 
-  // 1. Chamar VLM
-  const recognized = await recognizeCoverImage(input.imageBase64);
+  // 1. Chamar VLM. Se a primeira leitura nao tiver NENHUM sinal textual
+  // (foto borrada, sombra, capa virada), tenta UMA segunda leitura — VLM
+  // tem alguma estocasticidade e a segunda call as vezes funciona. Se as
+  // duas vierem vazias, devolve erro pro usuario tirar foto melhor em
+  // vez de queimar busca em catalogo + 4 fontes externas com tokens vazios.
+  let recognized = await recognizeCoverImage(input.imageBase64);
+  if (!hasRecognizableText(recognized)) {
+    logger.info('cover-scan: empty VLM response, retrying once', {
+      userId,
+      titleLen: (recognized.title ?? '').length,
+      ocrLen: (recognized.ocr_text ?? '').length,
+    });
+    recognized = await recognizeCoverImage(input.imageBase64);
+    if (!hasRecognizableText(recognized)) {
+      throw new BadRequestError(
+        'Não consegui ler nada na capa. Tire outra foto com melhor iluminação, foco e aproximação no texto.',
+      );
+    }
+  }
 
   // 1.5. Fallback de numero: se VLM nao retornou issue_number, tentar extrair
   // de title/ocr_text via regex.
