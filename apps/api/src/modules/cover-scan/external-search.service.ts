@@ -8,29 +8,31 @@ import type { CoverScanCandidate } from '@comicstrunk/contracts';
 const TOP_EXTERNAL_PER_SOURCE = 5;
 
 /**
- * Busca em fontes externas (Rika + Metron) em paralelo. Aplica dedup contra
- * catalogo local: candidatos externos que ja existem no catalogo viram
- * candidatos internos (com seus ids reais).
+ * Busca em fontes externas em paralelo. Aplica dedup contra catalogo local:
+ * candidatos externos que ja existem no catalogo viram candidatos internos
+ * (com seus ids reais).
  *
- * Estrategia de query:
- * - Prefere `title` (sem subtitulo apos ":") porque eh o nome do gibi mesmo.
- * - VLM as vezes preenche `series` com info editorial vaga (ex: "DC Compact
- *   Comics" para a linha de produtos, em vez do nome da serie real).
- * - Se title vazio, cai pro series.
+ * O catalogo eh global — nao filtra por idioma nem origem. Qualquer HQ pode
+ * entrar (americana, brasileira, europeia, manga). Por isso a query usa
+ * TODOS os sinais que o VLM extraiu da capa (titulo + serie + numero +
+ * autor) concatenados e deixa cada fonte fazer o melhor matching que puder.
  */
 export async function searchExternal(rec: RecognizedCover): Promise<CoverScanCandidate[]> {
-  const titleQuery = rec.title ? stripSubtitle(rec.title) : '';
-  const seriesQuery = rec.series ?? '';
-  const primaryQuery = titleQuery || stripSubtitle(seriesQuery);
-  if (!primaryQuery.trim()) return [];
+  const fullText = buildFullTextQuery(rec);
+  if (!fullText.trim()) return [];
+
+  // Metron usa `series_name`. Como pode receber tanto "Batman" sozinho
+  // quanto "Batman Life After Death", tentamos a query completa primeiro
+  // e (se nada vier) caimos pro titulo isolado num segundo passo abaixo.
+  const metronPrimary = combineTitleAndSeries(rec) || fullText;
 
   const [metronResult, rikaResult, amazonResult] = await Promise.allSettled([
     searchMetronIssues({
-      seriesName: primaryQuery,
+      seriesName: metronPrimary,
       number: rec.issue_number ?? undefined,
     }),
-    searchRika(buildRikaQuery(rec), { limit: TOP_EXTERNAL_PER_SOURCE }),
-    searchAmazonBR(buildAmazonQuery(rec), { limit: TOP_EXTERNAL_PER_SOURCE }),
+    searchRika(fullText, { limit: TOP_EXTERNAL_PER_SOURCE }),
+    searchAmazonBR(fullText, { limit: TOP_EXTERNAL_PER_SOURCE }),
   ]);
 
   const metronList: MetronIssueSummary[] =
@@ -51,25 +53,28 @@ export async function searchExternal(rec: RecognizedCover): Promise<CoverScanCan
   return await dedupExternal(externalCandidates);
 }
 
-function stripSubtitle(s: string): string {
-  const colon = s.indexOf(':');
-  const dash = s.indexOf(' - ');
-  const cut = [colon, dash].filter((i) => i >= 0).sort((a, b) => a - b)[0];
-  return cut !== undefined && cut > 0 ? s.slice(0, cut).trim() : s.trim();
+function combineTitleAndSeries(rec: RecognizedCover): string {
+  const t = (rec.title ?? '').trim();
+  const s = (rec.series ?? '').trim();
+  if (!t) return s;
+  if (!s) return t;
+  // Se um esta contido no outro (caso "Batman" / "Batman Life After Death"),
+  // pega o mais longo. Senao concatena pra somar sinal.
+  const tLow = t.toLowerCase();
+  const sLow = s.toLowerCase();
+  if (sLow.includes(tLow)) return s;
+  if (tLow.includes(sLow)) return t;
+  return `${t} ${s}`;
 }
 
-function buildRikaQuery(rec: RecognizedCover): string {
+function buildFullTextQuery(rec: RecognizedCover): string {
+  // Junta tudo o que o VLM extraiu sem filtrar por idioma. Cada fonte de busca
+  // faz seu proprio relevance ranking — se "Batman Life After Death #1 Tony
+  // Daniel" der match exato, otimo; se nao, ainda assim os tokens individuais
+  // ajudam a achar variantes regionais (Batman: A Vida Apos a Morte, etc).
   const parts: string[] = [];
-  if (rec.title) parts.push(stripSubtitle(rec.title));
-  if (rec.issue_number !== null) parts.push(String(rec.issue_number));
-  return parts.join(' ').trim();
-}
-
-function buildAmazonQuery(rec: RecognizedCover): string {
-  // Amazon eh mais permissiva — pode incluir mais contexto: titulo completo
-  // (com subtitulo), numero, autor principal.
-  const parts: string[] = [];
-  if (rec.title) parts.push(rec.title);
+  const combined = combineTitleAndSeries(rec);
+  if (combined) parts.push(combined);
   if (rec.issue_number !== null) parts.push(`#${rec.issue_number}`);
   if (rec.authors[0]) parts.push(rec.authors[0]);
   return parts.join(' ').trim();
@@ -168,8 +173,7 @@ async function findLocalMatch(ext: CoverScanCandidate): Promise<LocalMatch | nul
   const title = ext.title;
   if (!title) return null;
 
-  const main = stripSubtitle(title);
-  const words = main
+  const words = title
     .split(/[\s\-:]+/)
     .filter((w) => w.length >= 3)
     .slice(0, 3);
