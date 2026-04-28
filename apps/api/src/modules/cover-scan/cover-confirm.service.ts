@@ -1,8 +1,8 @@
 import { prisma } from '../../shared/lib/prisma';
 import { uploadImage } from '../../shared/lib/cloudinary';
 import { logger } from '../../shared/lib/logger';
-import { ConflictError, NotFoundError } from '../../shared/utils/api-error';
-import { importExternalCandidate } from './cover-import.service';
+import { NotFoundError } from '../../shared/utils/api-error';
+import { ensureCatalogEntryFromExternal } from './cover-import.service';
 import type {
   CoverScanConfirmInput,
   CoverScanConfirmResponse,
@@ -11,19 +11,22 @@ import type {
 /**
  * Confirma um candidato escolhido pelo usuario no modal pos-scan.
  *
+ * Diferente de /import, este endpoint NUNCA incrementa quantidade do item:
+ * se o gibi ja esta na colecao do usuario, retorna alreadyInCollection
+ * com a quantidade preservada. UX: clicar de novo no mesmo gibi nao
+ * cria copia.
+ *
  * Fluxo:
- * 1. Valida que o scanLog pertence ao usuario.
- * 2. Resolve o catalogEntry:
- *    - Externo (isExternal+externalSource): chama importExternalCandidate
- *      (cria entry PENDING ou reusa por sourceKey).
- *    - Local: usa o id direto.
- * 3. Verifica se o gibi ja esta na colecao do usuario.
- *    - Se ja estiver: retorna alreadyInCollection=true SEM criar item nem
- *      salvar foto. Frontend mostra "ja esta na sua colecao".
- *    - Se nao estiver: cria CollectionItem.
- * 4. Se userPhotoBase64 veio, salva no R2 e adiciona em
- *    CollectionItem.photoUrls (so quando criou item novo).
- * 5. Atualiza chosenEntryId no scanLog.
+ * 1. Valida o scanLog.
+ * 2. Resolve catalogEntry:
+ *    - Externo: ensureCatalogEntryFromExternal por sourceKey (cria se
+ *      nao existir; reusa silenciosamente se existir).
+ *    - Local: id direto, valida que o entry existe.
+ * 3. Verifica se o usuario ja tem o item.
+ *    - Sim: retorna alreadyInCollection=true SEM mexer em quantity nem
+ *      em foto.
+ *    - Nao: cria CollectionItem + grava userPhoto se veio.
+ * 4. Atualiza chosenEntryId no scanLog.
  */
 export async function confirmCandidate(
   userId: string,
@@ -37,20 +40,17 @@ export async function confirmCandidate(
     throw new NotFoundError('Scan log não encontrado.');
   }
 
+  const cand = input.candidate;
   let catalogEntryId: string;
 
-  // Resolver catalogEntryId: externo importa, local usa direto.
-  const cand = input.candidate;
   if (cand.isExternal && cand.externalSource && cand.externalRef) {
-    const importResult = await importExternalCandidate(userId, {
-      scanLogId: input.scanLogId,
-      externalSource: cand.externalSource,
-      externalRef: cand.externalRef,
-    });
-    catalogEntryId = importResult.catalogEntryId;
-    // importExternalCandidate ja adicionou o item na colecao OU incrementou
-    // qty se existia. Para preservar o contrato "nao gravar se ja estiver",
-    // a gente checa abaixo.
+    const entry = await ensureCatalogEntryFromExternal(
+      userId,
+      cand.externalSource,
+      cand.externalRef,
+      input.scanLogId,
+    );
+    catalogEntryId = entry.id;
   } else {
     catalogEntryId = cand.id;
     const exists = await prisma.catalogEntry.findUnique({
@@ -62,13 +62,18 @@ export async function confirmCandidate(
     }
   }
 
-  // Checa se ja esta na colecao
+  // Ja tem na colecao? Devolve mensagem unica sem mexer em quantity.
   const existingItem = await prisma.collectionItem.findFirst({
     where: { userId, catalogEntryId },
-    select: { id: true, quantity: true, photoUrls: true },
+    select: { id: true },
   });
 
   if (existingItem) {
+    // Atualiza chosenEntryId no scanLog mesmo assim (telemetria).
+    await prisma.coverScanLog.update({
+      where: { id: input.scanLogId },
+      data: { chosenEntryId: catalogEntryId },
+    });
     return {
       catalogEntryId,
       collectionItemId: existingItem.id,
@@ -77,9 +82,7 @@ export async function confirmCandidate(
     };
   }
 
-  // Cria item novo (caminho local; externo ja criou via importExternalCandidate
-  // — mas se chegou aqui sem existingItem eh porque o import falhou silencioso
-  // ou o usuario eh diferente do que importou).
+  // Cria item novo
   const created = await prisma.collectionItem.create({
     data: {
       userId,
@@ -91,7 +94,7 @@ export async function confirmCandidate(
   });
   const collectionItemId = created.id;
 
-  // Salva foto do usuario (best-effort) no item recem-criado
+  // Salva foto do usuario (best-effort)
   if (input.userPhotoBase64) {
     try {
       const buffer = parseDataUri(input.userPhotoBase64);
@@ -110,7 +113,6 @@ export async function confirmCandidate(
     }
   }
 
-  // Marca a escolha no scanLog
   await prisma.coverScanLog.update({
     where: { id: input.scanLogId },
     data: { chosenEntryId: catalogEntryId },

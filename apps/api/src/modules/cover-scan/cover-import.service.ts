@@ -5,8 +5,72 @@ import { searchAmazonBR } from '../../shared/lib/amazon-br';
 import { getFandomPage } from '../../shared/lib/fandom';
 import { uniqueSlug } from '../../shared/utils/slug';
 import { uploadImage } from '../../shared/lib/cloudinary';
+import { logger } from '../../shared/lib/logger';
 import { NotFoundError, BadRequestError } from '../../shared/utils/api-error';
 import type { CoverScanImportInput, CoverScanImportResponse } from '@comicstrunk/contracts';
+
+/**
+ * Cria (ou reusa por sourceKey) um CatalogEntry a partir de uma fonte
+ * externa. NAO mexe em CollectionItem — essa parte fica a cargo do
+ * chamador (importExternalCandidate adiciona com increment, confirmCandidate
+ * checa duplicidade primeiro).
+ *
+ * Sempre PENDING ao criar — admin aprova depois pra entrar no catalogo
+ * publico.
+ */
+export async function ensureCatalogEntryFromExternal(
+  userId: string,
+  externalSource: 'metron' | 'rika' | 'amazon' | 'fandom',
+  externalRef: string,
+  scanLogId: string,
+): Promise<{ id: string; approvalStatus: string }> {
+  const sourceKey = `${externalSource}:${externalRef}`;
+
+  const existing = await prisma.catalogEntry.findFirst({
+    where: { sourceKey },
+    select: { id: true, approvalStatus: true },
+  });
+  if (existing) return existing;
+
+  const data = await fetchExternalData(externalSource, externalRef);
+  if (!data) {
+    logger.warn('cover-import: fetchExternalData returned null', {
+      source: externalSource,
+      ref: externalRef,
+      scanLogId,
+    });
+    throw new BadRequestError('Não foi possível obter dados da fonte externa.');
+  }
+
+  let coverFileName: string | null = null;
+  let coverImageUrl: string | null = data.image;
+  if (data.image) {
+    const fileName = await tryDownloadCover(data.image);
+    if (fileName) {
+      coverFileName = fileName;
+      coverImageUrl = null;
+    }
+  }
+
+  const slug = await uniqueSlug(data.title, 'catalogEntry');
+  const created = await prisma.catalogEntry.create({
+    data: {
+      title: data.title,
+      publisher: data.publisher,
+      editionNumber: data.editionNumber,
+      coverImageUrl,
+      coverFileName,
+      description: data.description,
+      isbn: data.isbn,
+      slug,
+      sourceKey,
+      approvalStatus: 'PENDING',
+      createdById: userId,
+    },
+    select: { id: true, approvalStatus: true },
+  });
+  return created;
+}
 
 /**
  * Cria CatalogEntry PENDING a partir de candidato externo, tenta baixar capa
@@ -30,61 +94,12 @@ export async function importExternalCandidate(
     throw new NotFoundError('Scan log não encontrado.');
   }
 
-  const sourceKey = `${input.externalSource}:${input.externalRef}`;
-
-  // Idempotencia: já existe entry com este sourceKey?
-  let entry = await prisma.catalogEntry.findFirst({
-    where: { sourceKey },
-    select: { id: true, approvalStatus: true },
-  });
-
-  if (!entry) {
-    const data = await fetchExternalData(input.externalSource, input.externalRef);
-    if (!data) {
-      // Log o input completo: precisamos saber qual fonte/ref falhou pra
-      // entender se eh um caso edge (cache miss, breaker aberto, ref mal formado).
-      const { logger } = await import('../../shared/lib/logger');
-      logger.warn('cover-import: fetchExternalData returned null', {
-        source: input.externalSource,
-        ref: input.externalRef,
-        scanLogId: input.scanLogId,
-      });
-      throw new BadRequestError('Não foi possível obter dados da fonte externa.');
-    }
-
-    // Baixar capa pro storage (best effort — falha silenciosa)
-    let coverFileName: string | null = null;
-    let coverImageUrl: string | null = data.image;
-
-    if (data.image) {
-      const fileName = await tryDownloadCover(data.image);
-      if (fileName) {
-        coverFileName = fileName;
-        coverImageUrl = null; // usa coverFileName; resolveCoverUrl() monta a URL
-      }
-    }
-
-    // Slug único baseado no título da entry
-    const slug = await uniqueSlug(data.title, 'catalogEntry');
-
-    const created = await prisma.catalogEntry.create({
-      data: {
-        title: data.title,
-        publisher: data.publisher,
-        editionNumber: data.editionNumber,
-        coverImageUrl,
-        coverFileName,
-        description: data.description,
-        isbn: data.isbn,
-        slug,
-        sourceKey,
-        approvalStatus: 'PENDING',
-        createdById: userId,
-      },
-      select: { id: true, approvalStatus: true },
-    });
-    entry = created;
-  }
+  const entry = await ensureCatalogEntryFromExternal(
+    userId,
+    input.externalSource,
+    input.externalRef,
+    input.scanLogId,
+  );
 
   // Adicionar à coleção do user (idempotente: incrementa qty se já existir)
   const existing = await prisma.collectionItem.findFirst({

@@ -3,6 +3,7 @@ import { searchMetronIssues, type MetronIssueSummary } from '../../shared/lib/me
 import { searchRika, type RikaProductSummary } from '../../shared/lib/rika';
 import { searchAmazonBR, type AmazonBRProductSummary } from '../../shared/lib/amazon-br';
 import { searchFandom, type FandomPageSummary } from '../../shared/lib/fandom';
+import { localCoverUrl } from '../../shared/lib/cloudinary';
 import type { RecognizedCover } from '../../shared/lib/cloudflare-ai';
 import type { CoverScanCandidate } from '@comicstrunk/contracts';
 
@@ -249,6 +250,37 @@ interface LocalMatch {
 }
 
 async function findLocalMatch(ext: CoverScanCandidate): Promise<LocalMatch | null> {
+  // 1) Match definitivo por sourceKey: se o gibi ja foi importado de uma
+  //    fonte externa (mesmo que ainda PENDING aprovacao), o sourceKey
+  //    `<source>:<ref>` esta gravado no CatalogEntry. Esse match supera
+  //    o fuzzy textual em precisao (eh o mesmo gibi, nao um parecido).
+  if (ext.isExternal && ext.externalSource && ext.externalRef) {
+    const sourceKey = `${ext.externalSource}:${ext.externalRef}`;
+    const byKey = await prisma.catalogEntry.findFirst({
+      where: { sourceKey },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        publisher: true,
+        editionNumber: true,
+        coverImageUrl: true,
+        coverFileName: true,
+      },
+    });
+    if (byKey) {
+      return {
+        id: byKey.id,
+        slug: byKey.slug,
+        title: byKey.title,
+        publisher: byKey.publisher,
+        editionNumber: byKey.editionNumber,
+        coverImageUrl: resolveCoverUrl(byKey.coverImageUrl, byKey.coverFileName),
+      };
+    }
+  }
+
+  // 2) Fuzzy textual: catalogo APPROVED com match parcial de tokens.
   const title = ext.title;
   if (!title) return null;
 
@@ -294,6 +326,11 @@ async function findLocalMatch(ext: CoverScanCandidate): Promise<LocalMatch | nul
     title: best.title,
     publisher: best.publisher,
     editionNumber: best.editionNumber,
-    coverImageUrl: best.coverImageUrl,
+    coverImageUrl: resolveCoverUrl(best.coverImageUrl, best.coverFileName),
   };
+}
+
+function resolveCoverUrl(coverImageUrl: string | null, coverFileName: string | null): string | null {
+  if (coverFileName) return localCoverUrl(coverFileName);
+  return coverImageUrl;
 }
