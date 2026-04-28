@@ -307,7 +307,7 @@ export async function recognizeFromImage(
 
   // Observabilidade: contagem por fonte (apos dedup contra catalogo).
   // Permite detectar regressao silenciosa quando uma fonte para de retornar.
-  const sourceCounts = { metron: 0, rika: 0, amazon: 0, dedupedToLocal: 0 };
+  const sourceCounts = { metron: 0, rika: 0, amazon: 0, fandom: 0, dedupedToLocal: 0 };
   for (const c of externalCandidates) {
     if (c.isExternal && c.externalSource) sourceCounts[c.externalSource]++;
     else sourceCounts.dedupedToLocal++;

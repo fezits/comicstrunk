@@ -2,6 +2,7 @@ import { prisma } from '../../shared/lib/prisma';
 import { getMetronIssue } from '../../shared/lib/metron';
 import { searchRika } from '../../shared/lib/rika';
 import { searchAmazonBR } from '../../shared/lib/amazon-br';
+import { getFandomPage } from '../../shared/lib/fandom';
 import { uniqueSlug } from '../../shared/utils/slug';
 import { uploadImage } from '../../shared/lib/cloudinary';
 import { NotFoundError, BadRequestError } from '../../shared/utils/api-error';
@@ -129,9 +130,29 @@ interface ExternalData {
 }
 
 async function fetchExternalData(
-  source: 'metron' | 'rika' | 'amazon',
+  source: 'metron' | 'rika' | 'amazon' | 'fandom',
   ref: string,
 ): Promise<ExternalData | null> {
+  if (source === 'fandom') {
+    // ref vem como "<wikiDomain>|<pageTitle>"
+    const sep = ref.indexOf('|');
+    if (sep <= 0) return null;
+    const wikiDomain = ref.slice(0, sep);
+    const pageTitle = ref.slice(sep + 1);
+    const page = await getFandomPage(wikiDomain, pageTitle);
+    if (!page) return null;
+    return {
+      title: page.title,
+      publisher: page.publisher,
+      editionNumber: extractEditionFromText(page.title),
+      image: page.image,
+      // Sinopse e creditos exigem parsing fragil de infobox HTML — deixa
+      // vazio e admin enriquece depois se quiser.
+      description: null,
+      isbn: null,
+    };
+  }
+
   if (source === 'metron') {
     const id = parseInt(ref, 10);
     if (!Number.isFinite(id)) return null;
