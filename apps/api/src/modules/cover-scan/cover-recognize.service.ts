@@ -319,12 +319,18 @@ export async function recognizeFromImage(
     ...sourceCounts,
   });
 
-  // Mesclar locais e externos. Locais ja deduplificaram externos via
-  // dedupExternal (tarefa do searchExternal). Sem cap no total: cada fonte
-  // ja vem limitada (TOP_LOCAL=8, TOP_EXTERNAL_PER_SOURCE=5, FANDOM_PER_WIKI=3),
-  // entao o teto natural fica em ~30 candidatos no pior caso. Fernando quer
-  // ver tudo na lista — cortar aqui era o bug que escondia externos.
-  const merged = [...candidates, ...externalCandidates].sort((a, b) => b.score - a.score);
+  // Mesclar locais e externos. Externos que casaram com catalogo viraram
+  // candidatos locais via dedupExternal — entao MESMO id pode aparecer 2x
+  // (uma vinda do search textual local, outra promovida do externo).
+  // Dedup pelo id, mantendo a primeira ocorrencia (que vem do search local
+  // com score real do textual matching, ignorando o 1.0 fixo do dedup).
+  const seenIds = new Set<string>();
+  const merged: CoverScanCandidate[] = [];
+  for (const c of [...candidates, ...externalCandidates].sort((a, b) => b.score - a.score)) {
+    if (seenIds.has(c.id)) continue;
+    seenIds.add(c.id);
+    merged.push(c);
+  }
 
   // 4. Persistir log
   const log = await prisma.coverScanLog.create({
