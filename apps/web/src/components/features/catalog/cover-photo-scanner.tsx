@@ -45,14 +45,19 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
       setIdentified(result.identified ?? null);
       setStage('results');
     } catch (err) {
-      const status = (err as { response?: { status?: number } })?.response?.status;
+      const errAny = err as { response?: { status?: number; data?: { error?: { message?: string } } }; message?: string };
+      const status = errAny.response?.status;
+      const apiMsg = errAny.response?.data?.error?.message;
       if (status === 429) {
         setErrorMsg(t('rateLimitMessage'));
+      } else if (status === 413) {
+        setErrorMsg(apiMsg || 'Imagem muito grande. Tente uma foto menor.');
+      } else if (apiMsg) {
+        setErrorMsg(apiMsg);
       } else if (status && status >= 500) {
         setErrorMsg(t('errorServer'));
       } else {
-        const msg = err instanceof Error ? err.message : 'unknown';
-        setErrorMsg(msg);
+        setErrorMsg(errAny.message || 'unknown');
       }
       setStage('error');
     }
