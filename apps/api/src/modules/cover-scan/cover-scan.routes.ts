@@ -4,12 +4,14 @@ import {
   coverScanChooseSchema,
   coverScanRecognizeSchema,
   coverScanImportSchema,
+  coverScanConfirmSchema,
 } from '@comicstrunk/contracts';
 import type {
   CoverScanSearchInput,
   CoverScanChooseInput,
   CoverScanRecognizeInput,
   CoverScanImportInput,
+  CoverScanConfirmInput,
 } from '@comicstrunk/contracts';
 import { authenticate } from '../../shared/middleware/authenticate';
 import { authorize } from '../../shared/middleware/authorize';
@@ -18,6 +20,7 @@ import { sendSuccess } from '../../shared/utils/response';
 import * as coverScanService from './cover-scan.service';
 import * as coverRecognizeService from './cover-recognize.service';
 import * as coverImportService from './cover-import.service';
+import * as coverConfirmService from './cover-confirm.service';
 
 const router = Router();
 
@@ -78,6 +81,22 @@ router.post(
     try {
       const input = req.body as CoverScanImportInput;
       const result = await coverImportService.importExternalCandidate(req.user!.userId, input);
+      sendSuccess(res, result);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+router.post(
+  '/confirm',
+  authenticate,
+  authorize('ADMIN'),
+  validate(coverScanConfirmSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const input = req.body as CoverScanConfirmInput;
+      const result = await coverConfirmService.confirmCandidate(req.user!.userId, input);
       sendSuccess(res, result);
     } catch (err) {
       next(err);

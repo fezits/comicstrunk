@@ -82,6 +82,7 @@ export function createApp(): Express {
   // ate fotos de 7-8 MP cruas; payload ainda passa pelo schema (1.4 MB max).
   app.use('/api/v1/cover-scan/recognize', express.json({ limit: '10mb' }));
   app.use('/api/v1/cover-scan/import', express.json({ limit: '10mb' }));
+  app.use('/api/v1/cover-scan/confirm', express.json({ limit: '10mb' }));
 
   // === Anti-Scraping: Block suspicious API access ===
   // Real browsers send Origin/Referer. Scripts (curl, python, etc.) usually don't.
