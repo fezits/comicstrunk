@@ -89,8 +89,10 @@ export async function searchRika(
 
   await throttle();
 
+  // VTEX aceita "ft=<termo>" como full-text search. A forma antiga "fq=ft:<termo>"
+  // foi rejeitada com "Invalid Parameter, ft." em 2026-04-28.
   const params = new URLSearchParams({
-    fq: `ft:${query}`,
+    ft: query,
     _from: '0',
     _to: String(limit - 1),
     O: 'OrderByScoreDESC',
