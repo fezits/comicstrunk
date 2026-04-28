@@ -133,6 +133,14 @@ export async function recognizeCoverImage(
     parsed = extractJson(responseRaw);
     rawForLog = responseRaw;
     if (!parsed) {
+      // Loga a resposta inteira (truncada a 4000 chars) pra diagnostico, e
+      // mostra so o inicio na mensagem de erro do usuario.
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { logger } = require('./logger');
+      logger.warn('cloudflare-ai: invalid JSON response', {
+        raw: responseRaw.slice(0, 4000),
+        length: responseRaw.length,
+      });
       throw new InternalError(`Workers AI retornou JSON invalido: ${responseRaw.slice(0, 200)}`);
     }
   } else {
@@ -160,27 +168,44 @@ export async function recognizeCoverImage(
 
 /**
  * Extrai o primeiro objeto JSON valido encontrado em um texto que pode ter
- * markdown ou texto extra antes/depois.
+ * markdown, texto extra antes/depois, ou problemas comuns de LLM (aspas
+ * nao escapadas em strings longas, quebras de linha cruas, virgulas finais).
  */
 function extractJson(text: string): Record<string, unknown> | null {
-  // Tentativa 1: parse direto
+  // 1) parse direto
   try {
     return JSON.parse(text);
   } catch {
-    // continua
+    /* segue */
   }
 
-  // Tentativa 2: strip de fence markdown ```json ... ```
+  // 2) strip de fence markdown ```json ... ```
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
   if (fenced) {
+    const cleaned = fenced[1].trim();
     try {
-      return JSON.parse(fenced[1]);
+      return JSON.parse(cleaned);
     } catch {
-      // continua
+      /* segue tentando consertar */
+    }
+    const repaired = repairJson(cleaned);
+    if (repaired) return repaired;
+  }
+
+  // 3) extracao por contagem balanceada de chaves respeitando strings.
+  // Resolve casos onde o modelo concatena texto explicativo apos o JSON
+  // ("here's the JSON: {...} Hope this helps.").
+  const balanced = extractBalancedObject(text);
+  if (balanced) {
+    try {
+      return JSON.parse(balanced);
+    } catch {
+      const repaired = repairJson(balanced);
+      if (repaired) return repaired;
     }
   }
 
-  // Tentativa 3: pegar do primeiro { ate o ultimo }
+  // 4) ultimo recurso: do primeiro `{` ao ultimo `}` da string inteira
   const firstBrace = text.indexOf('{');
   const lastBrace = text.lastIndexOf('}');
   if (firstBrace !== -1 && lastBrace > firstBrace) {
@@ -188,9 +213,185 @@ function extractJson(text: string): Record<string, unknown> | null {
     try {
       return JSON.parse(candidate);
     } catch {
-      // falhou tudo
+      const repaired = repairJson(candidate);
+      if (repaired) return repaired;
     }
   }
 
   return null;
+}
+
+/**
+ * Encontra o primeiro objeto JSON balanceado (chave-a-chave) no texto,
+ * respeitando strings (aspas) e escapes — assim, `{ "x": "}" }` nao para
+ * cedo no `}` interno.
+ */
+function extractBalancedObject(text: string): string | null {
+  const start = text.indexOf('{');
+  if (start === -1) return null;
+  let depth = 0;
+  let inString = false;
+  let escape = false;
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i];
+    if (escape) {
+      escape = false;
+      continue;
+    }
+    if (inString) {
+      if (ch === '\\') escape = true;
+      else if (ch === '"') inString = false;
+      continue;
+    }
+    if (ch === '"') {
+      inString = true;
+      continue;
+    }
+    if (ch === '{') depth++;
+    else if (ch === '}') {
+      depth--;
+      if (depth === 0) return text.slice(start, i + 1);
+    }
+  }
+  return null;
+}
+
+/**
+ * Tenta consertar JSON com problemas tipicos gerados por LLMs:
+ *  - virgulas finais antes de `}` ou `]`
+ *  - quebras de linha cruas dentro de strings (devem ser \n)
+ *  - aspas nao escapadas dentro de strings
+ *
+ * Heuristica conservadora: so retorna se o resultado parser. Se quebrar
+ * mais ainda, retorna null.
+ */
+function repairJson(s: string): Record<string, unknown> | null {
+  let candidate = s;
+
+  // Remove virgulas finais: `, }` -> ` }`, `, ]` -> ` ]`
+  candidate = candidate.replace(/,(\s*[}\]])/g, '$1');
+
+  // Escapa quebras de linha cruas dentro de strings.
+  // Caminha pelo texto e troca \n e \r por \\n e \\r quando dentro de string.
+  candidate = escapeRawNewlinesInStrings(candidate);
+
+  try {
+    return JSON.parse(candidate);
+  } catch {
+    /* segue tentando: aspas nao escapadas */
+  }
+
+  // Tentativa final: pra cada string, escapar aspas que aparecem antes do
+  // proximo delimitador (`",` ou `"}` ou `"]`). Isso quebra muitos casos
+  // mas resolve o caso comum de citacao em ocr_text.
+  const escaped = escapeStrayQuotesInStrings(candidate);
+  if (escaped !== candidate) {
+    try {
+      return JSON.parse(escaped);
+    } catch {
+      /* desistiu */
+    }
+  }
+
+  return null;
+}
+
+function escapeRawNewlinesInStrings(s: string): string {
+  let out = '';
+  let inString = false;
+  let escape = false;
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    if (escape) {
+      out += ch;
+      escape = false;
+      continue;
+    }
+    if (inString) {
+      if (ch === '\\') {
+        out += ch;
+        escape = true;
+        continue;
+      }
+      if (ch === '"') {
+        inString = false;
+        out += ch;
+        continue;
+      }
+      if (ch === '\n') {
+        out += '\\n';
+        continue;
+      }
+      if (ch === '\r') {
+        out += '\\r';
+        continue;
+      }
+      if (ch === '\t') {
+        out += '\\t';
+        continue;
+      }
+      out += ch;
+    } else {
+      if (ch === '"') inString = true;
+      out += ch;
+    }
+  }
+  return out;
+}
+
+/**
+ * Escapa aspas dentro de string que nao parecem ser fim de string —
+ * detectamos fim valido por padrao seguinte: `",`, `"}`, `"]`, ou final.
+ */
+function escapeStrayQuotesInStrings(s: string): string {
+  let out = '';
+  let inString = false;
+  let escape = false;
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    if (escape) {
+      out += ch;
+      escape = false;
+      continue;
+    }
+    if (!inString) {
+      out += ch;
+      if (ch === '"') inString = true;
+      continue;
+    }
+    // dentro de string
+    if (ch === '\\') {
+      out += ch;
+      escape = true;
+      continue;
+    }
+    if (ch === '"') {
+      // olha proximo char nao-whitespace; se for delimitador valido,
+      // termina a string. Senao, escapa.
+      let j = i + 1;
+      while (j < s.length && /\s/.test(s[j])) j++;
+      const next = s[j];
+      // Delimitadores validos depois do fim de uma string JSON:
+      //  - `:` apos chave de objeto
+      //  - `,` entre campos/elementos
+      //  - `}` fim de objeto
+      //  - `]` fim de array
+      //  - undefined (fim do input)
+      if (
+        next === ',' ||
+        next === ':' ||
+        next === '}' ||
+        next === ']' ||
+        next === undefined
+      ) {
+        inString = false;
+        out += ch;
+      } else {
+        out += '\\"';
+      }
+    } else {
+      out += ch;
+    }
+  }
+  return out;
 }
