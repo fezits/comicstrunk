@@ -16,6 +16,7 @@
  */
 
 import { setTimeout as sleep } from 'timers/promises';
+import { withCircuitBreaker } from './circuit-breaker';
 
 const SEARCH_URL = 'https://www.amazon.com.br/s';
 const USER_AGENT =
@@ -76,43 +77,47 @@ export async function searchAmazonBR(
   const cached = cacheGet(cacheKey);
   if (cached) return cached;
 
-  await throttle();
+  return await withCircuitBreaker(
+    'amazon-br',
+    async () => {
+      await throttle();
 
-  const params = new URLSearchParams({
-    k: query,
-    i: 'stripbooks', // Books category — gibis/HQs caem aqui
-  });
-  const url = `${SEARCH_URL}?${params.toString()}`;
+      const params = new URLSearchParams({
+        k: query,
+        i: 'stripbooks', // Books category — gibis/HQs caem aqui
+      });
+      const url = `${SEARCH_URL}?${params.toString()}`;
 
-  let html: string;
-  try {
-    const res = await fetch(url, {
-      headers: {
-        'User-Agent': USER_AGENT,
-        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8',
-      },
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-    });
-    if (!res.ok) return [];
-    html = await res.text();
-  } catch {
-    return [];
-  }
+      const res = await fetch(url, {
+        headers: {
+          'User-Agent': USER_AGENT,
+          Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8',
+        },
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      });
+      if (!res.ok) {
+        // 4xx/5xx contam como falha pro breaker (Amazon bloqueando IP, p.ex.)
+        throw new Error(`Amazon BR HTTP ${res.status}`);
+      }
+      const html = await res.text();
 
-  // Detecta captcha/bloqueio explicito e fail open
-  if (
-    html.includes('captcha') ||
-    html.includes('Robot Check') ||
-    html.includes('automated requests') ||
-    html.length < 5000
-  ) {
-    return [];
-  }
+      // Captcha/bloqueio: tambem conta como falha — se persistir, abrimos circuito.
+      if (
+        html.includes('captcha') ||
+        html.includes('Robot Check') ||
+        html.includes('automated requests') ||
+        html.length < 5000
+      ) {
+        throw new Error('Amazon BR captcha/blocked');
+      }
 
-  const products = parseAmazonSearch(html, limit);
-  cacheSet(cacheKey, products);
-  return products;
+      const products = parseAmazonSearch(html, limit);
+      cacheSet(cacheKey, products);
+      return products;
+    },
+    { fallback: [], failureThreshold: 3, openMs: 5 * 60_000 },
+  );
 }
 
 /**
