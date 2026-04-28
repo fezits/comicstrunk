@@ -319,15 +319,59 @@ async function findLocalMatch(ext: CoverScanCandidate): Promise<LocalMatch | nul
 
   if (candidates.length === 0) return null;
 
-  const best = candidates[0];
+  // Validacao adicional: rejeitar candidato local que NAO contem palavras
+  // significativas que o externo tem. Senao volume 2 ("Tartarugas Ninja:
+  // O Ultimo Ronin - Anos Perdidos") era confundido com volume 1
+  // ("Tartarugas Ninja - O Ultimo Ronin") e a edicao Anos Perdidos
+  // sumia nos resultados.
+  const extKeywords = significantKeywords(title);
+  const verified = candidates.find((c) => {
+    const localKeywords = significantKeywords(c.title);
+    // Se o ext tem alguma keyword significativa que o local nao tem,
+    // sao gibis distintos (volumes diferentes, sequels, etc).
+    for (const k of extKeywords) {
+      if (!localKeywords.has(k)) return false;
+    }
+    return true;
+  });
+
+  if (!verified) return null;
+
   return {
-    id: best.id,
-    slug: best.slug,
-    title: best.title,
-    publisher: best.publisher,
-    editionNumber: best.editionNumber,
-    coverImageUrl: resolveCoverUrl(best.coverImageUrl, best.coverFileName),
+    id: verified.id,
+    slug: verified.slug,
+    title: verified.title,
+    publisher: verified.publisher,
+    editionNumber: verified.editionNumber,
+    coverImageUrl: resolveCoverUrl(verified.coverImageUrl, verified.coverFileName),
   };
+}
+
+/**
+ * Extrai palavras-chave significativas de um titulo: lowercase, sem
+ * acento, >= 4 chars, sem stopwords e sem conectivos. Usado pra detectar
+ * se dois titulos sao "essencialmente o mesmo gibi" ou "edicoes/volumes
+ * distintos da mesma serie".
+ *
+ * Stopwords cobrem PT-BR + EN + boilerplate editorial comum em capa.
+ */
+function significantKeywords(title: string): Set<string> {
+  const STOP = new Set([
+    'the', 'and', 'for', 'with', 'from', 'that', 'this', 'comic', 'comics',
+    'edicao', 'edition', 'volume', 'edi', 'eng', 'vol', 'tomo',
+    'por', 'pra', 'que', 'pelo', 'pela', 'com', 'sem', 'dos', 'das',
+    'compact', 'compacto', 'deluxe', 'definitive', 'definitiva',
+    'collection', 'colecao', 'omnibus', 'tpb', 'graphic', 'novel',
+    'absoluta', 'absolute', 'absolut',
+  ]);
+  const normalized = title
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase();
+  const words = normalized
+    .split(/[^a-z0-9]+/)
+    .filter((w) => w.length >= 4 && !STOP.has(w));
+  return new Set(words);
 }
 
 function resolveCoverUrl(coverImageUrl: string | null, coverFileName: string | null): string | null {
