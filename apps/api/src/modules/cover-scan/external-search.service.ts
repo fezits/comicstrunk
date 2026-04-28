@@ -2,10 +2,12 @@ import { prisma } from '../../shared/lib/prisma';
 import { searchMetronIssues, type MetronIssueSummary } from '../../shared/lib/metron';
 import { searchRika, type RikaProductSummary } from '../../shared/lib/rika';
 import { searchAmazonBR, type AmazonBRProductSummary } from '../../shared/lib/amazon-br';
+import { searchFandom, type FandomPageSummary } from '../../shared/lib/fandom';
 import type { RecognizedCover } from '../../shared/lib/cloudflare-ai';
 import type { CoverScanCandidate } from '@comicstrunk/contracts';
 
 const TOP_EXTERNAL_PER_SOURCE = 5;
+const FANDOM_PER_WIKI = 3;
 
 /**
  * Busca em fontes externas em paralelo. Aplica dedup contra catalogo local:
@@ -26,13 +28,14 @@ export async function searchExternal(rec: RecognizedCover): Promise<CoverScanCan
   // e (se nada vier) caimos pro titulo isolado num segundo passo abaixo.
   const metronPrimary = combineTitleAndSeries(rec) || fullText;
 
-  const [metronResult, rikaResult, amazonResult] = await Promise.allSettled([
+  const [metronResult, rikaResult, amazonResult, fandomResult] = await Promise.allSettled([
     searchMetronIssues({
       seriesName: metronPrimary,
       number: rec.issue_number ?? undefined,
     }),
     searchRika(fullText, { limit: TOP_EXTERNAL_PER_SOURCE }),
     searchAmazonBR(fullText, { limit: TOP_EXTERNAL_PER_SOURCE }),
+    searchFandom(fullText, { limitPerWiki: FANDOM_PER_WIKI }),
   ]);
 
   const metronList: MetronIssueSummary[] =
@@ -41,11 +44,14 @@ export async function searchExternal(rec: RecognizedCover): Promise<CoverScanCan
     rikaResult.status === 'fulfilled' ? rikaResult.value : [];
   const amazonList: AmazonBRProductSummary[] =
     amazonResult.status === 'fulfilled' ? amazonResult.value : [];
+  const fandomList: FandomPageSummary[] =
+    fandomResult.status === 'fulfilled' ? fandomResult.value : [];
 
   const externalCandidates: CoverScanCandidate[] = [
     ...metronList.slice(0, TOP_EXTERNAL_PER_SOURCE).map(metronToCandidate),
     ...rikaList.slice(0, TOP_EXTERNAL_PER_SOURCE).map(rikaToCandidate),
     ...amazonList.slice(0, TOP_EXTERNAL_PER_SOURCE).map(amazonToCandidate),
+    ...fandomList.map(fandomToCandidate),
   ];
 
   if (externalCandidates.length === 0) return [];
@@ -115,6 +121,23 @@ function extractEditionFromTitle(text: string): number | null {
   if (!m) return null;
   const n = parseInt(m[1], 10);
   return n > 0 && n < 10000 ? n : null;
+}
+
+function fandomToCandidate(f: FandomPageSummary): CoverScanCandidate {
+  return {
+    id: `fandom:${f.wikiDomain}:${f.pageId}`,
+    slug: null,
+    title: f.title,
+    publisher: f.publisher,
+    editionNumber: extractEditionFromTitle(f.title),
+    coverImageUrl: f.image,
+    score: 0.5,
+    isExternal: true,
+    externalSource: 'fandom',
+    // externalRef carrega wiki + pageTitle (URL-encoded) pra import flow.
+    // Forma: "<wikiDomain>|<pageTitle>" (separador | nao colide com URLs).
+    externalRef: `${f.wikiDomain}|${f.title}`,
+  };
 }
 
 function rikaToCandidate(r: RikaProductSummary): CoverScanCandidate {
