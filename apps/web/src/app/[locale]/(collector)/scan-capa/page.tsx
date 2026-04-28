@@ -1,19 +1,13 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { CoverPhotoScanner } from '@/components/features/catalog/cover-photo-scanner';
-import type { CoverScanCandidate } from '@comicstrunk/contracts';
 
 export default function ScanCapaPage() {
   const t = useTranslations('scanCapa');
-  const locale = useLocale();
-  const router = useRouter();
-
-  function handleChoose(candidate: CoverScanCandidate) {
-    const ref = candidate.slug ?? candidate.id;
-    router.push(`/${locale}/catalog/${ref}`);
-  }
+  // O scanner agora confirma e salva via modal (POST /cover-scan/confirm).
+  // Nao precisamos redirecionar — o usuario pode escanear de novo na hora.
+  // onChoose nao eh passado: o scanner se vira, mostra toast e volta ao idle.
 
   return (
     <div className="container mx-auto max-w-3xl space-y-6 py-8">
@@ -22,7 +16,7 @@ export default function ScanCapaPage() {
         <p className="text-muted-foreground">{t('subtitle')}</p>
       </header>
 
-      <CoverPhotoScanner onChoose={handleChoose} />
+      <CoverPhotoScanner />
 
       <footer className="mt-8 text-center text-xs text-muted-foreground/60">
         {t('poweredByMetron')}

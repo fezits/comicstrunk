@@ -41,6 +41,14 @@ export async function importExternalCandidate(
   if (!entry) {
     const data = await fetchExternalData(input.externalSource, input.externalRef);
     if (!data) {
+      // Log o input completo: precisamos saber qual fonte/ref falhou pra
+      // entender se eh um caso edge (cache miss, breaker aberto, ref mal formado).
+      const { logger } = await import('../../shared/lib/logger');
+      logger.warn('cover-import: fetchExternalData returned null', {
+        source: input.externalSource,
+        ref: input.externalRef,
+        scanLogId: input.scanLogId,
+      });
       throw new BadRequestError('Nao foi possivel obter dados da fonte externa');
     }
 
