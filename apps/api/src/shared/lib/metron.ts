@@ -12,6 +12,8 @@
  * mostra "Powered by Metron" discreto na pagina /scan-capa.
  */
 
+import { withCircuitBreaker } from './circuit-breaker';
+
 const API_BASE = 'https://metron.cloud/api';
 const USER_AGENT = 'ComicsTrunk/1.0 (cover-scan; +https://comicstrunk.com)';
 
@@ -103,33 +105,32 @@ async function metronFetch<T>(path: string, params: Record<string, string> = {})
 
   const auth = Buffer.from(`${username}:${password}`).toString('base64');
 
-  let res: Response;
-  try {
-    res = await fetch(url, {
-      headers: {
-        Authorization: `Basic ${auth}`,
-        Accept: 'application/json',
-        'User-Agent': USER_AGENT,
-      },
-      signal: AbortSignal.timeout(10000),
-    });
-  } catch {
-    return null; // rede indisponivel — fail open
-  }
+  return await withCircuitBreaker(
+    'metron',
+    async () => {
+      const res = await fetch(url, {
+        headers: {
+          Authorization: `Basic ${auth}`,
+          Accept: 'application/json',
+          'User-Agent': USER_AGENT,
+        },
+        signal: AbortSignal.timeout(10000),
+      });
 
-  // Atualizar contadores de rate limit
-  const burstHeader = res.headers.get('X-RateLimit-Burst-Remaining');
-  const sustainedHeader = res.headers.get('X-RateLimit-Sustained-Remaining');
-  if (burstHeader) lastBurstRemaining = parseInt(burstHeader, 10);
-  if (sustainedHeader) lastSustainedRemaining = parseInt(sustainedHeader, 10);
+      // Atualizar contadores de rate limit (mesmo em erro o header pode vir)
+      const burstHeader = res.headers.get('X-RateLimit-Burst-Remaining');
+      const sustainedHeader = res.headers.get('X-RateLimit-Sustained-Remaining');
+      if (burstHeader) lastBurstRemaining = parseInt(burstHeader, 10);
+      if (sustainedHeader) lastSustainedRemaining = parseInt(sustainedHeader, 10);
 
-  if (!res.ok) {
-    return null; // erro HTTP — fail open
-  }
+      if (!res.ok) throw new Error(`Metron HTTP ${res.status}`);
 
-  const data = (await res.json().catch(() => null)) as T | null;
-  if (data) cacheSet(cacheKey, data);
-  return data;
+      const data = (await res.json().catch(() => null)) as T | null;
+      if (data) cacheSet(cacheKey, data);
+      return data;
+    },
+    { fallback: null as T | null, failureThreshold: 3, openMs: 5 * 60_000 },
+  );
 }
 
 // === API publica ===

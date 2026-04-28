@@ -16,6 +16,7 @@
  */
 
 import { setTimeout as sleep } from 'timers/promises';
+import { withCircuitBreaker } from './circuit-breaker';
 
 const USER_AGENT = 'ComicsTrunk/1.0 (cover-scan; +https://comicstrunk.com)';
 const REQUEST_DELAY_MS = 200;
@@ -87,41 +88,41 @@ export async function searchRika(
   const cached = cacheGet(cacheKey);
   if (cached) return cached;
 
-  await throttle();
+  return await withCircuitBreaker(
+    'rika',
+    async () => {
+      await throttle();
 
-  // VTEX aceita "ft=<termo>" como full-text search. A forma antiga "fq=ft:<termo>"
-  // foi rejeitada com "Invalid Parameter, ft." em 2026-04-28.
-  const params = new URLSearchParams({
-    ft: query,
-    _from: '0',
-    _to: String(limit - 1),
-    O: 'OrderByScoreDESC',
-  });
-  const url = `${BASE_URL}?${params.toString()}`;
+      // VTEX aceita "ft=<termo>" como full-text search. A forma antiga "fq=ft:<termo>"
+      // foi rejeitada com "Invalid Parameter, ft." em 2026-04-28.
+      const params = new URLSearchParams({
+        ft: query,
+        _from: '0',
+        _to: String(limit - 1),
+        O: 'OrderByScoreDESC',
+      });
+      const url = `${BASE_URL}?${params.toString()}`;
 
-  let body: string;
-  try {
-    const res = await fetch(url, {
-      headers: {
-        'User-Agent': USER_AGENT,
-        Accept: 'application/json',
-      },
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) return [];
-    body = await res.text();
-  } catch {
-    return [];
-  }
+      const res = await fetch(url, {
+        headers: {
+          'User-Agent': USER_AGENT,
+          Accept: 'application/json',
+        },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (!res.ok) throw new Error(`Rika HTTP ${res.status}`);
+      const body = await res.text();
 
-  // Detecta bloqueio (padrao observado nos scrapers existentes)
-  if (body.includes('Bad Request') || body.includes('Scripts') || body.includes('blocked')) {
-    return [];
-  }
+      if (body.includes('Bad Request') || body.includes('Scripts') || body.includes('blocked')) {
+        throw new Error('Rika blocked');
+      }
 
-  const products = parseRikaResponse(body, limit);
-  cacheSet(cacheKey, products);
-  return products;
+      const products = parseRikaResponse(body, limit);
+      cacheSet(cacheKey, products);
+      return products;
+    },
+    { fallback: [], failureThreshold: 3, openMs: 5 * 60_000 },
+  );
 }
 
 // === Tipos internos do payload VTEX ===
