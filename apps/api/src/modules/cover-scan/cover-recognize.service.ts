@@ -12,7 +12,7 @@ import {
 import type { Prisma } from '@prisma/client';
 import { searchExternal } from './external-search.service';
 
-const TOP_N = 8;
+const TOP_LOCAL = 8;
 
 // === Token utils (mesmo padrao do cover-scan.service.ts) ===
 
@@ -286,7 +286,7 @@ export async function recognizeFromImage(
       }))
       .filter((c) => c.score > 0)
       .sort((a, b) => b.score - a.score)
-      .slice(0, TOP_N);
+      .slice(0, TOP_LOCAL);
   }
 
   // 3.5. Buscar externamente em paralelo (Promise.allSettled - fail open).
@@ -320,10 +320,11 @@ export async function recognizeFromImage(
   });
 
   // Mesclar locais e externos. Locais ja deduplificaram externos via
-  // dedupExternal (tarefa do searchExternal). Aqui basta concatenar e ordenar.
-  const merged = [...candidates, ...externalCandidates]
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 12); // max 12 candidatos no total
+  // dedupExternal (tarefa do searchExternal). Sem cap no total: cada fonte
+  // ja vem limitada (TOP_LOCAL=8, TOP_EXTERNAL_PER_SOURCE=5, FANDOM_PER_WIKI=3),
+  // entao o teto natural fica em ~30 candidatos no pior caso. Fernando quer
+  // ver tudo na lista — cortar aqui era o bug que escondia externos.
+  const merged = [...candidates, ...externalCandidates].sort((a, b) => b.score - a.score);
 
   // 4. Persistir log
   const log = await prisma.coverScanLog.create({
