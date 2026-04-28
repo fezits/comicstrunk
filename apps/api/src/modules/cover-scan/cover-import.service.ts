@@ -42,6 +42,19 @@ export async function ensureCatalogEntryFromExternal(
     throw new BadRequestError('Não foi possível obter dados da fonte externa.');
   }
 
+  // Guard: title precisa ser string nao-vazia, senao slugify explode com
+  // "string argument expected" e o usuario ve 500. Antes esse caso
+  // acontecia silenciosamente quando o detail do Metron nao tinha campo
+  // "issue".
+  if (typeof data.title !== 'string' || data.title.trim().length === 0) {
+    logger.warn('cover-import: fetchExternalData returned data without title', {
+      source: externalSource,
+      ref: externalRef,
+      data,
+    });
+    throw new BadRequestError('Não foi possível identificar o título do gibi nessa fonte.');
+  }
+
   let coverFileName: string | null = null;
   let coverImageUrl: string | null = data.image;
   if (data.image) {
@@ -181,13 +194,33 @@ async function fetchExternalData(
     if (!Number.isFinite(id)) return null;
     const detail = await getMetronIssue(id);
     if (!detail) return null;
+
+    // O endpoint /issue/{id}/ NAO tem campo "issue" formatado como o list.
+    // Compomos o titulo a partir de series.name + year + number e, se
+    // houver, o nome da historia (name[0]).
+    const seriesName = detail.series?.name?.trim() ?? '';
+    const yearBegan = detail.series?.year_began;
+    const number = detail.number?.trim() ?? '';
+    const storyName = Array.isArray(detail.name) ? detail.name[0]?.trim() : '';
+
+    let title = '';
+    if (seriesName) {
+      title = yearBegan ? `${seriesName} (${yearBegan})` : seriesName;
+      if (number) title = `${title} #${number}`;
+      if (storyName) title = `${title}: ${storyName}`;
+    } else if (storyName) {
+      title = storyName;
+    }
+    title = title.trim();
+    if (!title) return null;
+
     return {
-      title: detail.issue,
-      publisher: null, // Metron detail não expõe publisher diretamente; pode ser ampliado depois
-      editionNumber: parseInt(detail.number, 10) || null,
+      title,
+      publisher: detail.publisher?.name?.trim() || null,
+      editionNumber: number ? parseInt(number, 10) || null : null,
       image: detail.image ?? null,
-      description: detail.description ?? null,
-      isbn: detail.isbn ?? null,
+      description: detail.desc?.trim() || null,
+      isbn: detail.isbn?.trim() || null,
     };
   }
 

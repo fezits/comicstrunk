@@ -30,12 +30,34 @@ export interface MetronIssueSummary {
   image: string;
 }
 
-export interface MetronIssueDetail extends MetronIssueSummary {
-  description?: string;
-  characters?: Array<{ name: string }>;
-  credits?: Array<{ creator: string; role: Array<{ name: string }> }>;
+/**
+ * Schema do endpoint /issue/{id}/ — DIFERENTE do /issue/ (list).
+ * O detail NAO tem o campo "issue" (string formatada). Em vez disso, tem
+ * series.name + number + name[] (story arc) que precisamos compor pra
+ * formar um titulo legivel.
+ */
+export interface MetronIssueDetail {
+  id: number;
+  publisher?: { id: number; name: string } | null;
+  series: {
+    id: number;
+    name: string;
+    sort_name?: string;
+    volume: number;
+    year_began: number;
+  };
+  number: string;
+  alt_number?: string;
+  title?: string; // raramente preenchido
+  name?: string[]; // titulos das historias do issue
+  cover_date?: string | null;
+  store_date?: string | null;
+  image?: string;
+  desc?: string; // descricao da edicao
   isbn?: string;
   upc?: string;
+  characters?: Array<{ name: string }>;
+  credits?: Array<{ id: number; creator: string; role: Array<{ id: number; name: string }> }>;
 }
 
 interface MetronListResponse<T> {
