@@ -27,7 +27,7 @@ export async function importExternalCandidate(
     select: { id: true, userId: true },
   });
   if (!scanLog || scanLog.userId !== userId) {
-    throw new NotFoundError('Scan log nao encontrado');
+    throw new NotFoundError('Scan log não encontrado.');
   }
 
   const sourceKey = `${input.externalSource}:${input.externalRef}`;
@@ -49,7 +49,7 @@ export async function importExternalCandidate(
         ref: input.externalRef,
         scanLogId: input.scanLogId,
       });
-      throw new BadRequestError('Nao foi possivel obter dados da fonte externa');
+      throw new BadRequestError('Não foi possível obter dados da fonte externa.');
     }
 
     // Baixar capa pro storage (best effort — falha silenciosa)
@@ -123,8 +123,8 @@ export async function importExternalCandidate(
     collectionItemId,
     message:
       entry.approvalStatus === 'PENDING'
-        ? 'Adicionado a sua colecao. Aguardando aprovacao para aparecer no catalogo publico.'
-        : 'Adicionado a sua colecao.',
+        ? 'Gibi adicionado à sua coleção. Aguardando aprovação para aparecer no catálogo público.'
+        : 'Gibi adicionado à sua coleção.',
   };
 }
 

@@ -108,11 +108,9 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
         userPhotoBase64: photoDataUri || undefined,
       });
 
-      if (result.alreadyInCollection) {
-        toast.info(result.message);
-      } else {
-        toast.success(result.message);
-      }
+      // Mensagem unificada: "Gibi adicionado à sua coleção" tanto pro caso
+      // novo quanto pro ja-existia (Fernando pediu — UX consistente).
+      toast.success(result.message);
       onChoose?.(modalCandidate);
       setModalCandidate(null);
       reset();

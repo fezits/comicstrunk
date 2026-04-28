@@ -82,7 +82,7 @@ export async function recognizeCoverImage(
   const model = process.env.CLOUDFLARE_AI_MODEL || DEFAULT_MODEL;
 
   if (!accountId || !apiToken) {
-    throw new InternalError('Cloudflare Workers AI nao configurado (env vars faltando)');
+    throw new InternalError('Cloudflare Workers AI não configurado (env vars faltando).');
   }
 
   const url = `${API_BASE}/accounts/${accountId}/ai/run/${model}`;
@@ -122,7 +122,7 @@ export async function recognizeCoverImage(
 
   const responseRaw = json.result?.response;
   if (responseRaw === undefined || responseRaw === null || responseRaw === '') {
-    throw new InternalError('Workers AI retornou response vazio');
+    throw new InternalError('Workers AI retornou resposta vazia.');
   }
 
   // Cloudflare Workers AI as vezes parseia o JSON automaticamente (retorna

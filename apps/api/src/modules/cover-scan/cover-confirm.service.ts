@@ -34,7 +34,7 @@ export async function confirmCandidate(
     select: { id: true, userId: true },
   });
   if (!scanLog || scanLog.userId !== userId) {
-    throw new NotFoundError('Scan log nao encontrado');
+    throw new NotFoundError('Scan log não encontrado.');
   }
 
   let catalogEntryId: string;
@@ -58,7 +58,7 @@ export async function confirmCandidate(
       select: { id: true },
     });
     if (!exists) {
-      throw new NotFoundError('Gibi nao encontrado no catalogo.');
+      throw new NotFoundError('Gibi não encontrado no catálogo.');
     }
   }
 
@@ -73,7 +73,7 @@ export async function confirmCandidate(
       catalogEntryId,
       collectionItemId: existingItem.id,
       alreadyInCollection: true,
-      message: 'Esse gibi ja esta na sua colecao.',
+      message: 'Gibi adicionado à sua coleção.',
     };
   }
 

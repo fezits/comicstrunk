@@ -181,7 +181,7 @@ export async function recordChoice(
   });
 
   if (!log || log.userId !== userId) {
-    throw new NotFoundError('Scan log nao encontrado');
+    throw new NotFoundError('Scan log não encontrado.');
   }
 
   if (input.chosenEntryId) {
@@ -190,7 +190,7 @@ export async function recordChoice(
       select: { id: true },
     });
     if (!entry) {
-      throw new NotFoundError('Catalog entry nao encontrado');
+      throw new NotFoundError('Gibi não encontrado no catálogo.');
     }
   }
 
