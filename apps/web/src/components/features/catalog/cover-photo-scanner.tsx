@@ -127,7 +127,6 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
       {(stage === 'compressing' || stage === 'analyzing' || stage === 'searching') && (
         <div className="flex flex-col items-center gap-3">
           {previewUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={previewUrl}
               alt={t('preview')}
@@ -151,7 +150,6 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
           {(previewUrl || (identified && identified.title)) && (
             <div className="flex items-stretch gap-3 rounded border border-primary/30 bg-primary/5 p-3 text-sm">
               {previewUrl && (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={previewUrl}
                   alt={t('preview')}
