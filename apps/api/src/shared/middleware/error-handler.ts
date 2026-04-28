@@ -59,6 +59,18 @@ export function errorHandler(
     return;
   }
 
+  // body-parser PayloadTooLargeError (413) — surface as user-friendly message
+  if ((err as { type?: string }).type === 'entity.too.large') {
+    res.status(413).json({
+      success: false,
+      error: {
+        message: 'Imagem muito grande. Tente uma foto menor (até ~8 MB).',
+        code: 'PAYLOAD_TOO_LARGE',
+      },
+    });
+    return;
+  }
+
   // Unexpected error — log and return generic message
   logger.error('Unhandled error', {
     message: err.message,
