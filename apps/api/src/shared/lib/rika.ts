@@ -95,13 +95,14 @@ export async function searchRika(
 
       // VTEX aceita "ft=<termo>" como full-text search. A forma antiga "fq=ft:<termo>"
       // foi rejeitada com "Invalid Parameter, ft." em 2026-04-28.
-      const params = new URLSearchParams({
-        ft: query,
-        _from: '0',
-        _to: String(limit - 1),
-        O: 'OrderByScoreDESC',
-      });
-      const url = `${BASE_URL}?${params.toString()}`;
+      //
+      // IMPORTANTE: URLSearchParams codifica espaco como "+", e a Rika
+      // rejeita o "+" literal com "Bad Request! Scripts are not allowed!"
+      // em qualquer query multi-palavra. Por isso montamos a URL na mao
+      // com encodeURIComponent (que vira "%20").
+      const url =
+        `${BASE_URL}?ft=${encodeURIComponent(query)}` +
+        `&_from=0&_to=${limit - 1}&O=OrderByScoreDESC`;
 
       const res = await fetch(url, {
         headers: {

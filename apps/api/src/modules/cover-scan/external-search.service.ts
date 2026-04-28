@@ -23,40 +23,96 @@ export async function searchExternal(rec: RecognizedCover): Promise<CoverScanCan
   const fullText = buildFullTextQuery(rec);
   if (!fullText.trim()) return [];
 
+  // Estrategia: query especifica (title + series) pega a edicao exata da capa
+  // (ex: "The Authority: Relentless"). Query ampla (so series) pega reedicoes
+  // / linhas editoriais distintas (ex: DC Compact, Omnibus, Absolute) que tem
+  // titulos de produto diferentes na Amazon/Rika mas sao da mesma serie.
+  const broadQuery = buildBroadQuery(rec);
+  const runBroad = broadQuery && broadQuery.toLowerCase() !== fullText.toLowerCase();
+
   // Metron usa `series_name`. Como pode receber tanto "Batman" sozinho
   // quanto "Batman Life After Death", tentamos a query completa primeiro
   // e (se nada vier) caimos pro titulo isolado num segundo passo abaixo.
   const metronPrimary = combineTitleAndSeries(rec) || fullText;
 
-  const [metronResult, rikaResult, amazonResult, fandomResult] = await Promise.allSettled([
+  const [
+    metronResult,
+    rikaResult,
+    rikaBroadResult,
+    amazonResult,
+    amazonBroadResult,
+    fandomResult,
+    fandomBroadResult,
+  ] = await Promise.allSettled([
     searchMetronIssues({
       seriesName: metronPrimary,
       number: rec.issue_number ?? undefined,
     }),
     searchRika(fullText, { limit: TOP_EXTERNAL_PER_SOURCE }),
+    runBroad ? searchRika(broadQuery, { limit: TOP_EXTERNAL_PER_SOURCE }) : Promise.resolve([]),
     searchAmazonBR(fullText, { limit: TOP_EXTERNAL_PER_SOURCE }),
+    runBroad
+      ? searchAmazonBR(broadQuery, { limit: TOP_EXTERNAL_PER_SOURCE })
+      : Promise.resolve([]),
     searchFandom(fullText, { limitPerWiki: FANDOM_PER_WIKI }),
+    runBroad ? searchFandom(broadQuery, { limitPerWiki: FANDOM_PER_WIKI }) : Promise.resolve([]),
   ]);
 
   const metronList: MetronIssueSummary[] =
     metronResult.status === 'fulfilled' ? metronResult.value : [];
-  const rikaList: RikaProductSummary[] =
-    rikaResult.status === 'fulfilled' ? rikaResult.value : [];
-  const amazonList: AmazonBRProductSummary[] =
-    amazonResult.status === 'fulfilled' ? amazonResult.value : [];
-  const fandomList: FandomPageSummary[] =
-    fandomResult.status === 'fulfilled' ? fandomResult.value : [];
+
+  // Junta resultados especifico + amplo, dedup pelo identificador da fonte.
+  const rikaCombined = mergeUniqueBy(
+    rikaResult.status === 'fulfilled' ? rikaResult.value : [],
+    rikaBroadResult.status === 'fulfilled' ? rikaBroadResult.value : [],
+    (p) => p.id,
+  );
+  const amazonCombined = mergeUniqueBy(
+    amazonResult.status === 'fulfilled' ? amazonResult.value : [],
+    amazonBroadResult.status === 'fulfilled' ? amazonBroadResult.value : [],
+    (p) => p.asin,
+  );
+  const fandomCombined = mergeUniqueBy(
+    fandomResult.status === 'fulfilled' ? fandomResult.value : [],
+    fandomBroadResult.status === 'fulfilled' ? fandomBroadResult.value : [],
+    (p) => `${p.wikiDomain}:${p.pageId}`,
+  );
 
   const externalCandidates: CoverScanCandidate[] = [
-    ...metronList.slice(0, TOP_EXTERNAL_PER_SOURCE).map(metronToCandidate),
-    ...rikaList.slice(0, TOP_EXTERNAL_PER_SOURCE).map(rikaToCandidate),
-    ...amazonList.slice(0, TOP_EXTERNAL_PER_SOURCE).map(amazonToCandidate),
-    ...fandomList.map(fandomToCandidate),
+    ...metronList.map(metronToCandidate),
+    ...rikaCombined.map(rikaToCandidate),
+    ...amazonCombined.map(amazonToCandidate),
+    ...fandomCombined.map(fandomToCandidate),
   ];
 
   if (externalCandidates.length === 0) return [];
 
   return await dedupExternal(externalCandidates);
+}
+
+function mergeUniqueBy<T>(a: T[], b: T[], key: (item: T) => string): T[] {
+  const seen = new Set<string>();
+  const out: T[] = [];
+  for (const item of [...a, ...b]) {
+    const k = key(item);
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push(item);
+  }
+  return out;
+}
+
+function buildBroadQuery(rec: RecognizedCover): string {
+  // Pega a serie (mais ampla que titulo+subtitulo). Fallback pro titulo
+  // sem subtitulo (corta apos ":" ou " - ").
+  const series = (rec.series ?? '').trim();
+  if (series) return series;
+  const title = (rec.title ?? '').trim();
+  if (!title) return '';
+  const colon = title.indexOf(':');
+  const dash = title.indexOf(' - ');
+  const cut = [colon, dash].filter((i) => i >= 0).sort((a, b) => a - b)[0];
+  return cut !== undefined && cut > 0 ? title.slice(0, cut).trim() : title;
 }
 
 function combineTitleAndSeries(rec: RecognizedCover): string {
