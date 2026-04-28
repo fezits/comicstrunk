@@ -253,7 +253,6 @@ function HomepageSkeleton() {
 export function HomepageContent() {
   const [sections, setSections] = useState<HomepageSection[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -266,7 +265,7 @@ export function HomepageContent() {
         }
       } catch {
         if (!cancelled) {
-          setError(true);
+          // Fail silently
         }
       } finally {
         if (!cancelled) {

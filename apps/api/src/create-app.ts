@@ -37,6 +37,7 @@ import { contactRoutes } from './modules/contact/contact.routes';
 import { legalRoutes } from './modules/legal/legal.routes';
 import { adminRoutes } from './modules/admin/admin.routes';
 import { coverSubmissionsUserRoutes, coverSubmissionsAdminRoutes } from './modules/cover-submissions/cover-submissions.routes';
+import { coverScanRoutes } from './modules/cover-scan/cover-scan.routes';
 import { lgpdRoutes } from './modules/lgpd/lgpd.routes';
 // sync module unified into catalog — see /catalog/import-json, /catalog/stats, /catalog/by-source-key/:sk/cover
 import { errorHandler } from './shared/middleware/error-handler';
@@ -74,6 +75,11 @@ export function createApp(): Express {
 
   // Increased JSON limit for bulk import endpoint — must be before general parser
   app.use('/api/v1/catalog/import-json', express.json({ limit: '50mb' }));
+
+  // Cover scan endpoints recebem imagem em base64 (~150-400 KB tipico).
+  // Default do express.json() eh 100kb — limite estourava em fotos comuns.
+  app.use('/api/v1/cover-scan/recognize', express.json({ limit: '5mb' }));
+  app.use('/api/v1/cover-scan/import', express.json({ limit: '5mb' }));
 
   // === Anti-Scraping: Block suspicious API access ===
   // Real browsers send Origin/Referer. Scripts (curl, python, etc.) usually don't.
@@ -287,6 +293,7 @@ export function createApp(): Express {
   app.use('/api/v1/tags', tagsRoutes);
   app.use('/api/v1/characters', charactersRoutes);
   app.use('/api/v1/catalog', catalogRoutes);
+  app.use('/api/v1/cover-scan', coverScanRoutes);
   app.use('/api/v1/collection', collectionRoutes);
   app.use('/api/v1/commission', commissionRoutes);
   app.use('/api/v1/marketplace', marketplaceRoutes);

@@ -137,15 +137,16 @@ describe('Collection CRUD API', () => {
       createdCollectionItemIds.push(res.body.data.id);
     });
 
-    it('rejects duplicate — same user + same catalog entry', async () => {
+    it('increments quantity when adding duplicate — same user + same catalog entry', async () => {
       const res = await request
         .post('/api/v1/collection')
         .set('Authorization', `Bearer ${userToken}`)
-        .send({ catalogEntryId: approvedEntryId1 })
-        .expect(409);
+        .send({ catalogEntryId: approvedEntryId1, quantity: 2 })
+        .expect(201);
 
-      expect(res.body.success).toBe(false);
-      expect(res.body.error.message).toMatch(/already in your collection/i);
+      expect(res.body.success).toBe(true);
+      // Should have incremented: 1 (from first test) + 2 = 3
+      expect(res.body.data.quantity).toBe(3);
     });
 
     it('rejects non-existent catalog entry', async () => {
@@ -158,25 +159,37 @@ describe('Collection CRUD API', () => {
       expect(res.body.success).toBe(false);
     });
 
-    it('rejects unapproved catalog entry', async () => {
-      // Create a DRAFT entry (not approved)
-      const draftRes = await request
+    it('rejects rejected catalog entry (but allows DRAFT and PENDING)', async () => {
+      // Create a REJECTED entry
+      const rejectedRes = await request
         .post('/api/v1/catalog')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ title: `${TEST_PREFIX}Draft Entry ${Date.now()}` })
+        .send({ title: `${TEST_PREFIX}Rejected Entry ${Date.now()}` })
         .expect(201);
 
-      const draftId = draftRes.body.data.id;
-      createdCatalogEntryIds.push(draftId);
+      const rejectedId = rejectedRes.body.data.id;
+      createdCatalogEntryIds.push(rejectedId);
+
+      // Submit for approval then reject it
+      await request
+        .patch(`/api/v1/catalog/${rejectedId}/submit`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      await request
+        .patch(`/api/v1/catalog/${rejectedId}/reject`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ rejectionReason: 'Duplicate entry' })
+        .expect(200);
 
       const res = await request
         .post('/api/v1/collection')
         .set('Authorization', `Bearer ${userToken}`)
-        .send({ catalogEntryId: draftId })
+        .send({ catalogEntryId: rejectedId })
         .expect(404);
 
       expect(res.body.success).toBe(false);
-      expect(res.body.error.message).toMatch(/not found or not approved/i);
+      expect(res.body.error.message).toMatch(/not found or rejected/i);
     });
 
     it('unauthenticated request returns 401', async () => {

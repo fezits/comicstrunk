@@ -234,8 +234,8 @@ router.delete(
 
 // === Public Partner Store Routes ===
 
-// GET /stores — public: list active partner stores
-router.get('/stores', async (_req: Request, res: Response, next: NextFunction) => {
+// GET /stores — TEMPORARIAMENTE ADMIN-ONLY (feature "Em Breve" para usuarios comuns)
+router.get('/stores', authenticate, authorize('ADMIN'), async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const stores = await partnerStoresService.listActive();
     sendSuccess(res, stores);
@@ -265,11 +265,15 @@ router.get(
   },
 );
 
-// === Public Deal Routes ===
+// === Public Deal Routes (TEMPORARIAMENTE ADMIN-ONLY) ===
+// Feature "Ofertas" esta marcada como "Em Breve" para usuarios comuns.
+// Endpoints publicos exigem ADMIN ate liberacao geral.
 
-// GET / — public: list active deals with filters
+// GET / — TEMPORARIAMENTE ADMIN-ONLY: list active deals
 router.get(
   '/',
+  authenticate,
+  authorize('ADMIN'),
   validate(listDealsSchema, 'query'),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -293,8 +297,8 @@ router.get(
   },
 );
 
-// GET /:id — public: get a single deal
-router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
+// GET /:id — TEMPORARIAMENTE ADMIN-ONLY: get a single deal
+router.get('/:id', authenticate, authorize('ADMIN'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const deal = await dealsService.getDeal(req.params.id as string);
     sendSuccess(res, deal);

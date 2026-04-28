@@ -28,6 +28,9 @@ dist/
 .DS_Store
 Thumbs.db
 
+# Database backups (mysqldump)
+docs/backups/
+
 # IDE
 .vscode/
 .idea/

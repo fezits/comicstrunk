@@ -1,11 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { ArrowLeft, Search, BookOpen, Upload, Download } from 'lucide-react';
+import { ArrowLeft, Search, BookOpen, Upload, Download, Camera } from 'lucide-react';
+import type { CoverScanCandidate } from '@comicstrunk/contracts';
 
 import { useIsMobile } from '@/hooks/use-is-mobile';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
@@ -32,12 +40,14 @@ import {
   getCSVTemplate,
   type ItemCondition,
 } from '@/lib/api/collection';
+import { CoverPhotoScanner } from '@/components/features/catalog/cover-photo-scanner';
 
 const CONDITIONS: ItemCondition[] = ['NEW', 'VERY_GOOD', 'GOOD', 'FAIR', 'POOR'];
 
 export default function AddCollectionItemPage() {
   const t = useTranslations('collection');
   const tCommon = useTranslations('common');
+  const tScan = useTranslations('scanCapa');
   const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -49,6 +59,8 @@ export default function AddCollectionItemPage() {
   const [searching, setSearching] = useState(false);
   // Selection state
   const [selectedEntry, setSelectedEntry] = useState<CatalogEntry | null>(null);
+  // Scanner state
+  const [scannerOpen, setScannerOpen] = useState(false);
 
   // Form state
   const [quantity, setQuantity] = useState(1);
@@ -97,6 +109,37 @@ export default function AddCollectionItemPage() {
     setSelectedEntry(entry);
     setSearchQuery('');
     setSearchResults([]);
+  };
+
+  const handleScannerChoose = (candidate: CoverScanCandidate) => {
+    setScannerOpen(false);
+    handleSelectEntry({
+      id: candidate.id,
+      title: candidate.title,
+      slug: candidate.slug,
+      publisher: candidate.publisher,
+      coverImageUrl: candidate.coverImageUrl,
+      editionNumber: candidate.editionNumber,
+      author: null,
+      imprint: null,
+      barcode: null,
+      isbn: null,
+      description: null,
+      approvalStatus: 'APPROVED',
+      averageRating: 0,
+      ratingCount: 0,
+      volumeNumber: null,
+      coverPrice: null,
+      publishYear: null,
+      publishMonth: null,
+      pageCount: null,
+      coverFileName: null,
+      createdAt: '',
+      series: null,
+      categories: [],
+      tags: [],
+      characters: [],
+    });
   };
 
   const handleSubmit = async () => {
@@ -253,16 +296,34 @@ export default function AddCollectionItemPage() {
         <div className="space-y-4">
           <div className="space-y-2">
             <Label>{t('searchCatalog')}</Label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder={t('searchCatalogPlaceholder')}
-                value={searchQuery}
-                onChange={(e) => handleSearchInputChange(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitSearch(); } }}
-                onBlur={() => isMobile && submitSearch()}
-                className="pl-10"
-              />
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder={t('searchCatalogPlaceholder')}
+                  value={searchQuery}
+                  onChange={(e) => handleSearchInputChange(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitSearch(); } }}
+                  onBlur={() => isMobile && submitSearch()}
+                  className="pl-10"
+                />
+              </div>
+              <Dialog open={scannerOpen} onOpenChange={setScannerOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="icon" title={tScan('menuLabel')}>
+                    <Camera className="size-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>{tScan('title')}</DialogTitle>
+                  </DialogHeader>
+                  <CoverPhotoScanner
+                    onChoose={handleScannerChoose}
+                    onClose={() => setScannerOpen(false)}
+                  />
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
 

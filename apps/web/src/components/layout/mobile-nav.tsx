@@ -26,11 +26,13 @@ function MobileNavGroup({
   onNavigate,
   collectionCount,
   cartCount,
+  isAdmin,
 }: {
   group: NavGroup;
   onNavigate: () => void;
   collectionCount?: number;
   cartCount?: number;
+  isAdmin: boolean;
 }) {
   const t = useTranslations();
   const pathname = usePathname();
@@ -57,6 +59,24 @@ function MobileNavGroup({
             const href = `/${locale}${item.href}`;
             const isActive = pathname === href;
             const Icon = item.icon;
+
+            const isLocked = item.comingSoonForUsers && !isAdmin;
+            if (isLocked) {
+              return (
+                <div
+                  key={item.href}
+                  title="Em breve"
+                  aria-disabled="true"
+                  className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground/50 cursor-not-allowed select-none"
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  <span className="flex-1">{t(item.titleKey)}</span>
+                  <span className="text-[10px] uppercase tracking-wider bg-muted text-muted-foreground/70 font-medium px-1.5 py-0.5 rounded">
+                    Em breve
+                  </span>
+                </div>
+              );
+            }
 
             return (
               <Link
@@ -129,7 +149,7 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
           {visibleGroups.map((group, index) => (
             <div key={group.labelKey}>
               {index > 0 && <Separator className="my-2" />}
-              <MobileNavGroup group={group} onNavigate={handleNavigate} collectionCount={collectionCount} cartCount={cartCount} />
+              <MobileNavGroup group={group} onNavigate={handleNavigate} collectionCount={collectionCount} cartCount={cartCount} isAdmin={user?.role === 'ADMIN'} />
             </div>
           ))}
 
