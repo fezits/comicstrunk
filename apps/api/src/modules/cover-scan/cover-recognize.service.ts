@@ -2,6 +2,7 @@ import { prisma } from '../../shared/lib/prisma';
 import { recognizeCoverImage, type RecognizedCover } from '../../shared/lib/cloudflare-ai';
 import { localCoverUrl } from '../../shared/lib/cloudinary';
 import { TooManyRequestsError } from '../../shared/utils/api-error';
+import { logger } from '../../shared/lib/logger';
 import {
   COVER_SCAN_DAILY_LIMIT_DEFAULT,
   type CoverScanRecognizeInput,
@@ -300,9 +301,23 @@ export async function recognizeFromImage(
       issue_number: effectiveIssueNumber,
     };
     externalCandidates = await searchExternal(recognizedForExternal);
-  } catch {
-    // fail open: erro nao quebra scan
+  } catch (err) {
+    logger.error('cover-scan: searchExternal threw', { err: (err as Error)?.message });
   }
+
+  // Observabilidade: contagem por fonte (apos dedup contra catalogo).
+  // Permite detectar regressao silenciosa quando uma fonte para de retornar.
+  const sourceCounts = { metron: 0, rika: 0, amazon: 0, dedupedToLocal: 0 };
+  for (const c of externalCandidates) {
+    if (c.isExternal && c.externalSource) sourceCounts[c.externalSource]++;
+    else sourceCounts.dedupedToLocal++;
+  }
+  logger.info('cover-scan: recognize sources', {
+    title: recognized.title,
+    issueNumber: effectiveIssueNumber,
+    local: candidates.length,
+    ...sourceCounts,
+  });
 
   // Mesclar locais e externos. Locais ja deduplificaram externos via
   // dedupExternal (tarefa do searchExternal). Aqui basta concatenar e ordenar.
