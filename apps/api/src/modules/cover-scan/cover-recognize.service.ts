@@ -205,34 +205,40 @@ function buildTokenBuckets(rec: RecognizedCover): TokenBuckets {
 
 /**
  * Heuristica: a leitura do VLM tem sinal suficiente pra valer a busca?
- * VLM as vezes devolve title=null + ocr_text="" quando a foto eh ruim
- * (borrada, escura, capa virada). Quando isso acontece, qualquer busca
- * vira ruido — melhor pedir nova foto.
  *
- * Aceitamos tres sinais alternativos:
- *  - title >= 2 chars (nome real do gibi)
- *  - series >= 2 chars
- *  - ocr_text com >= 5 chars uteis (ignorando espacos)
+ * Exige que o VLM tenha extraido um TITULO ou SERIE com pelo menos 3 chars
+ * (nao placeholder). OCR cru sozinho NAO basta — fragmentos aleatorios
+ * tipo "press" ou "title" passariam num threshold de chars e a busca
+ * resultaria em candidatos aleatorios sem relacao com a capa.
  *
- * Tambem rejeitamos placeholders genericos do VLM ("unknown", "untitled",
- * "n/a") que aparecem quando o modelo decide encher campo no esquema.
+ * Tambem rejeita placeholders genericos do modelo ("unknown", "untitled",
+ * "n/a", etc) e nomes muito curtos que sao quase sempre lixo.
  */
 function hasRecognizableText(rec: RecognizedCover): boolean {
   const PLACEHOLDERS = new Set([
-    'unknown', 'untitled', 'n/a', 'na', 'none', 'null',
-    'desconhecido', 'sem titulo', 'sem título',
+    'unknown',
+    'untitled',
+    'n/a',
+    'na',
+    'none',
+    'null',
+    'desconhecido',
+    'sem titulo',
+    'sem título',
+    'cover',
+    'capa',
+    'comic',
+    'gibi',
   ]);
-  const isPlaceholder = (s: string | null) => {
-    if (!s) return true;
+  const isUseful = (s: string | null): boolean => {
+    if (!s) return false;
     const norm = s.trim().toLowerCase();
-    return norm.length === 0 || PLACEHOLDERS.has(norm);
+    if (norm.length < 3) return false;
+    if (PLACEHOLDERS.has(norm)) return false;
+    return true;
   };
 
-  const titleOk = !isPlaceholder(rec.title) && (rec.title ?? '').trim().length >= 2;
-  const seriesOk = !isPlaceholder(rec.series) && (rec.series ?? '').trim().length >= 2;
-  const ocrOk = (rec.ocr_text ?? '').replace(/\s+/g, '').length >= 5;
-
-  return titleOk || seriesOk || ocrOk;
+  return isUseful(rec.title) || isUseful(rec.series);
 }
 
 // === Main service ===
