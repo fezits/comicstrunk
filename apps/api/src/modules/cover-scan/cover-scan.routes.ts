@@ -27,7 +27,7 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const input = req.body as CoverScanSearchInput;
-      const result = await coverScanService.searchByText(req.user!.userId, input);
+      const result = await coverScanService.searchByText(req.user!.userId, input, req.user!.role);
       sendSuccess(res, result);
     } catch (err) {
       next(err);
@@ -57,7 +57,7 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const input = req.body as CoverScanRecognizeInput;
-      const result = await coverRecognizeService.recognizeFromImage(req.user!.userId, input);
+      const result = await coverRecognizeService.recognizeFromImage(req.user!.userId, input, req.user!.role);
       sendSuccess(res, result);
     } catch (err) {
       next(err);

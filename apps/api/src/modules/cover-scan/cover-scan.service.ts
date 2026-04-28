@@ -82,7 +82,10 @@ function getDailyLimit(): number {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : COVER_SCAN_DAILY_LIMIT_DEFAULT;
 }
 
-export async function assertWithinDailyLimit(userId: string): Promise<void> {
+export async function assertWithinDailyLimit(userId: string, role?: string): Promise<void> {
+  // Admin nao tem rate limit (testes, moderacao, ferramentas internas)
+  if (role === 'ADMIN') return;
+
   const limit = getDailyLimit();
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
   const count = await prisma.coverScanLog.count({
@@ -100,8 +103,9 @@ export async function assertWithinDailyLimit(userId: string): Promise<void> {
 export async function searchByText(
   userId: string,
   input: CoverScanSearchInput,
+  userRole?: string,
 ): Promise<CoverScanSearchResponse> {
-  await assertWithinDailyLimit(userId);
+  await assertWithinDailyLimit(userId, userRole);
   const tokens = pickSearchableTokens(input.ocrTokens);
 
   let candidates: CoverScanCandidate[] = [];

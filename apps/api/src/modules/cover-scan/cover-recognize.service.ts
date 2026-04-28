@@ -79,7 +79,10 @@ function getDailyLimit(): number {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : COVER_SCAN_DAILY_LIMIT_DEFAULT;
 }
 
-async function assertWithinDailyLimit(userId: string): Promise<void> {
+async function assertWithinDailyLimit(userId: string, role?: string): Promise<void> {
+  // Admin nao tem rate limit (testes, moderacao, ferramentas internas)
+  if (role === 'ADMIN') return;
+
   const limit = getDailyLimit();
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
   const count = await prisma.coverScanLog.count({
@@ -204,8 +207,9 @@ function buildTokenBuckets(rec: RecognizedCover): TokenBuckets {
 export async function recognizeFromImage(
   userId: string,
   input: CoverScanRecognizeInput,
+  userRole?: string,
 ): Promise<CoverScanRecognizeResponse> {
-  await assertWithinDailyLimit(userId);
+  await assertWithinDailyLimit(userId, userRole);
 
   // 1. Chamar VLM
   const recognized = await recognizeCoverImage(input.imageBase64);
