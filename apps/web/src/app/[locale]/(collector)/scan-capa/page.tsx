@@ -1,19 +1,18 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { CoverPhotoScanner } from '@/components/features/catalog/cover-photo-scanner';
 import type { CoverScanCandidate } from '@comicstrunk/contracts';
 
 export default function ScanCapaPage() {
   const t = useTranslations('scanCapa');
+  const locale = useLocale();
   const router = useRouter();
 
   function handleChoose(candidate: CoverScanCandidate) {
-    const target = candidate.slug
-      ? `/catalog/${candidate.slug}`
-      : `/catalog/${candidate.id}`;
-    router.push(target);
+    const ref = candidate.slug ?? candidate.id;
+    router.push(`/${locale}/catalog/${ref}`);
   }
 
   return (
