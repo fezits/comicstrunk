@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { BookOpen, CheckCircle2 } from 'lucide-react';
+import { BookOpen, CheckCircle2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CoverImage } from '@/components/ui/cover-image';
 import {
@@ -166,23 +166,34 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
       )}
 
       {(stage === 'compressing' || stage === 'analyzing' || stage === 'searching') && (
-        <div className="flex flex-col items-center gap-3">
+        <div className="flex flex-col items-center gap-4 py-4">
           {previewUrl && (
-            <img
-              src={previewUrl}
-              alt={t('preview')}
-              width={200}
-              height={300}
-              className="rounded border object-contain"
-            />
+            <div className="relative">
+              <img
+                src={previewUrl}
+                alt={t('preview')}
+                width={220}
+                height={330}
+                className="rounded border object-contain shadow-lg"
+              />
+              {/* Pulsing border */}
+              <div className="pointer-events-none absolute inset-0 animate-pulse rounded border-2 border-primary/60" />
+              {/* Scanning sweep line */}
+              <div className="pointer-events-none absolute inset-0 overflow-hidden rounded">
+                <div className="scan-capa-sweep absolute inset-x-0 h-1/3 bg-gradient-to-b from-transparent via-primary/40 to-transparent" />
+              </div>
+            </div>
           )}
-          <p className="text-sm text-muted-foreground">
-            {stage === 'compressing'
-              ? t('compressing')
-              : stage === 'analyzing'
-                ? t('analyzing')
-                : t('searching')}
-          </p>
+          <div className="flex items-center gap-2 text-base text-muted-foreground">
+            <Loader2 className="h-5 w-5 animate-spin text-primary" />
+            <span>
+              {stage === 'compressing'
+                ? t('compressing')
+                : stage === 'analyzing'
+                  ? t('analyzing')
+                  : t('searching')}
+            </span>
+          </div>
         </div>
       )}
 
@@ -302,17 +313,14 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
           if (!open && !confirming) setModalCandidate(null);
         }}
       >
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>É esse mesmo?</DialogTitle>
-            <DialogDescription>
-              Confirme se este é o gibi que você scaneou. Vamos adicionar à sua coleção.
-            </DialogDescription>
+            <DialogTitle className="text-xl">Deseja adicionar este gibi à sua coleção?</DialogTitle>
           </DialogHeader>
 
           {modalCandidate && (
-            <div className="flex gap-3">
-              <div className="aspect-[2/3] w-32 flex-none overflow-hidden rounded border bg-muted">
+            <div className="flex gap-5">
+              <div className="aspect-[2/3] w-48 flex-none overflow-hidden rounded border bg-muted shadow-md">
                 {modalCandidate.coverImageUrl ? (
                   <img
                     src={modalCandidate.coverImageUrl}
@@ -321,14 +329,14 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center">
-                    <BookOpen className="h-8 w-8 text-muted-foreground/40" />
+                    <BookOpen className="h-12 w-12 text-muted-foreground/40" />
                   </div>
                 )}
               </div>
-              <dl className="flex-1 space-y-2 text-sm">
+              <dl className="flex-1 space-y-3 text-base">
                 <div>
                   <dt className="text-xs uppercase tracking-wider text-muted-foreground">Título</dt>
-                  <dd className="font-medium">{modalCandidate.title}</dd>
+                  <dd className="text-lg font-semibold leading-snug">{modalCandidate.title}</dd>
                 </div>
                 {modalCandidate.publisher && (
                   <div>
@@ -347,7 +355,7 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
                   )}
                 <div>
                   <dt className="text-xs uppercase tracking-wider text-muted-foreground">Origem</dt>
-                  <dd className="text-xs">
+                  <dd className="text-sm">
                     {modalCandidate.isExternal && modalCandidate.externalSource
                       ? `Externa: ${SOURCE_LABEL[modalCandidate.externalSource] ?? modalCandidate.externalSource} (será importada)`
                       : 'Catálogo interno'}
@@ -360,18 +368,22 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
           <DialogFooter className="gap-2 sm:gap-0">
             <Button
               variant="outline"
+              size="lg"
               onClick={() => setModalCandidate(null)}
               disabled={confirming}
             >
               Cancelar
             </Button>
-            <Button onClick={handleConfirm} disabled={confirming}>
+            <Button size="lg" onClick={handleConfirm} disabled={confirming}>
               {confirming ? (
-                'Salvando...'
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Salvando...
+                </>
               ) : (
                 <>
                   <CheckCircle2 className="mr-2 h-4 w-4" />
-                  Confirmar
+                  Adicionar
                 </>
               )}
             </Button>

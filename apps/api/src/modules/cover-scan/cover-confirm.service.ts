@@ -120,7 +120,7 @@ export async function confirmCandidate(
     catalogEntryId,
     collectionItemId,
     alreadyInCollection: false,
-    message: 'Adicionado a sua colecao.',
+    message: 'Gibi adicionado à sua coleção.',
   };
 }
 
