@@ -21,7 +21,7 @@ export const coverScanCandidateSchema = z.object({
   coverImageUrl: z.string().nullable(),
   score: z.number(),
   isExternal: z.boolean().optional().default(false),
-  externalSource: z.enum(['metron', 'rika']).optional(),
+  externalSource: z.enum(['metron', 'rika', 'amazon']).optional(),
   externalRef: z.string().optional(),
 });
 export type CoverScanCandidate = z.infer<typeof coverScanCandidateSchema>;
@@ -82,7 +82,7 @@ export type CoverScanRecognizeResponse = CoverScanSearchResponse;
 
 export const coverScanImportSchema = z.object({
   scanLogId: z.string().min(1),
-  externalSource: z.enum(['metron', 'rika']),
+  externalSource: z.enum(['metron', 'rika', 'amazon']),
   externalRef: z.string().min(1),
 });
 export type CoverScanImportInput = z.infer<typeof coverScanImportSchema>;

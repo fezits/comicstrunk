@@ -1,6 +1,7 @@
 import { prisma } from '../../shared/lib/prisma';
 import { searchMetronIssues, type MetronIssueSummary } from '../../shared/lib/metron';
 import { searchRika, type RikaProductSummary } from '../../shared/lib/rika';
+import { searchAmazonBR, type AmazonBRProductSummary } from '../../shared/lib/amazon-br';
 import type { RecognizedCover } from '../../shared/lib/cloudflare-ai';
 import type { CoverScanCandidate } from '@comicstrunk/contracts';
 
@@ -23,22 +24,26 @@ export async function searchExternal(rec: RecognizedCover): Promise<CoverScanCan
   const primaryQuery = titleQuery || stripSubtitle(seriesQuery);
   if (!primaryQuery.trim()) return [];
 
-  const [metronResult, rikaResult] = await Promise.allSettled([
+  const [metronResult, rikaResult, amazonResult] = await Promise.allSettled([
     searchMetronIssues({
       seriesName: primaryQuery,
       number: rec.issue_number ?? undefined,
     }),
     searchRika(buildRikaQuery(rec), { limit: TOP_EXTERNAL_PER_SOURCE }),
+    searchAmazonBR(buildAmazonQuery(rec), { limit: TOP_EXTERNAL_PER_SOURCE }),
   ]);
 
   const metronList: MetronIssueSummary[] =
     metronResult.status === 'fulfilled' ? metronResult.value : [];
   const rikaList: RikaProductSummary[] =
     rikaResult.status === 'fulfilled' ? rikaResult.value : [];
+  const amazonList: AmazonBRProductSummary[] =
+    amazonResult.status === 'fulfilled' ? amazonResult.value : [];
 
   const externalCandidates: CoverScanCandidate[] = [
     ...metronList.slice(0, TOP_EXTERNAL_PER_SOURCE).map(metronToCandidate),
     ...rikaList.slice(0, TOP_EXTERNAL_PER_SOURCE).map(rikaToCandidate),
+    ...amazonList.slice(0, TOP_EXTERNAL_PER_SOURCE).map(amazonToCandidate),
   ];
 
   if (externalCandidates.length === 0) return [];
@@ -60,6 +65,16 @@ function buildRikaQuery(rec: RecognizedCover): string {
   return parts.join(' ').trim();
 }
 
+function buildAmazonQuery(rec: RecognizedCover): string {
+  // Amazon eh mais permissiva — pode incluir mais contexto: titulo completo
+  // (com subtitulo), numero, autor principal.
+  const parts: string[] = [];
+  if (rec.title) parts.push(rec.title);
+  if (rec.issue_number !== null) parts.push(`#${rec.issue_number}`);
+  if (rec.authors[0]) parts.push(rec.authors[0]);
+  return parts.join(' ').trim();
+}
+
 function metronToCandidate(m: MetronIssueSummary): CoverScanCandidate {
   return {
     id: `metron:${m.id}`,
@@ -73,6 +88,28 @@ function metronToCandidate(m: MetronIssueSummary): CoverScanCandidate {
     externalSource: 'metron',
     externalRef: String(m.id),
   };
+}
+
+function amazonToCandidate(a: AmazonBRProductSummary): CoverScanCandidate {
+  return {
+    id: `amazon:${a.asin}`,
+    slug: null,
+    title: a.title,
+    publisher: a.publisher,
+    editionNumber: extractEditionFromTitle(a.title),
+    coverImageUrl: a.image,
+    score: 0.5,
+    isExternal: true,
+    externalSource: 'amazon',
+    externalRef: a.asin,
+  };
+}
+
+function extractEditionFromTitle(text: string): number | null {
+  const m = text.match(/(?:#|n[oº]\.?\s*|vol\.?\s*|tomo\s*|edi[çc][aã]o\s*)(\d{1,4})/i);
+  if (!m) return null;
+  const n = parseInt(m[1], 10);
+  return n > 0 && n < 10000 ? n : null;
 }
 
 function rikaToCandidate(r: RikaProductSummary): CoverScanCandidate {

@@ -12,6 +12,7 @@ import type {
   CoverScanImportInput,
 } from '@comicstrunk/contracts';
 import { authenticate } from '../../shared/middleware/authenticate';
+import { authorize } from '../../shared/middleware/authorize';
 import { validate } from '../../shared/middleware/validate';
 import { sendSuccess } from '../../shared/utils/response';
 import * as coverScanService from './cover-scan.service';
@@ -23,6 +24,7 @@ const router = Router();
 router.post(
   '/search',
   authenticate,
+  authorize('ADMIN'),
   validate(coverScanSearchSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -38,6 +40,7 @@ router.post(
 router.post(
   '/choose',
   authenticate,
+  authorize('ADMIN'),
   validate(coverScanChooseSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -53,6 +56,7 @@ router.post(
 router.post(
   '/recognize',
   authenticate,
+  authorize('ADMIN'),
   validate(coverScanRecognizeSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -68,6 +72,7 @@ router.post(
 router.post(
   '/import',
   authenticate,
+  authorize('ADMIN'),
   validate(coverScanImportSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {

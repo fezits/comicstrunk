@@ -1,6 +1,7 @@
 import { prisma } from '../../shared/lib/prisma';
 import { getMetronIssue } from '../../shared/lib/metron';
 import { searchRika } from '../../shared/lib/rika';
+import { searchAmazonBR } from '../../shared/lib/amazon-br';
 import { uniqueSlug } from '../../shared/utils/slug';
 import { uploadImage } from '../../shared/lib/cloudinary';
 import { NotFoundError, BadRequestError } from '../../shared/utils/api-error';
@@ -128,7 +129,7 @@ interface ExternalData {
 }
 
 async function fetchExternalData(
-  source: 'metron' | 'rika',
+  source: 'metron' | 'rika' | 'amazon',
   ref: string,
 ): Promise<ExternalData | null> {
   if (source === 'metron') {
@@ -146,6 +147,26 @@ async function fetchExternalData(
     };
   }
 
+  if (source === 'amazon') {
+    // Amazon BR: usa o ASIN como query (Amazon resolve direto pra produto)
+    const list = await searchAmazonBR(ref, { limit: 3 });
+    const found = list.find((p) => p.asin === ref) ?? list[0];
+    if (!found) return null;
+    // Amazon image URL pode ser baixa resolucao na pagina de busca; tentar
+    // versao maior trocando _SL160_/_AC_UY218_ etc por _SL600_.
+    const hiResImage = found.image
+      ? found.image.replace(/\._[A-Z0-9_,]+_\./, '._SL600_.')
+      : null;
+    return {
+      title: found.title,
+      publisher: found.publisher,
+      editionNumber: extractEditionFromText(found.title),
+      image: hiResImage,
+      description: null,
+      isbn: null,
+    };
+  }
+
   // rika: busca pelo ref/id (sem endpoint de detalhe dedicado)
   const list = await searchRika(ref, { limit: 1 });
   const found = list.find((p) => p.id === ref) ?? list[0];
@@ -158,6 +179,13 @@ async function fetchExternalData(
     description: null,
     isbn: null,
   };
+}
+
+function extractEditionFromText(text: string): number | null {
+  const m = text.match(/(?:#|n[oº]\.?\s*|vol\.?\s*|tomo\s*|edi[çc][aã]o\s*)(\d{1,4})/i);
+  if (!m) return null;
+  const n = parseInt(m[1], 10);
+  return n > 0 && n < 10000 ? n : null;
 }
 
 /**
