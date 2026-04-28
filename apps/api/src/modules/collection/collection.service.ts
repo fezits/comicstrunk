@@ -578,6 +578,7 @@ export async function getTimeline(
     {
       group.items.push({
         id: item.catalogEntry.id,
+        collectionItemId: item.id,
         title: item.catalogEntry.title,
         slug: item.catalogEntry.slug,
         coverImageUrl: item.catalogEntry.coverImageUrl,

@@ -479,31 +479,30 @@ export default function CollectionItemDetailPage() {
                 )}
               </div>
 
-              {/* Read date — editable */}
+              {/* Read date — editable (commits on blur to avoid reset during year typing) */}
               {item.isRead && (
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-muted-foreground">Lido em:</span>
-                  <input
-                    type="date"
-                    value={item.readAt ? new Date(item.readAt).toISOString().slice(0, 10) : ''}
-                    onChange={async (e) => {
-                      const newDate = e.target.value;
-                      if (!newDate) return;
-                      try {
-                        const updated = await updateCollectionItem(item.id, { readAt: new Date(newDate + 'T12:00:00').toISOString() } as Record<string, unknown>);
-                        setItem(updated);
-                        toast.success('Data de leitura atualizada');
-                      } catch {
-                        toast.error('Erro ao atualizar data');
-                      }
-                    }}
-                    className="bg-transparent border border-border rounded px-2 py-1 text-sm focus:border-primary outline-none"
-                  />
-                </div>
+                <ReadDateField
+                  value={item.readAt ?? null}
+                  onCommit={async (iso) => {
+                    try {
+                      const updated = await updateCollectionItem(item.id, { readAt: iso } as Record<string, unknown>);
+                      setItem(updated);
+                      toast.success('Data de leitura atualizada');
+                    } catch {
+                      toast.error('Erro ao atualizar data');
+                    }
+                  }}
+                />
               )}
 
               {/* Action buttons */}
               <div className="flex items-center gap-2 flex-wrap pt-2">
+                <Button variant="outline" size="sm" asChild>
+                  <Link href={`/${locale}/catalog/${entry.slug || entry.id}`}>
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    Ver no Catálogo
+                  </Link>
+                </Button>
                 <Button variant="outline" size="sm" onClick={startEditing}>
                   <Edit2 className="h-4 w-4 mr-2" />
                   {tCommon('edit')}
@@ -655,6 +654,49 @@ export default function CollectionItemDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+function ReadDateField({
+  value,
+  onCommit,
+}: {
+  value: string | null;
+  onCommit: (iso: string) => Promise<void> | void;
+}) {
+  const initial = value ? new Date(value).toISOString().slice(0, 10) : '';
+  const [local, setLocal] = useState(initial);
+
+  useEffect(() => {
+    setLocal(value ? new Date(value).toISOString().slice(0, 10) : '');
+  }, [value]);
+
+  const commit = () => {
+    if (!local) return;
+    if (local === initial) return;
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(local);
+    if (!m) return;
+    const year = Number(m[1]);
+    if (year < 1900 || year > 2100) return;
+    onCommit(new Date(local + 'T12:00:00').toISOString());
+  };
+
+  return (
+    <div className="flex items-center gap-2 text-sm">
+      <span className="text-muted-foreground">Lido em:</span>
+      <input
+        type="date"
+        value={local}
+        min="1900-01-01"
+        max="2100-12-31"
+        onChange={(e) => setLocal(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+        }}
+        className="bg-transparent border border-border rounded px-2 py-1 text-sm focus:border-primary outline-none"
+      />
     </div>
   );
 }
