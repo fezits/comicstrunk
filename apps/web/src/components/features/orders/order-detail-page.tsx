@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -90,7 +89,6 @@ export function OrderDetailPage({ orderId }: OrderDetailPageProps) {
   const t = useTranslations('orders');
   const tCommon = useTranslations('common');
   const locale = useLocale();
-  const _router = useRouter();
 
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);

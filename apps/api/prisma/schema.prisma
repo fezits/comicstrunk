@@ -248,6 +248,9 @@ model User {
   // LGPD relations
   dataRequests DataRequest[]
 
+  // Cover scan relations
+  coverScanLogs CoverScanLog[]
+
   @@map("users")
 }
 
@@ -328,6 +331,9 @@ model CatalogEntry {
   reviews   Review[]
   comments  Comment[]
   favorites Favorite[]
+
+  // Cover scan relations
+  coverScanLogsChosen CoverScanLog[]
 
   @@index([createdById])
   @@index([seriesId])
@@ -429,6 +435,28 @@ model CatalogCharacter {
   @@id([catalogEntryId, characterId])
   @@index([characterId])
   @@map("catalog_characters")
+}
+
+// ============================================================================
+// COVER SCAN (busca de capa por foto — Fase 1 do plano scan-capa)
+// ============================================================================
+
+model CoverScanLog {
+  id              String   @id @default(cuid())
+  userId          String   @map("user_id")
+  rawText         String   @map("raw_text") @db.Text
+  ocrTokens       String   @map("ocr_tokens") @db.Text  // tokens parseados separados por espaço
+  candidateNumber Int?     @map("candidate_number")     // número de edição extraído via regex (se houver)
+  candidatesShown Json     @map("candidates_shown")     // [{id, title, score}] (Json nativo em vez de Text)
+  chosenEntryId   String?  @map("chosen_entry_id")     // catalogEntryId escolhido (null = nenhum)
+  durationMs      Int?     @map("duration_ms")          // tempo total de processamento (cliente reporta opcional)
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chosenEntry CatalogEntry? @relation(fields: [chosenEntryId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@map("cover_scan_logs")
 }
 
 // ============================================================================

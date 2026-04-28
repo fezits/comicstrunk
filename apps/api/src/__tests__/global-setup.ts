@@ -159,6 +159,12 @@ async function cleanupTestData(prisma: PrismaClient) {
   await prisma.refreshToken.deleteMany({
     where: { user: { email: { contains: '@test-signup' } } },
   });
+  await prisma.subscription.deleteMany({
+    where: { user: { email: { contains: '@test-signup' } } },
+  });
+  await prisma.coverScanLog.deleteMany({
+    where: { user: { email: { contains: '@test-signup' } } },
+  });
   await prisma.user.deleteMany({
     where: { email: { contains: '@test-signup' } },
   });

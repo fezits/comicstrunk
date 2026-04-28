@@ -46,7 +46,7 @@ export function ListingDetail({ id }: ListingDetailProps) {
   const { incrementCount } = useCart();
 
   const [listing, setListing] = useState<MarketplaceListing | null>(null);
-  const [commission, setCommission] = useState<CommissionPreview | null>(null);
+  const [, setCommission] = useState<CommissionPreview | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);

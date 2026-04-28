@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
@@ -14,7 +14,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { navGroups, type NavGroup } from './nav-config';
 import { useCollection } from '@/contexts/collection-context';
 
-function NavGroupSection({ group, collectionCount }: { group: NavGroup; collectionCount?: number }) {
+function NavGroupSection({
+  group,
+  collectionCount,
+  isAdmin,
+}: {
+  group: NavGroup;
+  collectionCount?: number;
+  isAdmin: boolean;
+}) {
   const t = useTranslations();
   const pathname = usePathname();
   const locale = useLocale();
@@ -40,6 +48,26 @@ function NavGroupSection({ group, collectionCount }: { group: NavGroup; collecti
             const href = `/${locale}${item.href}`;
             const isActive = pathname === href;
             const Icon = item.icon;
+
+            // "Em Breve" para usuarios comuns: item visivel mas desabilitado.
+            // Admin ve normal e clicavel.
+            const isLocked = item.comingSoonForUsers && !isAdmin;
+            if (isLocked) {
+              return (
+                <div
+                  key={item.href}
+                  title="Em breve"
+                  aria-disabled="true"
+                  className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground/50 cursor-not-allowed select-none"
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  <span className="flex-1">{t(item.titleKey)}</span>
+                  <span className="ml-auto text-[10px] uppercase tracking-wider bg-muted text-muted-foreground/70 font-medium px-1.5 py-0.5 rounded">
+                    Em breve
+                  </span>
+                </div>
+              );
+            }
 
             return (
               <Link
@@ -88,7 +116,11 @@ export function Sidebar() {
           {visibleGroups.map((group, index) => (
             <div key={group.labelKey}>
               {index > 0 && <Separator className="my-2" />}
-              <NavGroupSection group={group} collectionCount={collectionCount} />
+              <NavGroupSection
+                group={group}
+                collectionCount={collectionCount}
+                isAdmin={user?.role === 'ADMIN'}
+              />
             </div>
           ))}
         </nav>

@@ -114,8 +114,8 @@ export async function addItem(userId: string, data: CreateCollectionItemInput) {
       where: { id: data.catalogEntryId },
     });
 
-    if (!catalogEntry || catalogEntry.approvalStatus !== 'APPROVED') {
-      throw new NotFoundError('Catalog entry not found or not approved');
+    if (!catalogEntry || catalogEntry.approvalStatus === 'REJECTED') {
+      throw new NotFoundError('Catalog entry not found or rejected');
     }
 
     // If user already has this item, increment quantity instead of erroring
@@ -188,9 +188,9 @@ export async function batchAddItems(
       return { added: 0, skipped: data.catalogEntryIds.length, skippedIds: data.catalogEntryIds, total: data.catalogEntryIds.length };
     }
 
-    // 3. Verify all catalog entries exist and are approved
+    // 3. Verify all catalog entries exist and are not rejected
     const validEntries = await tx.catalogEntry.findMany({
-      where: { id: { in: newIds }, approvalStatus: 'APPROVED' },
+      where: { id: { in: newIds }, approvalStatus: { not: 'REJECTED' } },
       select: { id: true },
     });
     const validIds = new Set(validEntries.map((e) => e.id));

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
 import { toast } from 'sonner';
-import { ChevronLeft, BookOpen, CalendarDays, ZoomIn, ZoomOut, X, AlignHorizontalDistributeCenter, AlignVerticalDistributeCenter, Grid3X3 } from 'lucide-react';
+import { BookOpen, CalendarDays, ZoomIn, ZoomOut, X, AlignHorizontalDistributeCenter, AlignVerticalDistributeCenter, Grid3X3 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -355,7 +355,7 @@ export function ReadingTimeline() {
             zoomLevel={zoomLevel}
             selectedYear={selectedYear}
             selectedMonth={selectedMonth}
-            onZoomIn={zoomIn}
+            _onZoomIn={zoomIn}
             onCoverClick={setZoomedItem}
             colorScheme={timelineMode === 'added' ? 'blue' : 'green'}
             mode={timelineMode}
@@ -432,7 +432,7 @@ function HorizontalTimeline({
         <div className="flex items-end min-h-[140px]">
           {groups.map((g, i) => (
             <NodeCard key={g.key} group={g} position={i % 2 === 0 ? 'show' : 'spacer'} side="above" label={getLabel(g)} locale={locale}
-              zoomLevel={zoomLevel} isExpanded={expandedGroup === g.key}
+              zoomLevel={zoomLevel} _isExpanded={expandedGroup === g.key}
               onToggleExpand={() => setExpandedGroup(expandedGroup === g.key ? null : g.key)}
               onZoomIn={() => onZoomIn(g.key)} onCoverClick={onCoverClick} />
           ))}
@@ -454,7 +454,7 @@ function HorizontalTimeline({
         <div className="flex items-start min-h-[140px]">
           {groups.map((g, i) => (
             <NodeCard key={g.key} group={g} position={i % 2 === 1 ? 'show' : 'spacer'} side="below" label={getLabel(g)} locale={locale}
-              zoomLevel={zoomLevel} isExpanded={expandedGroup === g.key}
+              zoomLevel={zoomLevel} _isExpanded={expandedGroup === g.key}
               onToggleExpand={() => setExpandedGroup(expandedGroup === g.key ? null : g.key)}
               onZoomIn={() => onZoomIn(g.key)} onCoverClick={onCoverClick} />
           ))}
@@ -537,7 +537,7 @@ function VerticalTimeline({
 // === Node Card (horizontal mode) ===
 
 function NodeCard({
-  group, position, side, label, locale, zoomLevel, isExpanded, onToggleExpand, onZoomIn, onCoverClick,
+  group, position, side, label, locale, zoomLevel, _isExpanded, onToggleExpand, onZoomIn, onCoverClick,
 }: {
   group: TimelineGroup;
   position: 'show' | 'spacer';
@@ -545,7 +545,7 @@ function NodeCard({
   label: string;
   locale: string;
   zoomLevel: ZoomLevel;
-  isExpanded: boolean;
+  _isExpanded: boolean;
   onToggleExpand: () => void;
   onZoomIn: () => void;
   onCoverClick?: (item: TimelineItem) => void;
@@ -655,13 +655,13 @@ function CoverThumb({ item, onClick }: { item: TimelineItem; locale: string; onC
 // === Heatmap View (GitHub-style) ===
 
 function HeatmapView({
-  groups, zoomLevel, selectedYear, selectedMonth, onZoomIn, onCoverClick, colorScheme = 'green', mode = 'read', readCounts, addedCounts,
+  groups, zoomLevel, selectedYear, selectedMonth, _onZoomIn, onCoverClick, colorScheme = 'green', mode = 'read', readCounts, addedCounts,
 }: {
   groups: TimelineGroup[];
   zoomLevel: ZoomLevel;
   selectedYear: number | null;
   selectedMonth: number | null;
-  onZoomIn: (key: string) => void;
+  _onZoomIn: (key: string) => void;
   onCoverClick?: (item: TimelineItem) => void;
   colorScheme?: 'green' | 'blue';
   mode?: 'read' | 'added' | 'both';

@@ -28,6 +28,7 @@ import {
   ListPlus,
   ImageIcon,
   Copy,
+  Camera,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -35,6 +36,9 @@ export type NavItem = {
   titleKey: string;
   href: string;
   icon: LucideIcon;
+  /** Quando true: item visivel para todos, mas clicavel SO para admin.
+   * Usuario comum ve disabled com tooltip "Em Breve". */
+  comingSoonForUsers?: boolean;
 };
 
 export type NavGroup = {
@@ -53,7 +57,7 @@ export const navGroups: NavGroup[] = [
       { titleKey: 'nav.home', href: '/', icon: Home },
       { titleKey: 'nav.catalog', href: '/catalog', icon: Library },
       { titleKey: 'nav.marketplace', href: '/marketplace', icon: Store },
-      { titleKey: 'nav.deals', href: '/deals', icon: Tag },
+      { titleKey: 'nav.deals', href: '/deals', icon: Tag, comingSoonForUsers: true },
       { titleKey: 'nav.contact', href: '/contact', icon: MessageSquare },
     ],
   },
@@ -66,6 +70,7 @@ export const navGroups: NavGroup[] = [
       { titleKey: 'nav.batchAdd', href: '/collection/add-batch', icon: ListPlus },
       { titleKey: 'nav.seriesProgress', href: '/collection/series-progress', icon: BarChart3 },
       { titleKey: 'nav.favorites', href: '/favorites', icon: Heart },
+      { titleKey: 'nav.scanCapa', href: '/scan-capa', icon: Camera, comingSoonForUsers: true },
     ],
   },
   {
@@ -131,6 +136,7 @@ export const protectedRoutes = [
   '/collection/add-batch',
   '/collection/series-progress',
   '/favorites',
+  '/scan-capa',
   '/cart',
   '/orders',
   '/payments/history',
