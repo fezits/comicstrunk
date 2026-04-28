@@ -1,6 +1,6 @@
 import { prisma } from '../../shared/lib/prisma';
 import { getMetronIssue } from '../../shared/lib/metron';
-import { searchRika } from '../../shared/lib/rika';
+import { searchRika, getRikaProduct } from '../../shared/lib/rika';
 import { searchAmazonBR } from '../../shared/lib/amazon-br';
 import { getFandomPage } from '../../shared/lib/fandom';
 import { uniqueSlug } from '../../shared/utils/slug';
@@ -244,9 +244,9 @@ async function fetchExternalData(
     };
   }
 
-  // rika: busca pelo ref/id (sem endpoint de detalhe dedicado)
-  const list = await searchRika(ref, { limit: 1 });
-  const found = list.find((p) => p.id === ref) ?? list[0];
+  // rika: busca pelo productId via fq=productId:<id> (full-text com `ft=`
+  // nao acha produto por id numerico — so por palavras do nome).
+  const found = await getRikaProduct(ref);
   if (!found) return null;
   return {
     title: found.title,

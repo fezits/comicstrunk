@@ -122,7 +122,49 @@ export async function searchRika(
       cacheSet(cacheKey, products);
       return products;
     },
-    { fallback: [], failureThreshold: 3, openMs: 5 * 60_000 },
+    { fallback: [] as RikaProductSummary[], failureThreshold: 3, openMs: 5 * 60_000 },
+  );
+}
+
+/**
+ * Busca produto especifico pelo VTEX productId.
+ *
+ * IMPORTANTE: o endpoint full-text (`?ft=<termo>`) NAO acha produto pelo
+ * id numerico — so casa em palavras do nome. Para fetch direto por id,
+ * usamos `?fq=productId:<id>` que retorna o produto exato.
+ *
+ * Retorna null se nao encontrar ou erro/bloqueio (fail open).
+ */
+export async function getRikaProduct(productId: string): Promise<RikaProductSummary | null> {
+  const cacheKey = `id=${productId}`;
+  const cached = cacheGet(cacheKey);
+  if (cached) return cached[0] ?? null;
+
+  return await withCircuitBreaker(
+    'rika',
+    async () => {
+      await throttle();
+
+      const url = `${BASE_URL}?fq=productId:${encodeURIComponent(productId)}`;
+      const res = await fetch(url, {
+        headers: {
+          'User-Agent': USER_AGENT,
+          Accept: 'application/json',
+        },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (!res.ok) throw new Error(`Rika HTTP ${res.status}`);
+      const body = await res.text();
+
+      if (body.includes('Bad Request') || body.includes('Scripts') || body.includes('blocked')) {
+        throw new Error('Rika blocked');
+      }
+
+      const products = parseRikaResponse(body, 1);
+      cacheSet(cacheKey, products);
+      return products[0] ?? null;
+    },
+    { fallback: null as RikaProductSummary | null, failureThreshold: 3, openMs: 5 * 60_000 },
   );
 }
 
