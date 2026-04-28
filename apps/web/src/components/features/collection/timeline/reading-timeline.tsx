@@ -21,6 +21,7 @@ import { apiClient } from '@/lib/api/client';
 
 interface TimelineItem {
   id: string;
+  collectionItemId?: string;
   title: string;
   slug: string | null;
   coverImageUrl: string | null;
@@ -387,13 +388,22 @@ export function ReadingTimeline() {
               <p className="text-white font-semibold">{zoomedItem.title}</p>
               {zoomedItem.publisher && <p className="text-white/60 text-sm">{zoomedItem.publisher}</p>}
               <p className="text-primary text-sm mt-1">Lido em {formatDate(zoomedItem.readAt)}</p>
-              <div className="flex items-center justify-center gap-3 mt-3">
+              <div className="flex items-center justify-center gap-3 mt-3 flex-wrap">
+                {zoomedItem.collectionItemId && (
+                  <Link
+                    href={`/${locale}/collection/${zoomedItem.collectionItemId}`}
+                    className="inline-block px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+                    onClick={() => setZoomedItem(null)}
+                  >
+                    Ver detalhes
+                  </Link>
+                )}
                 <Link
                   href={`/${locale}/catalog/${zoomedItem.slug || zoomedItem.id}`}
-                  className="inline-block px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+                  className="inline-block px-4 py-2 bg-white/10 text-white rounded-lg text-sm font-medium hover:bg-white/20 transition-colors"
                   onClick={() => setZoomedItem(null)}
                 >
-                  Ver detalhes
+                  Ver no Catálogo
                 </Link>
                 <button
                   onClick={() => setZoomedItem(null)}
