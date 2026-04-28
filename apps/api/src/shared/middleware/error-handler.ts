@@ -59,8 +59,17 @@ export function errorHandler(
     return;
   }
 
-  // body-parser PayloadTooLargeError (413) — surface as user-friendly message
-  if ((err as { type?: string }).type === 'entity.too.large') {
+  // body-parser PayloadTooLargeError (413) — surface as user-friendly message.
+  // Match any of: err.type === 'entity.too.large', err.statusCode === 413,
+  // err.status === 413, or message contains "request entity too large"
+  // (different versions of http-errors / body-parser expose different fields).
+  const errAny = err as { type?: string; statusCode?: number; status?: number; message?: string };
+  if (
+    errAny.type === 'entity.too.large' ||
+    errAny.statusCode === 413 ||
+    errAny.status === 413 ||
+    /request entity too large/i.test(errAny.message ?? '')
+  ) {
     res.status(413).json({
       success: false,
       error: {
