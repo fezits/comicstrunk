@@ -1,3 +1,5 @@
+import dns from 'dns/promises';
+import net from 'net';
 import { prisma } from '../../shared/lib/prisma';
 import { getMetronIssue } from '../../shared/lib/metron';
 import { searchRika, getRikaProduct } from '../../shared/lib/rika';
@@ -9,6 +11,8 @@ import { uploadImage } from '../../shared/lib/cloudinary';
 import { logger } from '../../shared/lib/logger';
 import { NotFoundError, BadRequestError } from '../../shared/utils/api-error';
 import type { CoverScanImportInput, CoverScanImportResponse } from '@comicstrunk/contracts';
+
+const MAX_COVER_BYTES = 10 * 1024 * 1024; // 10MB hard cap
 
 /**
  * Cria (ou reusa por sourceKey) um CatalogEntry a partir de uma fonte
@@ -290,20 +294,113 @@ function extractEditionFromText(text: string): number | null {
  *
  * O publicId retornado por uploadImage tem formato "covers/uuid.ext"; extraímos
  * só a parte após a última barra para obter o filename.
+ *
+ * SECURITY: a URL vem de fontes externas (eBay listing, Fandom wiki, etc) que
+ * sao influenciaveis por atacante. Sem guardas, viraria SSRF e o conteudo
+ * (cloud metadata, endpoint interno) ficaria publico em covers.comicstrunk.com.
+ * Por isso:
+ *   1) isSafeExternalUrl: rejeita protocolo nao-http(s) e IPs privados/loopback/
+ *      link-local (cloud metadata em 169.254.169.254).
+ *   2) Content-Length cap antes de baixar.
+ *   3) uploadImage agora valida via sharp.metadata() que o buffer e imagem real.
  */
 async function tryDownloadCover(url: string): Promise<string | null> {
+  if (!(await isSafeExternalUrl(url))) {
+    logger.warn('cover-import: refused unsafe URL', { url: url.slice(0, 200) });
+    return null;
+  }
   try {
     const res = await fetch(url, { signal: AbortSignal.timeout(10_000) });
     if (!res.ok) return null;
+
+    const declaredLength = res.headers.get('content-length');
+    if (declaredLength && parseInt(declaredLength, 10) > MAX_COVER_BYTES) {
+      logger.warn('cover-import: cover too large (header)', { declaredLength });
+      return null;
+    }
+
     const arrayBuffer = await res.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     if (buffer.length < 1_000) return null; // muito pequeno, provável placeholder
+    if (buffer.length > MAX_COVER_BYTES) {
+      logger.warn('cover-import: cover too large (body)', { length: buffer.length });
+      return null;
+    }
 
+    // uploadImage agora valida via sharp que o buffer eh imagem real — joga
+    // erro se nao for. Tratamos como falha de download (best-effort).
     const { publicId } = await uploadImage(buffer, 'covers');
-    // publicId = "covers/uuid.ext" — extrair só o filename
     const filename = publicId.split('/').pop() ?? null;
     return filename;
-  } catch {
+  } catch (err) {
+    logger.warn('cover-import: tryDownloadCover failed', { err: (err as Error)?.message });
     return null;
   }
+}
+
+/**
+ * Valida que a URL e segura para fetch externo:
+ *   - Protocolo http/https apenas (bloqueia file://, gopher://, etc).
+ *   - Hostname nao resolve para IP privado, loopback, link-local ou CGNAT.
+ *
+ * Tem TOCTOU residual (DNS pode mudar entre lookup e fetch real), mas elimina
+ * 99% dos vetores de SSRF sem dependencia externa. Para hardening total seria
+ * preciso usar request-filtering-agent ou similar.
+ */
+export async function isSafeExternalUrl(rawUrl: string): Promise<boolean> {
+  let parsed: URL;
+  try {
+    parsed = new URL(rawUrl);
+  } catch {
+    return false;
+  }
+  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return false;
+
+  const hostname = parsed.hostname;
+  if (!hostname) return false;
+
+  // IP literal direto na URL: checa direto
+  if (net.isIP(hostname)) {
+    return !isPrivateOrReservedIp(hostname);
+  }
+
+  // Hostname normal: resolve e checa cada endereco retornado.
+  try {
+    const addresses = await dns.lookup(hostname, { all: true });
+    if (addresses.length === 0) return false;
+    for (const addr of addresses) {
+      if (isPrivateOrReservedIp(addr.address)) return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Bloqueia ranges que nao deveriam ser alcancaveis por download externo:
+ * loopback, link-local (cloud metadata em 169.254.169.254), RFC1918, CGNAT,
+ * IPv6 unique-local e link-local, IPv4-mapped IPv6.
+ */
+export function isPrivateOrReservedIp(ip: string): boolean {
+  if (ip === '0.0.0.0' || ip === '::' || ip === '::1') return true;
+  // IPv4
+  if (/^127\./.test(ip)) return true;          // loopback
+  if (/^10\./.test(ip)) return true;           // RFC1918
+  if (/^192\.168\./.test(ip)) return true;     // RFC1918
+  if (/^172\.(1[6-9]|2\d|3[01])\./.test(ip)) return true; // RFC1918
+  if (/^169\.254\./.test(ip)) return true;     // link-local (CLOUD METADATA)
+  if (/^100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./.test(ip)) return true; // CGNAT
+  if (/^0\./.test(ip)) return true;            // "this network"
+  if (/^22[4-9]\.|^23\d\./.test(ip)) return true; // multicast
+  if (/^24[0-9]\.|^25[0-5]\./.test(ip)) return true; // reserved
+  // IPv6
+  const lower = ip.toLowerCase();
+  if (lower.startsWith('fe80:')) return true;  // link-local
+  if (lower.startsWith('fc') || lower.startsWith('fd')) return true; // unique-local
+  if (lower.startsWith('::ffff:')) {
+    // IPv4-mapped IPv6 — recursa pra checar a parte v4
+    return isPrivateOrReservedIp(lower.slice('::ffff:'.length));
+  }
+  return false;
 }
