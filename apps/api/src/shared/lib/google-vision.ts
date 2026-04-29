@@ -18,6 +18,7 @@
  * Fail open: erro/captcha/quota → null.
  */
 
+import crypto from 'crypto';
 import { withCircuitBreaker } from './circuit-breaker';
 import { logger } from './logger';
 
@@ -42,8 +43,10 @@ interface CacheEntry {
 const cache = new Map<string, CacheEntry>();
 
 function cacheKeyForImage(imageBase64: string): string {
-  // Hash simples (ultimos 64 chars) — base64 da mesma imagem eh deterministico
-  return imageBase64.slice(-64);
+  // SHA-256 do base64 inteiro. Antes usavamos os ultimos 64 chars do base64
+  // mas isso permitia colisao em duas imagens com mesmo final (raro porem
+  // possivel). Hash garante que cache hit so acontece pra imagem identica.
+  return crypto.createHash('sha256').update(imageBase64).digest('hex').slice(0, 32);
 }
 
 function cacheGet(key: string): GoogleVisionWebDetection | null {
