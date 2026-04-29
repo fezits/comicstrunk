@@ -1,12 +1,40 @@
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
-import sharp from 'sharp';
 import { v2 as cloudinary } from 'cloudinary';
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { logger } from './logger';
 
 const VALID_IMAGE_FORMATS = new Set(['jpeg', 'png', 'webp', 'gif']);
+
+/**
+ * Validacao da imagem via sharp. Carregamento lazy do sharp porque o binario
+ * nativo prebuilt requer Node >=20.3 e o servidor de producao roda 20.1 — top-
+ * level import crashava o boot. Lazy: se sharp nao carregar, falhamos a
+ * validacao (fail-secure — buffer suspeito nao vai pro R2) sem derrubar a API.
+ */
+type SharpFn = (buf: Buffer) => { metadata(): Promise<{ format?: string }> };
+
+async function validateImageBuffer(buffer: Buffer): Promise<void> {
+  let sharpFn: SharpFn;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    sharpFn = require('sharp');
+  } catch (err) {
+    throw new Error(
+      `uploadImage: buffer is not a valid image — sharp unavailable (${(err as Error).message})`,
+    );
+  }
+  let metadata: { format?: string };
+  try {
+    metadata = await sharpFn(buffer).metadata();
+  } catch (err) {
+    throw new Error(`uploadImage: buffer is not a valid image (${(err as Error).message})`);
+  }
+  if (!metadata.format || !VALID_IMAGE_FORMATS.has(metadata.format)) {
+    throw new Error(`uploadImage: unsupported image format: ${metadata.format ?? 'unknown'}`);
+  }
+}
 
 const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
 const apiKey = process.env.CLOUDINARY_API_KEY;
@@ -66,15 +94,7 @@ export async function uploadImage(
   // qualquer bytes (resposta de SSRF, JSON, etc) sao gravados no R2 com
   // Content-Type forjado e ficam acessiveis publicamente em
   // covers.comicstrunk.com.
-  let metadata: sharp.Metadata;
-  try {
-    metadata = await sharp(buffer).metadata();
-  } catch (err) {
-    throw new Error(`uploadImage: buffer is not a valid image (${(err as Error).message})`);
-  }
-  if (!metadata.format || !VALID_IMAGE_FORMATS.has(metadata.format)) {
-    throw new Error(`uploadImage: unsupported image format: ${metadata.format ?? 'unknown'}`);
-  }
+  await validateImageBuffer(buffer);
 
   // Priority 1: Cloudflare R2
   if (r2Client && r2Configured) {
