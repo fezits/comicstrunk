@@ -450,6 +450,63 @@ export async function recognizeFromImage(
     logger.error('cover-scan: searchExternal threw', { err: (err as Error)?.message });
   }
 
+  // Reforco automatico via Google Vision quando o VLM trouxe resultado
+  // ruim — caso classico: capa variant onde o VLM lê a assinatura do
+  // artista ("JAE LEE") como titulo e perde "Absolute Batman", entao
+  // Metron/Amazon/etc nao acham nada relevante. Trigger:
+  //  - menos de 5 candidatos totais (poucos sinais), OU
+  //  - confidence "baixa" do VLM, OU
+  //  - todos os candidatos externos vazios (so locais textuais)
+  // Quando dispara, chama Google Vision Web Detection (que olha a
+  // imagem real, nao texto), pega o bestGuessLabel + pageTitles e
+  // refaz a busca incluindo eBay nessa segunda passada.
+  const totalSoFar = candidates.length + externalCandidates.length;
+  const externalCount = externalCandidates.filter((c) => c.isExternal).length;
+  const lowQuality =
+    !usedVisualSearch &&
+    (totalSoFar < 5 || recognized.confidence === 'baixa' || externalCount === 0);
+
+  if (lowQuality) {
+    logger.info('cover-scan: low quality first pass, boosting with Google Vision', {
+      totalSoFar,
+      externalCount,
+      confidence: recognized.confidence,
+    });
+    const visual = await recognizeViaGoogleVision(input.imageBase64);
+    if (visual && visual.label && visual.label.toLowerCase() !== (recognized.title ?? '').toLowerCase()) {
+      try {
+        const boosted = await searchExternal(
+          { ...visual.rec, issue_number: effectiveIssueNumber },
+          { includeEbay: true },
+        );
+        // Merge sem duplicar por id
+        const seen = new Set(externalCandidates.map((c) => c.id));
+        for (const c of boosted) {
+          if (!seen.has(c.id)) {
+            externalCandidates.push(c);
+            seen.add(c.id);
+          }
+        }
+        // Se a label do Google for muito mais descritiva, expoe pro user.
+        // No painel "IDENTIFIQUEI COMO" troca pra label do Google quando
+        // o VLM falhou em extrair algo util.
+        if (!recognized.title || recognized.title.length < visual.label.length) {
+          recognized = {
+            ...recognized,
+            title: visual.label,
+            // Se VLM nao tinha series mas Google retornou um topEntity util,
+            // herda. Senao mantem o que tinha.
+            series: recognized.series ?? visual.rec.series,
+          };
+          visualLabel = visual.label;
+          usedVisualSearch = true;
+        }
+      } catch (err) {
+        logger.warn('cover-scan: Google Vision boost failed', { err: (err as Error)?.message });
+      }
+    }
+  }
+
   // Observabilidade: contagem por fonte (apos dedup contra catalogo).
   // Permite detectar regressao silenciosa quando uma fonte para de retornar.
   const sourceCounts = { metron: 0, rika: 0, amazon: 0, fandom: 0, ebay: 0, dedupedToLocal: 0 };
