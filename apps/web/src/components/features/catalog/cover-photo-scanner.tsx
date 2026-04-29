@@ -31,6 +31,7 @@ const SOURCE_LABEL: Record<string, string> = {
   rika: 'Rika',
   amazon: 'Amazon BR',
   fandom: 'Fandom Wiki',
+  ebay: 'eBay',
 };
 
 export function CoverPhotoScanner({ onChoose, onClose }: Props) {

@@ -3,6 +3,7 @@ import { searchMetronIssues, type MetronIssueSummary } from '../../shared/lib/me
 import { searchRika, type RikaProductSummary } from '../../shared/lib/rika';
 import { searchAmazonBR, type AmazonBRProductSummary } from '../../shared/lib/amazon-br';
 import { searchFandom, type FandomPageSummary } from '../../shared/lib/fandom';
+import { searchEbay, type EbayItemSummary } from '../../shared/lib/ebay';
 import { localCoverUrl } from '../../shared/lib/cloudinary';
 import type { RecognizedCover } from '../../shared/lib/cloudflare-ai';
 import type { CoverScanCandidate } from '@comicstrunk/contracts';
@@ -20,7 +21,10 @@ const FANDOM_PER_WIKI = 3;
  * TODOS os sinais que o VLM extraiu da capa (titulo + serie + numero +
  * autor) concatenados e deixa cada fonte fazer o melhor matching que puder.
  */
-export async function searchExternal(rec: RecognizedCover): Promise<CoverScanCandidate[]> {
+export async function searchExternal(
+  rec: RecognizedCover,
+  opts: { includeEbay?: boolean } = {},
+): Promise<CoverScanCandidate[]> {
   const fullText = buildFullTextQuery(rec);
   if (!fullText.trim()) return [];
 
@@ -36,6 +40,14 @@ export async function searchExternal(rec: RecognizedCover): Promise<CoverScanCan
   // e (se nada vier) caimos pro titulo isolado num segundo passo abaixo.
   const metronPrimary = combineTitleAndSeries(rec) || fullText;
 
+  // eBay so eh chamada quando includeEbay=true (capa avariada / visual
+  // search). No fluxo VLM normal Metron+Amazon+Rika+Fandom ja cobrem,
+  // adicionar eBay vira ruido. Quando sem credenciais EBAY_APP_ID, a
+  // funcao searchEbay retorna [] silenciosamente — fail open.
+  const ebayPromise = opts.includeEbay
+    ? searchEbay(fullText, { limit: TOP_EXTERNAL_PER_SOURCE })
+    : Promise.resolve([] as EbayItemSummary[]);
+
   const [
     metronResult,
     rikaResult,
@@ -44,6 +56,7 @@ export async function searchExternal(rec: RecognizedCover): Promise<CoverScanCan
     amazonBroadResult,
     fandomResult,
     fandomBroadResult,
+    ebayResult,
   ] = await Promise.allSettled([
     searchMetronIssues({
       seriesName: metronPrimary,
@@ -57,6 +70,7 @@ export async function searchExternal(rec: RecognizedCover): Promise<CoverScanCan
       : Promise.resolve([]),
     searchFandom(fullText, { limitPerWiki: FANDOM_PER_WIKI }),
     runBroad ? searchFandom(broadQuery, { limitPerWiki: FANDOM_PER_WIKI }) : Promise.resolve([]),
+    ebayPromise,
   ]);
 
   const metronList: MetronIssueSummary[] =
@@ -79,11 +93,15 @@ export async function searchExternal(rec: RecognizedCover): Promise<CoverScanCan
     (p) => `${p.wikiDomain}:${p.pageId}`,
   );
 
+  const ebayList: EbayItemSummary[] =
+    ebayResult.status === 'fulfilled' ? ebayResult.value : [];
+
   const externalCandidates: CoverScanCandidate[] = [
     ...metronList.map(metronToCandidate),
     ...rikaCombined.map(rikaToCandidate),
     ...amazonCombined.map(amazonToCandidate),
     ...fandomCombined.map(fandomToCandidate),
+    ...ebayList.map(ebayToCandidate),
   ];
 
   if (externalCandidates.length === 0) return [];
@@ -230,6 +248,25 @@ function fandomToCandidate(f: FandomPageSummary): CoverScanCandidate {
     // externalRef carrega wiki + pageTitle (URL-encoded) pra import flow.
     // Forma: "<wikiDomain>|<pageTitle>" (separador | nao colide com URLs).
     externalRef: `${f.wikiDomain}|${f.title}`,
+  };
+}
+
+function ebayToCandidate(e: EbayItemSummary): CoverScanCandidate {
+  // Usa epid quando disponivel (agrega multiplos listings) — caso
+  // contrario itemId individual. externalRef vai como string pra
+  // resolucao no fetchExternalData.
+  const ref = e.epid ?? e.itemId;
+  return {
+    id: `ebay:${ref}`,
+    slug: null,
+    title: e.title,
+    publisher: null,
+    editionNumber: extractEditionFromTitle(e.title),
+    coverImageUrl: e.image,
+    score: 0.4, // ligeiramente menor que outras externas — eBay tem mais ruido
+    isExternal: true,
+    externalSource: 'ebay',
+    externalRef: ref,
   };
 }
 

@@ -1,6 +1,7 @@
 import { prisma } from '../../shared/lib/prisma';
 import { getMetronIssue } from '../../shared/lib/metron';
 import { searchRika, getRikaProduct } from '../../shared/lib/rika';
+import { getEbayItem } from '../../shared/lib/ebay';
 import { searchAmazonBR } from '../../shared/lib/amazon-br';
 import { getFandomPage } from '../../shared/lib/fandom';
 import { uniqueSlug } from '../../shared/utils/slug';
@@ -20,7 +21,7 @@ import type { CoverScanImportInput, CoverScanImportResponse } from '@comicstrunk
  */
 export async function ensureCatalogEntryFromExternal(
   userId: string,
-  externalSource: 'metron' | 'rika' | 'amazon' | 'fandom',
+  externalSource: 'metron' | 'rika' | 'amazon' | 'fandom' | 'ebay',
   externalRef: string,
   scanLogId: string,
 ): Promise<{ id: string; approvalStatus: string }> {
@@ -166,9 +167,26 @@ interface ExternalData {
 }
 
 async function fetchExternalData(
-  source: 'metron' | 'rika' | 'amazon' | 'fandom',
+  source: 'metron' | 'rika' | 'amazon' | 'fandom' | 'ebay',
   ref: string,
 ): Promise<ExternalData | null> {
+  if (source === 'ebay') {
+    const item = await getEbayItem(ref);
+    if (!item) return null;
+    // image vem em alta res do ebay (image.imageUrl) — tenta forcar
+    // proxy s-l1600 quando disponivel
+    const hiResImage = item.image?.replace(/s-l\d+\.jpg$/, 's-l1600.jpg') ?? item.image;
+    return {
+      title: item.title,
+      publisher: null,
+      editionNumber: extractEditionFromText(item.title),
+      image: hiResImage,
+      description: null,
+      isbn: null,
+    };
+  }
+
+
   if (source === 'fandom') {
     // ref vem como "<wikiDomain>|<pageTitle>"
     const sep = ref.indexOf('|');

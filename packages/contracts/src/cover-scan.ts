@@ -21,7 +21,7 @@ export const coverScanCandidateSchema = z.object({
   coverImageUrl: z.string().nullable(),
   score: z.number(),
   isExternal: z.boolean().optional().default(false),
-  externalSource: z.enum(['metron', 'rika', 'amazon', 'fandom']).optional(),
+  externalSource: z.enum(['metron', 'rika', 'amazon', 'fandom', 'ebay']).optional(),
   externalRef: z.string().optional(),
 });
 export type CoverScanCandidate = z.infer<typeof coverScanCandidateSchema>;
@@ -87,7 +87,7 @@ export type CoverScanRecognizeResponse = CoverScanSearchResponse;
 
 export const coverScanImportSchema = z.object({
   scanLogId: z.string().min(1),
-  externalSource: z.enum(['metron', 'rika', 'amazon', 'fandom']),
+  externalSource: z.enum(['metron', 'rika', 'amazon', 'fandom', 'ebay']),
   externalRef: z.string().min(1),
 });
 export type CoverScanImportInput = z.infer<typeof coverScanImportSchema>;
@@ -114,7 +114,7 @@ export const coverScanConfirmSchema = z.object({
     editionNumber: z.number().int().nullable().optional(),
     coverImageUrl: z.string().nullable().optional(),
     isExternal: z.boolean().optional(),
-    externalSource: z.enum(['metron', 'rika', 'amazon', 'fandom']).optional(),
+    externalSource: z.enum(['metron', 'rika', 'amazon', 'fandom', 'ebay']).optional(),
     externalRef: z.string().optional(),
   }),
   // foto que o usuario tirou na hora do scan; data URI base64. Salva como
