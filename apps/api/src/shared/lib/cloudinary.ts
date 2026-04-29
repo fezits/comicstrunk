@@ -1,9 +1,12 @@
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
+import sharp from 'sharp';
 import { v2 as cloudinary } from 'cloudinary';
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { logger } from './logger';
+
+const VALID_IMAGE_FORMATS = new Set(['jpeg', 'png', 'webp', 'gif']);
 
 const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
 const apiKey = process.env.CLOUDINARY_API_KEY;
@@ -59,6 +62,20 @@ export async function uploadImage(
   buffer: Buffer,
   folder: string,
 ): Promise<{ url: string; publicId: string }> {
+  // Validate buffer is actually an image before persisting it. Sem isso,
+  // qualquer bytes (resposta de SSRF, JSON, etc) sao gravados no R2 com
+  // Content-Type forjado e ficam acessiveis publicamente em
+  // covers.comicstrunk.com.
+  let metadata: sharp.Metadata;
+  try {
+    metadata = await sharp(buffer).metadata();
+  } catch (err) {
+    throw new Error(`uploadImage: buffer is not a valid image (${(err as Error).message})`);
+  }
+  if (!metadata.format || !VALID_IMAGE_FORMATS.has(metadata.format)) {
+    throw new Error(`uploadImage: unsupported image format: ${metadata.format ?? 'unknown'}`);
+  }
+
   // Priority 1: Cloudflare R2
   if (r2Client && r2Configured) {
     const ext = detectExtension(buffer);
