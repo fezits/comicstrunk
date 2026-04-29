@@ -295,7 +295,6 @@ export default function AdminCoverManagementPage() {
                       className="flex flex-col rounded-md border border-border bg-card overflow-hidden"
                     >
                       <div className="aspect-[2/3] w-full overflow-hidden bg-muted">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={c.imageUrl}
                           alt={c.title}
