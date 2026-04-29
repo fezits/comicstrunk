@@ -211,11 +211,11 @@ export default function AdminCoverManagementPage() {
                 >
                   <td className="px-3 py-2">
                     <span>{entry.title}</span>
-                    {entry.publishYear !== null && (
+                    {entry.publishYear ? (
                       <span className="ml-2 text-xs text-muted-foreground">
                         ({entry.publishYear})
                       </span>
-                    )}
+                    ) : null}
                   </td>
                   <td className="px-3 py-2 text-muted-foreground">
                     {entry.publisher ?? '—'}
@@ -287,11 +287,11 @@ export default function AdminCoverManagementPage() {
           <DialogHeader>
             <DialogTitle>
               {activeEntry?.title}
-              {activeEntry?.publishYear !== null && activeEntry?.publishYear !== undefined && (
+              {activeEntry?.publishYear ? (
                 <span className="ml-2 text-base font-normal text-muted-foreground">
                   ({activeEntry.publishYear})
                 </span>
-              )}
+              ) : null}
             </DialogTitle>
             <DialogDescription>
               {[
@@ -313,7 +313,10 @@ export default function AdminCoverManagementPage() {
                 <DetailField label="Série" value={activeEntry.seriesTitle} />
                 <DetailField label="Volume" value={activeEntry.volumeNumber?.toString() ?? null} />
                 <DetailField label="Edição" value={activeEntry.editionNumber?.toString() ?? null} />
-                <DetailField label="Ano" value={activeEntry.publishYear?.toString() ?? null} />
+                <DetailField
+                  label="Ano"
+                  value={activeEntry.publishYear ? activeEntry.publishYear.toString() : null}
+                />
                 <DetailField label="Páginas" value={activeEntry.pageCount?.toString() ?? null} />
                 <DetailField
                   label="Preço de capa"
