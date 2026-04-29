@@ -109,6 +109,7 @@ export const navGroups: NavGroup[] = [
       { titleKey: 'nav.adminRecentCatalog', href: '/admin/catalog/recent', icon: Clock },
       { titleKey: 'nav.adminCovers', href: '/admin/covers', icon: ImageIcon },
       { titleKey: 'nav.adminCoverSubmissions', href: '/admin/cover-submissions', icon: ImageIcon },
+      { titleKey: 'nav.adminCoverManagement', href: '/admin/cover-management', icon: ImageIcon },
       { titleKey: 'nav.adminDuplicates', href: '/admin/duplicates', icon: Copy },
       { titleKey: 'nav.adminUsers', href: '/admin/users', icon: Users },
       { titleKey: 'nav.adminContent', href: '/admin/content', icon: FileText },
