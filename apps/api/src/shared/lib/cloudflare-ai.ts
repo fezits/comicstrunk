@@ -55,7 +55,7 @@ Regras gerais:
 - Retorne APENAS um objeto JSON valido, sem markdown, sem explicacoes.
 - Se nao tiver certeza de algum campo, use null para esse campo (exceto "ocr_text", que sempre tem string).
 - "confidence" reflete o quanto voce esta certo do "title".
-- "ocr_text" deve listar TODO texto visivel na capa, INCLUINDO numeros, "Vol", "Tomo", "#", subtitulos, creditos. Separe por quebras de linha. Nao filtre nada. Sempre no idioma original.
+- "ocr_text" deve listar TODO texto visivel na capa, INCLUINDO numeros, "Vol", "Tomo", "#", subtitulos, creditos. Separe por quebras de linha. Nao filtre nada. Sempre no idioma original. IMPORTANTE: se uma palavra ou frase aparece em estilo repetido na arte (tipo padrao decorativo "THE DARK KNIGHT THE DARK KNIGHT THE DARK KNIGHT..."), registre UMA UNICA vez. NAO repita a mesma linha mais de 2 vezes seguidas — isso polui o output e nao adiciona informacao.
 - "issue_number" eh o numero da edicao/volume/tomo. Procure ATIVAMENTE por padroes como "#5", "Vol. 2", "Tomo 3", "Numero 7", "N. 12", "Edicao 4". Se ver apenas um numero isolado destacado na capa, provavelmente eh ele. Se nao houver numero algum visivel, use null.
 - Idiomas comuns: pt-BR, en, jp, es. Se incerto, use "outro".
 - "dominant_colors": array com 1 a 4 cores predominantes da capa, SEMPRE em INGLES e em LOWERCASE. Use nomes simples e diretos: red, blue, yellow, green, orange, purple, pink, black, white, gray, brown, gold, silver, beige, cyan, magenta. Nao use composto ("dark red", "navy blue") — apenas a cor base mais proxima. Ordene da mais predominante pra menos. Se a capa for monocromatica, retorne 1 cor. Se for muito variada, max 4.
@@ -268,7 +268,7 @@ function extractJson(text: string): Record<string, unknown> | null {
     }
   }
 
-  // 4) ultimo recurso: do primeiro `{` ao ultimo `}` da string inteira
+  // 4) primeiro `{` ate o ultimo `}` da string inteira
   const firstBrace = text.indexOf('{');
   const lastBrace = text.lastIndexOf('}');
   if (firstBrace !== -1 && lastBrace > firstBrace) {
@@ -281,7 +281,95 @@ function extractJson(text: string): Record<string, unknown> | null {
     }
   }
 
+  // 5) ultimo recurso: JSON truncado mid-string (modelo entrou em loop
+  // de repeticao e estourou token budget). Detectamos pela ausencia
+  // de `}` final + presenca de padrao repetido nos ultimos 200 chars.
+  const truncated = repairTruncatedJson(text);
+  if (truncated) return truncated;
+
   return null;
+}
+
+/**
+ * Tenta consertar JSON truncado mid-string (caso comum quando o LLM
+ * entra em loop degenerado tipo "THE DARK KNIGHT THE DARK KNIGHT..."
+ * e o response e cortado no meio).
+ *
+ * Estrategia:
+ *  1. Localiza o inicio do JSON e onde a string atual esta aberta.
+ *  2. Se os ultimos N chars forem repeticao de um chunk pequeno
+ *     (cycle detection), trunca antes do primeiro ciclo.
+ *  3. Fecha a string com `"` e fecha brackets pendentes.
+ *  4. Tenta parsear o resultado.
+ */
+function repairTruncatedJson(text: string): Record<string, unknown> | null {
+  const start = text.indexOf('{');
+  if (start === -1) return null;
+
+  // Walker pra detectar estado: dentro de string + nivel de brackets.
+  let depth = 0;
+  let inString = false;
+  let escape = false;
+  let lastUnclosedStringStart = -1;
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i];
+    if (escape) {
+      escape = false;
+      continue;
+    }
+    if (inString) {
+      if (ch === '\\') escape = true;
+      else if (ch === '"') inString = false;
+      continue;
+    }
+    if (ch === '"') {
+      inString = true;
+      lastUnclosedStringStart = i;
+    } else if (ch === '{' || ch === '[') depth++;
+    else if (ch === '}' || ch === ']') depth--;
+  }
+
+  // Se nao ficou nada pra fechar, esse helper nao se aplica.
+  if (!inString && depth === 0) return null;
+
+  let body = text;
+
+  // Detectar e truncar repeticao no fim. Procura ciclo de 8-50 chars
+  // que se repete >= 3 vezes consecutivas no fim do texto.
+  if (inString && lastUnclosedStringStart >= 0) {
+    const stringContent = body.slice(lastUnclosedStringStart + 1);
+    for (let cycleLen = 8; cycleLen <= 80; cycleLen++) {
+      if (stringContent.length < cycleLen * 3) continue;
+      const chunk = stringContent.slice(-cycleLen);
+      // Conta quantas vezes consecutivas no fim
+      let count = 0;
+      let pos = stringContent.length;
+      while (pos >= cycleLen && stringContent.slice(pos - cycleLen, pos) === chunk) {
+        count++;
+        pos -= cycleLen;
+      }
+      if (count >= 3) {
+        // Trunca pra deixar so 1 ocorrencia do ciclo (preserva uma copia
+        // pro ocr_text fazer sentido)
+        const keepUntil = lastUnclosedStringStart + 1 + pos + cycleLen;
+        body = body.slice(0, keepUntil);
+        break;
+      }
+    }
+  }
+
+  // Fecha a string aberta + brackets pendentes
+  if (inString) body += '"';
+  while (depth > 0) {
+    body += '}';
+    depth--;
+  }
+
+  try {
+    return JSON.parse(body);
+  } catch {
+    return null;
+  }
 }
 
 /**
