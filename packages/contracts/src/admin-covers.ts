@@ -14,7 +14,19 @@ export interface AdminMissingCoverEntry {
   slug: string | null;
   title: string;
   publisher: string | null;
+  imprint: string | null;
   editionNumber: number | null;
+  volumeNumber: number | null;
+  publishYear: number | null;
+  author: string | null;
+  description: string | null;
+  isbn: string | null;
+  barcode: string | null;
+  pageCount: number | null;
+  coverPrice: number | null;
+  sourceKey: string | null;
+  seriesId: string | null;
+  seriesTitle: string | null;
   approvalStatus: string;
   createdAt: string;
 }
@@ -34,12 +46,26 @@ export const adminMissingCoversPublishersSchema = z.object({});
 export const adminSearchCoversSchema = z.object({});
 export type AdminSearchCoversInput = z.infer<typeof adminSearchCoversSchema>;
 
-export const ADMIN_COVER_SOURCES = ['amazon', 'rika', 'excelsior'] as const;
+export const ADMIN_COVER_SOURCES = [
+  'amazon',
+  'rika',
+  'excelsior',
+  'fandom',
+  'ebay',
+  'metron',
+] as const;
 export type AdminCoverSource = (typeof ADMIN_COVER_SOURCES)[number];
 
 export interface AdminCoverCandidate {
   source: AdminCoverSource;
-  /** Identificador externo (asin pra Amazon, productId pra Rika, slug pra Excelsior). */
+  /** Identificador externo:
+   *  - amazon: asin
+   *  - rika: productId
+   *  - excelsior: slug
+   *  - fandom: "<wikiDomain>|<pageTitle>"
+   *  - ebay: epid ou itemId
+   *  - metron: issue id (numero como string)
+   */
   externalRef: string;
   title: string;
   imageUrl: string; // garantido nao-nulo: candidatos sem imagem nao entram no resultado
@@ -50,7 +76,7 @@ export interface AdminCoverCandidate {
 export interface AdminSearchCoversResponse {
   /** Fonte que parou a cascata (primeira que retornou >= 1 candidato com imagem). */
   source: AdminCoverSource | null;
-  /** Lista de fontes consultadas em ordem (debug/UX: mostrar "tentou Amazon, Rika..."). */
+  /** Lista de fontes consultadas em ordem. */
   triedSources: AdminCoverSource[];
   candidates: AdminCoverCandidate[];
 }

@@ -2,15 +2,17 @@
  * Servico admin: gestao de capas faltantes.
  *
  * Endpoints suportados:
- *   - listMissingCovers: paginacao + filtro por publisher
- *   - searchCoversForEntry: cascata sequencial Amazon BR -> Rika -> Excelsior
+ *   - listMissingCovers: paginacao + filtro por publisher (com detalhes ricos do entry)
+ *   - searchCoversForEntry: cascata sequencial Amazon -> Rika -> Excelsior -> Fandom -> eBay -> Metron
  *   - applyCoverToEntry: download via guard SSRF + R2 + update do entry
  *
  * Cascata: tentamos uma fonte por vez. Para na primeira que retorna >= 1
- * candidato COM imagem (image !== null). Decisao explicita de Fernando em
- * 2026-04-29 — performance > exaustividade. Mercado Livre proibido (API
- * fechou acesso anonimo). Guia dos Quadrinhos proibido por Fernando ate
- * autorizacao explicita.
+ * candidato com imagem. Ordem otimizada: BR primeiro (Amazon/Rika/Excelsior)
+ * cobre publishers BR; US fontes (Fandom/eBay/Metron) cobrem Marvel/DC/Image
+ * legados que nao caem em BR.
+ *
+ * Mercado Livre proibido (API fechou acesso anonimo).
+ * Guia dos Quadrinhos proibido por Fernando ate autorizacao explicita.
  */
 
 import type { Prisma } from '@prisma/client';
@@ -18,6 +20,9 @@ import { prisma } from '../../shared/lib/prisma';
 import { searchAmazonBR } from '../../shared/lib/amazon-br';
 import { searchRika } from '../../shared/lib/rika';
 import { searchExcelsior } from '../../shared/lib/excelsior';
+import { searchEbay } from '../../shared/lib/ebay';
+import { searchMetronIssues } from '../../shared/lib/metron';
+import { searchFandom } from '../../shared/lib/fandom';
 import { tryDownloadCover } from '../../shared/lib/cover-download';
 import { localCoverUrl } from '../../shared/lib/cloudinary';
 import { logger } from '../../shared/lib/logger';
@@ -32,7 +37,14 @@ import type {
   AdminApplyCoverResponse,
 } from '@comicstrunk/contracts';
 
-const CASCADE_ORDER: AdminCoverSource[] = ['amazon', 'rika', 'excelsior'];
+const CASCADE_ORDER: AdminCoverSource[] = [
+  'amazon',
+  'rika',
+  'excelsior',
+  'fandom',
+  'ebay',
+  'metron',
+];
 const CANDIDATES_PER_SOURCE = 5;
 
 // === Listagem ===
@@ -58,9 +70,21 @@ export async function listMissingCovers(
         slug: true,
         title: true,
         publisher: true,
+        imprint: true,
         editionNumber: true,
+        volumeNumber: true,
+        publishYear: true,
+        author: true,
+        description: true,
+        isbn: true,
+        barcode: true,
+        pageCount: true,
+        coverPrice: true,
+        sourceKey: true,
+        seriesId: true,
         approvalStatus: true,
         createdAt: true,
+        series: { select: { title: true } },
       },
       orderBy: [{ publisher: 'asc' }, { title: 'asc' }],
       skip,
@@ -75,7 +99,19 @@ export async function listMissingCovers(
       slug: e.slug,
       title: e.title,
       publisher: e.publisher,
+      imprint: e.imprint,
       editionNumber: e.editionNumber,
+      volumeNumber: e.volumeNumber,
+      publishYear: e.publishYear,
+      author: e.author,
+      description: e.description,
+      isbn: e.isbn,
+      barcode: e.barcode,
+      pageCount: e.pageCount,
+      coverPrice: e.coverPrice !== null ? Number(e.coverPrice) : null,
+      sourceKey: e.sourceKey,
+      seriesId: e.seriesId,
+      seriesTitle: e.series?.title ?? null,
       approvalStatus: e.approvalStatus,
       createdAt: e.createdAt.toISOString(),
     })),
@@ -87,8 +123,7 @@ export async function listMissingCovers(
 }
 
 /**
- * Lista publishers com >= 1 entry sem capa, ordenado pela quantidade. Usado
- * pelo dropdown de filtro do admin pra mostrar so o que tem volume.
+ * Lista publishers com >= 1 entry sem capa, ordenado pela quantidade.
  */
 export async function listMissingCoverPublishers(): Promise<
   Array<{ publisher: string; count: number }>
@@ -111,16 +146,18 @@ export async function listMissingCoverPublishers(): Promise<
 
 // === Cascata de busca ===
 
+interface EntryQueryInput {
+  title: string;
+  publisher: string | null;
+  editionNumber: number | null;
+}
+
 /**
  * Constroi a query de busca a partir do entry. Mantemos curta — fontes BR
- * fazem matching literal (nao-fuzzy), entao adicionar muitas palavras zera o
- * resultado. Estrategia: title + edicao se houver. Publisher fica de fora —
- * costuma estar embedded no title (ex: "Almanaque da Magali Panini 6").
+ * fazem matching literal (nao-fuzzy), entao adicionar muitas palavras zera
+ * o resultado. Estrategia: title + edicao se houver.
  */
-function buildQueryForEntry(entry: {
-  title: string;
-  editionNumber: number | null;
-}): string {
+function buildQueryForEntry(entry: EntryQueryInput): string {
   const parts: string[] = [entry.title];
   if (entry.editionNumber !== null && !entry.title.includes(String(entry.editionNumber))) {
     parts.push(String(entry.editionNumber));
@@ -146,7 +183,7 @@ export async function searchCoversForEntry(
 
   for (const source of CASCADE_ORDER) {
     tried.push(source);
-    const candidates = await runSource(source, query);
+    const candidates = await runSource(source, query, entry);
     const withImage = candidates.filter((c) => c.imageUrl);
     if (withImage.length > 0) {
       logger.info('admin-covers: cascade stopped', {
@@ -169,10 +206,14 @@ export async function searchCoversForEntry(
 async function runSource(
   source: AdminCoverSource,
   query: string,
+  entry: EntryQueryInput,
 ): Promise<AdminCoverCandidate[]> {
   try {
     if (source === 'amazon') {
-      const results = await searchAmazonBR(query, { limit: CANDIDATES_PER_SOURCE });
+      const results = await searchAmazonBR(query, {
+        limit: CANDIDATES_PER_SOURCE,
+        comicsOnly: true, // restringe a HQs/Mangas/Graphic Novels
+      });
       return results
         .filter((r) => r.image)
         .map((r) => ({
@@ -197,17 +238,59 @@ async function runSource(
           publisher: r.publisher,
         }));
     }
-    // excelsior
-    const results = await searchExcelsior(query, { limit: CANDIDATES_PER_SOURCE });
+    if (source === 'excelsior') {
+      const results = await searchExcelsior(query, { limit: CANDIDATES_PER_SOURCE });
+      return results
+        .filter((r) => r.image)
+        .map((r) => ({
+          source: 'excelsior' as const,
+          externalRef: r.slug,
+          title: r.title,
+          imageUrl: r.image as string,
+          link: r.link,
+          publisher: r.publisher,
+        }));
+    }
+    if (source === 'fandom') {
+      const results = await searchFandom(query, { limitPerWiki: CANDIDATES_PER_SOURCE });
+      return results
+        .filter((r) => r.image)
+        .map((r) => ({
+          source: 'fandom' as const,
+          externalRef: `${r.wikiDomain}|${r.title}`,
+          title: r.title,
+          imageUrl: r.image as string,
+          link: `https://${r.wikiDomain}/wiki/${encodeURIComponent(r.title)}`,
+          publisher: r.publisher,
+        }));
+    }
+    if (source === 'ebay') {
+      const results = await searchEbay(query, { limit: CANDIDATES_PER_SOURCE });
+      return results
+        .filter((r) => r.image)
+        .map((r) => ({
+          source: 'ebay' as const,
+          externalRef: r.epid ?? r.itemId,
+          title: r.title,
+          imageUrl: r.image as string,
+          link: r.url,
+          publisher: null,
+        }));
+    }
+    // metron — usa series_name + number
+    const results = await searchMetronIssues({
+      seriesName: entry.title,
+      number: entry.editionNumber ?? undefined,
+    });
     return results
       .filter((r) => r.image)
       .map((r) => ({
-        source: 'excelsior' as const,
-        externalRef: r.slug,
-        title: r.title,
+        source: 'metron' as const,
+        externalRef: String(r.id),
+        title: r.issue,
         imageUrl: r.image as string,
-        link: r.link,
-        publisher: r.publisher,
+        link: `https://metron.cloud/issue/${r.id}/`,
+        publisher: null,
       }));
   } catch (err) {
     logger.warn('admin-covers: source failed', {

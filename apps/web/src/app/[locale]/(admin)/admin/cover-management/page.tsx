@@ -30,6 +30,9 @@ const SOURCE_LABEL: Record<AdminCoverSource, string> = {
   amazon: 'Amazon BR',
   rika: 'Rika',
   excelsior: 'Excelsior Comics',
+  fandom: 'Fandom Wiki',
+  ebay: 'eBay',
+  metron: 'MetronDB',
 };
 
 interface SearchState {
@@ -38,6 +41,8 @@ interface SearchState {
   triedSources: AdminCoverSource[];
   candidates: AdminCoverCandidate[];
 }
+
+type Mode = 'closed' | 'detail' | 'search';
 
 export default function AdminCoverManagementPage() {
   const [items, setItems] = useState<AdminMissingCoverEntry[]>([]);
@@ -48,7 +53,8 @@ export default function AdminCoverManagementPage() {
   const [publishers, setPublishers] = useState<Array<{ publisher: string; count: number }>>([]);
   const [loading, setLoading] = useState(true);
 
-  // Modal de busca/seleção de capa pra um entry específico
+  // Modal: 'detail' (info do entry) ou 'search' (cascata + candidatos)
+  const [mode, setMode] = useState<Mode>('closed');
   const [activeEntry, setActiveEntry] = useState<AdminMissingCoverEntry | null>(null);
   const [searchState, setSearchState] = useState<SearchState>({
     loading: false,
@@ -86,8 +92,14 @@ export default function AdminCoverManagementPage() {
     fetchItems();
   }, [fetchItems]);
 
-  const openSearch = async (entry: AdminMissingCoverEntry) => {
+  const openDetail = (entry: AdminMissingCoverEntry) => {
     setActiveEntry(entry);
+    setMode('detail');
+  };
+
+  const startSearch = async (entry: AdminMissingCoverEntry) => {
+    setActiveEntry(entry);
+    setMode('search');
     setSearchState({ loading: true, source: null, triedSources: [], candidates: [] });
     try {
       const result = await searchCoversForEntry(entry.id);
@@ -103,8 +115,9 @@ export default function AdminCoverManagementPage() {
     }
   };
 
-  const closeSearch = () => {
+  const closeModal = () => {
     if (applyingUrl) return;
+    setMode('closed');
     setActiveEntry(null);
     setSearchState({ loading: false, source: null, triedSources: [], candidates: [] });
   };
@@ -119,11 +132,9 @@ export default function AdminCoverManagementPage() {
         externalRef: candidate.externalRef,
       });
       toast.success('Capa aplicada com sucesso');
-      // Remove o item da lista (já tem capa agora)
       setItems((prev) => prev.filter((x) => x.id !== activeEntry.id));
       setTotal((t) => t - 1);
-      setActiveEntry(null);
-      setSearchState({ loading: false, source: null, triedSources: [], candidates: [] });
+      closeModal();
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: { message?: string } } } };
       const msg = e.response?.data?.error?.message ?? 'Erro ao aplicar capa';
@@ -140,7 +151,8 @@ export default function AdminCoverManagementPage() {
         <p className="text-sm text-muted-foreground">
           Catálogo com {total.toLocaleString('pt-BR')}{' '}
           {publisher ? `entradas de ${publisher} ` : 'entradas '}
-          sem capa. Clique em &quot;Buscar capas&quot; para tentar Amazon BR → Rika → Excelsior Comics.
+          sem capa. Clique em qualquer linha para ver detalhes; em &quot;Buscar capas&quot; para
+          tentar nas 6 fontes (Amazon → Rika → Excelsior → Fandom → eBay → Metron).
         </p>
       </div>
 
@@ -192,10 +204,24 @@ export default function AdminCoverManagementPage() {
             </thead>
             <tbody>
               {items.map((entry) => (
-                <tr key={entry.id} className="border-b border-border last:border-0">
-                  <td className="px-3 py-2">{entry.title}</td>
+                <tr
+                  key={entry.id}
+                  className="cursor-pointer border-b border-border last:border-0 hover:bg-muted/30"
+                  onClick={() => openDetail(entry)}
+                >
+                  <td className="px-3 py-2">
+                    <span>{entry.title}</span>
+                    {entry.publishYear !== null && (
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        ({entry.publishYear})
+                      </span>
+                    )}
+                  </td>
                   <td className="px-3 py-2 text-muted-foreground">
                     {entry.publisher ?? '—'}
+                    {entry.imprint && (
+                      <span className="ml-1 text-xs">/ {entry.imprint}</span>
+                    )}
                   </td>
                   <td className="px-3 py-2 text-muted-foreground">
                     {entry.editionNumber !== null ? `#${entry.editionNumber}` : '—'}
@@ -204,7 +230,14 @@ export default function AdminCoverManagementPage() {
                     {entry.approvalStatus}
                   </td>
                   <td className="px-3 py-2 text-right">
-                    <Button size="sm" variant="outline" onClick={() => openSearch(entry)}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        startSearch(entry);
+                      }}
+                    >
                       <Search className="mr-1.5 h-3.5 w-3.5" />
                       Buscar capas
                     </Button>
@@ -243,32 +276,92 @@ export default function AdminCoverManagementPage() {
         </div>
       )}
 
-      {/* Modal de candidatos */}
+      {/* Modal — detail OU search */}
       <Dialog
-        open={!!activeEntry}
+        open={mode !== 'closed'}
         onOpenChange={(open) => {
-          if (!open) closeSearch();
+          if (!open) closeModal();
         }}
       >
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{activeEntry?.title}</DialogTitle>
+            <DialogTitle>
+              {activeEntry?.title}
+              {activeEntry?.publishYear !== null && activeEntry?.publishYear !== undefined && (
+                <span className="ml-2 text-base font-normal text-muted-foreground">
+                  ({activeEntry.publishYear})
+                </span>
+              )}
+            </DialogTitle>
             <DialogDescription>
-              {activeEntry?.publisher ?? '—'}
-              {activeEntry?.editionNumber !== null && activeEntry?.editionNumber !== undefined
-                ? ` · #${activeEntry.editionNumber}`
-                : ''}
+              {[
+                activeEntry?.publisher,
+                activeEntry?.imprint,
+                activeEntry?.editionNumber !== null && activeEntry?.editionNumber !== undefined
+                  ? `#${activeEntry.editionNumber}`
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
             </DialogDescription>
           </DialogHeader>
 
-          {searchState.loading ? (
+          {/* === Modo DETAIL: ficha completa do entry === */}
+          {mode === 'detail' && activeEntry && (
+            <div className="space-y-4">
+              <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm md:grid-cols-3">
+                <DetailField label="Série" value={activeEntry.seriesTitle} />
+                <DetailField label="Volume" value={activeEntry.volumeNumber?.toString() ?? null} />
+                <DetailField label="Edição" value={activeEntry.editionNumber?.toString() ?? null} />
+                <DetailField label="Ano" value={activeEntry.publishYear?.toString() ?? null} />
+                <DetailField label="Páginas" value={activeEntry.pageCount?.toString() ?? null} />
+                <DetailField
+                  label="Preço de capa"
+                  value={
+                    activeEntry.coverPrice !== null
+                      ? `R$ ${activeEntry.coverPrice.toFixed(2)}`
+                      : null
+                  }
+                />
+                <DetailField label="Autor" value={activeEntry.author} />
+                <DetailField label="ISBN" value={activeEntry.isbn} />
+                <DetailField label="Código de barras" value={activeEntry.barcode} />
+                <DetailField
+                  label="Slug"
+                  value={activeEntry.slug}
+                  className="md:col-span-2 break-all"
+                />
+                <DetailField label="Source" value={activeEntry.sourceKey} />
+                <DetailField label="Status" value={activeEntry.approvalStatus} />
+                <DetailField
+                  label="Criado em"
+                  value={new Date(activeEntry.createdAt).toLocaleString('pt-BR')}
+                />
+              </dl>
+              {activeEntry.description && (
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    Descrição
+                  </p>
+                  <p className="mt-1 max-h-40 overflow-y-auto whitespace-pre-wrap text-sm">
+                    {activeEntry.description}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* === Modo SEARCH: cascata + candidatos === */}
+          {mode === 'search' && searchState.loading && (
             <div className="flex flex-col items-center justify-center gap-2 py-12">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
               <p className="text-sm text-muted-foreground">
-                Buscando em Amazon BR → Rika → Excelsior...
+                Buscando em Amazon → Rika → Excelsior → Fandom → eBay → Metron...
               </p>
             </div>
-          ) : (
+          )}
+
+          {mode === 'search' && !searchState.loading && (
             <>
               <div className="text-xs text-muted-foreground">
                 Tentou: {searchState.triedSources.map((s) => SOURCE_LABEL[s]).join(' → ')}
@@ -283,12 +376,12 @@ export default function AdminCoverManagementPage() {
                 <div className="flex flex-col items-center gap-3 rounded-md border border-amber-500/30 bg-amber-500/5 p-8 text-center">
                   <ImageIcon className="h-10 w-10 text-amber-500/60" />
                   <p className="text-sm">
-                    Nenhuma capa encontrada nas três fontes. Tente buscar manualmente
-                    ou aceitar que esta edição pode não ter capa indexada.
+                    Nenhuma capa encontrada nas fontes configuradas. Tente buscar
+                    manualmente ou aceitar que esta edição pode não ter capa indexada.
                   </p>
                 </div>
               ) : (
-                <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                   {searchState.candidates.map((c) => (
                     <li
                       key={`${c.source}:${c.externalRef}`}
@@ -338,13 +431,39 @@ export default function AdminCoverManagementPage() {
             </>
           )}
 
-          <DialogFooter>
-            <Button variant="outline" onClick={closeSearch} disabled={applyingUrl !== null}>
+          <DialogFooter className="gap-2 sm:gap-0">
+            {mode === 'detail' && activeEntry && (
+              <Button
+                onClick={() => startSearch(activeEntry)}
+                className="sm:mr-auto"
+              >
+                <Search className="mr-1.5 h-4 w-4" />
+                Buscar capas
+              </Button>
+            )}
+            <Button variant="outline" onClick={closeModal} disabled={applyingUrl !== null}>
               Fechar
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+function DetailField({
+  label,
+  value,
+  className = '',
+}: {
+  label: string;
+  value: string | null;
+  className?: string;
+}) {
+  return (
+    <div className={className}>
+      <dt className="text-xs uppercase tracking-wider text-muted-foreground">{label}</dt>
+      <dd className="text-sm">{value ?? '—'}</dd>
     </div>
   );
 }

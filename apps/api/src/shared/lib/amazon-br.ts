@@ -67,13 +67,17 @@ async function throttle(): Promise<void> {
 
 /**
  * Busca produtos no Amazon BR. Filtra para livros/HQs (i=stripbooks).
+ *
+ * Quando opts.comicsOnly=true (admin de gestao de capas), restringe ao node
+ * "HQs, Mangás e Graphic Novels" (nodeId 7841731011). Sem isso, query
+ * generica como "Flash 100" volta livros de matematica/fisica.
  */
 export async function searchAmazonBR(
   query: string,
-  opts: { limit?: number } = {},
+  opts: { limit?: number; comicsOnly?: boolean } = {},
 ): Promise<AmazonBRProductSummary[]> {
   const limit = opts.limit ?? 5;
-  const cacheKey = `q=${query}&l=${limit}`;
+  const cacheKey = `q=${query}&l=${limit}&c=${opts.comicsOnly ? 1 : 0}`;
   const cached = cacheGet(cacheKey);
   if (cached) return cached;
 
@@ -84,8 +88,11 @@ export async function searchAmazonBR(
 
       const params = new URLSearchParams({
         k: query,
-        i: 'stripbooks', // Books category — gibis/HQs caem aqui
+        i: 'stripbooks',
       });
+      if (opts.comicsOnly) {
+        params.set('rh', 'n:7841731011'); // HQs, Mangas e Graphic Novels
+      }
       const url = `${SEARCH_URL}?${params.toString()}`;
 
       const res = await fetch(url, {
