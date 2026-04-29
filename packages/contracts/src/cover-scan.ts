@@ -72,6 +72,11 @@ export const coverScanRecognizeSchema = z.object({
       'imageBase64 deve ser uma data URI no formato data:image/<fmt>;base64,<dados>',
     ),
   durationMs: z.number().int().nonnegative().max(600000).optional(),
+  // Quando o usuario marcar "capa sem texto visivel/avariada", o backend
+  // pula direto pra Google Vision Web Detection (busca visual no indice
+  // do Google) em vez de tentar VLM textual primeiro. Senao, VLM eh
+  // tentado e Google Vision soh entra como fallback se VLM falhar.
+  forceVisualSearch: z.boolean().optional(),
 });
 export type CoverScanRecognizeInput = z.infer<typeof coverScanRecognizeSchema>;
 

@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { BookOpen, CheckCircle2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { CoverImage } from '@/components/ui/cover-image';
 import {
   Dialog,
@@ -41,6 +42,9 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [scanLogId, setScanLogId] = useState<string>('');
   const [photoDataUri, setPhotoDataUri] = useState<string>('');
+  // "Capa sem texto visivel / avariada" — pula VLM textual e usa Google
+  // Vision Web Detection direto. Custo extra ~R$ 0,0075/scan.
+  const [forceVisualSearch, setForceVisualSearch] = useState(false);
 
   // Modal de confirmacao
   const [modalCandidate, setModalCandidate] = useState<CoverScanCandidate | null>(null);
@@ -62,6 +66,7 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
       const result = await recognize({
         imageBase64: dataUri,
         durationMs: Date.now() - startedAtRef.current,
+        forceVisualSearch: forceVisualSearch || undefined,
       });
 
       setCandidates(result.candidates);
@@ -146,20 +151,34 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
   return (
     <div className="space-y-4">
       {stage === 'idle' && (
-        <div className="flex flex-col items-center gap-3 rounded-lg border-2 border-dashed border-muted-foreground/30 p-8">
-          <p className="text-sm text-muted-foreground">{t('uploadHint')}</p>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) handleFile(file);
-            }}
-          />
-          <Button onClick={() => fileInputRef.current?.click()}>{t('chooseFile')}</Button>
+        <div className="space-y-3">
+          <div className="flex flex-col items-center gap-3 rounded-lg border-2 border-dashed border-muted-foreground/30 p-8">
+            <p className="text-sm text-muted-foreground">{t('uploadHint')}</p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleFile(file);
+              }}
+            />
+            <Button onClick={() => fileInputRef.current?.click()}>{t('chooseFile')}</Button>
+          </div>
+          <label className="flex items-center gap-2 rounded-md border border-border bg-card/50 px-3 py-2 text-sm cursor-pointer hover:bg-card">
+            <Checkbox
+              checked={forceVisualSearch}
+              onCheckedChange={(c) => setForceVisualSearch(c === true)}
+            />
+            <span>
+              Capa sem texto visível ou difícil de ler
+              <span className="ml-1 text-xs text-muted-foreground">
+                (usa busca por imagem do Google)
+              </span>
+            </span>
+          </label>
         </div>
       )}
 

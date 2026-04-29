@@ -91,6 +91,42 @@ export async function searchExternal(rec: RecognizedCover): Promise<CoverScanCan
   return await dedupExternal(externalCandidates);
 }
 
+/**
+ * Busca em fontes externas a partir de uma query de texto pura — usado
+ * quando o sinal nao vem do VLM e sim de fora (ex: bestGuessLabel do
+ * Google Vision Web Detection, ou pageTitle de uma pagina que tem a mesma
+ * imagem). Mesmo pipeline de dedup contra catalogo local.
+ */
+export async function searchExternalByQuery(query: string): Promise<CoverScanCandidate[]> {
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+
+  const [metronResult, rikaResult, amazonResult, fandomResult] = await Promise.allSettled([
+    searchMetronIssues({ seriesName: trimmed }),
+    searchRika(trimmed, { limit: TOP_EXTERNAL_PER_SOURCE }),
+    searchAmazonBR(trimmed, { limit: TOP_EXTERNAL_PER_SOURCE }),
+    searchFandom(trimmed, { limitPerWiki: FANDOM_PER_WIKI }),
+  ]);
+
+  const metronList: MetronIssueSummary[] =
+    metronResult.status === 'fulfilled' ? metronResult.value : [];
+  const rikaList: RikaProductSummary[] =
+    rikaResult.status === 'fulfilled' ? rikaResult.value : [];
+  const amazonList: AmazonBRProductSummary[] =
+    amazonResult.status === 'fulfilled' ? amazonResult.value : [];
+  const fandomList: FandomPageSummary[] =
+    fandomResult.status === 'fulfilled' ? fandomResult.value : [];
+
+  const externals: CoverScanCandidate[] = [
+    ...metronList.map(metronToCandidate),
+    ...rikaList.map(rikaToCandidate),
+    ...amazonList.map(amazonToCandidate),
+    ...fandomList.map(fandomToCandidate),
+  ];
+  if (externals.length === 0) return [];
+  return await dedupExternal(externals);
+}
+
 function mergeUniqueBy<T>(a: T[], b: T[], key: (item: T) => string): T[] {
   const seen = new Set<string>();
   const out: T[] = [];

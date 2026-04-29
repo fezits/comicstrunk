@@ -1,6 +1,7 @@
 import { prisma } from '../../shared/lib/prisma';
 import { recognizeCoverImage, type RecognizedCover } from '../../shared/lib/cloudflare-ai';
 import { localCoverUrl } from '../../shared/lib/cloudinary';
+import { detectWebForImage } from '../../shared/lib/google-vision';
 import { TooManyRequestsError, BadRequestError } from '../../shared/utils/api-error';
 import { logger } from '../../shared/lib/logger';
 import {
@@ -241,6 +242,58 @@ function hasRecognizableText(rec: RecognizedCover): boolean {
   return isUseful(rec.title) || isUseful(rec.series);
 }
 
+/**
+ * Quando o VLM nao consegue ler texto na capa (ou o usuario marcou
+ * forceVisualSearch), chamamos Google Vision Web Detection. O Google
+ * compara a imagem contra o indice global de imagens da web e devolve:
+ *  - bestGuessLabel: melhor palpite ("Tartarugas Ninja: O Ultimo Ronin")
+ *  - pagesWithMatchingImages[].pageTitle: titulo das paginas onde a mesma
+ *    imagem aparece (ex: "Tartarugas Ninja - Anos Perdidos | Amazon").
+ *
+ * Convertemos isso num RecognizedCover sintetico — title vira o
+ * bestGuessLabel, e o ocr_text recebe os pageTitles concatenados pra
+ * enriquecer os tokens de busca posterior.
+ *
+ * Retorna null se Google Vision nao conseguir nada uti (sem chave,
+ * fail open, captcha, zero matches).
+ */
+async function recognizeViaGoogleVision(
+  imageBase64: string,
+): Promise<{ rec: RecognizedCover; label: string } | null> {
+  const detection = await detectWebForImage(imageBase64);
+  if (!detection) return null;
+
+  const label = detection.bestGuessLabel?.trim() ?? '';
+  const topEntity = detection.webEntities[0]?.description ?? '';
+  // pageTitles do Google sao ricos ("Tartarugas Ninja: O Ultimo Ronin |
+  // Amazon.com.br") — usamos como ocr_text pra alimentar busca textual.
+  const pageTitles = detection.pagesWithMatchingImages
+    .map((p) => p.pageTitle)
+    .filter((s): s is string => !!s)
+    .join('\n');
+
+  const title = label || topEntity;
+  if (!title) return null;
+
+  const rec: RecognizedCover = {
+    title,
+    issue_number: null,
+    publisher: null,
+    authors: [],
+    series: topEntity && topEntity !== title ? topEntity : null,
+    language: null,
+    confidence: 'media',
+    ocr_text: pageTitles,
+    raw_response: JSON.stringify({
+      source: 'google-vision',
+      bestGuessLabel: label,
+      webEntities: detection.webEntities,
+      pageTitlesCount: detection.pagesWithMatchingImages.length,
+    }),
+  };
+  return { rec, label: title };
+}
+
 // === Main service ===
 
 export async function recognizeFromImage(
@@ -250,23 +303,54 @@ export async function recognizeFromImage(
 ): Promise<CoverScanRecognizeResponse> {
   await assertWithinDailyLimit(userId, userRole);
 
-  // 1. Chamar VLM. Se a primeira leitura nao tiver NENHUM sinal textual
-  // (foto borrada, sombra, capa virada), tenta UMA segunda leitura — VLM
-  // tem alguma estocasticidade e a segunda call as vezes funciona. Se as
-  // duas vierem vazias, devolve erro pro usuario tirar foto melhor em
-  // vez de queimar busca em catalogo + 4 fontes externas com tokens vazios.
-  let recognized = await recognizeCoverImage(input.imageBase64);
-  if (!hasRecognizableText(recognized)) {
-    logger.info('cover-scan: empty VLM response, retrying once', {
-      userId,
-      titleLen: (recognized.title ?? '').length,
-      ocrLen: (recognized.ocr_text ?? '').length,
-    });
+  // 1. Resolver VLM ou fallback visual.
+  //
+  // Caminho A — usuario marcou "Capa sem texto visivel/avariada"
+  // (input.forceVisualSearch=true): pula VLM, vai direto pra Google Vision
+  // Web Detection. Custo extra ~R$ 0,0075/scan, mas necessario quando o
+  // texto da capa nao da pra ler.
+  //
+  // Caminho B (default) — VLM normal. Se VLM nao extrair texto util em 2
+  // tentativas, ai sim cai pro Google Vision como fallback (em vez de
+  // simplesmente devolver erro pro usuario). Google Vision so eh chamado
+  // quando estritamente necessario, conforme combinado com Fernando.
+  let recognized: RecognizedCover;
+  let usedVisualSearch = false;
+  let visualLabel: string | null = null;
+
+  if (input.forceVisualSearch) {
+    logger.info('cover-scan: forceVisualSearch — skipping VLM', { userId });
+    const synthetic = await recognizeViaGoogleVision(input.imageBase64);
+    if (!synthetic) {
+      throw new BadRequestError(
+        'Não foi possível identificar este gibi pela imagem. Tire outra foto ou tente buscar pelo nome no catálogo.',
+      );
+    }
+    recognized = synthetic.rec;
+    visualLabel = synthetic.label;
+    usedVisualSearch = true;
+  } else {
     recognized = await recognizeCoverImage(input.imageBase64);
     if (!hasRecognizableText(recognized)) {
-      throw new BadRequestError(
-        'Não consegui ler nada na capa. Tire outra foto com melhor iluminação, foco e aproximação no texto.',
-      );
+      logger.info('cover-scan: empty VLM response, retrying once', {
+        userId,
+        titleLen: (recognized.title ?? '').length,
+        ocrLen: (recognized.ocr_text ?? '').length,
+      });
+      recognized = await recognizeCoverImage(input.imageBase64);
+      if (!hasRecognizableText(recognized)) {
+        // VLM nao conseguiu — tenta Google Vision como ultima cartada.
+        logger.info('cover-scan: VLM failed twice, falling back to Google Vision', { userId });
+        const synthetic = await recognizeViaGoogleVision(input.imageBase64);
+        if (!synthetic) {
+          throw new BadRequestError(
+            'Não consegui ler nada na capa. Tire outra foto com melhor iluminação, foco e aproximação no texto.',
+          );
+        }
+        recognized = synthetic.rec;
+        visualLabel = synthetic.label;
+        usedVisualSearch = true;
+      }
     }
   }
 
@@ -371,6 +455,8 @@ export async function recognizeFromImage(
     title: recognized.title,
     issueNumber: effectiveIssueNumber,
     local: candidates.length,
+    visualSearch: usedVisualSearch,
+    visualLabel,
     ...sourceCounts,
   });
 
