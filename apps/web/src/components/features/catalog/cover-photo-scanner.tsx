@@ -34,6 +34,28 @@ const SOURCE_LABEL: Record<string, string> = {
   ebay: 'eBay',
 };
 
+// Map de cores do VLM (em ingles) pra valor CSS legivel. Usado pro chip
+// visual no painel "IDENTIFIQUEI COMO". Cores fora dessa lista cairao
+// pro fallback gray.
+const COLOR_SWATCHES: Record<string, string> = {
+  red: '#ef4444',
+  blue: '#3b82f6',
+  yellow: '#eab308',
+  green: '#22c55e',
+  orange: '#f97316',
+  purple: '#a855f7',
+  pink: '#ec4899',
+  black: '#000000',
+  white: '#ffffff',
+  gray: '#9ca3af',
+  brown: '#92400e',
+  gold: '#ca8a04',
+  silver: '#cbd5e1',
+  beige: '#fde68a',
+  cyan: '#06b6d4',
+  magenta: '#d946ef',
+};
+
 export function CoverPhotoScanner({ onChoose, onClose }: Props) {
   const t = useTranslations('scanCapa');
   const [stage, setStage] = useState<Stage>('idle');
@@ -242,6 +264,26 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
                       <p className="line-clamp-1 text-xs text-muted-foreground">
                         {[identified.series, identified.publisher].filter(Boolean).join(' • ')}
                       </p>
+                    )}
+                    {identified.dominantColors && identified.dominantColors.length > 0 && (
+                      <div className="mt-1.5 flex items-center gap-1.5">
+                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                          Cores
+                        </span>
+                        <div className="flex items-center gap-1">
+                          {identified.dominantColors.map((c) => (
+                            <span
+                              key={c}
+                              title={c}
+                              className="h-3.5 w-3.5 rounded-full border border-border/60"
+                              style={{ backgroundColor: COLOR_SWATCHES[c] ?? '#9ca3af' }}
+                            />
+                          ))}
+                          <span className="ml-1 text-[10px] text-muted-foreground">
+                            {identified.dominantColors.join(', ')}
+                          </span>
+                        </div>
+                      </div>
                     )}
                   </>
                 ) : (

@@ -36,6 +36,8 @@ export const coverScanIdentifiedSchema = z
     publisher: z.string().nullable().optional(),
     series: z.string().nullable().optional(),
     confidence: z.enum(['alta', 'media', 'baixa']).optional(),
+    /** Cores predominantes da capa em ingles, max 4 (ex: ["red","yellow","black"]). */
+    dominantColors: z.array(z.string()).optional(),
   })
   .optional();
 export type CoverScanIdentified = z.infer<typeof coverScanIdentifiedSchema>;

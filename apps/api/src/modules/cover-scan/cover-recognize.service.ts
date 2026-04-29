@@ -506,6 +506,7 @@ export async function recognizeFromImage(
       publisher: recognized.publisher,
       series: recognized.series,
       confidence: recognized.confidence,
+      dominantColors: recognized.dominant_colors,
     },
   };
 }
