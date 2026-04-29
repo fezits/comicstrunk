@@ -182,8 +182,14 @@ export async function searchEbay(
 }
 
 /**
- * Resolve um item especifico por epid (ou itemId fallback). Usado no
- * fluxo de import quando o usuario escolhe um candidato eBay.
+ * Resolve um item especifico por epid (numerico) ou itemId (formato
+ * "v1|<n>|<n>"). Usado no fluxo de import quando o usuario escolhe um
+ * candidato eBay.
+ *
+ * - epid: o eBay Product ID nao tem endpoint direto pra fetch. Usa-se
+ *   item_summary/search com filtro `epid:<id>` que retorna o(s)
+ *   listing(s) ativos do produto.
+ * - itemId: GET /buy/browse/v1/item/{itemId} resolve direto.
  */
 export async function getEbayItem(epidOrItemId: string): Promise<EbayItemSummary | null> {
   const token = await getOAuthToken();
@@ -192,13 +198,34 @@ export async function getEbayItem(epidOrItemId: string): Promise<EbayItemSummary
   return await withCircuitBreaker(
     'ebay',
     async () => {
-      // Se parecer epid (so digitos), usa endpoint legacy resolver
       const isEpid = /^\d+$/.test(epidOrItemId);
-      const url = isEpid
-        ? `${ITEM_URL}/get_items_by_item_group?item_group_id=${encodeURIComponent(epidOrItemId)}`
-        : `${ITEM_URL}/${encodeURIComponent(epidOrItemId)}`;
 
-      const res = await fetch(url, {
+      if (isEpid) {
+        // Pra epid: usa search com query param `epid=<id>` (nao eh
+        // filter — eBay rejeita filter=epid: com error 12001).
+        // Retorna o listing ativo de menor preco (sort=price asc).
+        const params = new URLSearchParams({
+          epid: epidOrItemId,
+          limit: '5',
+          sort: 'price',
+        });
+        const res = await fetch(`${SEARCH_URL}?${params.toString()}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'X-EBAY-C-MARKETPLACE-ID': 'EBAY_US',
+            Accept: 'application/json',
+          },
+          signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        });
+        if (!res.ok) throw new Error(`eBay HTTP ${res.status}`);
+        const data = (await res.json()) as RawSearchResponse;
+        const first = data.itemSummaries?.[0];
+        if (!first) return null;
+        return mapItem(first);
+      }
+
+      // itemId direto
+      const res = await fetch(`${ITEM_URL}/${encodeURIComponent(epidOrItemId)}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'X-EBAY-C-MARKETPLACE-ID': 'EBAY_US',
@@ -206,17 +233,8 @@ export async function getEbayItem(epidOrItemId: string): Promise<EbayItemSummary
         },
         signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
       });
-      if (!res.ok) {
-        // Fallback: busca pelo epid via search
-        if (isEpid) {
-          const items = await searchEbay(epidOrItemId, { limit: 3 });
-          return items.find((i) => i.epid === epidOrItemId) ?? items[0] ?? null;
-        }
-        throw new Error(`eBay HTTP ${res.status}`);
-      }
-      const data = (await res.json()) as RawEbayItem & { items?: RawEbayItem[] };
-      // get_items_by_item_group retorna { items: [...] }
-      const raw = data.items?.[0] ?? data;
+      if (!res.ok) throw new Error(`eBay HTTP ${res.status}`);
+      const raw = (await res.json()) as RawEbayItem;
       return mapItem(raw);
     },
     { fallback: null as EbayItemSummary | null, failureThreshold: 3, openMs: 5 * 60_000 },

@@ -48,3 +48,6 @@ pnpm-debug.log*
 
 # Claude Code harness lock (local-only)
 .claude/scheduled_tasks.lock
+
+# PM2 start configs com credenciais de producao
+start-prod-*.json
