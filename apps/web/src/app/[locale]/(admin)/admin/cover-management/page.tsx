@@ -224,7 +224,7 @@ export default function AdminCoverManagementPage() {
                     )}
                   </td>
                   <td className="px-3 py-2 text-muted-foreground">
-                    {entry.editionNumber !== null ? `#${entry.editionNumber}` : '—'}
+                    {entry.editionNumber ? `#${entry.editionNumber}` : '—'}
                   </td>
                   <td className="px-3 py-2 text-xs text-muted-foreground">
                     {entry.approvalStatus}
@@ -297,9 +297,7 @@ export default function AdminCoverManagementPage() {
               {[
                 activeEntry?.publisher,
                 activeEntry?.imprint,
-                activeEntry?.editionNumber !== null && activeEntry?.editionNumber !== undefined
-                  ? `#${activeEntry.editionNumber}`
-                  : null,
+                activeEntry?.editionNumber ? `#${activeEntry.editionNumber}` : null,
               ]
                 .filter(Boolean)
                 .join(' · ')}
@@ -311,17 +309,26 @@ export default function AdminCoverManagementPage() {
             <div className="space-y-4">
               <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm md:grid-cols-3">
                 <DetailField label="Série" value={activeEntry.seriesTitle} />
-                <DetailField label="Volume" value={activeEntry.volumeNumber?.toString() ?? null} />
-                <DetailField label="Edição" value={activeEntry.editionNumber?.toString() ?? null} />
+                <DetailField
+                  label="Volume"
+                  value={activeEntry.volumeNumber ? activeEntry.volumeNumber.toString() : null}
+                />
+                <DetailField
+                  label="Edição"
+                  value={activeEntry.editionNumber ? activeEntry.editionNumber.toString() : null}
+                />
                 <DetailField
                   label="Ano"
                   value={activeEntry.publishYear ? activeEntry.publishYear.toString() : null}
                 />
-                <DetailField label="Páginas" value={activeEntry.pageCount?.toString() ?? null} />
+                <DetailField
+                  label="Páginas"
+                  value={activeEntry.pageCount ? activeEntry.pageCount.toString() : null}
+                />
                 <DetailField
                   label="Preço de capa"
                   value={
-                    activeEntry.coverPrice !== null
+                    typeof activeEntry.coverPrice === 'number' && activeEntry.coverPrice > 0
                       ? `R$ ${activeEntry.coverPrice.toFixed(2)}`
                       : null
                   }
