@@ -27,6 +27,11 @@ export interface RecognizedCover {
   language: string | null;
   confidence: 'alta' | 'media' | 'baixa';
   ocr_text: string;
+  /** Cores predominantes da capa em ingles (ex: ["red","yellow","black"]).
+   *  Usadas como tokens de boost na busca externa — discrimina variants
+   *  e capas com title parecido em catalogos US (Amazon, eBay) onde o
+   *  termo de cor melhora ranking. */
+  dominant_colors: string[];
   raw_response: string; // resposta crua do modelo (debug + log)
 }
 
@@ -53,6 +58,7 @@ Regras gerais:
 - "ocr_text" deve listar TODO texto visivel na capa, INCLUINDO numeros, "Vol", "Tomo", "#", subtitulos, creditos. Separe por quebras de linha. Nao filtre nada. Sempre no idioma original.
 - "issue_number" eh o numero da edicao/volume/tomo. Procure ATIVAMENTE por padroes como "#5", "Vol. 2", "Tomo 3", "Numero 7", "N. 12", "Edicao 4". Se ver apenas um numero isolado destacado na capa, provavelmente eh ele. Se nao houver numero algum visivel, use null.
 - Idiomas comuns: pt-BR, en, jp, es. Se incerto, use "outro".
+- "dominant_colors": array com 1 a 4 cores predominantes da capa, SEMPRE em INGLES e em LOWERCASE. Use nomes simples e diretos: red, blue, yellow, green, orange, purple, pink, black, white, gray, brown, gold, silver, beige, cyan, magenta. Nao use composto ("dark red", "navy blue") — apenas a cor base mais proxima. Ordene da mais predominante pra menos. Se a capa for monocromatica, retorne 1 cor. Se for muito variada, max 4.
 
 Schema:
 {
@@ -63,7 +69,8 @@ Schema:
   "series": string ou null,
   "language": "pt-BR"|"en"|"jp"|"es"|"outro"|null,
   "confidence": "alta"|"media"|"baixa",
-  "ocr_text": string
+  "ocr_text": string,
+  "dominant_colors": [string]
 }`;
 
 const USER_PROMPT = 'Identifique este gibi pela capa.';
@@ -175,8 +182,51 @@ export async function recognizeCoverImage(
         ? parsed.confidence
         : 'baixa',
     ocr_text: typeof parsed.ocr_text === 'string' ? parsed.ocr_text : '',
+    dominant_colors: extractColors(parsed.dominant_colors),
     raw_response: rawForLog,
   };
+}
+
+/**
+ * Sanitiza cores do VLM. Aceita array de strings em ingles. Filtra
+ * para nomes simples conhecidos (a lista do prompt) — descarta lixo
+ * tipo "dark navy red-orange" que VLM as vezes inventa apesar da
+ * instrucao. Se o modelo retornar string em portugues por engano,
+ * mapeamos as comuns.
+ */
+function extractColors(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+
+  const VALID = new Set([
+    'red', 'blue', 'yellow', 'green', 'orange', 'purple', 'pink',
+    'black', 'white', 'gray', 'brown', 'gold', 'silver', 'beige',
+    'cyan', 'magenta',
+  ]);
+  // Mapeamento PT -> EN caso o VLM ignore a instrucao
+  const PT_TO_EN: Record<string, string> = {
+    vermelho: 'red', azul: 'blue', amarelo: 'yellow', verde: 'green',
+    laranja: 'orange', roxo: 'purple', rosa: 'pink', preto: 'black',
+    branco: 'white', cinza: 'gray', marrom: 'brown', dourado: 'gold',
+    prata: 'silver', bege: 'beige', ciano: 'cyan', magenta: 'magenta',
+  };
+
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const item of raw) {
+    if (typeof item !== 'string') continue;
+    const norm = item.trim().toLowerCase();
+    // Se vier composto ("dark red"), pega a ultima palavra (geralmente
+    // a cor base) — instrucao do prompt pede simples mas vamos defender.
+    const parts = norm.split(/\s+/);
+    const candidate = parts[parts.length - 1];
+    const mapped = VALID.has(candidate) ? candidate : PT_TO_EN[candidate];
+    if (mapped && !seen.has(mapped)) {
+      seen.add(mapped);
+      out.push(mapped);
+    }
+    if (out.length >= 4) break;
+  }
+  return out;
 }
 
 /**

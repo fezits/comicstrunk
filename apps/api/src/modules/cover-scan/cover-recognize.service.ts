@@ -190,6 +190,9 @@ function buildTokenBuckets(rec: RecognizedCover): TokenBuckets {
   for (const author of rec.authors) boostSources.push(author);
   if (rec.publisher) boostSources.push(rec.publisher);
   if (rec.ocr_text) boostSources.push(rec.ocr_text);
+  // Cores predominantes (em ingles, vindas do VLM) viram tokens de boost.
+  // Util pra discriminar variants em catalogos US ("red Spider-Man" etc).
+  if (rec.dominant_colors?.length) boostSources.push(rec.dominant_colors.join(' '));
 
   const boostRaw = boostSources.flatMap(splitWords);
   const boost = Array.from(
@@ -284,6 +287,7 @@ async function recognizeViaGoogleVision(
     language: null,
     confidence: 'media',
     ocr_text: pageTitles,
+    dominant_colors: [],
     raw_response: JSON.stringify({
       source: 'google-vision',
       bestGuessLabel: label,
