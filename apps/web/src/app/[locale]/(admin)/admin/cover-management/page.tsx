@@ -691,14 +691,26 @@ export default function AdminCoverManagementPage() {
                                     </div>
                                   )}
                                 </button>
-                                <p className="line-clamp-2 px-1.5 py-1 text-[11px]">
-                                  {m.entryTitle}
-                                  {m.entryEditionNumber ? (
-                                    <span className="ml-1 text-muted-foreground">
-                                      #{m.entryEditionNumber}
-                                    </span>
-                                  ) : null}
-                                </p>
+                                <div className="px-1.5 py-1 space-y-0.5">
+                                  <p className="line-clamp-2 text-[11px] font-medium">
+                                    {m.entryTitle}
+                                    {m.entryEditionNumber ? (
+                                      <span className="ml-1 text-muted-foreground">
+                                        #{m.entryEditionNumber}
+                                      </span>
+                                    ) : null}
+                                  </p>
+                                  <a
+                                    href={m.fandomUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="line-clamp-1 text-[10px] text-muted-foreground hover:text-foreground hover:underline"
+                                    title="Abrir página Fandom"
+                                  >
+                                    {m.fandomPageTitle}
+                                  </a>
+                                </div>
                               </li>
                             );
                           })}

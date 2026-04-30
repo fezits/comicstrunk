@@ -20,6 +20,9 @@ const router = Router();
 router.use(authenticate);
 router.use(authorize('ADMIN'));
 
+// IMPORTANTE: rotas com path ESTATICO devem vir ANTES das rotas com :id/...
+// senao Express matcheia /bulk/apply contra /:id/apply (com :id="bulk").
+
 // GET /admin/cover-management/missing — paginacao + filtro publisher
 router.get(
   '/missing',
@@ -42,36 +45,6 @@ router.get(
   async (_req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await service.listMissingCoverPublishers();
-      sendSuccess(res, result);
-    } catch (err) {
-      next(err);
-    }
-  },
-);
-
-// POST /admin/cover-management/:id/search — cascata Amazon -> Rika -> Excelsior
-router.post(
-  '/:id/search',
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const result = await service.searchCoversForEntry(req.params.id as string);
-      sendSuccess(res, result);
-    } catch (err) {
-      next(err);
-    }
-  },
-);
-
-// POST /admin/cover-management/:id/apply — baixa imagem (com guards) e aplica
-router.post(
-  '/:id/apply',
-  validate(adminApplyCoverSchema),
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const result = await service.applyCoverToEntry(
-        req.params.id as string,
-        req.body as AdminApplyCoverInput,
-      );
       sendSuccess(res, result);
     } catch (err) {
       next(err);
@@ -118,6 +91,38 @@ router.post(
     try {
       const input = req.body as AdminBulkApplyInput;
       const result = await service.bulkApplyCovers(input.items);
+      sendSuccess(res, result);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// === Rotas com :id devem vir DEPOIS das rotas estaticas ===
+
+// POST /admin/cover-management/:id/search — cascata Amazon -> Rika -> Excelsior
+router.post(
+  '/:id/search',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await service.searchCoversForEntry(req.params.id as string);
+      sendSuccess(res, result);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /admin/cover-management/:id/apply — baixa imagem (com guards) e aplica
+router.post(
+  '/:id/apply',
+  validate(adminApplyCoverSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await service.applyCoverToEntry(
+        req.params.id as string,
+        req.body as AdminApplyCoverInput,
+      );
       sendSuccess(res, result);
     } catch (err) {
       next(err);
