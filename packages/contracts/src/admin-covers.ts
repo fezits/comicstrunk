@@ -99,7 +99,7 @@ export interface AdminApplyCoverResponse {
 
 // === Bulk por serie ===
 
-export const ADMIN_BULK_SOURCES = ['fandom', 'imagecomics'] as const;
+export const ADMIN_BULK_SOURCES = ['fandom', 'imagecomics', 'keycollector'] as const;
 export type AdminBulkSource = (typeof ADMIN_BULK_SOURCES)[number];
 
 /**
@@ -147,7 +147,7 @@ export interface AdminBulkPreviewResponse {
   }>;
 }
 
-// === Fandom URL lookup (resolve URL pra candidate single OU info de serie) ===
+// === Fandom URL lookup (legado — usa o adminExternalFromUrlSchema novo abaixo) ===
 
 export const adminFandomFromUrlSchema = z.object({
   url: z.string().url().max(500),
@@ -161,6 +161,22 @@ export type AdminFandomFromUrlResponse =
       wikiDomain: string;
       seriesPageTitle: string;
       fandomSeriesUrl: string;
+    };
+
+// === External URL lookup (generico: Fandom OR Key Collector) ===
+
+export const adminExternalFromUrlSchema = z.object({
+  url: z.string().url().max(500),
+});
+export type AdminExternalFromUrlInput = z.infer<typeof adminExternalFromUrlSchema>;
+
+export type AdminExternalFromUrlResponse =
+  | { type: 'issue'; source: AdminBulkSource; candidate: AdminCoverCandidate }
+  | {
+      type: 'series';
+      source: AdminBulkSource;
+      seriesIdentifier: string; // Fandom: pageTitle, KCC: "{slug},{id}"
+      sourceUrl: string;
     };
 
 // Tipos legados — mantidos enquanto o frontend nao migra completamente.

@@ -33,6 +33,10 @@ import {
   parseImageComicsSeriesUrl,
   listImageComicsSeriesIssues,
 } from '../../shared/lib/imagecomics';
+import {
+  parseKeyCollectorSeriesUrl,
+  listKeyCollectorSeriesIssues,
+} from '../../shared/lib/keycollector';
 import { tryDownloadCover } from '../../shared/lib/cover-download';
 import { localCoverUrl } from '../../shared/lib/cloudinary';
 import { logger } from '../../shared/lib/logger';
@@ -40,6 +44,7 @@ import { NotFoundError, BadRequestError } from '../../shared/utils/api-error';
 import type {
   AdminCoverCandidate,
   AdminCoverSource,
+  AdminExternalFromUrlResponse,
   AdminFandomFromUrlResponse,
   AdminListMissingCoversInput,
   AdminMissingCoversPage,
@@ -630,7 +635,7 @@ export interface BulkMatch {
 export interface BulkPreview {
   catalogSeriesId: string;
   catalogSeriesTitle: string;
-  source: 'fandom' | 'imagecomics';
+  source: 'fandom' | 'imagecomics' | 'keycollector';
   sourceSeriesIdentifier: string;
   totalIssuesSource: number;
   totalEntriesMissing: number;
@@ -644,11 +649,11 @@ export interface BulkPreview {
 
 /**
  * Preview generico: dado catalogSeriesId + source + URL/slug, retorna
- * matches por editionNumber. Despacha pra Fandom ou Image conforme source.
+ * matches por editionNumber. Despacha pra Fandom, Image ou KeyCollector.
  */
 export async function previewBulkSeriesCovers(
   catalogSeriesId: string,
-  source: 'fandom' | 'imagecomics',
+  source: 'fandom' | 'imagecomics' | 'keycollector',
   sourceUrl: string,
 ): Promise<BulkPreview> {
   const series = await prisma.series.findUnique({
@@ -724,26 +729,70 @@ export async function previewBulkSeriesCovers(
     };
   }
 
-  // === Image Comics ===
-  const parsedImage = parseImageComicsSeriesUrl(sourceUrl);
-  if (!parsedImage) {
+  if (source === 'imagecomics') {
+    const parsedImage = parseImageComicsSeriesUrl(sourceUrl);
+    if (!parsedImage) {
+      throw new BadRequestError(
+        'URL Image Comics invalida. Use https://imagecomics.com/comics/series/<slug>',
+      );
+    }
+    const imageIssues = await listImageComicsSeriesIssues(parsedImage.slug);
+    const byNumber = new Map(imageIssues.map((i) => [i.issueNumber, i]));
+    const matchedEntries = entries.filter(
+      (e) => e.editionNumber !== null && byNumber.has(e.editionNumber),
+    );
+    const unmatchedEntries = entries.filter(
+      (e) => e.editionNumber === null || !byNumber.has(e.editionNumber),
+    );
+
+    // Image Comics: capa ja vem na listagem do archive — sem precisar fetch
+    // individual por issue. Direto pro matched.
+    const matched: BulkMatch[] = matchedEntries.map((e) => {
+      const ref = byNumber.get(e.editionNumber as number)!;
+      return {
+        entryId: e.id,
+        entryTitle: e.title,
+        entryEditionNumber: e.editionNumber,
+        sourcePageTitle: ref.title,
+        sourceUrl: ref.url,
+        sourceCoverUrl: ref.coverUrl,
+      };
+    });
+
+    return {
+      catalogSeriesId,
+      catalogSeriesTitle: series.title,
+      source: 'imagecomics',
+      sourceSeriesIdentifier: parsedImage.slug,
+      totalIssuesSource: imageIssues.length,
+      totalEntriesMissing: entries.length,
+      matched,
+      unmatchedEntries: unmatchedEntries.map((e) => ({
+        entryId: e.id,
+        entryTitle: e.title,
+        entryEditionNumber: e.editionNumber,
+      })),
+    };
+  }
+
+  // === Key Collector Comics ===
+  const parsedKcc = parseKeyCollectorSeriesUrl(sourceUrl);
+  if (!parsedKcc) {
     throw new BadRequestError(
-      'URL Image Comics invalida. Use https://imagecomics.com/comics/series/<slug>',
+      'URL Key Collector invalida. Use https://www.keycollectorcomics.com/series/<slug>,<id>',
     );
   }
-  const imageIssues = await listImageComicsSeriesIssues(parsedImage.slug);
-  const byNumber = new Map(imageIssues.map((i) => [i.issueNumber, i]));
-  const matchedEntries = entries.filter(
-    (e) => e.editionNumber !== null && byNumber.has(e.editionNumber),
+  const kccIssues = await listKeyCollectorSeriesIssues(parsedKcc.slug, parsedKcc.id);
+  const kccByNumber = new Map(kccIssues.map((i) => [i.issueNumber, i]));
+  const kccMatched = entries.filter(
+    (e) => e.editionNumber !== null && kccByNumber.has(e.editionNumber),
   );
-  const unmatchedEntries = entries.filter(
-    (e) => e.editionNumber === null || !byNumber.has(e.editionNumber),
+  const kccUnmatched = entries.filter(
+    (e) => e.editionNumber === null || !kccByNumber.has(e.editionNumber),
   );
 
-  // Image Comics: capa ja vem na listagem do archive — sem precisar fetch
-  // individual por issue. Direto pro matched.
-  const matched: BulkMatch[] = matchedEntries.map((e) => {
-    const ref = byNumber.get(e.editionNumber as number)!;
+  const kccMatchedDetails: BulkMatch[] = kccMatched.map((e) => {
+    const ref = kccByNumber.get(e.editionNumber as number)!;
     return {
       entryId: e.id,
       entryTitle: e.title,
@@ -757,12 +806,12 @@ export async function previewBulkSeriesCovers(
   return {
     catalogSeriesId,
     catalogSeriesTitle: series.title,
-    source: 'imagecomics',
-    sourceSeriesIdentifier: parsedImage.slug,
-    totalIssuesSource: imageIssues.length,
+    source: 'keycollector',
+    sourceSeriesIdentifier: `${parsedKcc.slug},${parsedKcc.id}`,
+    totalIssuesSource: kccIssues.length,
     totalEntriesMissing: entries.length,
-    matched,
-    unmatchedEntries: unmatchedEntries.map((e) => ({
+    matched: kccMatchedDetails,
+    unmatchedEntries: kccUnmatched.map((e) => ({
       entryId: e.id,
       entryTitle: e.title,
       entryEditionNumber: e.editionNumber,
@@ -770,7 +819,60 @@ export async function previewBulkSeriesCovers(
   };
 }
 
-// === Fandom URL lookup (resolve URL especifica pra candidate ou info-de-serie) ===
+// === External URL lookup (Fandom OR Key Collector) ===
+
+/**
+ * Detecta hostname e despacha pra Fandom ou Key Collector. Pra Fandom,
+ * pode retornar 'issue' (com candidato direto) ou 'series'. Pra KCC,
+ * sempre retorna 'series' (URLs de issue KCC nao sao suportadas pra
+ * single apply ainda).
+ */
+export async function lookupExternalFromUrl(
+  url: string,
+): Promise<AdminExternalFromUrlResponse> {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new BadRequestError('URL invalida.');
+  }
+
+  // Fandom
+  if (parsed.hostname.endsWith('.fandom.com')) {
+    const f = await lookupFandomFromUrl(url);
+    if (f.type === 'issue') {
+      return { type: 'issue', source: 'fandom', candidate: f.candidate };
+    }
+    return {
+      type: 'series',
+      source: 'fandom',
+      seriesIdentifier: f.seriesPageTitle,
+      sourceUrl: f.fandomSeriesUrl,
+    };
+  }
+
+  // Key Collector Comics
+  if (parsed.hostname.endsWith('keycollectorcomics.com')) {
+    const kcc = parseKeyCollectorSeriesUrl(url);
+    if (!kcc) {
+      throw new BadRequestError(
+        'Apenas URLs de série Key Collector são suportadas: https://www.keycollectorcomics.com/series/<slug>,<id>',
+      );
+    }
+    return {
+      type: 'series',
+      source: 'keycollector',
+      seriesIdentifier: `${kcc.slug},${kcc.id}`,
+      sourceUrl: url,
+    };
+  }
+
+  throw new BadRequestError(
+    'Domínio não suportado. Use Fandom (*.fandom.com) ou Key Collector (keycollectorcomics.com).',
+  );
+}
+
+// === Fandom URL lookup (legado — usado por lookupExternalFromUrl) ===
 
 /**
  * Dado uma URL Fandom (issue ou serie), retorna:

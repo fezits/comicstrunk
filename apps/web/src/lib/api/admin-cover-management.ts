@@ -13,6 +13,8 @@ import type {
   AdminBulkApplyResponse,
   AdminFandomFromUrlInput,
   AdminFandomFromUrlResponse,
+  AdminExternalFromUrlInput,
+  AdminExternalFromUrlResponse,
 } from '@comicstrunk/contracts';
 
 export async function listMissingCovers(params: {
@@ -78,5 +80,12 @@ export async function fandomFromUrl(
   input: AdminFandomFromUrlInput,
 ): Promise<AdminFandomFromUrlResponse> {
   const res = await apiClient.post('/admin/cover-management/fandom-from-url', input);
+  return res.data.data;
+}
+
+export async function externalFromUrl(
+  input: AdminExternalFromUrlInput,
+): Promise<AdminExternalFromUrlResponse> {
+  const res = await apiClient.post('/admin/cover-management/external-from-url', input);
   return res.data.data;
 }

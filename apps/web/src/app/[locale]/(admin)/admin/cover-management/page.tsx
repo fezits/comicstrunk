@@ -28,7 +28,7 @@ import {
   applyCoverToEntry,
   previewBulkSeriesCovers,
   bulkApplyCovers,
-  fandomFromUrl,
+  externalFromUrl,
 } from '@/lib/api/admin-cover-management';
 import type {
   AdminMissingCoverEntry,
@@ -122,9 +122,9 @@ export default function AdminCoverManagementPage() {
     appliedDetails: Array<{ entryId: string; entryTitle: string; coverUrl: string }>;
   } | null>(null);
 
-  // Input "Cole URL Fandom" — fallback quando cascata nao acha o issue/serie certa
-  const [fandomUrlInput, setFandomUrlInput] = useState('');
-  const [fandomUrlLoading, setFandomUrlLoading] = useState(false);
+  // Input "Cole URL externa" — fallback Fandom OR Key Collector
+  const [externalUrlInput, setExternalUrlInput] = useState('');
+  const [externalUrlLoading, setExternalUrlLoading] = useState(false);
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -186,7 +186,7 @@ export default function AdminCoverManagementPage() {
     setBulkSelected(new Set());
     setBulkLoading(false);
     setBulkResult(null);
-    setFandomUrlInput('');
+    setExternalUrlInput('');
   };
 
   /**
@@ -228,29 +228,27 @@ export default function AdminCoverManagementPage() {
   };
 
   /**
-   * Resolve URL Fandom colada pelo admin. Detecta se eh issue (URL termina em
-   * numero) ou serie:
-   *   - Issue: append candidate na lista de candidatos do search modal
-   *   - Serie: dispara bulk preview direto
+   * Resolve URL externa colada (Fandom OR Key Collector). Detecta:
+   *   - Fandom issue (URL termina em numero) -> append candidate na lista
+   *   - Fandom serie / KCC serie -> dispara bulk preview direto
    */
-  const handleFandomUrlLookup = async () => {
-    const url = fandomUrlInput.trim();
+  const handleExternalUrlLookup = async () => {
+    const url = externalUrlInput.trim();
     if (!url || !activeEntry) return;
-    setFandomUrlLoading(true);
+    setExternalUrlLoading(true);
     try {
-      const result = await fandomFromUrl({ url });
+      const result = await externalFromUrl({ url });
       if (result.type === 'issue') {
-        // Append na lista de candidatos (ou substitui se vazia). Mantem ordem
-        // colocando o candidato manual no topo.
         setSearchState((prev) => ({
           ...prev,
           candidates: [result.candidate, ...prev.candidates],
         }));
         setMode('search');
-        setFandomUrlInput('');
-        toast.success('Issue Fandom adicionada aos candidatos.');
+        setExternalUrlInput('');
+        toast.success(
+          `Issue ${result.source === 'fandom' ? 'Fandom' : result.source} adicionada aos candidatos.`,
+        );
       } else {
-        // Serie: dispara bulk preview com a URL
         if (!activeEntry.seriesId) {
           toast.error('Esta entrada não está associada a uma série no catálogo.');
           return;
@@ -260,22 +258,22 @@ export default function AdminCoverManagementPage() {
         setBulkPreview(null);
         const preview = await previewBulkSeriesCovers({
           catalogSeriesId: activeEntry.seriesId,
-          source: 'fandom',
-          sourceUrl: result.fandomSeriesUrl,
+          source: result.source,
+          sourceUrl: result.sourceUrl,
         });
         setBulkPreview(preview);
         setBulkSelected(
           new Set(preview.matched.filter((m) => m.sourceCoverUrl).map((m) => m.entryId)),
         );
-        setFandomUrlInput('');
+        setExternalUrlInput('');
         setBulkLoading(false);
       }
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: { message?: string } } } };
-      toast.error(e.response?.data?.error?.message ?? 'Erro ao processar URL Fandom');
+      toast.error(e.response?.data?.error?.message ?? 'Erro ao processar URL');
       setBulkLoading(false);
     } finally {
-      setFandomUrlLoading(false);
+      setExternalUrlLoading(false);
     }
   };
 
@@ -595,32 +593,32 @@ export default function AdminCoverManagementPage() {
                 )}
               </div>
 
-              {/* Fallback manual: cola URL Fandom se a cascata nao achou o certo */}
+              {/* Fallback manual: cola URL externa (Fandom OR Key Collector) */}
               <div className="rounded-md border border-dashed border-border bg-muted/20 p-2.5 space-y-1.5">
                 <p className="text-xs font-medium text-muted-foreground">
-                  Não achou o gibi certo? Cole URL Fandom específica (issue ou série):
+                  Não achou? Cole URL Fandom ou Key Collector Comics:
                 </p>
                 <div className="flex gap-1.5">
                   <input
                     type="url"
-                    value={fandomUrlInput}
-                    onChange={(e) => setFandomUrlInput(e.target.value)}
-                    placeholder="https://dc.fandom.com/wiki/Superman_Vol_2_190"
+                    value={externalUrlInput}
+                    onChange={(e) => setExternalUrlInput(e.target.value)}
+                    placeholder="https://dc.fandom.com/wiki/Superman_Vol_2_190 ou https://www.keycollectorcomics.com/series/elephantmen,66932/"
                     className="flex-1 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs font-mono"
-                    disabled={fandomUrlLoading}
+                    disabled={externalUrlLoading}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' && fandomUrlInput.trim()) {
+                      if (e.key === 'Enter' && externalUrlInput.trim()) {
                         e.preventDefault();
-                        handleFandomUrlLookup();
+                        handleExternalUrlLookup();
                       }
                     }}
                   />
                   <Button
                     size="sm"
-                    onClick={handleFandomUrlLookup}
-                    disabled={!fandomUrlInput.trim() || fandomUrlLoading}
+                    onClick={handleExternalUrlLookup}
+                    disabled={!externalUrlInput.trim() || externalUrlLoading}
                   >
-                    {fandomUrlLoading ? (
+                    {externalUrlLoading ? (
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     ) : (
                       'Buscar'
@@ -628,8 +626,8 @@ export default function AdminCoverManagementPage() {
                   </Button>
                 </div>
                 <p className="text-[10px] text-muted-foreground">
-                  Termina em número (ex: <code>_190</code>) → adiciona 1 candidato.
-                  Sem número (ex: <code>Superman_Vol_2</code>) → abre &quot;Toda a
+                  <strong>Fandom</strong> issue (termina em número) → 1 candidato. Fandom
+                  série OU <strong>Key Collector série</strong> → abre bulk &quot;Toda a
                   série&quot;.
                 </p>
               </div>
@@ -742,7 +740,11 @@ export default function AdminCoverManagementPage() {
                       {bulkPreview.catalogSeriesTitle} ←{' '}
                       <code className="text-xs">{bulkPreview.sourceSeriesIdentifier}</code>
                       <span className="ml-2 text-xs uppercase tracking-wider text-muted-foreground">
-                        {bulkPreview.source === 'fandom' ? 'Fandom Wiki' : 'Image Comics'}
+                        {bulkPreview.source === 'fandom'
+                          ? 'Fandom Wiki'
+                          : bulkPreview.source === 'imagecomics'
+                            ? 'Image Comics'
+                            : 'Key Collector'}
                       </span>
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
