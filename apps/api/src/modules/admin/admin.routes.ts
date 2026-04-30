@@ -5,6 +5,7 @@ import {
   listUsersSchema,
   updateUserRoleSchema,
   suspendUserSchema,
+  dismissDuplicateSchema,
   type ListUsersInput,
 } from '@comicstrunk/contracts';
 import { validate } from '../../shared/middleware/validate';
@@ -365,20 +366,27 @@ router.get('/duplicates', async (req: Request, res: Response, next: NextFunction
 });
 
 // POST /duplicates/dismiss — mark a pair as "keep both" so it won't appear again
-router.post('/duplicates/dismiss', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { gcdId, rikaId } = req.body;
-    if (!gcdId || !rikaId) {
-      throw new BadRequestError('gcdId and rikaId are required');
+router.post(
+  '/duplicates/dismiss',
+  validate(dismissDuplicateSchema, 'body'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { sourceKeyA, sourceKeyB } = req.body;
+      // Sempre ordenar lexicograficamente (par é simétrico)
+      const [a, b] = [sourceKeyA, sourceKeyB].sort();
+
+      await prisma.dismissedDuplicate.upsert({
+        where: { sourceKeyA_sourceKeyB: { sourceKeyA: a, sourceKeyB: b } },
+        create: { sourceKeyA: a, sourceKeyB: b },
+        update: {},
+      });
+
+      sendSuccess(res, { dismissed: true });
+    } catch (err) {
+      next(err);
     }
-    await prisma.$executeRaw`
-      INSERT IGNORE INTO dismissed_duplicates (gcd_id, rika_id) VALUES (${gcdId}, ${rikaId})
-    `;
-    sendSuccess(res, { dismissed: true });
-  } catch (err) {
-    next(err);
-  }
-});
+  },
+);
 
 // DELETE /duplicates/:id — remove a specific catalog entry (for duplicate resolution)
 router.delete('/duplicates/:id', async (req: Request, res: Response, next: NextFunction) => {
