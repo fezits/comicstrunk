@@ -185,3 +185,75 @@ describe('GET /api/v1/admin/duplicates — filtro espelhado', () => {
     expect(found).toBe(false);
   });
 });
+
+describe('DELETE /api/v1/admin/duplicates/:id', () => {
+  it('hard-deleta entrada e adiciona sourceKey em removed_source_keys', async () => {
+    // Cria entrada de teste — precisa de createdById (campo NOT NULL)
+    const adminUser = await prisma.user.findUnique({
+      where: { email: 'admin@comicstrunk.com' },
+      select: { id: true },
+    });
+    if (!adminUser) throw new Error('admin user not found');
+
+    const entry = await prisma.catalogEntry.create({
+      data: {
+        title: '_test_dedup_DeleteTest #1',
+        publisher: 'Marvel',
+        sourceKey: '_test_dedup_rika:delete_test_001',
+        slug: '_test_dedup_delete-test-001',
+        approvalStatus: 'APPROVED',
+        createdById: adminUser.id,
+      },
+    });
+
+    await request
+      .delete(`/api/v1/admin/duplicates/${entry.id}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .expect(200);
+
+    // Confirma hard delete
+    const stillThere = await prisma.catalogEntry.findUnique({ where: { id: entry.id } });
+    expect(stillThere).toBeNull();
+
+    // Confirma blacklist
+    const blocked = await prisma.removedSourceKey.findUnique({
+      where: { sourceKey: '_test_dedup_rika:delete_test_001' },
+    });
+    expect(blocked).not.toBeNull();
+  });
+
+  it('é idempotente — DELETE já blacklisteado não falha', async () => {
+    const adminUser = await prisma.user.findUnique({
+      where: { email: 'admin@comicstrunk.com' },
+      select: { id: true },
+    });
+    if (!adminUser) throw new Error('admin user not found');
+
+    // Pre-blacklist (simula segunda execução do delete pra mesma sourceKey)
+    await prisma.removedSourceKey.upsert({
+      where: { sourceKey: '_test_dedup_rika:delete_test_002' },
+      create: { sourceKey: '_test_dedup_rika:delete_test_002' },
+      update: {},
+    });
+
+    const entry = await prisma.catalogEntry.create({
+      data: {
+        title: '_test_dedup_DeleteTest #2',
+        publisher: 'Marvel',
+        sourceKey: '_test_dedup_rika:delete_test_002',
+        slug: '_test_dedup_delete-test-002',
+        approvalStatus: 'APPROVED',
+        createdById: adminUser.id,
+      },
+    });
+
+    // DELETE não deve falhar mesmo se sourceKey já está em removed_source_keys
+    await request
+      .delete(`/api/v1/admin/duplicates/${entry.id}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .expect(200);
+
+    const stillThere = await prisma.catalogEntry.findUnique({ where: { id: entry.id } });
+    expect(stillThere).toBeNull();
+  });
+});

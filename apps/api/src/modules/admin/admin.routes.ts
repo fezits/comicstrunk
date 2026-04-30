@@ -431,7 +431,13 @@ router.delete('/duplicates/:id', async (req: Request, res: Response, next: NextF
     }
 
     await prisma.$transaction(async (tx) => {
-      // Limpa dependências em cascata (FKs que apontam pra catalog_entries OU pros collection_items)
+      // 1. Pega sourceKey ANTES de deletar
+      const entry = await tx.catalogEntry.findUnique({
+        where: { id },
+        select: { sourceKey: true },
+      });
+
+      // 2. Limpa dependências em cascata (FKs que apontam pra catalog_entries OU pros collection_items)
       if (collectionItemIds.length > 0) {
         await tx.cartItem.deleteMany({ where: { collectionItemId: { in: collectionItemIds } } });
         await tx.orderItem.deleteMany({ where: { collectionItemId: { in: collectionItemIds } } });
@@ -443,10 +449,18 @@ router.delete('/duplicates/:id', async (req: Request, res: Response, next: NextF
       await tx.comment.deleteMany({ where: { catalogEntryId: id } });
       await tx.review.deleteMany({ where: { catalogEntryId: id } });
       await tx.collectionItem.deleteMany({ where: { catalogEntryId: id } });
-      // Remove dismissed_duplicates entries que apontavam pra esse id
-      await tx.$executeRaw`DELETE FROM dismissed_duplicates WHERE gcd_id = ${id} OR rika_id = ${id}`;
 
+      // 3. Hard delete
       await tx.catalogEntry.delete({ where: { id } });
+
+      // 4. Blacklist — impede cron das 4h de reimportar a mesma entrada
+      if (entry?.sourceKey) {
+        await tx.removedSourceKey.upsert({
+          where: { sourceKey: entry.sourceKey },
+          create: { sourceKey: entry.sourceKey },
+          update: {},
+        });
+      }
     });
 
     sendSuccess(res, { deleted: id, removedCollectionItems: collectionItemIds.length });
