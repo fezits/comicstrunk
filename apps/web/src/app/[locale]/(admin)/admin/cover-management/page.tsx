@@ -36,6 +36,7 @@ import type {
   AdminCoverSource,
   AdminBulkPreviewResponse,
   AdminBulkSource,
+  AdminBulkApplyResponse,
 } from '@comicstrunk/contracts';
 
 const LIMIT = 30;
@@ -57,7 +58,7 @@ interface SearchState {
   candidates: AdminCoverCandidate[];
 }
 
-type Mode = 'closed' | 'detail' | 'search' | 'bulk';
+type Mode = 'closed' | 'detail' | 'search' | 'bulk' | 'bulk-result';
 
 /**
  * Detecta se um candidato suporta "Toda a série" — pra Fandom (extrai
@@ -114,6 +115,12 @@ export default function AdminCoverManagementPage() {
   const [bulkPreview, setBulkPreview] = useState<AdminBulkPreviewResponse | null>(null);
   const [bulkSelected, setBulkSelected] = useState<Set<string>>(new Set());
   const [bulkApplying, setBulkApplying] = useState(false);
+  // Resultado do bulk apply — mostrado em tela "bulk-result" antes de fechar
+  const [bulkResult, setBulkResult] = useState<{
+    applied: AdminBulkApplyResponse['applied'];
+    failed: AdminBulkApplyResponse['failed'];
+    appliedDetails: Array<{ entryId: string; entryTitle: string; coverUrl: string }>;
+  } | null>(null);
 
   // Input "Cole URL Fandom" — fallback quando cascata nao acha o issue/serie certa
   const [fandomUrlInput, setFandomUrlInput] = useState('');
@@ -178,6 +185,8 @@ export default function AdminCoverManagementPage() {
     setBulkPreview(null);
     setBulkSelected(new Set());
     setBulkLoading(false);
+    setBulkResult(null);
+    setFandomUrlInput('');
   };
 
   /**
@@ -283,25 +292,40 @@ export default function AdminCoverManagementPage() {
     if (!bulkPreview || bulkSelected.size === 0) return;
     setBulkApplying(true);
     try {
-      const items = bulkPreview.matched
-        .filter((m) => bulkSelected.has(m.entryId) && m.sourceCoverUrl)
-        .map((m) => ({ entryId: m.entryId, imageUrl: m.sourceCoverUrl as string }));
-      const result = await bulkApplyCovers({ items });
-      toast.success(
-        `${result.applied.length} capa(s) aplicada(s)${result.failed.length ? ` · ${result.failed.length} falha(s)` : ''}`,
+      // Itens com imageUrl + entryTitle pra renderizar tela de resultado depois
+      const selectedMatches = bulkPreview.matched.filter(
+        (m) => bulkSelected.has(m.entryId) && m.sourceCoverUrl,
       );
-      // Remove os aplicados da lista principal e do preview
+      const items = selectedMatches.map((m) => ({
+        entryId: m.entryId,
+        imageUrl: m.sourceCoverUrl as string,
+      }));
+      const result = await bulkApplyCovers({ items });
+
+      // Para a tela de resultado: pareia applied com title da preview
+      const titleByEntryId = new Map(
+        selectedMatches.map((m) => [m.entryId, { title: m.entryTitle, coverUrl: m.sourceCoverUrl as string }]),
+      );
+      const appliedDetails = result.applied.map((a) => ({
+        entryId: a.entryId,
+        entryTitle: titleByEntryId.get(a.entryId)?.title ?? a.entryId,
+        // Mostra a cover URL da fonte (que foi baixada). Quando a UI da
+        // listagem refresca, a entry vai usar a coverFileName local.
+        coverUrl: titleByEntryId.get(a.entryId)?.coverUrl ?? a.coverUrl,
+      }));
+
+      // Remove os aplicados da lista principal
       const appliedIds = new Set(result.applied.map((a) => a.entryId));
       setItems((prev) => prev.filter((x) => !appliedIds.has(x.id)));
       setTotal((t) => t - result.applied.length);
-      setBulkPreview({
-        ...bulkPreview,
-        matched: bulkPreview.matched.filter((m) => !appliedIds.has(m.entryId)),
+
+      setBulkResult({
+        applied: result.applied,
+        failed: result.failed,
+        appliedDetails,
       });
+      setMode('bulk-result');
       setBulkSelected(new Set());
-      // Se aplicou tudo da preview, fecha o modal
-      const remaining = bulkPreview.matched.filter((m) => !appliedIds.has(m.entryId)).length;
-      if (remaining === 0) closeModal();
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: { message?: string } } } };
       toast.error(e.response?.data?.error?.message ?? 'Erro no apply em batch');
@@ -824,6 +848,63 @@ export default function AdminCoverManagementPage() {
                   )}
                 </>
               ) : null}
+            </div>
+          )}
+
+          {/* === Modo BULK-RESULT: tela de confirmacao apos apply === */}
+          {mode === 'bulk-result' && bulkResult && (
+            <div className="space-y-3">
+              <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3">
+                <p className="font-medium text-emerald-700 dark:text-emerald-400">
+                  ✅ {bulkResult.applied.length} capa(s) aplicada(s) com sucesso
+                  {bulkResult.failed.length > 0
+                    ? ` · ❌ ${bulkResult.failed.length} falha(s)`
+                    : ''}
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  As entries abaixo foram removidas da listagem &quot;sem capa&quot; e agora
+                  mostram a capa baixada. Se quiser desfazer, edite a entry no admin.
+                </p>
+              </div>
+
+              {bulkResult.appliedDetails.length > 0 && (
+                <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+                  {bulkResult.appliedDetails.map((d) => (
+                    <li
+                      key={d.entryId}
+                      className="flex flex-col rounded-md border border-emerald-500/30 bg-card overflow-hidden"
+                    >
+                      <div className="aspect-[2/3] w-full overflow-hidden bg-muted">
+                        <img
+                          src={d.coverUrl}
+                          alt={d.entryTitle}
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                      <p className="line-clamp-2 px-1.5 py-1 text-[11px]">
+                        <CheckCircle2 className="mr-0.5 inline-block h-3 w-3 text-emerald-500" />
+                        {d.entryTitle}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {bulkResult.failed.length > 0 && (
+                <details className="rounded-md border border-destructive/30 bg-destructive/5 p-2">
+                  <summary className="cursor-pointer text-sm font-medium">
+                    Falhas ({bulkResult.failed.length})
+                  </summary>
+                  <ul className="mt-1 space-y-0.5 text-xs text-muted-foreground">
+                    {bulkResult.failed.map((f) => (
+                      <li key={f.entryId}>
+                        <code>{f.entryId.slice(-8)}</code>: {f.error}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
             </div>
           )}
 
