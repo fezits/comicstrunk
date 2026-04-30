@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { PrismaClient } from '@prisma/client';
 import { request, loginAs, TEST_ADMIN } from '../setup';
+import { isSourceKeyBlocked } from '../../modules/sync/blacklist';
 
 const prisma = new PrismaClient();
 
@@ -255,5 +256,23 @@ describe('DELETE /api/v1/admin/duplicates/:id', () => {
 
     const stillThere = await prisma.catalogEntry.findUnique({ where: { id: entry.id } });
     expect(stillThere).toBeNull();
+  });
+});
+
+describe('isSourceKeyBlocked (helper para sync-catalog e cover-import)', () => {
+  it('retorna true quando sourceKey está em removed_source_keys', async () => {
+    await prisma.removedSourceKey.upsert({
+      where: { sourceKey: '_test_dedup_rika:blocked_001' },
+      create: { sourceKey: '_test_dedup_rika:blocked_001' },
+      update: {},
+    });
+
+    const blocked = await isSourceKeyBlocked('_test_dedup_rika:blocked_001');
+    expect(blocked).toBe(true);
+  });
+
+  it('retorna false quando sourceKey não está blacklisted', async () => {
+    const blocked = await isSourceKeyBlocked('_test_dedup_rika:notblocked_001');
+    expect(blocked).toBe(false);
   });
 });

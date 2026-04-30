@@ -12,6 +12,7 @@
 import { PrismaClient, ApprovalStatus } from '@prisma/client';
 import * as fs from 'fs';
 import * as path from 'path';
+import { isSourceKeyBlocked } from '../src/modules/sync/blacklist';
 
 const prisma = new PrismaClient();
 const COVERS_DIR = path.resolve(__dirname, '..', 'uploads', 'covers');
@@ -32,6 +33,7 @@ interface SyncStats {
   unchanged: number;
   errors: number;
   newCovers: number;
+  skipped?: number; // NEW: blacklisted by removed_source_keys
   changes: string[];
 }
 
@@ -153,6 +155,11 @@ async function syncRika(stats: SyncStats) {
             const seller = item?.sellers?.[0]?.commertialOffer;
             const image = item?.images?.[0]?.imageUrl || null;
             const price = seller?.Price || 0;
+
+            if (await isSourceKeyBlocked(sourceKey)) {
+              stats.skipped = (stats.skipped ?? 0) + 1;
+              continue;
+            }
 
             if (!DRY_RUN) {
               try {
@@ -299,6 +306,11 @@ async function syncPanini(stats: SyncStats) {
             const isPlaceholder = imageUrl?.includes('placeholder');
             const price = p.price_range?.minimum_price?.final_price?.value || 0;
 
+            if (await isSourceKeyBlocked(sourceKey)) {
+              stats.skipped = (stats.skipped ?? 0) + 1;
+              continue;
+            }
+
             if (!DRY_RUN) {
               try {
                 const entry = await prisma.catalogEntry.create({
@@ -380,6 +392,7 @@ async function main() {
     console.log(`  New:       ${stats.newItems}`);
     console.log(`  Updated:   ${stats.updated}`);
     console.log(`  Unchanged: ${stats.unchanged}`);
+    console.log(`  Skipped:   ${stats.skipped ?? 0}`);
     console.log(`  Errors:    ${stats.errors}`);
     console.log(`  Covers:    ${stats.newCovers}`);
     if (stats.changes.length > 0 && stats.changes.length <= 30) {
