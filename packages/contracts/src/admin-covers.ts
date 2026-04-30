@@ -147,6 +147,22 @@ export interface AdminBulkPreviewResponse {
   }>;
 }
 
+// === Fandom URL lookup (resolve URL pra candidate single OU info de serie) ===
+
+export const adminFandomFromUrlSchema = z.object({
+  url: z.string().url().max(500),
+});
+export type AdminFandomFromUrlInput = z.infer<typeof adminFandomFromUrlSchema>;
+
+export type AdminFandomFromUrlResponse =
+  | { type: 'issue'; candidate: AdminCoverCandidate }
+  | {
+      type: 'series';
+      wikiDomain: string;
+      seriesPageTitle: string;
+      fandomSeriesUrl: string;
+    };
+
 // Tipos legados — mantidos enquanto o frontend nao migra completamente.
 export interface AdminBulkFandomMatch {
   entryId: string;

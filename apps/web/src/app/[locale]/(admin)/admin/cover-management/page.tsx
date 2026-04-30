@@ -28,6 +28,7 @@ import {
   applyCoverToEntry,
   previewBulkSeriesCovers,
   bulkApplyCovers,
+  fandomFromUrl,
 } from '@/lib/api/admin-cover-management';
 import type {
   AdminMissingCoverEntry,
@@ -113,6 +114,10 @@ export default function AdminCoverManagementPage() {
   const [bulkPreview, setBulkPreview] = useState<AdminBulkPreviewResponse | null>(null);
   const [bulkSelected, setBulkSelected] = useState<Set<string>>(new Set());
   const [bulkApplying, setBulkApplying] = useState(false);
+
+  // Input "Cole URL Fandom" — fallback quando cascata nao acha o issue/serie certa
+  const [fandomUrlInput, setFandomUrlInput] = useState('');
+  const [fandomUrlLoading, setFandomUrlLoading] = useState(false);
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -210,6 +215,58 @@ export default function AdminCoverManagementPage() {
       setMode('search');
     } finally {
       setBulkLoading(false);
+    }
+  };
+
+  /**
+   * Resolve URL Fandom colada pelo admin. Detecta se eh issue (URL termina em
+   * numero) ou serie:
+   *   - Issue: append candidate na lista de candidatos do search modal
+   *   - Serie: dispara bulk preview direto
+   */
+  const handleFandomUrlLookup = async () => {
+    const url = fandomUrlInput.trim();
+    if (!url || !activeEntry) return;
+    setFandomUrlLoading(true);
+    try {
+      const result = await fandomFromUrl({ url });
+      if (result.type === 'issue') {
+        // Append na lista de candidatos (ou substitui se vazia). Mantem ordem
+        // colocando o candidato manual no topo.
+        setSearchState((prev) => ({
+          ...prev,
+          candidates: [result.candidate, ...prev.candidates],
+        }));
+        setMode('search');
+        setFandomUrlInput('');
+        toast.success('Issue Fandom adicionada aos candidatos.');
+      } else {
+        // Serie: dispara bulk preview com a URL
+        if (!activeEntry.seriesId) {
+          toast.error('Esta entrada não está associada a uma série no catálogo.');
+          return;
+        }
+        setMode('bulk');
+        setBulkLoading(true);
+        setBulkPreview(null);
+        const preview = await previewBulkSeriesCovers({
+          catalogSeriesId: activeEntry.seriesId,
+          source: 'fandom',
+          sourceUrl: result.fandomSeriesUrl,
+        });
+        setBulkPreview(preview);
+        setBulkSelected(
+          new Set(preview.matched.filter((m) => m.sourceCoverUrl).map((m) => m.entryId)),
+        );
+        setFandomUrlInput('');
+        setBulkLoading(false);
+      }
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: { message?: string } } } };
+      toast.error(e.response?.data?.error?.message ?? 'Erro ao processar URL Fandom');
+      setBulkLoading(false);
+    } finally {
+      setFandomUrlLoading(false);
     }
   };
 
@@ -512,6 +569,45 @@ export default function AdminCoverManagementPage() {
                     · achou em <strong>{SOURCE_LABEL[searchState.source]}</strong>
                   </span>
                 )}
+              </div>
+
+              {/* Fallback manual: cola URL Fandom se a cascata nao achou o certo */}
+              <div className="rounded-md border border-dashed border-border bg-muted/20 p-2.5 space-y-1.5">
+                <p className="text-xs font-medium text-muted-foreground">
+                  Não achou o gibi certo? Cole URL Fandom específica (issue ou série):
+                </p>
+                <div className="flex gap-1.5">
+                  <input
+                    type="url"
+                    value={fandomUrlInput}
+                    onChange={(e) => setFandomUrlInput(e.target.value)}
+                    placeholder="https://dc.fandom.com/wiki/Superman_Vol_2_190"
+                    className="flex-1 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs font-mono"
+                    disabled={fandomUrlLoading}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && fandomUrlInput.trim()) {
+                        e.preventDefault();
+                        handleFandomUrlLookup();
+                      }
+                    }}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={handleFandomUrlLookup}
+                    disabled={!fandomUrlInput.trim() || fandomUrlLoading}
+                  >
+                    {fandomUrlLoading ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      'Buscar'
+                    )}
+                  </Button>
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  Termina em número (ex: <code>_190</code>) → adiciona 1 candidato.
+                  Sem número (ex: <code>Superman_Vol_2</code>) → abre &quot;Toda a
+                  série&quot;.
+                </p>
               </div>
 
               {searchState.candidates.length === 0 ? (

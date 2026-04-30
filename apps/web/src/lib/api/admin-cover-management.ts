@@ -11,6 +11,8 @@ import type {
   AdminBulkPreviewResponse,
   AdminBulkApplyInput,
   AdminBulkApplyResponse,
+  AdminFandomFromUrlInput,
+  AdminFandomFromUrlResponse,
 } from '@comicstrunk/contracts';
 
 export async function listMissingCovers(params: {
@@ -69,5 +71,12 @@ export async function bulkApplyCovers(
   input: AdminBulkApplyInput,
 ): Promise<AdminBulkApplyResponse> {
   const res = await apiClient.post('/admin/cover-management/bulk/apply', input);
+  return res.data.data;
+}
+
+export async function fandomFromUrl(
+  input: AdminFandomFromUrlInput,
+): Promise<AdminFandomFromUrlResponse> {
+  const res = await apiClient.post('/admin/cover-management/fandom-from-url', input);
   return res.data.data;
 }

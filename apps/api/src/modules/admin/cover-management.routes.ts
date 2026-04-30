@@ -5,11 +5,13 @@ import {
   adminBulkFandomPreviewSchema,
   adminBulkPreviewSchema,
   adminBulkApplySchema,
+  adminFandomFromUrlSchema,
   type AdminListMissingCoversInput,
   type AdminApplyCoverInput,
   type AdminBulkFandomPreviewInput,
   type AdminBulkPreviewInput,
   type AdminBulkApplyInput,
+  type AdminFandomFromUrlInput,
 } from '@comicstrunk/contracts';
 import { authenticate } from '../../shared/middleware/authenticate';
 import { authorize } from '../../shared/middleware/authorize';
@@ -98,6 +100,22 @@ router.post(
         input.source,
         input.sourceUrl,
       );
+      sendSuccess(res, result);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /admin/cover-management/fandom-from-url — resolve URL Fandom
+// pra candidate (issue) ou info de serie (pra disparar bulk).
+router.post(
+  '/fandom-from-url',
+  validate(adminFandomFromUrlSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const input = req.body as AdminFandomFromUrlInput;
+      const result = await service.lookupFandomFromUrl(input.url);
       sendSuccess(res, result);
     } catch (err) {
       next(err);

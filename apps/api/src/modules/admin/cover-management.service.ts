@@ -40,6 +40,7 @@ import { NotFoundError, BadRequestError } from '../../shared/utils/api-error';
 import type {
   AdminCoverCandidate,
   AdminCoverSource,
+  AdminFandomFromUrlResponse,
   AdminListMissingCoversInput,
   AdminMissingCoversPage,
   AdminSearchCoversResponse,
@@ -766,6 +767,56 @@ export async function previewBulkSeriesCovers(
       entryTitle: e.title,
       entryEditionNumber: e.editionNumber,
     })),
+  };
+}
+
+// === Fandom URL lookup (resolve URL especifica pra candidate ou info-de-serie) ===
+
+/**
+ * Dado uma URL Fandom (issue ou serie), retorna:
+ *   - issue: candidate pronto pra apply ou exibir na lista
+ *   - series: info pra disparar bulk preview
+ *
+ * Detecta tipo pelo padrao de pageTitle: se termina em " <NUMERO>", e issue;
+ * caso contrario, e serie (ou pagina de personagem/evento — caller decide).
+ */
+export async function lookupFandomFromUrl(url: string): Promise<AdminFandomFromUrlResponse> {
+  const parsed = parseFandomSeriesUrl(url);
+  if (!parsed) {
+    throw new BadRequestError(
+      'URL Fandom invalida. Use https://<wiki>.fandom.com/wiki/<page>',
+    );
+  }
+
+  // Detecta issue: pageTitle termina em " <numero>"
+  const issueMatch = parsed.pageTitle.match(/^(.+)\s+(\d+)$/);
+  if (issueMatch) {
+    // E pagina de issue. Fetch via MediaWiki API pra pegar capa.
+    const page = await getFandomPage(parsed.wikiDomain, parsed.pageTitle);
+    if (!page) {
+      throw new NotFoundError('Página Fandom não encontrada.');
+    }
+    if (!page.image) {
+      throw new BadRequestError('Página Fandom encontrada mas sem capa.');
+    }
+    const candidate = {
+      source: 'fandom' as const,
+      externalRef: `${parsed.wikiDomain}|${page.title}`,
+      title: page.title,
+      imageUrl: page.image,
+      link: page.url,
+      publisher: page.publisher,
+    };
+    return { type: 'issue', candidate };
+  }
+
+  // Nao e issue — assume que e pagina de serie. Frontend ainda confirma
+  // chamando /bulk/preview com essa URL.
+  return {
+    type: 'series',
+    wikiDomain: parsed.wikiDomain,
+    seriesPageTitle: parsed.pageTitle,
+    fandomSeriesUrl: url,
   };
 }
 
