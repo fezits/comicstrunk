@@ -397,16 +397,30 @@ export default function AdminCoverManagementPage() {
                       key={`${c.source}:${c.externalRef}`}
                       className="flex flex-col rounded-md border border-border bg-card overflow-hidden"
                     >
-                      <div className="aspect-[2/3] w-full overflow-hidden bg-muted">
+                      <a
+                        href={c.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block aspect-[2/3] w-full overflow-hidden bg-muted transition-opacity hover:opacity-80"
+                        title="Abrir página de origem em nova aba"
+                      >
                         <img
                           src={c.imageUrl}
                           alt={c.title}
                           className="h-full w-full object-cover"
                           loading="lazy"
                         />
-                      </div>
+                      </a>
                       <div className="flex flex-1 flex-col gap-1 p-2">
-                        <p className="line-clamp-2 text-xs font-medium">{c.title}</p>
+                        <a
+                          href={c.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="line-clamp-2 text-xs font-medium hover:underline"
+                          title="Abrir página de origem em nova aba"
+                        >
+                          {c.title}
+                        </a>
                         <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
                           {SOURCE_LABEL[c.source]}
                         </p>

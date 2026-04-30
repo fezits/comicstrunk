@@ -37,7 +37,11 @@ import type {
   AdminApplyCoverResponse,
 } from '@comicstrunk/contracts';
 
-const CASCADE_ORDER: AdminCoverSource[] = [
+/**
+ * Ordem default (publishers BR ou desconhecidos): foca cobertura BR
+ * primeiro porque a maioria das entries do catalogo eh BR.
+ */
+const CASCADE_BR_FIRST: AdminCoverSource[] = [
   'amazon',
   'rika',
   'excelsior',
@@ -45,6 +49,53 @@ const CASCADE_ORDER: AdminCoverSource[] = [
   'ebay',
   'metron',
 ];
+
+/**
+ * Ordem para publishers US (DC, Marvel, Image, etc): comeca pelas fontes
+ * US porque Amazon BR pra "Flash 100" volta livros de fiction; Fandom
+ * tem wiki Marvel/DC com capas; Metron eh DB curado US; eBay vintage.
+ */
+const CASCADE_US_FIRST: AdminCoverSource[] = [
+  'fandom',
+  'metron',
+  'ebay',
+  'amazon',
+  'rika',
+  'excelsior',
+];
+
+/**
+ * Publishers reconhecidamente US — match case-insensitive contra o
+ * publisher do entry. Lista deliberadamente restrita pra evitar falsos
+ * positivos (ex: "Panini Comics" tem "Comics" mas eh BR).
+ */
+const US_PUBLISHERS = [
+  'dc comics',
+  'dc',
+  'marvel comics',
+  'marvel',
+  'image comics',
+  'image',
+  'dark horse',
+  'dark horse comics',
+  'idw',
+  'idw publishing',
+  'boom! studios',
+  'boom!',
+  'valiant',
+  'valiant entertainment',
+  'dynamite',
+  'dynamite entertainment',
+  'oni press',
+  'oni',
+];
+
+function pickCascadeOrder(publisher: string | null): AdminCoverSource[] {
+  if (!publisher) return CASCADE_BR_FIRST;
+  const norm = publisher.trim().toLowerCase();
+  return US_PUBLISHERS.includes(norm) ? CASCADE_US_FIRST : CASCADE_BR_FIRST;
+}
+
 const CANDIDATES_PER_SOURCE = 5;
 
 // === Listagem ===
@@ -180,8 +231,9 @@ export async function searchCoversForEntry(
   }
 
   const tried: AdminCoverSource[] = [];
+  const cascadeOrder = pickCascadeOrder(entry.publisher);
 
-  for (const source of CASCADE_ORDER) {
+  for (const source of cascadeOrder) {
     tried.push(source);
     const candidates = await runSource(source, query, entry);
     const withImage = candidates.filter((c) => c.imageUrl);
@@ -212,7 +264,6 @@ async function runSource(
     if (source === 'amazon') {
       const results = await searchAmazonBR(query, {
         limit: CANDIDATES_PER_SOURCE,
-        comicsOnly: true, // restringe a HQs/Mangas/Graphic Novels
       });
       return results
         .filter((r) => r.image)

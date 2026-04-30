@@ -68,16 +68,18 @@ async function throttle(): Promise<void> {
 /**
  * Busca produtos no Amazon BR. Filtra para livros/HQs (i=stripbooks).
  *
- * Quando opts.comicsOnly=true (admin de gestao de capas), restringe ao node
- * "HQs, Mangás e Graphic Novels" (nodeId 7841731011). Sem isso, query
- * generica como "Flash 100" volta livros de matematica/fisica.
+ * Tentamos no passado restringir via rh=n:7841731011 ("HQs, Mangas e Graphic
+ * Novels") mas Amazon ignora o filtro quando combinado com keyword search —
+ * volta o mesmo conjunto. Pra evitar resultados nao-HQ ("Flash 100: Quick
+ * Fiction"), o admin de gestao de capas ordena a cascata por publisher
+ * (US comics passam por Fandom/Metron/eBay antes de cair em Amazon).
  */
 export async function searchAmazonBR(
   query: string,
-  opts: { limit?: number; comicsOnly?: boolean } = {},
+  opts: { limit?: number } = {},
 ): Promise<AmazonBRProductSummary[]> {
   const limit = opts.limit ?? 5;
-  const cacheKey = `q=${query}&l=${limit}&c=${opts.comicsOnly ? 1 : 0}`;
+  const cacheKey = `q=${query}&l=${limit}`;
   const cached = cacheGet(cacheKey);
   if (cached) return cached;
 
@@ -90,9 +92,6 @@ export async function searchAmazonBR(
         k: query,
         i: 'stripbooks',
       });
-      if (opts.comicsOnly) {
-        params.set('rh', 'n:7841731011'); // HQs, Mangas e Graphic Novels
-      }
       const url = `${SEARCH_URL}?${params.toString()}`;
 
       const res = await fetch(url, {
