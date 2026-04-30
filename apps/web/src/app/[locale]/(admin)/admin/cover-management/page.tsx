@@ -26,14 +26,15 @@ import {
   listMissingCoverPublishers,
   searchCoversForEntry,
   applyCoverToEntry,
-  previewBulkFandomCovers,
+  previewBulkSeriesCovers,
   bulkApplyCovers,
 } from '@/lib/api/admin-cover-management';
 import type {
   AdminMissingCoverEntry,
   AdminCoverCandidate,
   AdminCoverSource,
-  AdminBulkFandomPreviewResponse,
+  AdminBulkPreviewResponse,
+  AdminBulkSource,
 } from '@comicstrunk/contracts';
 
 const LIMIT = 30;
@@ -45,6 +46,7 @@ const SOURCE_LABEL: Record<AdminCoverSource, string> = {
   fandom: 'Fandom Wiki',
   ebay: 'eBay',
   metron: 'MetronDB',
+  imagecomics: 'Image Comics',
 };
 
 interface SearchState {
@@ -57,28 +59,33 @@ interface SearchState {
 type Mode = 'closed' | 'detail' | 'search' | 'bulk';
 
 /**
- * Tenta extrair info de serie Fandom a partir de um candidate.
- * Funciona quando candidate.source === 'fandom' E o titulo termina em
- * numero (padrao de pagina de issue: "The Flash Vol 2 100").
- *
- * Retorna { wikiDomain, seriesPageTitle, fandomSeriesUrl } ou null
- * se nao for Fandom ou titulo nao casar com padrao de issue.
+ * Detecta se um candidato suporta "Toda a série" — pra Fandom (extrai
+ * wikiDomain + pageTitle do externalRef) ou Image Comics (extrai slug
+ * do releaseSlug). Retorna { source, sourceUrl, label } pronto pra
+ * mostrar tooltip e chamar API generica.
  */
-function parseFandomCandidateForSeries(
+function bulkInfoFromCandidate(
   c: AdminCoverCandidate,
-): { wikiDomain: string; seriesPageTitle: string; fandomSeriesUrl: string } | null {
-  if (c.source !== 'fandom') return null;
-  const [wikiDomain] = c.externalRef.split('|');
-  if (!wikiDomain) return null;
-  // Match "Series Name <NUMBER>" — strips o numero pra obter so a serie
-  const m = c.title.match(/^(.+)\s+(\d+)$/);
-  if (!m) return null;
-  const seriesPageTitle = m[1].trim();
-  if (!seriesPageTitle) return null;
-  const fandomSeriesUrl = `https://${wikiDomain}/wiki/${encodeURIComponent(
-    seriesPageTitle.replace(/ /g, '_'),
-  )}`;
-  return { wikiDomain, seriesPageTitle, fandomSeriesUrl };
+): { source: AdminBulkSource; sourceUrl: string; label: string } | null {
+  if (c.source === 'fandom') {
+    const [wikiDomain] = c.externalRef.split('|');
+    if (!wikiDomain) return null;
+    const m = c.title.match(/^(.+)\s+(\d+)$/);
+    if (!m) return null;
+    const seriesPageTitle = m[1].trim();
+    if (!seriesPageTitle) return null;
+    const sourceUrl = `https://${wikiDomain}/wiki/${encodeURIComponent(seriesPageTitle.replace(/ /g, '_'))}`;
+    return { source: 'fandom', sourceUrl, label: seriesPageTitle };
+  }
+  if (c.source === 'imagecomics') {
+    // externalRef = releaseSlug ("birthright-50") -> series slug ("birthright")
+    const m = c.externalRef.match(/^(.+)-(\d+)$/);
+    if (!m) return null;
+    const slug = m[1];
+    const sourceUrl = `https://imagecomics.com/comics/series/${slug}`;
+    return { source: 'imagecomics', sourceUrl, label: slug };
+  }
+  return null;
 }
 
 export default function AdminCoverManagementPage() {
@@ -101,9 +108,9 @@ export default function AdminCoverManagementPage() {
   });
   const [applyingUrl, setApplyingUrl] = useState<string | null>(null);
 
-  // Modo bulk (a partir de candidato Fandom) — mostra match preview da serie
+  // Modo bulk (a partir de candidato Fandom OU Image Comics)
   const [bulkLoading, setBulkLoading] = useState(false);
-  const [bulkPreview, setBulkPreview] = useState<AdminBulkFandomPreviewResponse | null>(null);
+  const [bulkPreview, setBulkPreview] = useState<AdminBulkPreviewResponse | null>(null);
   const [bulkSelected, setBulkSelected] = useState<Set<string>>(new Set());
   const [bulkApplying, setBulkApplying] = useState(false);
 
@@ -169,9 +176,8 @@ export default function AdminCoverManagementPage() {
   };
 
   /**
-   * A partir de um candidate Fandom, oferece aplicar a serie inteira:
-   * extrai nome da serie do title, infere URL Fandom, chama bulk preview
-   * usando seriesId do entry atual. Switch o modal pra modo bulk.
+   * A partir de um candidate Fandom OU Image Comics, oferece aplicar a serie
+   * inteira: extrai info da serie da fonte, chama bulk preview generico.
    */
   const startBulkFromCandidate = async (candidate: AdminCoverCandidate) => {
     if (!activeEntry) return;
@@ -179,8 +185,8 @@ export default function AdminCoverManagementPage() {
       toast.error('Esta entrada não está associada a uma série no catálogo.');
       return;
     }
-    const fandomInfo = parseFandomCandidateForSeries(candidate);
-    if (!fandomInfo) {
+    const info = bulkInfoFromCandidate(candidate);
+    if (!info) {
       toast.error('Esse candidato não permite aplicar à série toda.');
       return;
     }
@@ -188,14 +194,15 @@ export default function AdminCoverManagementPage() {
     setBulkLoading(true);
     setBulkPreview(null);
     try {
-      const result = await previewBulkFandomCovers({
+      const result = await previewBulkSeriesCovers({
         catalogSeriesId: activeEntry.seriesId,
-        fandomSeriesUrl: fandomInfo.fandomSeriesUrl,
+        source: info.source,
+        sourceUrl: info.sourceUrl,
       });
       setBulkPreview(result);
       // Pre-seleciona todos com capa
       setBulkSelected(
-        new Set(result.matched.filter((m) => m.fandomCoverUrl).map((m) => m.entryId)),
+        new Set(result.matched.filter((m) => m.sourceCoverUrl).map((m) => m.entryId)),
       );
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: { message?: string } } } };
@@ -220,8 +227,8 @@ export default function AdminCoverManagementPage() {
     setBulkApplying(true);
     try {
       const items = bulkPreview.matched
-        .filter((m) => bulkSelected.has(m.entryId) && m.fandomCoverUrl)
-        .map((m) => ({ entryId: m.entryId, imageUrl: m.fandomCoverUrl as string }));
+        .filter((m) => bulkSelected.has(m.entryId) && m.sourceCoverUrl)
+        .map((m) => ({ entryId: m.entryId, imageUrl: m.sourceCoverUrl as string }));
       const result = await bulkApplyCovers({ items });
       toast.success(
         `${result.applied.length} capa(s) aplicada(s)${result.failed.length ? ` · ${result.failed.length} falha(s)` : ''}`,
@@ -518,7 +525,7 @@ export default function AdminCoverManagementPage() {
               ) : (
                 <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                   {searchState.candidates.map((c) => {
-                    const fandomInfo = parseFandomCandidateForSeries(c);
+                    const bulkInfo = bulkInfoFromCandidate(c);
                     return (
                       <li
                         key={`${c.source}:${c.externalRef}`}
@@ -575,14 +582,14 @@ export default function AdminCoverManagementPage() {
                                 <ExternalLink className="h-3.5 w-3.5" />
                               </a>
                             </div>
-                            {fandomInfo && activeEntry?.seriesId && (
+                            {bulkInfo && activeEntry?.seriesId && (
                               <Button
                                 size="sm"
                                 variant="secondary"
                                 className="text-xs"
                                 onClick={() => startBulkFromCandidate(c)}
                                 disabled={applyingUrl !== null}
-                                title={`Aplicar capas de ${fandomInfo.seriesPageTitle} em todas as entries da série ${activeEntry.seriesTitle ?? ''}`}
+                                title={`Aplicar capas de ${bulkInfo.label} em todas as entries da série ${activeEntry.seriesTitle ?? ''}`}
                               >
                                 <Layers className="mr-1 h-3 w-3" />
                                 Toda a série
@@ -613,28 +620,30 @@ export default function AdminCoverManagementPage() {
                   <div className="rounded-md border border-border bg-muted/30 p-3 text-sm">
                     <p className="font-medium">
                       {bulkPreview.catalogSeriesTitle} ←{' '}
-                      <code className="text-xs">{bulkPreview.fandomSeriesPageTitle}</code>
+                      <code className="text-xs">{bulkPreview.sourceSeriesIdentifier}</code>
+                      <span className="ml-2 text-xs uppercase tracking-wider text-muted-foreground">
+                        {bulkPreview.source === 'fandom' ? 'Fandom Wiki' : 'Image Comics'}
+                      </span>
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {bulkPreview.totalIssuesFandom} issues na Fandom ·{' '}
+                      {bulkPreview.totalIssuesSource} issues na fonte ·{' '}
                       {bulkPreview.totalEntriesMissing} entries do catálogo sem capa ·{' '}
                       {bulkPreview.matched.length} matches por número (
-                      {bulkPreview.matched.filter((m) => m.fandomCoverUrl).length} com capa) ·{' '}
+                      {bulkPreview.matched.filter((m) => m.sourceCoverUrl).length} com capa) ·{' '}
                       {bulkPreview.unmatchedEntries.length} entries sem match
                     </p>
                   </div>
 
-                  {bulkPreview.matched.filter((m) => m.fandomCoverUrl).length === 0 ? (
+                  {bulkPreview.matched.filter((m) => m.sourceCoverUrl).length === 0 ? (
                     <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-6 text-center text-sm">
-                      Nenhuma capa Fandom disponível pra essa série. Talvez Fandom
-                      tenha as páginas mas sem imagem.
+                      Nenhuma capa disponível pra essa série na fonte selecionada.
                     </div>
                   ) : (
                     <>
                       <div className="flex items-center justify-between">
                         <p className="text-sm">
                           {bulkSelected.size} selecionado(s) de{' '}
-                          {bulkPreview.matched.filter((m) => m.fandomCoverUrl).length} com capa
+                          {bulkPreview.matched.filter((m) => m.sourceCoverUrl).length} com capa
                         </p>
                         <div className="flex gap-1.5">
                           <Button
@@ -644,7 +653,7 @@ export default function AdminCoverManagementPage() {
                               setBulkSelected(
                                 new Set(
                                   bulkPreview.matched
-                                    .filter((m) => m.fandomCoverUrl)
+                                    .filter((m) => m.sourceCoverUrl)
                                     .map((m) => m.entryId),
                                 ),
                               )
@@ -664,7 +673,7 @@ export default function AdminCoverManagementPage() {
 
                       <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
                         {bulkPreview.matched
-                          .filter((m) => m.fandomCoverUrl)
+                          .filter((m) => m.sourceCoverUrl)
                           .map((m) => {
                             const isSelected = bulkSelected.has(m.entryId);
                             return (
@@ -680,7 +689,7 @@ export default function AdminCoverManagementPage() {
                                   className="relative block aspect-[2/3] w-full overflow-hidden bg-muted"
                                 >
                                   <img
-                                    src={m.fandomCoverUrl as string}
+                                    src={m.sourceCoverUrl as string}
                                     alt={m.entryTitle}
                                     className="h-full w-full object-cover"
                                     loading="lazy"
@@ -701,14 +710,14 @@ export default function AdminCoverManagementPage() {
                                     ) : null}
                                   </p>
                                   <a
-                                    href={m.fandomUrl}
+                                    href={m.sourceUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     onClick={(e) => e.stopPropagation()}
                                     className="line-clamp-1 text-[10px] text-muted-foreground hover:text-foreground hover:underline"
-                                    title="Abrir página Fandom"
+                                    title="Abrir página da fonte"
                                   >
-                                    {m.fandomPageTitle}
+                                    {m.sourcePageTitle}
                                   </a>
                                 </div>
                               </li>

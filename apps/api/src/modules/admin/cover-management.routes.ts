@@ -3,10 +3,12 @@ import {
   adminListMissingCoversSchema,
   adminApplyCoverSchema,
   adminBulkFandomPreviewSchema,
+  adminBulkPreviewSchema,
   adminBulkApplySchema,
   type AdminListMissingCoversInput,
   type AdminApplyCoverInput,
   type AdminBulkFandomPreviewInput,
+  type AdminBulkPreviewInput,
   type AdminBulkApplyInput,
 } from '@comicstrunk/contracts';
 import { authenticate } from '../../shared/middleware/authenticate';
@@ -66,6 +68,7 @@ router.get(
 );
 
 // POST /admin/cover-management/bulk/fandom-preview — preview match Fandom
+// (legacy: a pagina /admin/cover-management/bulk-fandom usa esse endpoint)
 router.post(
   '/bulk/fandom-preview',
   validate(adminBulkFandomPreviewSchema),
@@ -75,6 +78,25 @@ router.post(
       const result = await service.previewBulkFandomCovers(
         input.catalogSeriesId,
         input.fandomSeriesUrl,
+      );
+      sendSuccess(res, result);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /admin/cover-management/bulk/preview — preview generico Fandom OR Image
+router.post(
+  '/bulk/preview',
+  validate(adminBulkPreviewSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const input = req.body as AdminBulkPreviewInput;
+      const result = await service.previewBulkSeriesCovers(
+        input.catalogSeriesId,
+        input.source,
+        input.sourceUrl,
       );
       sendSuccess(res, result);
     } catch (err) {

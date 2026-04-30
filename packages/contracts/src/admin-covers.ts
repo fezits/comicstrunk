@@ -53,6 +53,7 @@ export const ADMIN_COVER_SOURCES = [
   'fandom',
   'ebay',
   'metron',
+  'imagecomics',
 ] as const;
 export type AdminCoverSource = (typeof ADMIN_COVER_SOURCES)[number];
 
@@ -96,14 +97,57 @@ export interface AdminApplyCoverResponse {
   coverUrl: string;
 }
 
-// === Bulk por serie via Fandom ===
+// === Bulk por serie ===
 
+export const ADMIN_BULK_SOURCES = ['fandom', 'imagecomics'] as const;
+export type AdminBulkSource = (typeof ADMIN_BULK_SOURCES)[number];
+
+/**
+ * Schema generico de preview bulk: aceita source (fandom/imagecomics) +
+ * sourceUrl que e parseado pelo backend pra extrair info especifica.
+ */
+export const adminBulkPreviewSchema = z.object({
+  catalogSeriesId: z.string().min(1).max(40),
+  source: z.enum(ADMIN_BULK_SOURCES),
+  sourceUrl: z.string().min(1).max(500),
+});
+export type AdminBulkPreviewInput = z.infer<typeof adminBulkPreviewSchema>;
+
+// Schema legado mantido pra compat — usa 'fandom' source implicito.
 export const adminBulkFandomPreviewSchema = z.object({
   catalogSeriesId: z.string().min(1).max(40),
   fandomSeriesUrl: z.string().url().max(500),
 });
 export type AdminBulkFandomPreviewInput = z.infer<typeof adminBulkFandomPreviewSchema>;
 
+export interface AdminBulkMatch {
+  entryId: string;
+  entryTitle: string;
+  entryEditionNumber: number | null;
+  /** Titulo da issue na fonte externa (ex: "The Flash Vol 2 100" pra Fandom,
+   *  "Birthright #50" pra Image Comics). */
+  sourcePageTitle: string;
+  sourceUrl: string;
+  sourceCoverUrl: string | null;
+}
+
+export interface AdminBulkPreviewResponse {
+  catalogSeriesId: string;
+  catalogSeriesTitle: string;
+  source: AdminBulkSource;
+  /** Identificador da serie na fonte (Fandom: pageTitle; Image: slug). */
+  sourceSeriesIdentifier: string;
+  totalIssuesSource: number;
+  totalEntriesMissing: number;
+  matched: AdminBulkMatch[];
+  unmatchedEntries: Array<{
+    entryId: string;
+    entryTitle: string;
+    entryEditionNumber: number | null;
+  }>;
+}
+
+// Tipos legados — mantidos enquanto o frontend nao migra completamente.
 export interface AdminBulkFandomMatch {
   entryId: string;
   entryTitle: string;

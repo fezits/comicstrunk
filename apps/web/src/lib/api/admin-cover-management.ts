@@ -7,6 +7,8 @@ import type {
   AdminSeriesWithMissingCovers,
   AdminBulkFandomPreviewInput,
   AdminBulkFandomPreviewResponse,
+  AdminBulkPreviewInput,
+  AdminBulkPreviewResponse,
   AdminBulkApplyInput,
   AdminBulkApplyResponse,
 } from '@comicstrunk/contracts';
@@ -53,6 +55,13 @@ export async function previewBulkFandomCovers(
   input: AdminBulkFandomPreviewInput,
 ): Promise<AdminBulkFandomPreviewResponse> {
   const res = await apiClient.post('/admin/cover-management/bulk/fandom-preview', input);
+  return res.data.data;
+}
+
+export async function previewBulkSeriesCovers(
+  input: AdminBulkPreviewInput,
+): Promise<AdminBulkPreviewResponse> {
+  const res = await apiClient.post('/admin/cover-management/bulk/preview', input);
   return res.data.data;
 }
 

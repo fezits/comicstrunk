@@ -28,6 +28,11 @@ import {
   listFandomSeriesIssues,
   getFandomPage,
 } from '../../shared/lib/fandom';
+import {
+  searchImageComics,
+  parseImageComicsSeriesUrl,
+  listImageComicsSeriesIssues,
+} from '../../shared/lib/imagecomics';
 import { tryDownloadCover } from '../../shared/lib/cover-download';
 import { localCoverUrl } from '../../shared/lib/cloudinary';
 import { logger } from '../../shared/lib/logger';
@@ -70,6 +75,21 @@ const CASCADE_US_FIRST: AdminCoverSource[] = [
 ];
 
 /**
+ * Ordem para Image Comics: site oficial primeiro (capa em alta resolucao,
+ * matching exato por slug+numero), depois cascata US como fallback. eBay
+ * tipicamente tem ruido pra Image (variants, signed copies).
+ */
+const CASCADE_IMAGE_COMICS: AdminCoverSource[] = [
+  'imagecomics',
+  'fandom',
+  'metron',
+  'ebay',
+  'amazon',
+  'rika',
+  'excelsior',
+];
+
+/**
  * Publishers reconhecidamente US — match case-insensitive contra o
  * publisher do entry. Lista deliberadamente restrita pra evitar falsos
  * positivos (ex: "Panini Comics" tem "Comics" mas eh BR).
@@ -98,6 +118,7 @@ const US_PUBLISHERS = [
 function pickCascadeOrder(publisher: string | null): AdminCoverSource[] {
   if (!publisher) return CASCADE_BR_FIRST;
   const norm = publisher.trim().toLowerCase();
+  if (norm === 'image comics' || norm === 'image') return CASCADE_IMAGE_COMICS;
   return US_PUBLISHERS.includes(norm) ? CASCADE_US_FIRST : CASCADE_BR_FIRST;
 }
 
@@ -331,6 +352,22 @@ async function runSource(
           imageUrl: r.image as string,
           link: r.url,
           publisher: null,
+        }));
+    }
+    if (source === 'imagecomics') {
+      // Image Comics busca direto pelo title+editionNumber do entry — 1 fetch.
+      const results = await searchImageComics(entry.title, {
+        editionNumber: entry.editionNumber ?? undefined,
+      });
+      return results
+        .filter((r) => r.coverUrl)
+        .map((r) => ({
+          source: 'imagecomics' as const,
+          externalRef: r.releaseSlug,
+          title: r.title,
+          imageUrl: r.coverUrl as string,
+          link: r.url,
+          publisher: 'Image Comics',
         }));
     }
     // metron — usa series_name + number
@@ -568,6 +605,160 @@ export async function previewBulkFandomCovers(
     fandomWikiDomain: parsed.wikiDomain,
     fandomSeriesPageTitle: parsed.pageTitle,
     totalIssuesFandom: fandomIssues.length,
+    totalEntriesMissing: entries.length,
+    matched,
+    unmatchedEntries: unmatchedEntries.map((e) => ({
+      entryId: e.id,
+      entryTitle: e.title,
+      entryEditionNumber: e.editionNumber,
+    })),
+  };
+}
+
+// === Bulk generico: Fandom OR Image Comics ===
+
+export interface BulkMatch {
+  entryId: string;
+  entryTitle: string;
+  entryEditionNumber: number | null;
+  sourcePageTitle: string;
+  sourceUrl: string;
+  sourceCoverUrl: string | null;
+}
+
+export interface BulkPreview {
+  catalogSeriesId: string;
+  catalogSeriesTitle: string;
+  source: 'fandom' | 'imagecomics';
+  sourceSeriesIdentifier: string;
+  totalIssuesSource: number;
+  totalEntriesMissing: number;
+  matched: BulkMatch[];
+  unmatchedEntries: Array<{
+    entryId: string;
+    entryTitle: string;
+    entryEditionNumber: number | null;
+  }>;
+}
+
+/**
+ * Preview generico: dado catalogSeriesId + source + URL/slug, retorna
+ * matches por editionNumber. Despacha pra Fandom ou Image conforme source.
+ */
+export async function previewBulkSeriesCovers(
+  catalogSeriesId: string,
+  source: 'fandom' | 'imagecomics',
+  sourceUrl: string,
+): Promise<BulkPreview> {
+  const series = await prisma.series.findUnique({
+    where: { id: catalogSeriesId },
+    select: { id: true, title: true },
+  });
+  if (!series) throw new NotFoundError('Série não encontrada no catálogo.');
+
+  const entries = await prisma.catalogEntry.findMany({
+    where: {
+      seriesId: catalogSeriesId,
+      coverImageUrl: null,
+      coverFileName: null,
+      approvalStatus: { in: ['APPROVED', 'PENDING'] },
+    },
+    select: { id: true, title: true, editionNumber: true },
+  });
+
+  if (source === 'fandom') {
+    const parsed = parseFandomSeriesUrl(sourceUrl);
+    if (!parsed) {
+      throw new BadRequestError(
+        'URL Fandom invalida. Use https://<wiki>.fandom.com/wiki/Nome_Da_Serie',
+      );
+    }
+    const fandomIssues = await listFandomSeriesIssues(parsed.wikiDomain, parsed.pageTitle);
+    const byNumber = new Map(fandomIssues.map((i) => [i.issueNumber, i]));
+    const matchedEntries = entries.filter(
+      (e) => e.editionNumber !== null && byNumber.has(e.editionNumber),
+    );
+    const unmatchedEntries = entries.filter(
+      (e) => e.editionNumber === null || !byNumber.has(e.editionNumber),
+    );
+
+    // Fetch cover de cada match em paralelo (concurrency 5).
+    const matched: BulkMatch[] = [];
+    for (let i = 0; i < matchedEntries.length; i += FANDOM_PER_ISSUE_CONCURRENCY) {
+      const batch = matchedEntries.slice(i, i + FANDOM_PER_ISSUE_CONCURRENCY);
+      const results = await Promise.allSettled(
+        batch.map((e) =>
+          getFandomPage(parsed.wikiDomain, byNumber.get(e.editionNumber as number)!.pageTitle),
+        ),
+      );
+      for (let j = 0; j < batch.length; j++) {
+        const e = batch[j];
+        const ref = byNumber.get(e.editionNumber as number)!;
+        const r = results[j];
+        const sourceCoverUrl = r.status === 'fulfilled' ? r.value?.image ?? null : null;
+        matched.push({
+          entryId: e.id,
+          entryTitle: e.title,
+          entryEditionNumber: e.editionNumber,
+          sourcePageTitle: ref.pageTitle,
+          sourceUrl: ref.url,
+          sourceCoverUrl,
+        });
+      }
+    }
+
+    return {
+      catalogSeriesId,
+      catalogSeriesTitle: series.title,
+      source: 'fandom',
+      sourceSeriesIdentifier: parsed.pageTitle,
+      totalIssuesSource: fandomIssues.length,
+      totalEntriesMissing: entries.length,
+      matched,
+      unmatchedEntries: unmatchedEntries.map((e) => ({
+        entryId: e.id,
+        entryTitle: e.title,
+        entryEditionNumber: e.editionNumber,
+      })),
+    };
+  }
+
+  // === Image Comics ===
+  const parsedImage = parseImageComicsSeriesUrl(sourceUrl);
+  if (!parsedImage) {
+    throw new BadRequestError(
+      'URL Image Comics invalida. Use https://imagecomics.com/comics/series/<slug>',
+    );
+  }
+  const imageIssues = await listImageComicsSeriesIssues(parsedImage.slug);
+  const byNumber = new Map(imageIssues.map((i) => [i.issueNumber, i]));
+  const matchedEntries = entries.filter(
+    (e) => e.editionNumber !== null && byNumber.has(e.editionNumber),
+  );
+  const unmatchedEntries = entries.filter(
+    (e) => e.editionNumber === null || !byNumber.has(e.editionNumber),
+  );
+
+  // Image Comics: capa ja vem na listagem do archive — sem precisar fetch
+  // individual por issue. Direto pro matched.
+  const matched: BulkMatch[] = matchedEntries.map((e) => {
+    const ref = byNumber.get(e.editionNumber as number)!;
+    return {
+      entryId: e.id,
+      entryTitle: e.title,
+      entryEditionNumber: e.editionNumber,
+      sourcePageTitle: ref.title,
+      sourceUrl: ref.url,
+      sourceCoverUrl: ref.coverUrl,
+    };
+  });
+
+  return {
+    catalogSeriesId,
+    catalogSeriesTitle: series.title,
+    source: 'imagecomics',
+    sourceSeriesIdentifier: parsedImage.slug,
+    totalIssuesSource: imageIssues.length,
     totalEntriesMissing: entries.length,
     matched,
     unmatchedEntries: unmatchedEntries.map((e) => ({
