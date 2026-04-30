@@ -28,3 +28,4 @@ export * from './legal';
 export * from './lgpd';
 export * from './contact';
 export * from './admin';
+export * from './admin-covers';

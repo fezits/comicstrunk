@@ -67,6 +67,12 @@ async function throttle(): Promise<void> {
 
 /**
  * Busca produtos no Amazon BR. Filtra para livros/HQs (i=stripbooks).
+ *
+ * Tentamos no passado restringir via rh=n:7841731011 ("HQs, Mangas e Graphic
+ * Novels") mas Amazon ignora o filtro quando combinado com keyword search —
+ * volta o mesmo conjunto. Pra evitar resultados nao-HQ ("Flash 100: Quick
+ * Fiction"), o admin de gestao de capas ordena a cascata por publisher
+ * (US comics passam por Fandom/Metron/eBay antes de cair em Amazon).
  */
 export async function searchAmazonBR(
   query: string,
@@ -84,7 +90,7 @@ export async function searchAmazonBR(
 
       const params = new URLSearchParams({
         k: query,
-        i: 'stripbooks', // Books category — gibis/HQs caem aqui
+        i: 'stripbooks',
       });
       const url = `${SEARCH_URL}?${params.toString()}`;
 

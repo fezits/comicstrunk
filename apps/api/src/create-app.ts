@@ -36,6 +36,7 @@ import { homepageRoutes } from './modules/homepage/homepage.routes';
 import { contactRoutes } from './modules/contact/contact.routes';
 import { legalRoutes } from './modules/legal/legal.routes';
 import { adminRoutes } from './modules/admin/admin.routes';
+import { coverManagementAdminRoutes } from './modules/admin/cover-management.routes';
 import { coverSubmissionsUserRoutes, coverSubmissionsAdminRoutes } from './modules/cover-submissions/cover-submissions.routes';
 import { coverScanRoutes } from './modules/cover-scan/cover-scan.routes';
 import { lgpdRoutes } from './modules/lgpd/lgpd.routes';
@@ -319,6 +320,7 @@ export function createApp(): Express {
   app.use('/api/v1/legal', legalRoutes);
   app.use('/api/v1/admin', adminRoutes);
   app.use('/api/v1/admin', coverSubmissionsAdminRoutes);
+  app.use('/api/v1/admin/cover-management', coverManagementAdminRoutes);
   app.use('/api/v1', coverSubmissionsUserRoutes);
   app.use('/api/v1/lgpd', lgpdRoutes);
   // sync routes removed — unified into /catalog
