@@ -26,3 +26,12 @@ export const suspendUserSchema = z.object({
 });
 
 export type SuspendUserInput = z.infer<typeof suspendUserSchema>;
+
+// === Admin Dismiss Duplicate Pair Schema ===
+
+export const dismissDuplicateSchema = z.object({
+  sourceKeyA: z.string().min(1).max(255),
+  sourceKeyB: z.string().min(1).max(255),
+});
+
+export type DismissDuplicateInput = z.infer<typeof dismissDuplicateSchema>;
