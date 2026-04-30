@@ -1168,15 +1168,15 @@ model ContactMessage {
 // ============================================================================
 
 model DismissedDuplicate {
-  sourceKeyA String @map("source_key_a") @db.VarChar(255)
-  sourceKeyB String @map("source_key_b") @db.VarChar(255)
+  sourceKeyA String @map("source_key_a")
+  sourceKeyB String @map("source_key_b")
 
   @@id([sourceKeyA, sourceKeyB])
   @@map("dismissed_duplicates")
 }
 
 model RemovedSourceKey {
-  sourceKey String @id @map("source_key") @db.VarChar(255)
+  sourceKey String @id @map("source_key")
 
   @@map("removed_source_keys")
 }
