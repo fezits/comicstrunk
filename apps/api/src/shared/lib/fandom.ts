@@ -163,6 +163,112 @@ async function searchWiki(
 }
 
 /**
+ * Parse de URL Fandom de pagina de SERIE pra extrair wikiDomain + pageTitle.
+ *
+ * Ex: https://dc.fandom.com/wiki/The_Flash_Vol_2
+ *   -> { wikiDomain: 'dc.fandom.com', pageTitle: 'The Flash Vol 2' }
+ *
+ * Retorna null se URL nao e Fandom valida ou nao tem /wiki/ path.
+ */
+export function parseFandomSeriesUrl(
+  rawUrl: string,
+): { wikiDomain: string; pageTitle: string } | null {
+  let parsed: URL;
+  try {
+    parsed = new URL(rawUrl);
+  } catch {
+    return null;
+  }
+  if (!parsed.hostname.endsWith('.fandom.com')) return null;
+  const match = parsed.pathname.match(/^\/wiki\/(.+)$/);
+  if (!match) return null;
+  // Decodificar URL-encoded chars (%27 = ' etc) e trocar _ por espaco pra
+  // bater com o titulo MediaWiki (que internamente armazena com espacos).
+  const pageTitle = decodeURIComponent(match[1]).replace(/_/g, ' ').trim();
+  if (!pageTitle) return null;
+  return { wikiDomain: parsed.hostname, pageTitle };
+}
+
+export interface FandomSeriesIssueRef {
+  issueNumber: number;
+  /** Titulo da pagina MediaWiki, ex "The Flash Vol 2 1". */
+  pageTitle: string;
+  /** URL completa /wiki/ — pra abrir no navegador. */
+  url: string;
+  pageId: number;
+}
+
+/**
+ * Lista todas as paginas de issue de uma serie Fandom via MediaWiki API
+ * (action=query&list=allpages&apprefix=...).
+ *
+ * Por que nao scraping do HTML da pagina de serie? Cloudflare protege as
+ * paginas /wiki/ com challenge bot, retornando 403 + "Just a moment..."
+ * pra clients sem JS. Mas /api.php passa direto.
+ *
+ * Estrategia: query com apprefix=`<seriesTitle> ` (com espaco final) lista
+ * todas as paginas que comecam com esse prefixo, depois filtramos as que
+ * batem o padrao `<seriesTitle> <N>` (so numero, sem texto extra). Issues
+ * tipo "Annual 1" ou "1000000" sao incluidos. Variantes ("Vol 2 1 Director's
+ * Cut") sao excluidas pra match preciso.
+ *
+ * Retorno ordenado por numero.
+ */
+export async function listFandomSeriesIssues(
+  wikiDomain: string,
+  seriesPageTitle: string,
+): Promise<FandomSeriesIssueRef[]> {
+  return await withCircuitBreaker(
+    `fandom-${wikiDomain}`,
+    async () => {
+      const params = new URLSearchParams({
+        action: 'query',
+        list: 'allpages',
+        apprefix: `${seriesPageTitle} `, // espaco final filtra pra issues, nao subpags
+        aplimit: '500',
+        format: 'json',
+      });
+      const url = `https://${wikiDomain}/api.php?${params.toString()}`;
+
+      const res = await fetch(url, {
+        headers: {
+          Accept: 'application/json',
+          'User-Agent': USER_AGENT,
+        },
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      });
+      if (!res.ok) throw new Error(`Fandom allpages HTTP ${res.status}`);
+      const data = (await res.json()) as {
+        query?: { allpages?: { pageid: number; title: string }[] };
+      };
+
+      const allPages = data.query?.allpages ?? [];
+      const slug = seriesPageTitle.replace(/ /g, '_');
+      const escaped = seriesPageTitle.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+      const issuePattern = new RegExp(`^${escaped} (\\d+)$`);
+
+      const seen = new Map<number, FandomSeriesIssueRef>();
+      for (const p of allPages) {
+        const m = p.title.match(issuePattern);
+        if (!m) continue;
+        const issueNumber = parseInt(m[1], 10);
+        if (!Number.isFinite(issueNumber) || issueNumber < 0 || issueNumber > 9_999_999) continue;
+        if (seen.has(issueNumber)) continue;
+        seen.set(issueNumber, {
+          issueNumber,
+          pageTitle: p.title,
+          pageId: p.pageid,
+          url: `https://${wikiDomain}/wiki/${slug}_${issueNumber}`,
+        });
+      }
+
+      return Array.from(seen.values()).sort((a, b) => a.issueNumber - b.issueNumber);
+    },
+    { fallback: [] as FandomSeriesIssueRef[], failureThreshold: 3, openMs: 5 * 60_000 },
+  );
+}
+
+/**
  * Busca os dados de uma pagina especifica para enriquecimento na importacao
  * (capa em alta resolucao, eventualmente sinopse). Por enquanto so retorna
  * a thumbnail grande — sinopse fica fora pra evitar parsing fragil de HTML.
