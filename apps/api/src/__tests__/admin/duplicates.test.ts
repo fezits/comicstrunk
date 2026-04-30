@@ -78,3 +78,89 @@ describe('POST /api/v1/admin/duplicates/dismiss', () => {
       .expect(400);
   });
 });
+
+describe('GET /api/v1/admin/duplicates — filtro espelhado', () => {
+  let gcdEntry: { id: string; sourceKey: string };
+  let rikaEntry: { id: string; sourceKey: string };
+
+  beforeAll(async () => {
+    const adminUser = await prisma.user.findUnique({ where: { email: TEST_ADMIN.email } });
+    const adminUserId = adminUser!.id;
+
+    // Cria entradas casadas (GCD + Rika) com mesmo título e número
+    const created = await prisma.catalogEntry.createMany({
+      data: [
+        {
+          title: '_test_dedup_GCD Title #42',
+          publisher: 'Marvel',
+          sourceKey: '_test_dedup_gcd:title_test_42',
+          slug: '_test_dedup_gcd-title-42',
+          approvalStatus: 'APPROVED',
+          publishYear: 2020,
+          createdById: adminUserId,
+        },
+        {
+          title: '_test_dedup_GCD Title #42', // mesmo título
+          publisher: 'Marvel',
+          sourceKey: '_test_dedup_rika:title_test_42',
+          slug: '_test_dedup_rika-title-42',
+          approvalStatus: 'APPROVED',
+          publishYear: 2020,
+          createdById: adminUserId,
+        },
+      ],
+    });
+    expect(created.count).toBe(2);
+
+    const fetched = await prisma.catalogEntry.findMany({
+      where: { sourceKey: { startsWith: '_test_dedup_' } },
+      orderBy: { sourceKey: 'asc' },
+    });
+    [gcdEntry, rikaEntry] = fetched.map((e) => ({ id: e.id, sourceKey: e.sourceKey! }));
+  });
+
+  afterAll(async () => {
+    await prisma.catalogEntry.deleteMany({
+      where: { sourceKey: { startsWith: '_test_dedup_' } },
+    });
+  });
+
+  it('modo title: par dispensado não aparece', async () => {
+    // Dispensa par via POST
+    await request
+      .post('/api/v1/admin/duplicates/dismiss')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ sourceKeyA: gcdEntry.sourceKey, sourceKeyB: rikaEntry.sourceKey })
+      .expect(200);
+
+    // GET no modo title
+    const res = await request
+      .get('/api/v1/admin/duplicates?mode=title&page=1&limit=200')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .expect(200);
+
+    // Garantir que esse par não aparece
+    const pairs = res.body.data as Array<{ gcd: { sourceKey: string }; rika: { sourceKey: string } }>;
+    const found = pairs.some(
+      (p) =>
+        (p.gcd.sourceKey === gcdEntry.sourceKey && p.rika.sourceKey === rikaEntry.sourceKey) ||
+        (p.gcd.sourceKey === rikaEntry.sourceKey && p.rika.sourceKey === gcdEntry.sourceKey),
+    );
+    expect(found).toBe(false);
+  });
+
+  it('modo pattern: par dispensado não aparece', async () => {
+    const res = await request
+      .get('/api/v1/admin/duplicates?mode=pattern&page=1&limit=200')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .expect(200);
+
+    const pairs = res.body.data as Array<{ gcd: { sourceKey: string }; rika: { sourceKey: string } }>;
+    const found = pairs.some(
+      (p) =>
+        (p.gcd.sourceKey === gcdEntry.sourceKey && p.rika.sourceKey === rikaEntry.sourceKey) ||
+        (p.gcd.sourceKey === rikaEntry.sourceKey && p.rika.sourceKey === gcdEntry.sourceKey),
+    );
+    expect(found).toBe(false);
+  });
+});
