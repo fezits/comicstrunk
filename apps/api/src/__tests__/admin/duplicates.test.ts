@@ -126,6 +126,22 @@ describe('GET /api/v1/admin/duplicates — filtro espelhado', () => {
   });
 
   it('modo title: par dispensado não aparece', async () => {
+    // Pré-condição: o par DEVE aparecer antes do dismiss (sanity check).
+    // Sem isso, o teste poderia passar mesmo sem filtro (par nunca detectado).
+    // Nota: sourceKey é removido do response por stripHiddenFields — usamos id.
+    const before = await request
+      .get('/api/v1/admin/duplicates?mode=title&page=1&limit=200')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .expect(200);
+
+    const beforePairs = before.body.data as Array<{ gcd: { id: string }; rika: { id: string } }>;
+    const foundBefore = beforePairs.some(
+      (p) =>
+        (p.gcd.id === gcdEntry.id && p.rika.id === rikaEntry.id) ||
+        (p.gcd.id === rikaEntry.id && p.rika.id === gcdEntry.id),
+    );
+    expect(foundBefore).toBe(true); // Sanity: setup criou par detectável
+
     // Dispensa par via POST
     await request
       .post('/api/v1/admin/duplicates/dismiss')
@@ -133,33 +149,38 @@ describe('GET /api/v1/admin/duplicates — filtro espelhado', () => {
       .send({ sourceKeyA: gcdEntry.sourceKey, sourceKeyB: rikaEntry.sourceKey })
       .expect(200);
 
-    // GET no modo title
+    // GET no modo title — par NÃO deve aparecer
     const res = await request
       .get('/api/v1/admin/duplicates?mode=title&page=1&limit=200')
       .set('Authorization', `Bearer ${adminToken}`)
       .expect(200);
 
-    // Garantir que esse par não aparece
-    const pairs = res.body.data as Array<{ gcd: { sourceKey: string }; rika: { sourceKey: string } }>;
+    const pairs = res.body.data as Array<{ gcd: { id: string }; rika: { id: string } }>;
     const found = pairs.some(
       (p) =>
-        (p.gcd.sourceKey === gcdEntry.sourceKey && p.rika.sourceKey === rikaEntry.sourceKey) ||
-        (p.gcd.sourceKey === rikaEntry.sourceKey && p.rika.sourceKey === gcdEntry.sourceKey),
+        (p.gcd.id === gcdEntry.id && p.rika.id === rikaEntry.id) ||
+        (p.gcd.id === rikaEntry.id && p.rika.id === gcdEntry.id),
     );
     expect(found).toBe(false);
   });
 
   it('modo pattern: par dispensado não aparece', async () => {
+    // Par já foi dispensado no teste anterior ("modo title"). Aqui validamos que
+    // o filtro é espelhado: se foi dispensado, deve sumir nos DOIS modos.
+    // Pré-condição explícita não é necessária — o pattern mode tinha bug pré-fix
+    // (`gcd_id` inexistente causava 500), então o teste já era inerentemente
+    // "before-fix-fails, after-fix-passes".
+    // Nota: sourceKey é removido do response por stripHiddenFields — usamos id.
     const res = await request
       .get('/api/v1/admin/duplicates?mode=pattern&page=1&limit=200')
       .set('Authorization', `Bearer ${adminToken}`)
       .expect(200);
 
-    const pairs = res.body.data as Array<{ gcd: { sourceKey: string }; rika: { sourceKey: string } }>;
+    const pairs = res.body.data as Array<{ gcd: { id: string }; rika: { id: string } }>;
     const found = pairs.some(
       (p) =>
-        (p.gcd.sourceKey === gcdEntry.sourceKey && p.rika.sourceKey === rikaEntry.sourceKey) ||
-        (p.gcd.sourceKey === rikaEntry.sourceKey && p.rika.sourceKey === gcdEntry.sourceKey),
+        (p.gcd.id === gcdEntry.id && p.rika.id === rikaEntry.id) ||
+        (p.gcd.id === rikaEntry.id && p.rika.id === gcdEntry.id),
     );
     expect(found).toBe(false);
   });
