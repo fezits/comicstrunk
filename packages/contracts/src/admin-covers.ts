@@ -95,3 +95,60 @@ export interface AdminApplyCoverResponse {
   coverFileName: string;
   coverUrl: string;
 }
+
+// === Bulk por serie via Fandom ===
+
+export const adminBulkFandomPreviewSchema = z.object({
+  catalogSeriesId: z.string().min(1).max(40),
+  fandomSeriesUrl: z.string().url().max(500),
+});
+export type AdminBulkFandomPreviewInput = z.infer<typeof adminBulkFandomPreviewSchema>;
+
+export interface AdminBulkFandomMatch {
+  entryId: string;
+  entryTitle: string;
+  entryEditionNumber: number | null;
+  fandomPageTitle: string;
+  fandomUrl: string;
+  fandomCoverUrl: string | null;
+}
+
+export interface AdminBulkFandomPreviewResponse {
+  catalogSeriesId: string;
+  catalogSeriesTitle: string;
+  fandomWikiDomain: string;
+  fandomSeriesPageTitle: string;
+  totalIssuesFandom: number;
+  totalEntriesMissing: number;
+  matched: AdminBulkFandomMatch[];
+  unmatchedEntries: Array<{
+    entryId: string;
+    entryTitle: string;
+    entryEditionNumber: number | null;
+  }>;
+}
+
+export const adminBulkApplySchema = z.object({
+  items: z
+    .array(
+      z.object({
+        entryId: z.string().min(1).max(40),
+        imageUrl: z.string().url().max(2000),
+      }),
+    )
+    .min(1)
+    .max(500),
+});
+export type AdminBulkApplyInput = z.infer<typeof adminBulkApplySchema>;
+
+export interface AdminBulkApplyResponse {
+  applied: Array<{ entryId: string; coverUrl: string }>;
+  failed: Array<{ entryId: string; error: string }>;
+}
+
+export interface AdminSeriesWithMissingCovers {
+  seriesId: string;
+  seriesTitle: string;
+  publisher: string | null;
+  missingCount: number;
+}

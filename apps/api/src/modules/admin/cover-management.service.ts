@@ -22,7 +22,12 @@ import { searchRika } from '../../shared/lib/rika';
 import { searchExcelsior } from '../../shared/lib/excelsior';
 import { searchEbay } from '../../shared/lib/ebay';
 import { searchMetronIssues } from '../../shared/lib/metron';
-import { searchFandom } from '../../shared/lib/fandom';
+import {
+  searchFandom,
+  parseFandomSeriesUrl,
+  listFandomSeriesIssues,
+  getFandomPage,
+} from '../../shared/lib/fandom';
 import { tryDownloadCover } from '../../shared/lib/cover-download';
 import { localCoverUrl } from '../../shared/lib/cloudinary';
 import { logger } from '../../shared/lib/logger';
@@ -393,4 +398,243 @@ export async function applyCoverToEntry(
     coverFileName: fileName,
     coverUrl: localCoverUrl(fileName),
   };
+}
+
+// === Bulk: lista series com capas faltantes ===
+
+export async function listSeriesWithMissingCovers(): Promise<
+  Array<{
+    seriesId: string;
+    seriesTitle: string;
+    publisher: string | null;
+    missingCount: number;
+  }>
+> {
+  const grouped = await prisma.catalogEntry.groupBy({
+    by: ['seriesId'],
+    where: {
+      coverImageUrl: null,
+      coverFileName: null,
+      seriesId: { not: null },
+      approvalStatus: { in: ['APPROVED', 'PENDING'] },
+    },
+    _count: { _all: true },
+    orderBy: { _count: { id: 'desc' } },
+    take: 200,
+  });
+
+  const seriesIds = grouped
+    .map((g) => g.seriesId)
+    .filter((id): id is string => id !== null);
+  if (seriesIds.length === 0) return [];
+
+  const seriesRows = await prisma.series.findMany({
+    where: { id: { in: seriesIds } },
+    select: { id: true, title: true },
+  });
+  const byId = new Map(seriesRows.map((s) => [s.id, s]));
+
+  // Series nao tem campo publisher — pega do primeiro catalog entry da serie.
+  const sampleEntries = await prisma.catalogEntry.findMany({
+    where: { seriesId: { in: seriesIds } },
+    select: { seriesId: true, publisher: true },
+    distinct: ['seriesId'],
+  });
+  const publisherBySeriesId = new Map(
+    sampleEntries.map((e) => [e.seriesId as string, e.publisher]),
+  );
+
+  return grouped
+    .filter((g) => g.seriesId && byId.has(g.seriesId))
+    .map((g) => {
+      const s = byId.get(g.seriesId as string)!;
+      return {
+        seriesId: s.id,
+        seriesTitle: s.title,
+        publisher: publisherBySeriesId.get(s.id) ?? null,
+        missingCount: g._count._all,
+      };
+    });
+}
+
+// === Bulk: preview match Fandom-serie -> nossas entries ===
+
+export interface FandomBulkMatch {
+  entryId: string;
+  entryTitle: string;
+  entryEditionNumber: number | null;
+  fandomPageTitle: string;
+  fandomUrl: string;
+  fandomCoverUrl: string | null; // null se a pagina Fandom nao tem capa
+}
+
+export interface FandomBulkPreview {
+  catalogSeriesId: string;
+  catalogSeriesTitle: string;
+  fandomWikiDomain: string;
+  fandomSeriesPageTitle: string;
+  totalIssuesFandom: number;
+  totalEntriesMissing: number;
+  matched: FandomBulkMatch[];
+  /** Entries do DB que nao bateram com nenhuma issue Fandom (numero ausente lah). */
+  unmatchedEntries: Array<{
+    entryId: string;
+    entryTitle: string;
+    entryEditionNumber: number | null;
+  }>;
+}
+
+const FANDOM_PER_ISSUE_CONCURRENCY = 5;
+
+/**
+ * Pra dada catalogSeriesId no nosso catalogo + URL de pagina Fandom da serie:
+ *   1. Lista entries da serie sem capa
+ *   2. Lista issues da Fandom via API
+ *   3. Match issue-by-issue por editionNumber
+ *   4. Pra cada match, busca a capa da pagina Fandom (paralelo, concurrency 5)
+ *   5. Retorna preview pra admin revisar antes do apply em batch.
+ */
+export async function previewBulkFandomCovers(
+  catalogSeriesId: string,
+  fandomSeriesUrl: string,
+): Promise<FandomBulkPreview> {
+  const series = await prisma.series.findUnique({
+    where: { id: catalogSeriesId },
+    select: { id: true, title: true },
+  });
+  if (!series) throw new NotFoundError('Série não encontrada no catálogo.');
+
+  const parsed = parseFandomSeriesUrl(fandomSeriesUrl);
+  if (!parsed) {
+    throw new BadRequestError(
+      'URL Fandom invalida. Use o formato https://<wiki>.fandom.com/wiki/Nome_Da_Serie',
+    );
+  }
+
+  // 1. Lista issues Fandom (via MediaWiki allpages API)
+  const fandomIssues = await listFandomSeriesIssues(parsed.wikiDomain, parsed.pageTitle);
+
+  // 2. Lista entries DB sem capa da serie
+  const entries = await prisma.catalogEntry.findMany({
+    where: {
+      seriesId: catalogSeriesId,
+      coverImageUrl: null,
+      coverFileName: null,
+      approvalStatus: { in: ['APPROVED', 'PENDING'] },
+    },
+    select: { id: true, title: true, editionNumber: true },
+  });
+
+  // 3. Match por editionNumber
+  const fandomByNumber = new Map(fandomIssues.map((i) => [i.issueNumber, i]));
+  const matchedEntries = entries.filter(
+    (e) => e.editionNumber !== null && fandomByNumber.has(e.editionNumber),
+  );
+  const unmatchedEntries = entries.filter(
+    (e) => e.editionNumber === null || !fandomByNumber.has(e.editionNumber),
+  );
+
+  // 4. Pra cada match, busca capa via getFandomPage. Concurrency limitada.
+  const matchPairs: Array<{ entry: typeof matchedEntries[0]; ref: (typeof fandomIssues)[0] }> =
+    matchedEntries.map((e) => ({
+      entry: e,
+      ref: fandomByNumber.get(e.editionNumber as number)!,
+    }));
+
+  const matched: FandomBulkMatch[] = [];
+  for (let i = 0; i < matchPairs.length; i += FANDOM_PER_ISSUE_CONCURRENCY) {
+    const batch = matchPairs.slice(i, i + FANDOM_PER_ISSUE_CONCURRENCY);
+    const results = await Promise.allSettled(
+      batch.map((p) => getFandomPage(parsed.wikiDomain, p.ref.pageTitle)),
+    );
+    for (let j = 0; j < batch.length; j++) {
+      const pair = batch[j];
+      const r = results[j];
+      const fandomCoverUrl = r.status === 'fulfilled' ? r.value?.image ?? null : null;
+      matched.push({
+        entryId: pair.entry.id,
+        entryTitle: pair.entry.title,
+        entryEditionNumber: pair.entry.editionNumber,
+        fandomPageTitle: pair.ref.pageTitle,
+        fandomUrl: pair.ref.url,
+        fandomCoverUrl,
+      });
+    }
+  }
+
+  return {
+    catalogSeriesId,
+    catalogSeriesTitle: series.title,
+    fandomWikiDomain: parsed.wikiDomain,
+    fandomSeriesPageTitle: parsed.pageTitle,
+    totalIssuesFandom: fandomIssues.length,
+    totalEntriesMissing: entries.length,
+    matched,
+    unmatchedEntries: unmatchedEntries.map((e) => ({
+      entryId: e.id,
+      entryTitle: e.title,
+      entryEditionNumber: e.editionNumber,
+    })),
+  };
+}
+
+// === Bulk: aplicar varias capas em batch ===
+
+export interface BulkApplyItem {
+  entryId: string;
+  imageUrl: string;
+}
+
+export interface BulkApplyResult {
+  applied: Array<{ entryId: string; coverUrl: string }>;
+  failed: Array<{ entryId: string; error: string }>;
+}
+
+/**
+ * Aplica varias capas em batch — sequencial pra nao martelar R2 com uploads
+ * paralelos. Pra cada item: tryDownloadCover (com guards SSRF/size/sharp)
+ * + update entry. Falhas individuais nao param o batch.
+ */
+export async function bulkApplyCovers(items: BulkApplyItem[]): Promise<BulkApplyResult> {
+  const applied: BulkApplyResult['applied'] = [];
+  const failed: BulkApplyResult['failed'] = [];
+
+  for (const item of items) {
+    try {
+      const exists = await prisma.catalogEntry.findUnique({
+        where: { id: item.entryId },
+        select: { id: true },
+      });
+      if (!exists) {
+        failed.push({ entryId: item.entryId, error: 'entry-not-found' });
+        continue;
+      }
+
+      const fileName = await tryDownloadCover(item.imageUrl);
+      if (!fileName) {
+        failed.push({ entryId: item.entryId, error: 'download-failed' });
+        continue;
+      }
+
+      await prisma.catalogEntry.update({
+        where: { id: item.entryId },
+        data: { coverFileName: fileName, coverImageUrl: null },
+      });
+
+      applied.push({ entryId: item.entryId, coverUrl: localCoverUrl(fileName) });
+    } catch (err) {
+      failed.push({
+        entryId: item.entryId,
+        error: (err as Error)?.message ?? 'unknown',
+      });
+    }
+  }
+
+  logger.info('admin-covers: bulk apply completed', {
+    total: items.length,
+    applied: applied.length,
+    failed: failed.length,
+  });
+
+  return { applied, failed };
 }

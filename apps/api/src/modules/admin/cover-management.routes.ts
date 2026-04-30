@@ -2,8 +2,12 @@ import { Router, type Request, type Response, type NextFunction } from 'express'
 import {
   adminListMissingCoversSchema,
   adminApplyCoverSchema,
+  adminBulkFandomPreviewSchema,
+  adminBulkApplySchema,
   type AdminListMissingCoversInput,
   type AdminApplyCoverInput,
+  type AdminBulkFandomPreviewInput,
+  type AdminBulkApplyInput,
 } from '@comicstrunk/contracts';
 import { authenticate } from '../../shared/middleware/authenticate';
 import { authorize } from '../../shared/middleware/authorize';
@@ -68,6 +72,52 @@ router.post(
         req.params.id as string,
         req.body as AdminApplyCoverInput,
       );
+      sendSuccess(res, result);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// GET /admin/cover-management/series — lista series com missing covers
+router.get(
+  '/series',
+  async (_req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await service.listSeriesWithMissingCovers();
+      sendSuccess(res, result);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /admin/cover-management/bulk/fandom-preview — preview match Fandom
+router.post(
+  '/bulk/fandom-preview',
+  validate(adminBulkFandomPreviewSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const input = req.body as AdminBulkFandomPreviewInput;
+      const result = await service.previewBulkFandomCovers(
+        input.catalogSeriesId,
+        input.fandomSeriesUrl,
+      );
+      sendSuccess(res, result);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// POST /admin/cover-management/bulk/apply — aplica varias capas em batch
+router.post(
+  '/bulk/apply',
+  validate(adminBulkApplySchema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const input = req.body as AdminBulkApplyInput;
+      const result = await service.bulkApplyCovers(input.items);
       sendSuccess(res, result);
     } catch (err) {
       next(err);

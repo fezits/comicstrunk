@@ -1,8 +1,17 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { toast } from 'sonner';
-import { ChevronLeft, ChevronRight, Loader2, Search, ImageIcon, ExternalLink } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  Search,
+  ImageIcon,
+  ExternalLink,
+  ListPlus,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -146,14 +155,22 @@ export default function AdminCoverManagementPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Gestão de capas faltantes</h1>
-        <p className="text-sm text-muted-foreground">
-          Catálogo com {total.toLocaleString('pt-BR')}{' '}
-          {publisher ? `entradas de ${publisher} ` : 'entradas '}
-          sem capa. Clique em qualquer linha para ver detalhes; em &quot;Buscar capas&quot; para
-          tentar nas 6 fontes (Amazon → Rika → Excelsior → Fandom → eBay → Metron).
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">Gestão de capas faltantes</h1>
+          <p className="text-sm text-muted-foreground">
+            Catálogo com {total.toLocaleString('pt-BR')}{' '}
+            {publisher ? `entradas de ${publisher} ` : 'entradas '}
+            sem capa. Clique em qualquer linha para ver detalhes; em &quot;Buscar capas&quot;
+            para tentar nas 6 fontes (Amazon → Rika → Excelsior → Fandom → eBay → Metron).
+          </p>
+        </div>
+        <Link href="/admin/cover-management/bulk-fandom">
+          <Button variant="default">
+            <ListPlus className="mr-1.5 h-4 w-4" />
+            Bulk via Fandom (por série)
+          </Button>
+        </Link>
       </div>
 
       {/* Filtro publisher */}
