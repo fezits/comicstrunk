@@ -276,3 +276,106 @@ describe('isSourceKeyBlocked (helper para sync-catalog e cover-import)', () => {
     expect(blocked).toBe(false);
   });
 });
+
+describe('E2E: "Manter ambos" sobrevive a delete+recreate (cron das 4h)', () => {
+  it('par dispensado continua oculto após cron recriar entrada com novo cuid', async () => {
+    // Pega adminUser ID para createdById (NOT NULL)
+    const adminUser = await prisma.user.findUnique({
+      where: { email: 'admin@comicstrunk.com' },
+      select: { id: true },
+    });
+    if (!adminUser) throw new Error('admin user not found');
+
+    // 1. Cria par
+    const a = await prisma.catalogEntry.create({
+      data: {
+        title: '_test_dedup_E2E Title #1',
+        publisher: 'Marvel',
+        sourceKey: '_test_dedup_gcd:e2e_001',
+        slug: '_test_dedup_e2e-001',
+        approvalStatus: 'APPROVED',
+        publishYear: 2020,
+        createdById: adminUser.id,
+      },
+    });
+
+    const b1 = await prisma.catalogEntry.create({
+      data: {
+        title: '_test_dedup_E2E Title #1',
+        publisher: 'Marvel',
+        sourceKey: '_test_dedup_rika:e2e_001',
+        slug: '_test_dedup_e2e-rika-001',
+        approvalStatus: 'APPROVED',
+        publishYear: 2020,
+        createdById: adminUser.id,
+      },
+    });
+
+    // Pre-condition: o par DEVE aparecer antes do dismiss (sanity check)
+    const preTitleRes = await request
+      .get('/api/v1/admin/duplicates?mode=title&page=1&limit=200')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .expect(200);
+
+    const prePairs = preTitleRes.body.data as Array<{ gcd: { id: string }; rika: { id: string } }>;
+    const foundPre = prePairs.some(
+      (p) =>
+        (p.gcd.id === a.id && p.rika.id === b1.id) ||
+        (p.gcd.id === b1.id && p.rika.id === a.id),
+    );
+    expect(foundPre).toBe(true);
+
+    // 2. Dispensa par via POST
+    await request
+      .post('/api/v1/admin/duplicates/dismiss')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ sourceKeyA: a.sourceKey, sourceKeyB: b1.sourceKey })
+      .expect(200);
+
+    // 3. Simula o cron das 4h: deleta entrada Rika, recria com NOVO cuid e MESMA sourceKey
+    await prisma.catalogEntry.delete({ where: { id: b1.id } });
+    const b2 = await prisma.catalogEntry.create({
+      data: {
+        title: '_test_dedup_E2E Title #1',
+        publisher: 'Marvel',
+        sourceKey: '_test_dedup_rika:e2e_001', // mesma sourceKey
+        slug: '_test_dedup_e2e-rika-001-recreated',
+        approvalStatus: 'APPROVED',
+        publishYear: 2020,
+        createdById: adminUser.id,
+      },
+    });
+    expect(b2.id).not.toBe(b1.id); // cuid mudou — confirma o cenário do bug
+
+    // 4. GET no modo title — par NÃO deve aparecer (mesmo com novo cuid)
+    const titleRes = await request
+      .get('/api/v1/admin/duplicates?mode=title&page=1&limit=200')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .expect(200);
+
+    const titlePairs = titleRes.body.data as Array<{ gcd: { id: string }; rika: { id: string } }>;
+    const foundInTitle = titlePairs.some(
+      (p) =>
+        (p.gcd.id === a.id && p.rika.id === b2.id) ||
+        (p.gcd.id === b2.id && p.rika.id === a.id),
+    );
+    expect(foundInTitle).toBe(false);
+
+    // 5. GET no modo pattern — par NÃO deve aparecer (mesmo com novo cuid)
+    const patternRes = await request
+      .get('/api/v1/admin/duplicates?mode=pattern&page=1&limit=200')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .expect(200);
+
+    const patternPairs = patternRes.body.data as Array<{
+      gcd: { id: string };
+      rika: { id: string };
+    }>;
+    const foundInPattern = patternPairs.some(
+      (p) =>
+        (p.gcd.id === a.id && p.rika.id === b2.id) ||
+        (p.gcd.id === b2.id && p.rika.id === a.id),
+    );
+    expect(foundInPattern).toBe(false);
+  });
+});
