@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
 import { toast } from 'sonner';
 import {
   ChevronLeft,
@@ -10,7 +9,8 @@ import {
   Search,
   ImageIcon,
   ExternalLink,
-  ListPlus,
+  Layers,
+  CheckCircle2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,11 +26,14 @@ import {
   listMissingCoverPublishers,
   searchCoversForEntry,
   applyCoverToEntry,
+  previewBulkFandomCovers,
+  bulkApplyCovers,
 } from '@/lib/api/admin-cover-management';
 import type {
   AdminMissingCoverEntry,
   AdminCoverCandidate,
   AdminCoverSource,
+  AdminBulkFandomPreviewResponse,
 } from '@comicstrunk/contracts';
 
 const LIMIT = 30;
@@ -51,7 +54,32 @@ interface SearchState {
   candidates: AdminCoverCandidate[];
 }
 
-type Mode = 'closed' | 'detail' | 'search';
+type Mode = 'closed' | 'detail' | 'search' | 'bulk';
+
+/**
+ * Tenta extrair info de serie Fandom a partir de um candidate.
+ * Funciona quando candidate.source === 'fandom' E o titulo termina em
+ * numero (padrao de pagina de issue: "The Flash Vol 2 100").
+ *
+ * Retorna { wikiDomain, seriesPageTitle, fandomSeriesUrl } ou null
+ * se nao for Fandom ou titulo nao casar com padrao de issue.
+ */
+function parseFandomCandidateForSeries(
+  c: AdminCoverCandidate,
+): { wikiDomain: string; seriesPageTitle: string; fandomSeriesUrl: string } | null {
+  if (c.source !== 'fandom') return null;
+  const [wikiDomain] = c.externalRef.split('|');
+  if (!wikiDomain) return null;
+  // Match "Series Name <NUMBER>" — strips o numero pra obter so a serie
+  const m = c.title.match(/^(.+)\s+(\d+)$/);
+  if (!m) return null;
+  const seriesPageTitle = m[1].trim();
+  if (!seriesPageTitle) return null;
+  const fandomSeriesUrl = `https://${wikiDomain}/wiki/${encodeURIComponent(
+    seriesPageTitle.replace(/ /g, '_'),
+  )}`;
+  return { wikiDomain, seriesPageTitle, fandomSeriesUrl };
+}
 
 export default function AdminCoverManagementPage() {
   const [items, setItems] = useState<AdminMissingCoverEntry[]>([]);
@@ -72,6 +100,12 @@ export default function AdminCoverManagementPage() {
     candidates: [],
   });
   const [applyingUrl, setApplyingUrl] = useState<string | null>(null);
+
+  // Modo bulk (a partir de candidato Fandom) — mostra match preview da serie
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [bulkPreview, setBulkPreview] = useState<AdminBulkFandomPreviewResponse | null>(null);
+  const [bulkSelected, setBulkSelected] = useState<Set<string>>(new Set());
+  const [bulkApplying, setBulkApplying] = useState(false);
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -125,10 +159,91 @@ export default function AdminCoverManagementPage() {
   };
 
   const closeModal = () => {
-    if (applyingUrl) return;
+    if (applyingUrl || bulkApplying) return;
     setMode('closed');
     setActiveEntry(null);
     setSearchState({ loading: false, source: null, triedSources: [], candidates: [] });
+    setBulkPreview(null);
+    setBulkSelected(new Set());
+    setBulkLoading(false);
+  };
+
+  /**
+   * A partir de um candidate Fandom, oferece aplicar a serie inteira:
+   * extrai nome da serie do title, infere URL Fandom, chama bulk preview
+   * usando seriesId do entry atual. Switch o modal pra modo bulk.
+   */
+  const startBulkFromCandidate = async (candidate: AdminCoverCandidate) => {
+    if (!activeEntry) return;
+    if (!activeEntry.seriesId) {
+      toast.error('Esta entrada não está associada a uma série no catálogo.');
+      return;
+    }
+    const fandomInfo = parseFandomCandidateForSeries(candidate);
+    if (!fandomInfo) {
+      toast.error('Esse candidato não permite aplicar à série toda.');
+      return;
+    }
+    setMode('bulk');
+    setBulkLoading(true);
+    setBulkPreview(null);
+    try {
+      const result = await previewBulkFandomCovers({
+        catalogSeriesId: activeEntry.seriesId,
+        fandomSeriesUrl: fandomInfo.fandomSeriesUrl,
+      });
+      setBulkPreview(result);
+      // Pre-seleciona todos com capa
+      setBulkSelected(
+        new Set(result.matched.filter((m) => m.fandomCoverUrl).map((m) => m.entryId)),
+      );
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: { message?: string } } } };
+      toast.error(e.response?.data?.error?.message ?? 'Erro ao buscar matches da série');
+      setMode('search');
+    } finally {
+      setBulkLoading(false);
+    }
+  };
+
+  const toggleBulkSelected = (entryId: string) => {
+    setBulkSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(entryId)) next.delete(entryId);
+      else next.add(entryId);
+      return next;
+    });
+  };
+
+  const handleBulkApply = async () => {
+    if (!bulkPreview || bulkSelected.size === 0) return;
+    setBulkApplying(true);
+    try {
+      const items = bulkPreview.matched
+        .filter((m) => bulkSelected.has(m.entryId) && m.fandomCoverUrl)
+        .map((m) => ({ entryId: m.entryId, imageUrl: m.fandomCoverUrl as string }));
+      const result = await bulkApplyCovers({ items });
+      toast.success(
+        `${result.applied.length} capa(s) aplicada(s)${result.failed.length ? ` · ${result.failed.length} falha(s)` : ''}`,
+      );
+      // Remove os aplicados da lista principal e do preview
+      const appliedIds = new Set(result.applied.map((a) => a.entryId));
+      setItems((prev) => prev.filter((x) => !appliedIds.has(x.id)));
+      setTotal((t) => t - result.applied.length);
+      setBulkPreview({
+        ...bulkPreview,
+        matched: bulkPreview.matched.filter((m) => !appliedIds.has(m.entryId)),
+      });
+      setBulkSelected(new Set());
+      // Se aplicou tudo da preview, fecha o modal
+      const remaining = bulkPreview.matched.filter((m) => !appliedIds.has(m.entryId)).length;
+      if (remaining === 0) closeModal();
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: { message?: string } } } };
+      toast.error(e.response?.data?.error?.message ?? 'Erro no apply em batch');
+    } finally {
+      setBulkApplying(false);
+    }
   };
 
   const handleApply = async (candidate: AdminCoverCandidate) => {
@@ -155,22 +270,15 @@ export default function AdminCoverManagementPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">Gestão de capas faltantes</h1>
-          <p className="text-sm text-muted-foreground">
-            Catálogo com {total.toLocaleString('pt-BR')}{' '}
-            {publisher ? `entradas de ${publisher} ` : 'entradas '}
-            sem capa. Clique em qualquer linha para ver detalhes; em &quot;Buscar capas&quot;
-            para tentar nas 6 fontes (Amazon → Rika → Excelsior → Fandom → eBay → Metron).
-          </p>
-        </div>
-        <Link href="/admin/cover-management/bulk-fandom">
-          <Button variant="default">
-            <ListPlus className="mr-1.5 h-4 w-4" />
-            Bulk via Fandom (por série)
-          </Button>
-        </Link>
+      <div>
+        <h1 className="text-2xl font-bold">Gestão de capas faltantes</h1>
+        <p className="text-sm text-muted-foreground">
+          Catálogo com {total.toLocaleString('pt-BR')}{' '}
+          {publisher ? `entradas de ${publisher} ` : 'entradas '}
+          sem capa. Clique em qualquer linha para ver detalhes; em &quot;Buscar capas&quot;
+          para tentar nas 6 fontes. Ao encontrar um candidato Fandom certo, use{' '}
+          <strong>Toda a série</strong> pra aplicar capas em batch.
+        </p>
       </div>
 
       {/* Filtro publisher */}
@@ -409,80 +517,236 @@ export default function AdminCoverManagementPage() {
                 </div>
               ) : (
                 <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                  {searchState.candidates.map((c) => (
-                    <li
-                      key={`${c.source}:${c.externalRef}`}
-                      className="flex flex-col rounded-md border border-border bg-card overflow-hidden"
-                    >
-                      <a
-                        href={c.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block aspect-[2/3] w-full overflow-hidden bg-muted transition-opacity hover:opacity-80"
-                        title="Abrir página de origem em nova aba"
+                  {searchState.candidates.map((c) => {
+                    const fandomInfo = parseFandomCandidateForSeries(c);
+                    return (
+                      <li
+                        key={`${c.source}:${c.externalRef}`}
+                        className="flex flex-col rounded-md border border-border bg-card overflow-hidden"
                       >
-                        <img
-                          src={c.imageUrl}
-                          alt={c.title}
-                          className="h-full w-full object-cover"
-                          loading="lazy"
-                        />
-                      </a>
-                      <div className="flex flex-1 flex-col gap-1 p-2">
                         <a
                           href={c.link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="line-clamp-2 text-xs font-medium hover:underline"
+                          className="block aspect-[2/3] w-full overflow-hidden bg-muted transition-opacity hover:opacity-80"
                           title="Abrir página de origem em nova aba"
                         >
-                          {c.title}
+                          <img
+                            src={c.imageUrl}
+                            alt={c.title}
+                            className="h-full w-full object-cover"
+                            loading="lazy"
+                          />
                         </a>
-                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                          {SOURCE_LABEL[c.source]}
-                        </p>
-                        <div className="mt-auto flex items-center gap-1.5 pt-2">
-                          <Button
-                            size="sm"
-                            className="flex-1 text-xs"
-                            onClick={() => handleApply(c)}
-                            disabled={applyingUrl !== null}
-                          >
-                            {applyingUrl === c.imageUrl ? (
-                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            ) : (
-                              'Aplicar'
-                            )}
-                          </Button>
+                        <div className="flex flex-1 flex-col gap-1 p-2">
                           <a
                             href={c.link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="rounded-md border border-border p-1.5 text-muted-foreground hover:bg-muted"
-                            title="Abrir página de origem"
+                            className="line-clamp-2 text-xs font-medium hover:underline"
+                            title="Abrir página de origem em nova aba"
                           >
-                            <ExternalLink className="h-3.5 w-3.5" />
+                            {c.title}
                           </a>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                            {SOURCE_LABEL[c.source]}
+                          </p>
+                          <div className="mt-auto flex flex-col gap-1.5 pt-2">
+                            <div className="flex items-center gap-1.5">
+                              <Button
+                                size="sm"
+                                className="flex-1 text-xs"
+                                onClick={() => handleApply(c)}
+                                disabled={applyingUrl !== null}
+                              >
+                                {applyingUrl === c.imageUrl ? (
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                  'Aplicar só este'
+                                )}
+                              </Button>
+                              <a
+                                href={c.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="rounded-md border border-border p-1.5 text-muted-foreground hover:bg-muted"
+                                title="Abrir página de origem"
+                              >
+                                <ExternalLink className="h-3.5 w-3.5" />
+                              </a>
+                            </div>
+                            {fandomInfo && activeEntry?.seriesId && (
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                className="text-xs"
+                                onClick={() => startBulkFromCandidate(c)}
+                                disabled={applyingUrl !== null}
+                                title={`Aplicar capas de ${fandomInfo.seriesPageTitle} em todas as entries da série ${activeEntry.seriesTitle ?? ''}`}
+                              >
+                                <Layers className="mr-1 h-3 w-3" />
+                                Toda a série
+                              </Button>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </li>
-                  ))}
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </>
           )}
 
+          {/* === Modo BULK: preview de match Fandom-serie === */}
+          {mode === 'bulk' && (
+            <div className="space-y-3">
+              {bulkLoading ? (
+                <div className="flex flex-col items-center justify-center gap-2 py-12">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  <p className="text-sm text-muted-foreground">
+                    Buscando issues da série na Fandom...
+                  </p>
+                </div>
+              ) : bulkPreview ? (
+                <>
+                  <div className="rounded-md border border-border bg-muted/30 p-3 text-sm">
+                    <p className="font-medium">
+                      {bulkPreview.catalogSeriesTitle} ←{' '}
+                      <code className="text-xs">{bulkPreview.fandomSeriesPageTitle}</code>
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {bulkPreview.totalIssuesFandom} issues na Fandom ·{' '}
+                      {bulkPreview.totalEntriesMissing} entries do catálogo sem capa ·{' '}
+                      {bulkPreview.matched.length} matches por número (
+                      {bulkPreview.matched.filter((m) => m.fandomCoverUrl).length} com capa) ·{' '}
+                      {bulkPreview.unmatchedEntries.length} entries sem match
+                    </p>
+                  </div>
+
+                  {bulkPreview.matched.filter((m) => m.fandomCoverUrl).length === 0 ? (
+                    <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-6 text-center text-sm">
+                      Nenhuma capa Fandom disponível pra essa série. Talvez Fandom
+                      tenha as páginas mas sem imagem.
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm">
+                          {bulkSelected.size} selecionado(s) de{' '}
+                          {bulkPreview.matched.filter((m) => m.fandomCoverUrl).length} com capa
+                        </p>
+                        <div className="flex gap-1.5">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              setBulkSelected(
+                                new Set(
+                                  bulkPreview.matched
+                                    .filter((m) => m.fandomCoverUrl)
+                                    .map((m) => m.entryId),
+                                ),
+                              )
+                            }
+                          >
+                            Selecionar todos
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setBulkSelected(new Set())}
+                          >
+                            Limpar
+                          </Button>
+                        </div>
+                      </div>
+
+                      <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+                        {bulkPreview.matched
+                          .filter((m) => m.fandomCoverUrl)
+                          .map((m) => {
+                            const isSelected = bulkSelected.has(m.entryId);
+                            return (
+                              <li
+                                key={m.entryId}
+                                className={`flex flex-col rounded-md border-2 bg-card overflow-hidden transition-colors ${
+                                  isSelected ? 'border-primary' : 'border-border'
+                                }`}
+                              >
+                                <button
+                                  type="button"
+                                  onClick={() => toggleBulkSelected(m.entryId)}
+                                  className="relative block aspect-[2/3] w-full overflow-hidden bg-muted"
+                                >
+                                  <img
+                                    src={m.fandomCoverUrl as string}
+                                    alt={m.entryTitle}
+                                    className="h-full w-full object-cover"
+                                    loading="lazy"
+                                  />
+                                  {isSelected && (
+                                    <div className="absolute right-1 top-1 rounded-full bg-primary p-1 text-primary-foreground">
+                                      <CheckCircle2 className="h-4 w-4" />
+                                    </div>
+                                  )}
+                                </button>
+                                <p className="line-clamp-2 px-1.5 py-1 text-[11px]">
+                                  {m.entryTitle}
+                                  {m.entryEditionNumber ? (
+                                    <span className="ml-1 text-muted-foreground">
+                                      #{m.entryEditionNumber}
+                                    </span>
+                                  ) : null}
+                                </p>
+                              </li>
+                            );
+                          })}
+                      </ul>
+                    </>
+                  )}
+                </>
+              ) : null}
+            </div>
+          )}
+
           <DialogFooter className="gap-2 sm:gap-0">
             {mode === 'detail' && activeEntry && (
-              <Button
-                onClick={() => startSearch(activeEntry)}
-                className="sm:mr-auto"
-              >
+              <Button onClick={() => startSearch(activeEntry)} className="sm:mr-auto">
                 <Search className="mr-1.5 h-4 w-4" />
                 Buscar capas
               </Button>
             )}
-            <Button variant="outline" onClick={closeModal} disabled={applyingUrl !== null}>
+            {mode === 'bulk' && (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => setMode('search')}
+                  className="sm:mr-auto"
+                  disabled={bulkApplying}
+                >
+                  <ChevronLeft className="mr-1 h-4 w-4" />
+                  Voltar para candidatos
+                </Button>
+                {bulkPreview && bulkSelected.size > 0 && (
+                  <Button onClick={handleBulkApply} disabled={bulkApplying}>
+                    {bulkApplying ? (
+                      <>
+                        <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                        Aplicando {bulkSelected.size}...
+                      </>
+                    ) : (
+                      `Aplicar ${bulkSelected.size} capa(s)`
+                    )}
+                  </Button>
+                )}
+              </>
+            )}
+            <Button
+              variant="outline"
+              onClick={closeModal}
+              disabled={applyingUrl !== null || bulkApplying}
+            >
               Fechar
             </Button>
           </DialogFooter>
