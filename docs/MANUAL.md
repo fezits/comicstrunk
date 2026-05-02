@@ -148,9 +148,10 @@ Versão: 2026-04-26 (após Onda 3 do marketplace)
   - **Padrão GCD #issue**: detecta duplicatas pelo padrão GCD
   - **Mesmo título (qualquer fonte)**: agrupa por título normalizado
 - Ações:
-  - **Remover** um lado (com cascade FK: cart, order, collection, etc)
-  - **Manter ambos** (entra em `dismissed_duplicates` pra não aparecer de novo)
-- Validação nova: se há pedidos ativos referenciando o item, bloqueia remoção com mensagem clara
+  - **Remover** um lado (com cascade FK: cart, order, collection, etc) — sourceKey vai para a lista `removed_source_keys` e o cron das 4h não recria mais
+  - **Manter ambos** — par registrado em `dismissed_duplicates` por sourceKey (estável, sobrevive a delete+recreate do cron)
+- Validação: se há pedidos ativos referenciando o item, bloqueia remoção com mensagem clara
+- Reversão (via SQL): `DELETE FROM removed_source_keys WHERE source_key = '...'` ou `DELETE FROM dismissed_duplicates WHERE source_key_a = ... AND source_key_b = ...`
 
 ### 3.7 Lista de assinaturas
 - `/pt-BR/admin/subscriptions` lista todas

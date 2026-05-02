@@ -289,8 +289,8 @@ export default function AdminDuplicatesPage() {
                   onClick={async () => {
                     try {
                       await apiClient.post('/admin/duplicates/dismiss', {
-                        gcdId: pair.gcd.id,
-                        rikaId: pair.rika.id,
+                        sourceKeyA: pair.gcd.sourceKey,
+                        sourceKeyB: pair.rika.sourceKey,
                       });
                       setPairs((prev) => prev.filter((_, i) => i !== idx));
                       setTotal((t) => t - 1);

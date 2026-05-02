@@ -12,6 +12,7 @@ import {
   isPrivateOrReservedIp,
 } from '../../shared/lib/cover-download';
 import { NotFoundError, BadRequestError } from '../../shared/utils/api-error';
+import { isSourceKeyBlocked } from '../sync/blacklist';
 import type { CoverScanImportInput, CoverScanImportResponse } from '@comicstrunk/contracts';
 
 // Re-export para o test suite existente em src/__tests__/cover-scan/security-fix.test.ts
@@ -41,6 +42,10 @@ export async function ensureCatalogEntryFromExternal(
     select: { id: true, approvalStatus: true },
   });
   if (existing) return existing;
+
+  if (await isSourceKeyBlocked(sourceKey)) {
+    throw new BadRequestError('Esta entrada foi removida do catálogo pelo administrador.');
+  }
 
   const data = await fetchExternalData(externalSource, externalRef);
   if (!data) {
