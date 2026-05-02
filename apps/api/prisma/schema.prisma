@@ -1162,3 +1162,21 @@ model ContactMessage {
   @@index([isResolved])
   @@map("contact_messages")
 }
+
+// ============================================================================
+// DEDUP SOURCE KEY PERSISTENCE
+// ============================================================================
+
+model DismissedDuplicate {
+  sourceKeyA String @map("source_key_a")
+  sourceKeyB String @map("source_key_b")
+
+  @@id([sourceKeyA, sourceKeyB])
+  @@map("dismissed_duplicates")
+}
+
+model RemovedSourceKey {
+  sourceKey String @id @map("source_key")
+
+  @@map("removed_source_keys")
+}

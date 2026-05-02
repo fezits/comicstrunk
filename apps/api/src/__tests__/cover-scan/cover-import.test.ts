@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, vi, beforeEach } from 'vitest';
 import { PrismaClient } from '@prisma/client';
-import { request, loginAs, TEST_USER } from '../setup';
+import { request, loginAs, TEST_ADMIN } from '../setup';
 
 vi.mock('../../shared/lib/metron', () => ({
   searchMetronIssues: vi.fn(),
@@ -25,10 +25,10 @@ const createdIds: { catalog: string[]; collection: string[]; logs: string[] } = 
 };
 
 beforeAll(async () => {
-  const u = await loginAs(TEST_USER.email, TEST_USER.password);
+  const u = await loginAs(TEST_ADMIN.email, TEST_ADMIN.password);
   userToken = u.accessToken;
-  const user = await prisma.user.findUnique({ where: { email: TEST_USER.email } });
-  if (!user) throw new Error('TEST_USER nao encontrado');
+  const user = await prisma.user.findUnique({ where: { email: TEST_ADMIN.email } });
+  if (!user) throw new Error('TEST_ADMIN nao encontrado');
   userId = user.id;
 });
 
@@ -170,5 +170,62 @@ describe('POST /api/v1/cover-scan/import', () => {
     expect(res.status).toBe(200);
     expect(res.body.data.catalogEntryId).toBe(existing.id);
     if (res.body.data.collectionItemId) createdIds.collection.push(res.body.data.collectionItemId);
+  });
+
+  it('rejeita import quando sourceKey está em removed_source_keys', async () => {
+    // Garantir que nao existe entrada no catalogo com esse sourceKey de uma
+    // execucao anterior falha (pois o blacklist check so ocorre se nao existe
+    // entry — existente e retornado sem checar blacklist, que e o comportamento
+    // correto para entradas ja importadas antes da blacklist existir).
+    const stale = await prisma.catalogEntry.findFirst({
+      where: { sourceKey: 'metron:88888' },
+      select: { id: true },
+    });
+    if (stale) {
+      await prisma.collectionItem.deleteMany({ where: { catalogEntryId: stale.id } });
+      await prisma.catalogEntry.delete({ where: { id: stale.id } });
+    }
+
+    // Mark sourceKey as blacklisted (admin removed it earlier via /admin/duplicates)
+    await prisma.removedSourceKey.upsert({
+      where: { sourceKey: 'metron:88888' },
+      create: { sourceKey: 'metron:88888' },
+      update: {},
+    });
+
+    mockedGetMetron.mockResolvedValue({
+      id: 88888,
+      series: { name: 'Blocked Test', volume: 1, year_began: 2024 },
+      number: '1',
+      issue: 'Blocked Test #1',
+      cover_date: '2024-01-01',
+      image: 'https://static.metron.cloud/blocked.jpg',
+      description: 'Should be blocked',
+    });
+
+    const log = await prisma.coverScanLog.create({
+      data: {
+        userId,
+        rawText: '{}',
+        ocrTokens: 'blocked',
+        candidatesShown: [],
+      },
+    });
+    createdIds.logs.push(log.id);
+
+    const res = await request
+      .post('/api/v1/cover-scan/import')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({
+        scanLogId: log.id,
+        externalSource: 'metron',
+        externalRef: '88888',
+      })
+      .expect(400);
+
+    expect(res.body.error.message).toMatch(/removida do catálogo/i);
+
+    // Cleanup
+    await prisma.removedSourceKey.delete({ where: { sourceKey: 'metron:88888' } });
   });
 });

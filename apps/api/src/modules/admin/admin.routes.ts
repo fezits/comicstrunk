@@ -5,6 +5,7 @@ import {
   listUsersSchema,
   updateUserRoleSchema,
   suspendUserSchema,
+  dismissDuplicateSchema,
   type ListUsersInput,
 } from '@comicstrunk/contracts';
 import { validate } from '../../shared/middleware/validate';
@@ -241,6 +242,11 @@ router.get('/duplicates', async (req: Request, res: Response, next: NextFunction
           HAVING COUNT(DISTINCT SUBSTRING_INDEX(source_key, ':', 1)) > 1
         )
         AND g.source_key IS NOT NULL AND r.source_key IS NOT NULL
+        AND NOT EXISTS (
+          SELECT 1 FROM dismissed_duplicates d
+          WHERE d.source_key_a = LEAST(g.source_key, r.source_key)
+            AND d.source_key_b = GREATEST(g.source_key, r.source_key)
+        )
         GROUP BY g.id, g.title, g.publisher, g.source_key, g.cover_image_url
         ORDER BY g.title ASC
         LIMIT ${limit} OFFSET ${skip}
@@ -287,7 +293,6 @@ router.get('/duplicates', async (req: Request, res: Response, next: NextFunction
           LOWER(TRIM(REPLACE(REPLACE(SUBSTRING_INDEX(title, '#', 1), 'The ', ''), 'the ', ''))) AS base_title
         FROM catalog_entries
         WHERE source_key LIKE 'gcd:%' AND title LIKE '%#%'
-          AND id NOT IN (SELECT gcd_id FROM dismissed_duplicates)
         HAVING issue_num > 0
       ) g
       JOIN (
@@ -304,6 +309,11 @@ router.get('/duplicates', async (req: Request, res: Response, next: NextFunction
           g.base_title = r.base_title
           OR (r.base_title LIKE CONCAT('%', g.base_title, '%') AND ABS(CHAR_LENGTH(g.base_title) - CHAR_LENGTH(r.base_title)) <= 3)
         )
+      AND NOT EXISTS (
+        SELECT 1 FROM dismissed_duplicates d
+        WHERE d.source_key_a = LEAST(g.source_key, r.source_key)
+          AND d.source_key_b = GREATEST(g.source_key, r.source_key)
+      )
       GROUP BY g.id, g.title, g.publisher, g.source_key, g.cover_image_url
       ORDER BY g.title ASC
       LIMIT ${limit} OFFSET ${skip}
@@ -312,16 +322,15 @@ router.get('/duplicates', async (req: Request, res: Response, next: NextFunction
     const countResult = await prisma.$queryRaw<[{ total: bigint }]>`
       SELECT COUNT(DISTINCT g.id) as total
       FROM (
-        SELECT id, publish_year,
+        SELECT id, publish_year, source_key,
           CAST(SUBSTRING_INDEX(title, '#', -1) AS UNSIGNED) AS issue_num,
           LOWER(TRIM(REPLACE(REPLACE(SUBSTRING_INDEX(title, '#', 1), 'The ', ''), 'the ', ''))) AS base_title
         FROM catalog_entries
         WHERE source_key LIKE 'gcd:%' AND title LIKE '%#%'
-          AND id NOT IN (SELECT gcd_id FROM dismissed_duplicates)
         HAVING issue_num > 0
       ) g
       JOIN (
-        SELECT id, publish_year,
+        SELECT id, publish_year, source_key,
           CAST(SUBSTRING_INDEX(title, '#', -1) AS UNSIGNED) AS issue_num,
           LOWER(TRIM(REPLACE(REPLACE(SUBSTRING_INDEX(title, '#', 1), 'The ', ''), 'the ', ''))) AS base_title
         FROM catalog_entries
@@ -334,6 +343,11 @@ router.get('/duplicates', async (req: Request, res: Response, next: NextFunction
           g.base_title = r.base_title
           OR (r.base_title LIKE CONCAT('%', g.base_title, '%') AND ABS(CHAR_LENGTH(g.base_title) - CHAR_LENGTH(r.base_title)) <= 3)
         )
+      AND NOT EXISTS (
+        SELECT 1 FROM dismissed_duplicates d
+        WHERE d.source_key_a = LEAST(g.source_key, r.source_key)
+          AND d.source_key_b = GREATEST(g.source_key, r.source_key)
+      )
     `;
 
     const total = Number(countResult[0].total);
@@ -365,20 +379,27 @@ router.get('/duplicates', async (req: Request, res: Response, next: NextFunction
 });
 
 // POST /duplicates/dismiss — mark a pair as "keep both" so it won't appear again
-router.post('/duplicates/dismiss', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { gcdId, rikaId } = req.body;
-    if (!gcdId || !rikaId) {
-      throw new BadRequestError('gcdId and rikaId are required');
+router.post(
+  '/duplicates/dismiss',
+  validate(dismissDuplicateSchema, 'body'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { sourceKeyA, sourceKeyB } = req.body;
+      // Sempre ordenar lexicograficamente (par é simétrico)
+      const [a, b] = [sourceKeyA, sourceKeyB].sort();
+
+      await prisma.dismissedDuplicate.upsert({
+        where: { sourceKeyA_sourceKeyB: { sourceKeyA: a, sourceKeyB: b } },
+        create: { sourceKeyA: a, sourceKeyB: b },
+        update: {},
+      });
+
+      sendSuccess(res, { dismissed: true });
+    } catch (err) {
+      next(err);
     }
-    await prisma.$executeRaw`
-      INSERT IGNORE INTO dismissed_duplicates (gcd_id, rika_id) VALUES (${gcdId}, ${rikaId})
-    `;
-    sendSuccess(res, { dismissed: true });
-  } catch (err) {
-    next(err);
-  }
-});
+  },
+);
 
 // DELETE /duplicates/:id — remove a specific catalog entry (for duplicate resolution)
 router.delete('/duplicates/:id', async (req: Request, res: Response, next: NextFunction) => {
@@ -410,7 +431,13 @@ router.delete('/duplicates/:id', async (req: Request, res: Response, next: NextF
     }
 
     await prisma.$transaction(async (tx) => {
-      // Limpa dependências em cascata (FKs que apontam pra catalog_entries OU pros collection_items)
+      // 1. Pega sourceKey ANTES de deletar
+      const entry = await tx.catalogEntry.findUnique({
+        where: { id },
+        select: { sourceKey: true },
+      });
+
+      // 2. Limpa dependências em cascata (FKs que apontam pra catalog_entries OU pros collection_items)
       if (collectionItemIds.length > 0) {
         await tx.cartItem.deleteMany({ where: { collectionItemId: { in: collectionItemIds } } });
         await tx.orderItem.deleteMany({ where: { collectionItemId: { in: collectionItemIds } } });
@@ -422,10 +449,18 @@ router.delete('/duplicates/:id', async (req: Request, res: Response, next: NextF
       await tx.comment.deleteMany({ where: { catalogEntryId: id } });
       await tx.review.deleteMany({ where: { catalogEntryId: id } });
       await tx.collectionItem.deleteMany({ where: { catalogEntryId: id } });
-      // Remove dismissed_duplicates entries que apontavam pra esse id
-      await tx.$executeRaw`DELETE FROM dismissed_duplicates WHERE gcd_id = ${id} OR rika_id = ${id}`;
 
+      // 3. Hard delete
       await tx.catalogEntry.delete({ where: { id } });
+
+      // 4. Blacklist — impede cron das 4h de reimportar a mesma entrada
+      if (entry?.sourceKey) {
+        await tx.removedSourceKey.upsert({
+          where: { sourceKey: entry.sourceKey },
+          create: { sourceKey: entry.sourceKey },
+          update: {},
+        });
+      }
     });
 
     sendSuccess(res, { deleted: id, removedCollectionItems: collectionItemIds.length });
