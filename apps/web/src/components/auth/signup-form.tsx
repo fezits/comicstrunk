@@ -12,6 +12,7 @@ import { Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
@@ -107,8 +108,7 @@ export function SignupForm() {
             <FormItem>
               <FormLabel>{t("labels.password")}</FormLabel>
               <FormControl>
-                <Input
-                  type="password"
+                <PasswordInput
                   placeholder="******"
                   autoComplete="new-password"
                   {...field}
