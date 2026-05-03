@@ -180,19 +180,22 @@ enum ContactCategory {
 // ============================================================================
 
 model User {
-  id              String    @id @default(cuid())
-  email           String    @unique
-  name            String
-  passwordHash    String    @map("password_hash")
-  role            UserRole  @default(USER)
-  avatarUrl       String?   @map("avatar_url")
-  bio             String?   @db.Text
-  websiteUrl      String?   @map("website_url")
-  twitterHandle   String?   @map("twitter_handle")
-  instagramHandle String?   @map("instagram_handle")
-  acceptedTermsAt DateTime  @map("accepted_terms_at")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  id               String    @id @default(cuid())
+  email            String    @unique
+  name             String
+  passwordHash     String    @map("password_hash")
+  role             UserRole  @default(USER)
+  suspended        Boolean   @default(false)
+  suspendedAt      DateTime? @map("suspended_at")
+  suspensionReason String?   @map("suspension_reason") @db.Text
+  avatarUrl        String?   @map("avatar_url")
+  bio              String?   @db.Text
+  websiteUrl       String?   @map("website_url")
+  twitterHandle    String?   @map("twitter_handle")
+  instagramHandle  String?   @map("instagram_handle")
+  acceptedTermsAt  DateTime  @map("accepted_terms_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
 
   // Auth relations
   refreshTokens  RefreshToken[]
@@ -251,6 +254,7 @@ model User {
   // Cover scan relations
   coverScanLogs CoverScanLog[]
 
+  @@index([suspended])
   @@map("users")
 }
 

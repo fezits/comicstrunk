@@ -43,9 +43,13 @@ export function LoginForm() {
     } catch (error: unknown) {
       const apiError = error as { response?: { status?: number; data?: { error?: { message?: string } } } };
       const status = apiError.response?.status;
+      const apiMsg = apiError.response?.data?.error?.message;
 
       if (status === 429) {
         toast.error(t("errors.rateLimited"));
+      } else if (status === 403 && apiMsg) {
+        // Account suspended or other forbidden — show the real backend message
+        toast.error(apiMsg);
       } else if (status === 401) {
         toast.error(t("errors.invalidCredentials"));
       } else {

@@ -98,6 +98,7 @@ export async function listUsers(filters: ListUsersInput) {
         email: true,
         name: true,
         role: true,
+        suspended: true,
         avatarUrl: true,
         createdAt: true,
         updatedAt: true,
@@ -121,6 +122,7 @@ export async function listUsers(filters: ListUsersInput) {
     email: user.email,
     name: user.name,
     role: user.role,
+    suspended: user.suspended,
     avatarUrl: user.avatarUrl,
     createdAt: user.createdAt.toISOString(),
     updatedAt: user.updatedAt.toISOString(),
@@ -142,6 +144,9 @@ export async function getUser(id: string) {
       email: true,
       name: true,
       role: true,
+      suspended: true,
+      suspendedAt: true,
+      suspensionReason: true,
       avatarUrl: true,
       bio: true,
       websiteUrl: true,
@@ -187,6 +192,9 @@ export async function getUser(id: string) {
     email: user.email,
     name: user.name,
     role: user.role,
+    suspended: user.suspended,
+    suspendedAt: user.suspendedAt?.toISOString() ?? null,
+    suspensionReason: user.suspensionReason,
     avatarUrl: user.avatarUrl,
     bio: user.bio,
     websiteUrl: user.websiteUrl,
@@ -263,19 +271,35 @@ export async function suspendUser(id: string, adminId: string, input: SuspendUse
     throw new BadRequestError('Nao e possivel suspender um administrador');
   }
 
-  // Use transaction to atomically suspend user and cancel subscriptions
+  if (user.suspended) {
+    throw new BadRequestError('Usuario ja esta suspenso');
+  }
+
+  // Atomic suspension: set flag, revoke all refresh tokens, cancel active subs
   const result = await prisma.$transaction(async (tx) => {
-    // Force role to USER
     const updated = await tx.user.update({
       where: { id },
-      data: { role: 'USER' },
+      data: {
+        suspended: true,
+        suspendedAt: new Date(),
+        suspensionReason: input.reason,
+      },
       select: {
         id: true,
         email: true,
         name: true,
         role: true,
+        suspended: true,
+        suspendedAt: true,
+        suspensionReason: true,
         updatedAt: true,
       },
+    });
+
+    // Revoke all refresh tokens — forces logout across all sessions
+    await tx.refreshToken.updateMany({
+      where: { userId: id, revoked: false },
+      data: { revoked: true },
     });
 
     // Cancel any active subscriptions
@@ -298,9 +322,10 @@ export async function suspendUser(id: string, adminId: string, input: SuspendUse
     email: result.email,
     name: result.name,
     role: result.role,
+    suspended: result.suspended,
+    suspendedAt: result.suspendedAt?.toISOString() ?? null,
+    suspensionReason: result.suspensionReason,
     updatedAt: result.updatedAt.toISOString(),
-    reason: input.reason,
-    suspended: true,
   };
 }
 
@@ -316,26 +341,31 @@ export async function unsuspendUser(id: string, adminId: string) {
     throw new NotFoundError('Utilizador nao encontrado');
   }
 
-  // No actual status change needed — the user is already role=USER.
-  // This is a no-op if they were not suspended, which is fine.
-  // We simply confirm the user exists and return their data.
-  const updated = await prisma.user.findUnique({
+  const updated = await prisma.user.update({
     where: { id },
+    data: {
+      suspended: false,
+      suspendedAt: null,
+      suspensionReason: null,
+    },
     select: {
       id: true,
       email: true,
       name: true,
       role: true,
+      suspended: true,
       updatedAt: true,
     },
   });
 
   return {
-    id: updated!.id,
-    email: updated!.email,
-    name: updated!.name,
-    role: updated!.role,
-    updatedAt: updated!.updatedAt.toISOString(),
-    suspended: false,
+    id: updated.id,
+    email: updated.email,
+    name: updated.name,
+    role: updated.role,
+    suspended: updated.suspended,
+    suspendedAt: null,
+    suspensionReason: null,
+    updatedAt: updated.updatedAt.toISOString(),
   };
 }

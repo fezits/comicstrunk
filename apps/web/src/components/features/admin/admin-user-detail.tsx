@@ -236,6 +236,12 @@ export function AdminUserDetail({ userId }: { userId: string }) {
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-xl font-bold">{user.name}</h2>
                 <RoleBadge role={user.role} />
+                {user.suspended && (
+                  <Badge variant="destructive">
+                    <UserX className="h-3 w-3 mr-1" />
+                    Suspenso
+                  </Badge>
+                )}
               </div>
               <p className="text-sm text-muted-foreground">{user.email}</p>
               <p className="text-sm text-muted-foreground">
@@ -253,11 +259,13 @@ export function AdminUserDetail({ userId }: { userId: string }) {
                   setNewRole(user.role);
                   setRoleDialogOpen(true);
                 }}
+                disabled={user.suspended}
+                title={user.suspended ? 'Remova a suspensao para alterar o cargo' : undefined}
               >
                 <Shield className="h-4 w-4 mr-1" />
                 Alterar cargo
               </Button>
-              {user.role !== 'ADMIN' && (
+              {user.role !== 'ADMIN' && !user.suspended && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -271,7 +279,7 @@ export function AdminUserDetail({ userId }: { userId: string }) {
                   Suspender
                 </Button>
               )}
-              {user.role === 'USER' && (
+              {user.suspended && (
                 <Button variant="outline" size="sm" onClick={handleUnsuspend}>
                   <UserCheck className="h-4 w-4 mr-1" />
                   Remover suspensao
@@ -279,6 +287,19 @@ export function AdminUserDetail({ userId }: { userId: string }) {
               )}
             </div>
           </div>
+          {user.suspended && (
+            <div className="mt-4 p-3 rounded-lg border border-destructive/30 bg-destructive/10">
+              <p className="text-sm font-medium text-destructive">
+                Conta suspensa
+                {user.suspendedAt && ` em ${formatDate(user.suspendedAt)}`}
+              </p>
+              {user.suspensionReason && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Motivo: {user.suspensionReason}
+                </p>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
 
