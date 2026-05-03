@@ -268,9 +268,14 @@ export async function requestPasswordReset(email: string) {
     },
   });
 
-  // Send password reset email (fire-and-forget)
+  // Send password reset email (fire-and-forget). Inclui o locale no path:
+  // sem ele, o middleware do Next i18n não sabe qual locale aplicar e a
+  // página /reset-password crasha com server-side exception (Digest).
+  // Hoje só temos pt-BR como locale; quando ativarmos en-US, precisamos
+  // descobrir o locale do user (preferência/header).
   const webUrl = process.env.WEB_URL || 'http://localhost:3000';
-  const resetLink = `${webUrl}/reset-password?token=${rawToken}`;
+  const locale = process.env.DEFAULT_LOCALE || 'pt-BR';
+  const resetLink = `${webUrl}/${locale}/reset-password?token=${rawToken}`;
 
   logger.info(`Password reset link: ${resetLink}`);
   void sendPasswordResetEmail(user.email, { userName: user.name, resetLink });
