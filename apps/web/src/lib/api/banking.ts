@@ -2,6 +2,8 @@ import apiClient from './client';
 
 // === Types ===
 
+export type PixKeyType = 'CPF' | 'CNPJ' | 'EMAIL' | 'PHONE' | 'RANDOM';
+
 export interface BankAccount {
   id: string;
   userId: string;
@@ -12,6 +14,8 @@ export interface BankAccount {
   holderName: string;
   accountType: 'CHECKING' | 'SAVINGS';
   isPrimary: boolean;
+  pixKey: string | null;
+  pixKeyType: PixKeyType | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -24,6 +28,8 @@ export interface CreateBankAccountInput {
   holderName: string;
   accountType: 'CHECKING' | 'SAVINGS';
   isPrimary?: boolean;
+  pixKey?: string | null;
+  pixKeyType?: PixKeyType | null;
 }
 
 // === API Calls ===

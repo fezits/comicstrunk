@@ -1,19 +1,19 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { PrismaClient } from '@prisma/client';
-import { request, loginAs, TEST_USER, TEST_ADMIN } from '../setup';
+import { request, loginAs, TEST_ADMIN } from '../setup';
 
 const prisma = new PrismaClient();
 
+// cover-scan endpoints require ADMIN role (consume Workers AI quota etc.)
 let userToken: string;
-let userId = ''; // usado nas Tasks 4-6
-const createdLogIds: string[] = []; // usado nas Tasks 4-6
+let userId = '';
+const createdLogIds: string[] = [];
 
 beforeAll(async () => {
-  const userLogin = await loginAs(TEST_USER.email, TEST_USER.password);
-  userToken = userLogin.accessToken;
+  const adminLogin = await loginAs(TEST_ADMIN.email, TEST_ADMIN.password);
+  userToken = adminLogin.accessToken;
 
-  // usado nas Tasks 4-6: buscar userId pelo email
-  const user = await prisma.user.findUnique({ where: { email: TEST_USER.email } });
+  const user = await prisma.user.findUnique({ where: { email: TEST_ADMIN.email } });
   if (user) userId = user.id;
 });
 
@@ -24,19 +24,61 @@ afterAll(async () => {
   await prisma.$disconnect();
 });
 
+// Helper: cria scanLog vazio (simula resultado de /recognize) para testes
+// que exercitam apenas o /search.
+async function createEmptyScanLog(forUserId: string): Promise<string> {
+  const log = await prisma.coverScanLog.create({
+    data: {
+      userId: forUserId,
+      rawText: '{}',
+      ocrTokens: '',
+      candidatesShown: [],
+      searchAttempts: 0,
+    },
+  });
+  createdLogIds.push(log.id);
+  return log.id;
+}
+
 describe('POST /api/v1/cover-scan/search', () => {
   it('returns 401 without auth token', async () => {
     const res = await request
       .post('/api/v1/cover-scan/search')
-      .send({ rawText: 'Batman 1', ocrTokens: ['Batman', '1'] });
+      .send({ scanLogId: 'irrelevant', title: 'Batman' });
 
     expect(res.status).toBe(401);
   });
 
-  it('returns candidates ranked by token match', async () => {
+  it('returns 404 if scanLog does not belong to user', async () => {
+    // Create a scanLog under a different user (subscriber)
+    const otherUser = await prisma.user.findUnique({ where: { email: 'subscriber@test.com' } });
+    if (!otherUser) throw new Error('subscriber user not found');
+    const log = await prisma.coverScanLog.create({
+      data: { userId: otherUser.id, rawText: '{}', ocrTokens: '', candidatesShown: [], searchAttempts: 0 },
+    });
+    createdLogIds.push(log.id);
+
+    const res = await request
+      .post('/api/v1/cover-scan/search')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ scanLogId: log.id, title: 'Anything' });
+
+    expect(res.status).toBe(404);
+  });
+
+  it('returns 400 when no textual fields are provided', async () => {
+    const scanLogId = await createEmptyScanLog(userId);
+    const res = await request
+      .post('/api/v1/cover-scan/search')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ scanLogId });
+    expect(res.status).toBe(400);
+  });
+
+  it('returns candidates ranked by token match and increments searchAttempts', async () => {
     const entry = await prisma.catalogEntry.create({
       data: {
-        title: 'Batman: Ano Um',
+        title: '_test_search_Batman: Ano Um',
         publisher: 'Panini',
         editionNumber: 1,
         approvalStatus: 'APPROVED',
@@ -44,14 +86,17 @@ describe('POST /api/v1/cover-scan/search', () => {
       },
     });
 
+    const scanLogId = await createEmptyScanLog(userId);
+
     try {
       const res = await request
         .post('/api/v1/cover-scan/search')
         .set('Authorization', `Bearer ${userToken}`)
         .send({
-          rawText: 'BATMAN ANO UM PANINI 1',
-          ocrTokens: ['Batman', 'Ano', 'Um', 'Panini'],
-          candidateNumber: 1,
+          scanLogId,
+          title: 'Batman Ano Um',
+          publisher: 'Panini',
+          issueNumber: 1,
         });
 
       expect(res.status).toBe(200);
@@ -61,21 +106,34 @@ describe('POST /api/v1/cover-scan/search', () => {
 
       const found = res.body.data.candidates.find((c: { id: string }) => c.id === entry.id);
       expect(found).toBeDefined();
-      expect(found.title).toBe('Batman: Ano Um');
       expect(found.score).toBeGreaterThan(0);
+      expect(res.body.data.scanLogId).toBe(scanLogId);
 
-      expect(typeof res.body.data.scanLogId).toBe('string');
-      expect(res.body.data.scanLogId.length).toBeGreaterThan(0);
-      createdLogIds.push(res.body.data.scanLogId);
+      // searchAttempts incrementa
+      const log = await prisma.coverScanLog.findUnique({ where: { id: scanLogId } });
+      expect(log!.searchAttempts).toBe(1);
     } finally {
       await prisma.catalogEntry.delete({ where: { id: entry.id } });
     }
   });
 
+  it('iterative search increments searchAttempts each time', async () => {
+    const scanLogId = await createEmptyScanLog(userId);
+    for (let i = 1; i <= 3; i++) {
+      const res = await request
+        .post('/api/v1/cover-scan/search')
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({ scanLogId, title: 'Anything' });
+      expect(res.status).toBe(200);
+    }
+    const log = await prisma.coverScanLog.findUnique({ where: { id: scanLogId } });
+    expect(log!.searchAttempts).toBe(3);
+  });
+
   it('records user choice and updates chosen_entry_id', async () => {
     const entry = await prisma.catalogEntry.create({
       data: {
-        title: 'Test Choice Entry',
+        title: '_test_choice_Test Entry',
         publisher: 'Test',
         approvalStatus: 'APPROVED',
         createdById: userId,
@@ -83,13 +141,12 @@ describe('POST /api/v1/cover-scan/search', () => {
     });
 
     try {
-      const search = await request
+      const scanLogId = await createEmptyScanLog(userId);
+      // simula uma busca pra popular candidatesShown
+      await request
         .post('/api/v1/cover-scan/search')
         .set('Authorization', `Bearer ${userToken}`)
-        .send({ rawText: 'Test', ocrTokens: ['Test'] });
-
-      const scanLogId = search.body.data.scanLogId;
-      createdLogIds.push(scanLogId);
+        .send({ scanLogId, title: 'Test' });
 
       const choose = await request
         .post('/api/v1/cover-scan/choose')
@@ -106,17 +163,16 @@ describe('POST /api/v1/cover-scan/search', () => {
   });
 
   it('rejects choose if scanLog belongs to another user', async () => {
-    const adminLogin = await loginAs(TEST_ADMIN.email, TEST_ADMIN.password);
-    void adminLogin; // token não necessário aqui
-    const adminUser = await prisma.user.findUnique({ where: { email: TEST_ADMIN.email } });
-    if (!adminUser) throw new Error('admin user not found in test DB');
+    const otherUser = await prisma.user.findUnique({ where: { email: 'subscriber@test.com' } });
+    if (!otherUser) throw new Error('subscriber user not found');
 
     const log = await prisma.coverScanLog.create({
       data: {
-        userId: adminUser.id,
-        rawText: 'X',
-        ocrTokens: 'x',
+        userId: otherUser.id,
+        rawText: '{}',
+        ocrTokens: '',
         candidatesShown: [],
+        searchAttempts: 0,
       },
     });
     createdLogIds.push(log.id);
@@ -129,40 +185,6 @@ describe('POST /api/v1/cover-scan/search', () => {
     expect(res.status).toBe(404);
   });
 
-  it('rejects with 429 when daily limit exceeded', async () => {
-    const originalLimit = process.env.COVER_SCAN_DAILY_LIMIT;
-    process.env.COVER_SCAN_DAILY_LIMIT = '2';
-
-    try {
-      await prisma.coverScanLog.deleteMany({ where: { userId } });
-
-      for (let i = 0; i < 2; i++) {
-        const res = await request
-          .post('/api/v1/cover-scan/search')
-          .set('Authorization', `Bearer ${userToken}`)
-          .send({ rawText: 'X', ocrTokens: ['xxx'] });
-        expect(res.status).toBe(200);
-        if (res.body.data?.scanLogId) createdLogIds.push(res.body.data.scanLogId);
-      }
-
-      const blocked = await request
-        .post('/api/v1/cover-scan/search')
-        .set('Authorization', `Bearer ${userToken}`)
-        .send({ rawText: 'X', ocrTokens: ['xxx'] });
-      expect(blocked.status).toBe(429);
-      // O code do error pode ser COVER_SCAN_LIMIT (preferido) ou TOO_MANY_REQUESTS (default).
-      // Aceitar ambos no teste pra ser tolerante à API do TooManyRequestsError.
-      const err = blocked.body.error;
-      expect(err).toBeDefined();
-      if (err.code) {
-        expect(['COVER_SCAN_LIMIT', 'TOO_MANY_REQUESTS']).toContain(err.code);
-      }
-    } finally {
-      if (originalLimit === undefined) {
-        delete process.env.COVER_SCAN_DAILY_LIMIT;
-      } else {
-        process.env.COVER_SCAN_DAILY_LIMIT = originalLimit;
-      }
-    }
-  });
+  // Phase 4 (2026-05-03): rate limit é só no /recognize. /search não consome
+  // neuron quota. Logo, esse teste antigo não se aplica mais — removido.
 });

@@ -185,6 +185,11 @@ export async function setup() {
           passwordHash: hashSync(u.password, 12),
           name: u.name,
           role: u.role,
+          // Always reset suspension between test runs — earlier tests may have
+          // suspended a fixture user (admin/user/etc) and left it that way.
+          suspended: false,
+          suspendedAt: null,
+          suspensionReason: null,
         },
         create: {
           email: u.email,

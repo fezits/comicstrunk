@@ -454,6 +454,7 @@ model CoverScanLog {
   candidatesShown Json     @map("candidates_shown")     // [{id, title, score}] (Json nativo em vez de Text)
   chosenEntryId   String?  @map("chosen_entry_id")     // catalogEntryId escolhido (null = nenhum)
   durationMs      Int?     @map("duration_ms")          // tempo total de processamento (cliente reporta opcional)
+  searchAttempts  Int      @default(0) @map("search_attempts") // quantas vezes /search foi chamado pra esse scan
   createdAt       DateTime @default(now()) @map("created_at")
 
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -679,6 +680,14 @@ model CommissionConfig {
 // SELLER BANKING (Phase 5)
 // ============================================================================
 
+enum PixKeyType {
+  CPF
+  CNPJ
+  EMAIL
+  PHONE
+  RANDOM
+}
+
 model BankAccount {
   id            String      @id @default(cuid())
   userId        String      @map("user_id")
@@ -689,6 +698,8 @@ model BankAccount {
   holderName    String      @map("holder_name")
   accountType   AccountType @map("account_type")
   isPrimary     Boolean     @default(false) @map("is_primary")
+  pixKey        String?     @map("pix_key") @db.VarChar(80)
+  pixKeyType    PixKeyType? @map("pix_key_type")
   createdAt     DateTime    @default(now()) @map("created_at")
   updatedAt     DateTime    @updatedAt @map("updated_at")
 

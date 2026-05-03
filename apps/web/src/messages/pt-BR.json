@@ -1069,7 +1069,21 @@
     "rateLimitMessage": "Você atingiu o limite de scans diários. Tente novamente em 24h.",
     "identifiedAs": "Identifiquei como",
     "noIdentification": "Não consegui identificar com certeza, mas trouxe candidatos parecidos.",
-    "poweredByMetron": "Catálogo enriquecido com dados de metron.cloud (CC BY-SA 4.0) e Fandom Wikis (CC BY-SA 3.0)"
+    "poweredByMetron": "Catálogo enriquecido com dados de metron.cloud (CC BY-SA 4.0) e Fandom Wikis (CC BY-SA 3.0)",
+    "editingTitle": "Confira o que identifiquei",
+    "editingHint": "Edite os campos abaixo se algo estiver errado, depois clique em Buscar.",
+    "fieldTitle": "Título",
+    "fieldIssueNumber": "Número",
+    "fieldPublisher": "Editora",
+    "fieldSeries": "Série",
+    "fieldOcrText": "Texto da capa",
+    "fieldExtraTerms": "Outros termos (opcional)",
+    "fieldExtraTermsPlaceholder": "Ex: Frank Miller, capa variante",
+    "showMoreFields": "Mostrar mais campos",
+    "hideMoreFields": "Esconder campos",
+    "buttonSearch": "Buscar",
+    "editAndSearchAgain": "Editar e buscar de novo",
+    "noTermsError": "Forneça pelo menos um termo de busca."
   },
   "comments": {
     "title": "Comentarios",

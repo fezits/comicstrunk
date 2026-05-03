@@ -39,6 +39,7 @@ import {
   type CollectionSearchParams,
   type ItemCondition,
 } from '@/lib/api/collection';
+import { listBankAccounts } from '@/lib/api/banking';
 import type { PaginationMeta } from '@/lib/api/catalog';
 
 const DEFAULT_LIMIT = 20;
@@ -98,6 +99,8 @@ export default function CollectionPage() {
   const [saleItemId, setSaleItemId] = useState<string | null>(null);
   const [salePrice, setSalePrice] = useState('');
   const [exporting, setExporting] = useState(false);
+  const [bankingDialogOpen, setBankingDialogOpen] = useState(false);
+  const [hasBankAccount, setHasBankAccount] = useState<boolean | null>(null);
 
   const filters = parseFiltersFromParams(searchParams);
   const [searchInput, setSearchInput] = useState(filters.query ?? '');
@@ -114,6 +117,12 @@ export default function CollectionPage() {
       .then((data) => setStats(data))
       .catch(() => {})
       .finally(() => setStatsLoading(false));
+
+    // Pre-load whether the user has any bank account so we can gate the
+    // "colocar à venda" UI before hitting the backend (which would 400).
+    listBankAccounts()
+      .then((accounts) => setHasBankAccount(accounts.length > 0))
+      .catch(() => setHasBankAccount(false));
   }, []);
 
   // Fetch items when URL params change
@@ -191,6 +200,11 @@ export default function CollectionPage() {
         toast.error(tCommon('error'));
       }
     } else {
+      // Pre-check: user needs at least one bank account before listing for sale.
+      if (hasBankAccount === false) {
+        setBankingDialogOpen(true);
+        return;
+      }
       // Mark for sale — need to ask for price
       setSaleItemId(id);
       setSalePrice('');
@@ -211,8 +225,18 @@ export default function CollectionPage() {
       toast.success(t('markedForSale'));
       getCollectionStats().then(setStats).catch(() => {});
       setSaleDialogOpen(false);
-    } catch {
-      toast.error(tCommon('error'));
+    } catch (err) {
+      // Surface backend message (e.g. "Cadastre uma conta bancária...") instead of generic
+      const apiMsg = (err as { response?: { data?: { error?: { message?: string } } } })
+        ?.response?.data?.error?.message;
+      // If the backend rejects because no bank account, swap dialogs.
+      if (apiMsg && /conta banc[aá]ria/i.test(apiMsg)) {
+        setSaleDialogOpen(false);
+        setHasBankAccount(false);
+        setBankingDialogOpen(true);
+        return;
+      }
+      toast.error(apiMsg || tCommon('error'));
     }
   };
 
@@ -436,6 +460,33 @@ export default function CollectionPage() {
             </Button>
             <Button onClick={handleConfirmSale} disabled={!salePrice}>
               Colocar à venda
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Banking required dialog */}
+      <Dialog open={bankingDialogOpen} onOpenChange={setBankingDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Cadastre seus dados bancários</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 py-2 text-sm text-muted-foreground">
+            <p>
+              Para colocar itens à venda no marketplace, você precisa primeiro
+              cadastrar uma conta bancária. É por onde os pagamentos das
+              vendas são depositados.
+            </p>
+            <p>Leva menos de um minuto.</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBankingDialogOpen(false)}>
+              Mais tarde
+            </Button>
+            <Button asChild>
+              <Link href={`/${locale}/seller/banking`}>
+                Cadastrar agora
+              </Link>
             </Button>
           </DialogFooter>
         </DialogContent>

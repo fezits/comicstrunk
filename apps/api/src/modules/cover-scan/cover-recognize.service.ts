@@ -299,6 +299,12 @@ async function recognizeViaGoogleVision(
 }
 
 // === Main service ===
+//
+// Phase 4 (2026-05-03): este endpoint só EXTRAI. A busca foi para
+// `/cover-scan/search` (cover-scan.service.ts:searchByText) para permitir que
+// o usuário edite os campos extraídos antes de buscar. Aqui criamos um
+// scanLog vazio (searchAttempts=0, candidatesShown=[]) que será atualizado
+// pelas chamadas subsequentes de /search que usem o mesmo scanLogId.
 
 export async function recognizeFromImage(
   userId: string,
@@ -307,20 +313,8 @@ export async function recognizeFromImage(
 ): Promise<CoverScanRecognizeResponse> {
   await assertWithinDailyLimit(userId, userRole);
 
-  // 1. Resolver VLM ou fallback visual.
-  //
-  // Caminho A — usuario marcou "Capa sem texto visivel/avariada"
-  // (input.forceVisualSearch=true): pula VLM, vai direto pra Google Vision
-  // Web Detection. Custo extra ~R$ 0,0075/scan, mas necessario quando o
-  // texto da capa nao da pra ler.
-  //
-  // Caminho B (default) — VLM normal. Se VLM nao extrair texto util em 2
-  // tentativas, ai sim cai pro Google Vision como fallback (em vez de
-  // simplesmente devolver erro pro usuario). Google Vision so eh chamado
-  // quando estritamente necessario, conforme combinado com Fernando.
   let recognized: RecognizedCover;
   let usedVisualSearch = false;
-  let visualLabel: string | null = null;
 
   if (input.forceVisualSearch) {
     logger.info('cover-scan: forceVisualSearch — skipping VLM', { userId });
@@ -331,7 +325,6 @@ export async function recognizeFromImage(
       );
     }
     recognized = synthetic.rec;
-    visualLabel = synthetic.label;
     usedVisualSearch = true;
   } else {
     recognized = await recognizeCoverImage(input.imageBase64);
@@ -343,7 +336,6 @@ export async function recognizeFromImage(
       });
       recognized = await recognizeCoverImage(input.imageBase64);
       if (!hasRecognizableText(recognized)) {
-        // VLM nao conseguiu — tenta Google Vision como ultima cartada.
         logger.info('cover-scan: VLM failed twice, falling back to Google Vision', { userId });
         const synthetic = await recognizeViaGoogleVision(input.imageBase64);
         if (!synthetic) {
@@ -352,218 +344,44 @@ export async function recognizeFromImage(
           );
         }
         recognized = synthetic.rec;
-        visualLabel = synthetic.label;
         usedVisualSearch = true;
       }
     }
   }
 
-  // 1.5. Fallback de numero: se VLM nao retornou issue_number, tentar extrair
-  // de title/ocr_text via regex.
   const effectiveIssueNumber = extractIssueNumberFallback(recognized);
 
-  // 2. Tokens do VLM em duas categorias
-  const { must, boost } = buildTokenBuckets(recognized);
-  const allScoringTokens = [...must, ...boost];
-
-  // === Fuzzy stem para casar variantes morfologicas ===
-  // Catalogo brasileiro traduz "absolute" -> "absoluta"; "deluxe" -> "deluxe";
-  // "definitive" -> "definitiva". Buscar pelo prefixo de 5 chars pega ambas as
-  // formas. Tokens com < 5 chars usam o token completo.
-  const fuzzyStem = (t: string): string => (t.length >= 5 ? t.slice(0, 5) : t);
-
-  // 3. Buscar candidatos
-  let candidates: CoverScanCandidate[] = [];
-
-  if (must.length > 0) {
-    const filters: Prisma.CatalogEntryWhereInput[] = must.map((token) => {
-      const stem = fuzzyStem(token);
-      return {
-        OR: [
-          { title: { contains: stem } },
-          { publisher: { contains: stem } },
-          { author: { contains: stem } },
-        ],
-      };
-    });
-
-    // Numero da edicao (do VLM ou regex de fallback) entra como filtro AND
-    // adicional. Se errar, zera o resultado — mas pra capas com numero visivel
-    // eh sinal muito mais forte que tokens de titulo.
-    if (effectiveIssueNumber !== null) {
-      filters.push({ editionNumber: effectiveIssueNumber });
-    }
-
-    const where: Prisma.CatalogEntryWhereInput = {
-      approvalStatus: 'APPROVED',
-      AND: filters,
-    };
-
-    const entries = await prisma.catalogEntry.findMany({
-      where,
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-        publisher: true,
-        author: true,
-        editionNumber: true,
-        coverImageUrl: true,
-        coverFileName: true,
-      },
-      take: 80,
-    });
-
-    const candidateNumber = effectiveIssueNumber ?? undefined;
-
-    candidates = entries
-      .map((e) => ({
-        id: e.id,
-        slug: e.slug,
-        title: e.title,
-        publisher: e.publisher,
-        editionNumber: e.editionNumber,
-        coverImageUrl: resolveCoverUrl(e.coverImageUrl, e.coverFileName),
-        score: scoreCandidate(e, allScoringTokens, candidateNumber),
-        isExternal: false as const,
-      }))
-      .filter((c) => c.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, TOP_LOCAL);
-  }
-
-  // 3.5. Buscar externamente em paralelo (Promise.allSettled - fail open).
-  // IMPORTANTE: passamos uma copia de `recognized` com issue_number sobrescrito
-  // pelo effectiveIssueNumber (regex de fallback). Sem isso, busca externa
-  // usaria o issue_number cru do VLM que pode ser null mesmo quando o numero
-  // esta visivel na capa, e Metron/Rika trariam todas as edicoes da serie.
-  let externalCandidates: CoverScanCandidate[] = [];
-  try {
-    const recognizedForExternal = {
-      ...recognized,
-      issue_number: effectiveIssueNumber,
-    };
-    externalCandidates = await searchExternal(recognizedForExternal, {
-      includeEbay: usedVisualSearch,
-    });
-  } catch (err) {
-    logger.error('cover-scan: searchExternal threw', { err: (err as Error)?.message });
-  }
-
-  // Reforco automatico via Google Vision quando o VLM trouxe resultado
-  // ruim — caso classico: capa variant onde o VLM lê a assinatura do
-  // artista ("JAE LEE") como titulo e perde "Absolute Batman", entao
-  // Metron/Amazon/etc nao acham nada relevante. Trigger:
-  //  - menos de 5 candidatos totais (poucos sinais), OU
-  //  - confidence "baixa" do VLM, OU
-  //  - todos os candidatos externos vazios (so locais textuais)
-  // Quando dispara, chama Google Vision Web Detection (que olha a
-  // imagem real, nao texto), pega o bestGuessLabel + pageTitles e
-  // refaz a busca incluindo eBay nessa segunda passada.
-  const totalSoFar = candidates.length + externalCandidates.length;
-  const externalCount = externalCandidates.filter((c) => c.isExternal).length;
-  const lowQuality =
-    !usedVisualSearch &&
-    (totalSoFar < 5 || recognized.confidence === 'baixa' || externalCount === 0);
-
-  if (lowQuality) {
-    logger.info('cover-scan: low quality first pass, boosting with Google Vision', {
-      totalSoFar,
-      externalCount,
-      confidence: recognized.confidence,
-    });
-    const visual = await recognizeViaGoogleVision(input.imageBase64);
-    if (visual && visual.label && visual.label.toLowerCase() !== (recognized.title ?? '').toLowerCase()) {
-      try {
-        const boosted = await searchExternal(
-          { ...visual.rec, issue_number: effectiveIssueNumber },
-          { includeEbay: true },
-        );
-        // Merge sem duplicar por id
-        const seen = new Set(externalCandidates.map((c) => c.id));
-        for (const c of boosted) {
-          if (!seen.has(c.id)) {
-            externalCandidates.push(c);
-            seen.add(c.id);
-          }
-        }
-        // Se a label do Google for muito mais descritiva, expoe pro user.
-        // No painel "IDENTIFIQUEI COMO" troca pra label do Google quando
-        // o VLM falhou em extrair algo util.
-        if (!recognized.title || recognized.title.length < visual.label.length) {
-          recognized = {
-            ...recognized,
-            title: visual.label,
-            // Se VLM nao tinha series mas Google retornou um topEntity util,
-            // herda. Senao mantem o que tinha.
-            series: recognized.series ?? visual.rec.series,
-          };
-          visualLabel = visual.label;
-          usedVisualSearch = true;
-        }
-      } catch (err) {
-        logger.warn('cover-scan: Google Vision boost failed', { err: (err as Error)?.message });
-      }
-    }
-  }
-
-  // Observabilidade: contagem por fonte (apos dedup contra catalogo).
-  // Permite detectar regressao silenciosa quando uma fonte para de retornar.
-  const sourceCounts = { metron: 0, rika: 0, amazon: 0, fandom: 0, ebay: 0, dedupedToLocal: 0 };
-  for (const c of externalCandidates) {
-    if (c.isExternal && c.externalSource) sourceCounts[c.externalSource]++;
-    else sourceCounts.dedupedToLocal++;
-  }
-  logger.info('cover-scan: recognize sources', {
-    title: recognized.title,
-    issueNumber: effectiveIssueNumber,
-    local: candidates.length,
-    visualSearch: usedVisualSearch,
-    visualLabel,
-    ...sourceCounts,
-  });
-
-  // Mesclar locais e externos. Externos que casaram com catalogo viraram
-  // candidatos locais via dedupExternal — entao MESMO id pode aparecer 2x
-  // (uma vinda do search textual local, outra promovida do externo).
-  // Dedup pelo id, mantendo a primeira ocorrencia (que vem do search local
-  // com score real do textual matching, ignorando o 1.0 fixo do dedup).
-  const seenIds = new Set<string>();
-  const merged: CoverScanCandidate[] = [];
-  for (const c of [...candidates, ...externalCandidates].sort((a, b) => b.score - a.score)) {
-    if (seenIds.has(c.id)) continue;
-    seenIds.add(c.id);
-    merged.push(c);
-  }
-
-  // 4. Persistir log
+  // Persistir log vazio (busca virá em /search)
   const log = await prisma.coverScanLog.create({
     data: {
       userId,
       rawText: recognized.raw_response.slice(0, 5000),
-      ocrTokens: `[must] ${must.join(' ')} [boost] ${boost.join(' ')}`.slice(0, 5000),
+      ocrTokens: (recognized.ocr_text ?? '').slice(0, 5000),
       candidateNumber: effectiveIssueNumber,
-      candidatesShown: merged.map((c) => ({
-        id: c.id,
-        title: c.title,
-        score: c.score,
-        isExternal: c.isExternal ?? false,
-      })),
+      candidatesShown: [],
+      searchAttempts: 0,
       durationMs: input.durationMs ?? null,
     },
     select: { id: true },
   });
 
+  logger.info('cover-scan: recognize (extract only)', {
+    title: recognized.title,
+    issueNumber: effectiveIssueNumber,
+    visualSearch: usedVisualSearch,
+    scanLogId: log.id,
+  });
+
   return {
-    candidates: merged,
     scanLogId: log.id,
     identified: {
       title: recognized.title,
       issueNumber: effectiveIssueNumber,
       publisher: recognized.publisher,
       series: recognized.series,
+      ocrText: recognized.ocr_text ?? '',
       confidence: recognized.confidence,
-      dominantColors: recognized.dominant_colors,
+      dominantColors: recognized.dominant_colors ?? [],
     },
   };
 }
