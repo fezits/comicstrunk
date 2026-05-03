@@ -51,3 +51,9 @@ pnpm-debug.log*
 
 # PM2 start configs com credenciais de producao
 start-prod-*.json
+
+# Mailpit binary (downloaded locally, not committed)
+scripts/dev/mailpit.exe
+scripts/dev/mailpit-windows-amd64.zip
+scripts/dev/LICENSE
+scripts/dev/README.md
