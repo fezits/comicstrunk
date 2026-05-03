@@ -284,10 +284,34 @@ export async function getItems(userId: string, filters: CollectionSearchInput & 
 
   const where: Prisma.CollectionItemWhereInput = { userId };
 
+  // Build catalogEntry relation filter (query + seriesId combined)
+  // Multi-token search mirrors searchCatalog: split by whitespace, AND the
+  // words, each word matching title OR publisher.
+  const catalogEntryFilter: Prisma.CatalogEntryWhereInput = {};
+
   if (query) {
-    where.catalogEntry = {
-      title: { contains: query },
-    };
+    const words = query.trim().split(/\s+/).filter((w) => w.length > 0);
+    if (words.length === 1) {
+      catalogEntryFilter.OR = [
+        { title: { contains: words[0] } },
+        { publisher: { contains: words[0] } },
+      ];
+    } else if (words.length > 1) {
+      catalogEntryFilter.AND = words.map((word) => ({
+        OR: [
+          { title: { contains: word } },
+          { publisher: { contains: word } },
+        ],
+      }));
+    }
+  }
+
+  if (seriesId) {
+    catalogEntryFilter.seriesId = seriesId;
+  }
+
+  if (Object.keys(catalogEntryFilter).length > 0) {
+    where.catalogEntry = catalogEntryFilter;
   }
 
   if (condition) {
@@ -300,13 +324,6 @@ export async function getItems(userId: string, filters: CollectionSearchInput & 
 
   if (isForSale !== undefined) {
     where.isForSale = isForSale;
-  }
-
-  if (seriesId) {
-    where.catalogEntry = {
-      ...((where.catalogEntry as Prisma.CatalogEntryWhereInput) ?? {}),
-      seriesId,
-    };
   }
 
   // Duplicates filter: items where this user has the same catalog entry
