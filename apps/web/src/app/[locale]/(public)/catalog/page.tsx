@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -8,12 +8,10 @@ import {
   ArrowUpDown,
   ChevronUp,
   Filter,
-  Search,
   X,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { ViewToggle, type ViewMode } from '@/components/ui/view-toggle';
@@ -23,6 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { SearchBar } from '@/components/ui/search-bar';
 import { CatalogCard } from '@/components/features/catalog/catalog-card';
 import { CatalogCardCompact } from '@/components/features/catalog/catalog-card-compact';
 import { CatalogListItem } from '@/components/features/catalog/catalog-list-item';
@@ -36,7 +35,6 @@ import {
 import { getCategories, getCharacters, type Category, type Character } from '@/lib/api/taxonomy';
 import { getSeries, type Series } from '@/lib/api/series';
 import { getOwnedIds } from '@/lib/api/collection';
-import { useIsMobile } from '@/hooks/use-is-mobile';
 import { useAuth } from '@/lib/auth/use-auth';
 import { PageSizeSelect } from '@/components/ui/page-size-select';
 
@@ -108,8 +106,6 @@ export default function CatalogPage() {
 
   const filters = parseFiltersFromParams(searchParams);
   const [searchInput, setSearchInput] = useState(filters.title ?? '');
-  const isMobile = useIsMobile();
-  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Sync local input when URL changes externally
   useEffect(() => {
@@ -172,17 +168,9 @@ export default function CatalogPage() {
     handleFiltersChange({ ...filters, page });
   };
 
-  const submitSearch = (value?: string) => {
-    const v = (value ?? searchInput).trim();
+  const submitSearch = (value: string) => {
+    const v = value.trim();
     handleFiltersChange({ ...filters, title: v || undefined, page: 1 });
-  };
-
-  const handleSearchInputChange = (value: string) => {
-    setSearchInput(value);
-    if (isMobile) return; // mobile: wait for Enter/blur
-    // desktop: debounce 400ms
-    if (searchTimer.current) clearTimeout(searchTimer.current);
-    searchTimer.current = setTimeout(() => submitSearch(value), 400);
   };
 
   const handleSortChange = (sortBy: CatalogSearchParams['sortBy']) => {
@@ -332,17 +320,13 @@ export default function CatalogPage() {
         </DropdownMenu>
 
         {/* Search bar */}
-        <div className="relative flex-1 max-w-lg">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder={t('searchPlaceholder')}
-            value={searchInput}
-            onChange={(e) => handleSearchInputChange(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') submitSearch(); }}
-            onBlur={() => isMobile && submitSearch()}
-            className="pl-9 h-10 focus-visible:ring-2 focus-visible:ring-primary"
-          />
-        </div>
+        <SearchBar
+          value={searchInput}
+          onChange={setSearchInput}
+          onSubmit={submitSearch}
+          placeholder={t('searchPlaceholder')}
+          className="flex-1 max-w-lg"
+        />
       </div>
 
       {/* Collapsible filter panel — desktop */}

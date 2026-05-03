@@ -1,11 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useIsMobile } from '@/hooks/use-is-mobile';
+import { useCallback, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Filter, X } from 'lucide-react';
 
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -54,13 +52,6 @@ function FilterSection({
 
 export function CollectionFilters({ filters, onFiltersChange }: CollectionFiltersProps) {
   const t = useTranslations('collection');
-  const [searchInput, setSearchInput] = useState(filters.query ?? '');
-  const isMobile = useIsMobile();
-  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    setSearchInput(filters.query ?? '');
-  }, [filters.query]);
 
   const update = useCallback(
     (partial: Partial<CollectionSearchParams>) => {
@@ -68,18 +59,6 @@ export function CollectionFilters({ filters, onFiltersChange }: CollectionFilter
     },
     [filters, onFiltersChange],
   );
-
-  const submitSearch = (value?: string) => {
-    const v = (value ?? searchInput).trim();
-    update({ query: v || undefined });
-  };
-
-  const handleSearchInputChange = (value: string) => {
-    setSearchInput(value);
-    if (isMobile) return;
-    if (searchTimer.current) clearTimeout(searchTimer.current);
-    searchTimer.current = setTimeout(() => submitSearch(value), 300);
-  };
 
   const clearAll = () => {
     onFiltersChange({ page: 1, limit: filters.limit });
@@ -107,18 +86,6 @@ export function CollectionFilters({ filters, onFiltersChange }: CollectionFilter
           </Button>
         )}
       </div>
-
-      {/* Search */}
-      <FilterSection title={t('searchPlaceholder')}>
-        <Input
-          placeholder={t('searchPlaceholder')}
-          value={searchInput}
-          onChange={(e) => handleSearchInputChange(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') submitSearch(); }}
-          onBlur={() => isMobile && submitSearch()}
-          className="h-8 text-sm"
-        />
-      </FilterSection>
 
       {/* Condition */}
       <FilterSection title={t('conditionLabel')}>
