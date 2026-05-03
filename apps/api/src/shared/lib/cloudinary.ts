@@ -8,31 +8,71 @@ import { logger } from './logger';
 const VALID_IMAGE_FORMATS = new Set(['jpeg', 'png', 'webp', 'gif']);
 
 /**
- * Validacao da imagem via sharp. Carregamento lazy do sharp porque o binario
- * nativo prebuilt requer Node >=20.3 e o servidor de producao roda 20.1 — top-
- * level import crashava o boot. Lazy: se sharp nao carregar, falhamos a
- * validacao (fail-secure — buffer suspeito nao vai pro R2) sem derrubar a API.
+ * Detect image format from the first bytes of the buffer (magic bytes).
+ * Pure JS, no native deps — works even when sharp's prebuilt binary is
+ * incompatible with the Node version (the case in our cPanel host where
+ * Node 20.1.0 is locked but recent sharp builds require Node 20.3+).
+ *
+ * Returns the format string ('jpeg' | 'png' | 'webp' | 'gif') or null
+ * if the bytes don't match any supported image format.
  */
-type SharpFn = (buf: Buffer) => { metadata(): Promise<{ format?: string }> };
+function detectImageFormat(buffer: Buffer): string | null {
+  if (buffer.length < 12) return null;
+
+  // PNG: 89 50 4E 47 0D 0A 1A 0A
+  if (
+    buffer[0] === 0x89 &&
+    buffer[1] === 0x50 &&
+    buffer[2] === 0x4e &&
+    buffer[3] === 0x47 &&
+    buffer[4] === 0x0d &&
+    buffer[5] === 0x0a &&
+    buffer[6] === 0x1a &&
+    buffer[7] === 0x0a
+  ) {
+    return 'png';
+  }
+
+  // JPEG: FF D8 FF
+  if (buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) {
+    return 'jpeg';
+  }
+
+  // GIF: "GIF87a" or "GIF89a"
+  if (
+    buffer[0] === 0x47 &&
+    buffer[1] === 0x49 &&
+    buffer[2] === 0x46 &&
+    buffer[3] === 0x38 &&
+    (buffer[4] === 0x37 || buffer[4] === 0x39) &&
+    buffer[5] === 0x61
+  ) {
+    return 'gif';
+  }
+
+  // WebP: "RIFF" .... "WEBP"
+  if (
+    buffer[0] === 0x52 &&
+    buffer[1] === 0x49 &&
+    buffer[2] === 0x46 &&
+    buffer[3] === 0x46 &&
+    buffer[8] === 0x57 &&
+    buffer[9] === 0x45 &&
+    buffer[10] === 0x42 &&
+    buffer[11] === 0x50
+  ) {
+    return 'webp';
+  }
+
+  return null;
+}
 
 async function validateImageBuffer(buffer: Buffer): Promise<void> {
-  let sharpFn: SharpFn;
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    sharpFn = require('sharp');
-  } catch (err) {
+  const format = detectImageFormat(buffer);
+  if (!format || !VALID_IMAGE_FORMATS.has(format)) {
     throw new Error(
-      `uploadImage: buffer is not a valid image — sharp unavailable (${(err as Error).message})`,
+      `uploadImage: buffer is not a valid image (detected format: ${format ?? 'unknown'})`,
     );
-  }
-  let metadata: { format?: string };
-  try {
-    metadata = await sharpFn(buffer).metadata();
-  } catch (err) {
-    throw new Error(`uploadImage: buffer is not a valid image (${(err as Error).message})`);
-  }
-  if (!metadata.format || !VALID_IMAGE_FORMATS.has(metadata.format)) {
-    throw new Error(`uploadImage: unsupported image format: ${metadata.format ?? 'unknown'}`);
   }
 }
 
