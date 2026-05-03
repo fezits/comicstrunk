@@ -202,6 +202,8 @@ User uploads a comic cover photo, system identifies it via VLM and finds candida
 - **Rika** (`rika.com.br`) — VTEX scraping, no auth. Throttled 200ms between requests, identified User-Agent.
 - ~~ComicVine~~ — non-commercial ToS, NEVER use in production.
 
+**Visual fallback (capa sem texto legível):** quando o usuário marca o checkbox "Capa sem texto visível ou difícil de ler" no `/scan-capa`, o backend pula o VLM e chama Google Cloud Vision Web Detection (`shared/lib/google-vision.ts`). A env `GOOGLE_VISION_API_KEY` é **obrigatória** para esse caminho — sem ela, `/cover-scan/recognize` com `forceVisualSearch=true` retorna 400 "Não foi possível identificar este gibi pela imagem". Quota free: 1000 chamadas/mês. **NUNCA remover essa env em deploys.**
+
 **Cost (measured):** ~R$ 0,00075 per scan (Llama 3.2 Vision tokens). Volume B (15k/month) ≈ R$ 11/mês. Cloudflare free tier (10k neurons/day) covers most. Metron + Rika gratuitos.
 
 **Constants:**
@@ -233,6 +235,7 @@ Documented in `apps/api/.env.example`. Key vars:
 - **Cloudflare Workers AI (cover scanner):** `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` (permission `Workers AI: Read+Edit`), `CLOUDFLARE_AI_MODEL` (default `@cf/meta/llama-3.2-11b-vision-instruct`)
 - **Cover scan rate limit:** `COVER_SCAN_DAILY_LIMIT` (default 30 per user per 24h)
 - **MetronDB (cover-scan external source):** `METRON_USERNAME`, `METRON_PASSWORD` (HTTP Basic Auth, free signup at `metron.cloud`)
+- **Google Cloud Vision (cover-scan visual fallback):** `GOOGLE_VISION_API_KEY` — usada quando usuário marca "Capa sem texto visível". 1000 req/mês free. **NUNCA remover em deploys.**
 - **Stripe (subscriptions):** `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
 - **PIX payments:** `MERCADOPAGO_ACCESS_TOKEN` (optional fallback), `PIX_KEY`, `MERCHANT_NAME`, `MERCHANT_CITY`
 - **Email:** `RESEND_API_KEY`

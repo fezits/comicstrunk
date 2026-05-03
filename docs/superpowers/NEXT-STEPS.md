@@ -6,12 +6,18 @@ Lista curada das frentes maiores que estão **planejadas ou pendentes**, com lin
 
 ## Em design (spec criado, aguardando aprovação ou implementação)
 
-### Dedup do catálogo: persistir decisões via sourceKey + bloquear reimport
+### scan-capa: edição de texto antes da busca
 
-- **Status:** Spec criado em 2026-04-30, escopo finalizado após brainstorming. Aguardando aprovação para implementação.
+- **Status:** Spec aprovado por Fernando em 2026-05-02. Aguardando plano de implementação via `writing-plans`.
+- **Spec:** [`specs/2026-05-02-scan-capa-edit-before-search-design.md`](specs/2026-05-02-scan-capa-edit-before-search-design.md)
+- **TL;DR:** Quebrar `/cover-scan/recognize` em duas etapas — extração (VLM) → edição → busca. Usuário pode corrigir os 5 campos do VLM (`title`, `issueNumber`, `publisher`, `series`, `ocrText`) e adicionar termos extras antes de buscar. Buscas iterativas (não chama VLM de novo). Cada busca re-pinga Metron + Rika. Migration aditiva em `cover_scan_logs` (`search_attempts INT`).
+- **Próximo passo:** plano de implementação detalhado via `writing-plans` (TDD strict).
+
+### Dedup do catálogo: persistir decisões via sourceKey + bloquear reimport — IMPLEMENTADO (em soak)
+
+- **Status:** Implementado e deployado em 2026-05-02. Em soak period — aguardando 2-3 dias para confirmar que cron das 4h não trouxe duplicatas dispensadas de volta. Após soak: drop `dismissed_duplicates_legacy` (Fernando autoriza).
 - **Spec:** [`specs/2026-04-30-dedup-source-key-persist-design.md`](specs/2026-04-30-dedup-source-key-persist-design.md)
-- **TL;DR:** Resolve o problema do painel `/admin/duplicates` perder decisões de "manter ambos" e o cron das 4h reimportar entradas deletadas. Trocar base de decisões de `id` (volátil) para `source_key` (estável); criar tabela mínima `removed_source_keys` (uma coluna) consultada pelo cron; espelhar filtro nos dois modos (pattern + title).
-- **Próximo passo:** plano de implementação detalhado via `writing-plans`. Pré-requisito: rodar `SHOW CREATE TABLE dismissed_duplicates` em prod para confirmar schema atual.
+- **TL;DR:** Mudou persistência das decisões de `/admin/duplicates` de id (volátil) para sourceKey (estável). Adicionou `removed_source_keys` (blacklist) consultada por sync-catalog e cover-import.
 
 ### 🌎 Internacionalização — inglês + USD + afiliados US
 

@@ -87,11 +87,25 @@ interface RawAnnotateResponse {
  * problema (sem chave, quota, rede, captcha) — chamador deve assumir
  * fail open e seguir sem essa info.
  */
+let warnedMissingKey = false;
+
 export async function detectWebForImage(
   imageBase64: string,
 ): Promise<GoogleVisionWebDetection | null> {
   const apiKey = process.env.GOOGLE_VISION_API_KEY;
-  if (!apiKey) return null;
+  if (!apiKey) {
+    // Fail-open silencioso ja queimou prod uma vez (2026-05-03): a env
+    // sumiu de start.json em deploy e ninguem percebeu ate o usuario
+    // marcar "Capa sem texto visivel" e tomar 400 generico. Loga um
+    // warning na primeira chamada de cada boot pra deixar rastro nos logs.
+    if (!warnedMissingKey) {
+      logger.warn(
+        'GOOGLE_VISION_API_KEY ausente — scan-capa visual fallback (forceVisualSearch) vai retornar 400. Adicionar em start.json (prod) ou .env (local).',
+      );
+      warnedMissingKey = true;
+    }
+    return null;
+  }
 
   const cacheKey = cacheKeyForImage(imageBase64);
   const cached = cacheGet(cacheKey);
