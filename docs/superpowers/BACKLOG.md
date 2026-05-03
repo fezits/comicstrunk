@@ -8,14 +8,21 @@ Lista de itens que Fernando levantou em sessões mas que ainda não viraram spec
 
 ## 🐞 Bugs
 
-- **2026-05-03** — `Filtro duplicados com defeito` em `/admin/duplicates` ou `/collection?duplicates=true` (escopo pendente — investigar qual). Origem: sessão noturna 2026-05-02.
-- **2026-05-03** — `Erro ao suspender usuário` no admin. Reproduzir, capturar stack trace, fix. Origem: sessão noturna 2026-05-02.
+- **2026-05-03** — ~~`Filtro duplicados com defeito` em `/collection?duplicates=true`~~ — **FIXADO em 2026-05-03**, branch `fix/duplicates-filter-url-persistence`, [PR commit](../../apps/web/src/app/[locale]/(collector)/collection/page.tsx). Causa raiz: `parseFiltersFromParams`/`filtersToParams` na página da coleção ignoravam o campo `duplicates`, então o checkbox era um botão fantasma. Fix: adicionar serialização/parse pra `duplicates=true`. Cobertura: regressão local + smoke prod com Playwright.
+- **2026-05-03** — ~~`Erro ao suspender usuário` no admin~~ — **DIAGNOSTICADO em 2026-05-03**. NÃO é erro de runtime — API responde 200 OK. O bug é que a feature de suspensão é **semi-falsa**: o model `User` em [`schema.prisma`](../../apps/api/prisma/schema.prisma) NÃO tem coluna `suspended`. A função [`suspendUser`](../../apps/api/src/modules/admin/admin.service.ts) só (a) muda `role` pra USER e (b) cancela assinaturas ativas. Quando admin "suspende" um usuário que já é USER, é literalmente no-op no banco — nada bloqueia login do "suspenso". O response inclui `suspended: true` hardcoded, mas é mentira. **Fix de verdade requer:**
+  1. Migration: `ALTER TABLE users ADD COLUMN suspended BOOLEAN NOT NULL DEFAULT 0` + `suspended_at DATETIME NULL` + `suspension_reason TEXT NULL`.
+  2. `suspendUser`/`unsuspendUser` setam o flag.
+  3. Middleware de auth (`authenticate.ts`) bloqueia request quando `user.suspended === true` → 403.
+  4. Auth/refresh routes: revogar todos refresh tokens do usuário suspenso.
+  5. Admin UI: badge "Suspenso" no header da página do usuário, banner no detalhe. Botão "Suspender" some / "Remover suspensão" aparece quando suspenso.
+  6. Login: bloquear usuário suspenso com mensagem dedicada.
+  Escopo: ~3-4h de implementação + spec + plano. Aguarda priorização.
 
 ## ✨ Features
 
 - **2026-05-03** — **Validação para colocar gibi à venda**: usuário só pode marcar item como "à venda" se tiver dados bancários cadastrados. Verificar `seller`/`banking` modules. Origem: sessão noturna 2026-05-02.
 - **2026-05-03** — **Campo PIX nos dados bancários**: além de banco/agência/conta, aceitar chave PIX. Migration + UI + validação. Origem: sessão noturna 2026-05-02.
-- **2026-05-03** — **Scan-capa: adicionar mais campos editáveis**: ano de publicação, autor, mais detalhes que o usuário pode adicionar antes da busca por IA. **Extensão do spec [`2026-05-02-scan-capa-edit-before-search-design.md`](specs/2026-05-02-scan-capa-edit-before-search-design.md)** — incluir `year` e outros campos. Atualizar spec antes de implementar. Origem: sessão noturna 2026-05-02.
+- ~~**Scan-capa: adicionar mais campos editáveis (ano etc.)**~~ — **DESPRIORIZADO** em 2026-05-03 por Fernando ("esquece o scan, não precisa fazer"). Spec [`2026-05-02-scan-capa-edit-before-search-design.md`](specs/2026-05-02-scan-capa-edit-before-search-design.md) e plano [`2026-05-02-scan-capa-edit-before-search.md`](plans/2026-05-02-scan-capa-edit-before-search.md) ficam parados. Não retomar sem confirmação explícita.
 
 ## 🎨 UX / pequenas correções
 
@@ -29,7 +36,7 @@ Lista de itens que Fernando levantou em sessões mas que ainda não viraram spec
 
 ## 🛠️ Operações / dados
 
-- **2026-05-03** — `Desmarcar todos lidos de abril/2026 como não lidos` na coleção do Fernando. **PRECISA CONFIRMAÇÃO antes de executar** (operação destrutiva em dados de prod). Sugestão: gerar uma lista candidata via SQL (`SELECT ... FROM collection_items WHERE user_id=? AND is_read=true AND read_at BETWEEN '2026-04-01' AND '2026-04-30'`), apresentar pro Fernando, e só depois aplicar. Origem: sessão noturna 2026-05-02.
+- **2026-05-03** — **Operação admin: desmarcar como não lidos os itens marcados como lidos em abril/2026**. Esclarecido por Fernando 2026-05-03: a operação é **via admin** (Fernando agindo como admin sobre a própria coleção dele). Plano: (1) gerar via SQL a lista de candidatos `SELECT ci.id, ce.title, ci.read_at FROM collection_items ci JOIN catalog_entries ce ON ce.id = ci.catalog_entry_id WHERE ci.user_id = ? AND ci.is_read = 1 AND ci.read_at BETWEEN '2026-04-01' AND '2026-04-30 23:59:59' ORDER BY ci.read_at`, (2) apresentar a lista pro Fernando confirmar que reconhece, (3) só então `UPDATE collection_items SET is_read = 0, read_at = NULL WHERE id IN (...)`. **PRECISA CONFIRMAÇÃO da lista antes de executar** (destrutivo em dados de prod). Origem: sessão noturna 2026-05-02 + esclarecimento 2026-05-03.
 
 ---
 
