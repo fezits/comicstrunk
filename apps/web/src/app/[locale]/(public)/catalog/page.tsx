@@ -239,11 +239,9 @@ export default function CatalogPage() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
-        {pagination && !loading && (
-          <p className="text-sm text-muted-foreground mt-1">
-            {pagination.total} {t('comics')}
-          </p>
-        )}
+        <p className="text-sm text-muted-foreground mt-1">
+          {pagination ? `${pagination.total} ${t('comics')}` : ' '}
+        </p>
       </div>
 
       {/* Toolbar row 1: view toggle + count | filter button */}
@@ -252,11 +250,9 @@ export default function CatalogPage() {
           {/* View switcher */}
           <ViewToggle value={view} onChange={setView} />
 
-          {pagination && !loading && (
-            <span className="text-sm text-muted-foreground">
-              {pagination.total} {t('comics')}
-            </span>
-          )}
+          <span className="text-sm text-muted-foreground">
+            {pagination ? `${pagination.total} ${t('comics')}` : ' '}
+          </span>
 
           <PageSizeSelect
             value={filters.limit || DEFAULT_LIMIT}
