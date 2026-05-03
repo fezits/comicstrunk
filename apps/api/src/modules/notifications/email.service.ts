@@ -1,5 +1,5 @@
 import { NotificationType } from '@prisma/client';
-import { resend, isResendConfigured, RESEND_FROM_EMAIL } from '../../shared/lib/resend';
+import { sendMail } from '../../shared/lib/mail-transport';
 import { isNotificationEnabled } from './notifications.service';
 import { welcomeEmailTemplate } from '../../shared/email-templates/welcome';
 import { paymentConfirmedEmailTemplate } from '../../shared/email-templates/payment-confirmed';
@@ -12,23 +12,19 @@ import { disputeResolvedEmailTemplate } from '../../shared/email-templates/dispu
 // === Internal helper: send a single email ===
 
 async function sendEmail(to: string, subject: string, html: string): Promise<void> {
-  if (!isResendConfigured() || !resend) {
-    console.warn(
-      `[EMAIL] DESABILITADO — RESEND_API_KEY não configurada. Email "${subject}" para ${to} NÃO foi enviado. Configure RESEND_API_KEY no cPanel para ativar.`,
+  const result = await sendMail({ to, subject, html });
+  if (result.ok) {
+    console.log(
+      `[EMAIL] Enviado via ${result.transport} "${subject}" -> ${to} (id=${result.id ?? 'unknown'})`,
     );
-    return;
-  }
-
-  try {
-    const result = await resend.emails.send({
-      from: RESEND_FROM_EMAIL,
-      to,
-      subject,
-      html,
-    });
-    console.log(`[EMAIL] Enviado "${subject}" -> ${to} (id=${result.data?.id ?? 'unknown'})`);
-  } catch (error) {
-    console.error(`[EMAIL] Falha ao enviar "${subject}" -> ${to}:`, error);
+  } else if (result.transport === 'none') {
+    console.warn(
+      `[EMAIL] DESABILITADO — ${result.reason}. Email "${subject}" para ${to} NÃO foi enviado.`,
+    );
+  } else {
+    console.error(
+      `[EMAIL] Falha via ${result.transport} ao enviar "${subject}" -> ${to}: ${result.reason}`,
+    );
   }
 }
 
