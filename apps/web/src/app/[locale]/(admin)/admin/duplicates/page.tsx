@@ -12,7 +12,7 @@ interface DuplicateEntry {
   id: string;
   title: string;
   publisher: string;
-  sourceKey: string;
+  dedupKey: string;
   coverImageUrl: string | null;
 }
 
@@ -226,7 +226,7 @@ export default function AdminDuplicatesPage() {
                       <p className="text-xs font-semibold text-blue-500">GCD</p>
                       <p className="text-sm font-medium line-clamp-2" title={pair.gcd.title}>{pair.gcd.title}</p>
                       <p className="text-xs text-muted-foreground">{pair.gcd.publisher}</p>
-                      <p className="text-[10px] text-muted-foreground/70">{pair.gcd.sourceKey}</p>
+                      <p className="text-[10px] text-muted-foreground/70">{pair.gcd.dedupKey}</p>
                       <Button
                         variant="destructive"
                         size="sm"
@@ -264,7 +264,7 @@ export default function AdminDuplicatesPage() {
                       <p className="text-xs font-semibold text-amber-500">Rika/Panini</p>
                       <p className="text-sm font-medium line-clamp-2" title={pair.rika.title}>{pair.rika.title}</p>
                       <p className="text-xs text-muted-foreground">{pair.rika.publisher}</p>
-                      <p className="text-[10px] text-muted-foreground/70">{pair.rika.sourceKey}</p>
+                      <p className="text-[10px] text-muted-foreground/70">{pair.rika.dedupKey}</p>
                       <Button
                         variant="destructive"
                         size="sm"
@@ -289,8 +289,8 @@ export default function AdminDuplicatesPage() {
                   onClick={async () => {
                     try {
                       await apiClient.post('/admin/duplicates/dismiss', {
-                        sourceKeyA: pair.gcd.sourceKey,
-                        sourceKeyB: pair.rika.sourceKey,
+                        sourceKeyA: pair.gcd.dedupKey,
+                        sourceKeyB: pair.rika.dedupKey,
                       });
                       setPairs((prev) => prev.filter((_, i) => i !== idx));
                       setTotal((t) => t - 1);
