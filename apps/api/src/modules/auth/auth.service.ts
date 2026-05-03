@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '../../shared/lib/prisma';
 import { signAccessToken, signRefreshToken, verifyRefreshToken, hashToken } from '../../shared/lib/jwt';
 import { logger } from '../../shared/lib/logger';
-import { BadRequestError, ConflictError, UnauthorizedError } from '../../shared/utils/api-error';
+import { BadRequestError, ConflictError, ForbiddenError, UnauthorizedError } from '../../shared/utils/api-error';
 import type { SignupInput, LoginInput, AuthUser } from '@comicstrunk/contracts';
 import { createNotification } from '../notifications/notifications.service';
 import { sendWelcomeEmail, sendPasswordResetEmail } from '../notifications/email.service';
@@ -103,6 +103,11 @@ export async function login(input: LoginInput) {
     throw new UnauthorizedError('Invalid credentials');
   }
 
+  // Block suspended users at login
+  if (user.suspended) {
+    throw new ForbiddenError('Conta suspensa. Entre em contato com o suporte.');
+  }
+
   // Generate new token family
   const tokenFamily = crypto.randomUUID();
 
@@ -172,11 +177,21 @@ export async function refreshTokens(oldRefreshToken: string) {
   // Get user data for token signing and response
   const user = await prisma.user.findUnique({
     where: { id: payload.userId },
-    select: { id: true, name: true, email: true, role: true },
+    select: { id: true, name: true, email: true, role: true, suspended: true },
   });
 
   if (!user) {
     throw new UnauthorizedError('User not found');
+  }
+
+  if (user.suspended) {
+    // Belt-and-suspenders: refresh tokens are revoked when admin suspends, so
+    // we should not reach here. If we do, refuse and revoke any remaining tokens.
+    await prisma.refreshToken.updateMany({
+      where: { userId: user.id, revoked: false },
+      data: { revoked: true },
+    });
+    throw new ForbiddenError('Conta suspensa. Entre em contato com o suporte.');
   }
 
   // Sign new tokens (same token family for rotation)

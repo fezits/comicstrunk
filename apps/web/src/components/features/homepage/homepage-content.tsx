@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
-import { BookOpen, Tag, Search, TrendingUp, Library, ArrowRight } from 'lucide-react';
+import { BookOpen, Tag, Search, TrendingUp, Library, ArrowRight, Store } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { CoverImage } from '@/components/ui/cover-image';
@@ -17,6 +17,8 @@ import { useAuth } from '@/lib/auth/use-auth';
 
 function HeroSection() {
   const locale = useLocale();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
 
   return (
     <section className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/20 via-background to-primary/5 border border-border/50">
@@ -45,19 +47,52 @@ function HeroSection() {
               Explorar Catalogo
             </Link>
           </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            className="gap-2 cursor-not-allowed opacity-60"
-            disabled
-            title="Em breve"
-          >
-            <Tag className="h-4 w-4" />
-            Ver Ofertas
-            <span className="ml-1 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider">
-              Em breve
-            </span>
-          </Button>
+
+          {isAdmin ? (
+            <Button asChild variant="outline" size="lg" className="gap-2">
+              <Link href={`/${locale}/deals`}>
+                <Tag className="h-4 w-4" />
+                Ver Ofertas
+              </Link>
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="lg"
+              className="gap-2 cursor-not-allowed opacity-60"
+              disabled
+              title="Em breve"
+            >
+              <Tag className="h-4 w-4" />
+              Ver Ofertas
+              <span className="ml-1 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider">
+                Em breve
+              </span>
+            </Button>
+          )}
+
+          {isAdmin ? (
+            <Button asChild variant="outline" size="lg" className="gap-2">
+              <Link href={`/${locale}/marketplace`}>
+                <Store className="h-4 w-4" />
+                Marketplace
+              </Link>
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="lg"
+              className="gap-2 cursor-not-allowed opacity-60"
+              disabled
+              title="Em breve"
+            >
+              <Store className="h-4 w-4" />
+              Marketplace
+              <span className="ml-1 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider">
+                Em breve
+              </span>
+            </Button>
+          )}
         </div>
       </div>
     </section>

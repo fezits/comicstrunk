@@ -261,7 +261,14 @@ export function AdminUserManagement() {
                       {user.email}
                     </TableCell>
                     <TableCell>
-                      <RoleBadge role={user.role} />
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <RoleBadge role={user.role} />
+                        {user.suspended && (
+                          <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
+                            Suspenso
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
                       {formatDate(user.createdAt)}
@@ -278,11 +285,12 @@ export function AdminUserManagement() {
                           size="sm"
                           className="h-8 w-8 p-0"
                           onClick={() => openRoleDialog(user)}
-                          title="Alterar cargo"
+                          title={user.suspended ? 'Remova a suspensao para alterar o cargo' : 'Alterar cargo'}
+                          disabled={user.suspended}
                         >
                           <Shield className="h-3.5 w-3.5" />
                         </Button>
-                        {user.role !== 'ADMIN' && (
+                        {user.role !== 'ADMIN' && !user.suspended && (
                           <Button
                             variant="ghost"
                             size="sm"
@@ -293,7 +301,7 @@ export function AdminUserManagement() {
                             <UserX className="h-3.5 w-3.5" />
                           </Button>
                         )}
-                        {user.role === 'USER' && (
+                        {user.suspended && (
                           <Button
                             variant="ghost"
                             size="sm"

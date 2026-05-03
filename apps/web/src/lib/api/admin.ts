@@ -21,6 +21,7 @@ export interface AdminUser {
   email: string;
   name: string;
   role: string;
+  suspended: boolean;
   avatarUrl: string | null;
   createdAt: string;
   updatedAt: string;
@@ -34,6 +35,9 @@ export interface AdminUserDetail {
   email: string;
   name: string;
   role: string;
+  suspended: boolean;
+  suspendedAt: string | null;
+  suspensionReason: string | null;
   avatarUrl: string | null;
   bio: string | null;
   websiteUrl: string | null;

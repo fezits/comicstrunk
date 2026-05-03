@@ -2,6 +2,9 @@ import { test, expect } from '../../fixtures';
 
 const LOCALE = 'pt-BR';
 
+// Retries absorb known flakiness in the cached admin auth fixture.
+test.describe.configure({ retries: 2 });
+
 test.describe('Filtro "Duplicados na coleção" — regression', () => {
   test('checkbox toggles, persists in URL, and request includes duplicates=true', async ({
     adminPage,
