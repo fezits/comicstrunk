@@ -46,6 +46,7 @@ const DEFAULT_LIMIT = 20;
 function parseFiltersFromParams(sp: URLSearchParams): CollectionSearchParams {
   const isReadParam = sp.get('isRead');
   const isForSaleParam = sp.get('isForSale');
+  const duplicatesParam = sp.get('duplicates');
 
   return {
     query: sp.get('query') || undefined,
@@ -54,6 +55,7 @@ function parseFiltersFromParams(sp: URLSearchParams): CollectionSearchParams {
     isForSale:
       isForSaleParam === 'true' ? true : isForSaleParam === 'false' ? false : undefined,
     seriesId: sp.get('seriesId') || undefined,
+    duplicates: duplicatesParam === 'true' ? true : undefined,
     sortBy: (sp.get('sortBy') as CollectionSearchParams['sortBy']) || undefined,
     sortOrder: (sp.get('sortOrder') as 'asc' | 'desc') || undefined,
     page: sp.get('page') ? Number(sp.get('page')) : 1,
@@ -68,6 +70,7 @@ function filtersToParams(f: CollectionSearchParams): string {
   if (f.isRead !== undefined) p.set('isRead', String(f.isRead));
   if (f.isForSale !== undefined) p.set('isForSale', String(f.isForSale));
   if (f.seriesId) p.set('seriesId', f.seriesId);
+  if (f.duplicates) p.set('duplicates', 'true');
   if (f.sortBy && f.sortBy !== 'createdAt') p.set('sortBy', f.sortBy);
   if (f.sortOrder && f.sortOrder !== 'desc') p.set('sortOrder', f.sortOrder);
   if (f.page && f.page > 1) p.set('page', String(f.page));
