@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { Search } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Input } from '@/components/ui/input';
@@ -71,11 +71,22 @@ export function SearchBar({
     fireSubmit(value);
   };
 
+  const handleClear = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    onChange('');
+    fireSubmit('');
+  };
+
+  const hasValue = value.length > 0;
+
   return (
     <div className={cn('relative', className)}>
       <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       <Input
-        type="search"
+        type="text"
         placeholder={placeholder}
         value={value}
         onChange={(e) => handleChange(e.target.value)}
@@ -87,20 +98,34 @@ export function SearchBar({
         }}
         autoFocus={autoFocus}
         className={cn(
-          'h-10 pl-9 pr-10 focus-visible:ring-2 focus-visible:ring-primary',
+          'h-10 pl-9 pr-20 focus-visible:ring-2 focus-visible:ring-primary',
           inputClassName,
         )}
       />
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        aria-label={t('search')}
-        onClick={handleManualSubmit}
-        className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2 md:hidden"
-      >
-        <Search className="h-4 w-4" />
-      </Button>
+      <div className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center gap-1">
+        {hasValue && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label={t('clear')}
+            onClick={handleClear}
+            className="h-8 w-8"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        )}
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label={t('search')}
+          onClick={handleManualSubmit}
+          className="h-8 w-8 md:hidden"
+        >
+          <Search className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 }

@@ -1,4 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
+
+const PROD = 'https://comicstrunk.com';
+
 export default defineConfig({
   testDir: './tests',
   workers: 1,
@@ -14,5 +17,24 @@ export default defineConfig({
   },
   timeout: 60_000,
   expect: { timeout: 15_000 },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 720 } } }],
+  projects: [
+    {
+      name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1280, height: 720 },
+        contextOptions: {
+          storageState: {
+            cookies: [],
+            origins: [
+              {
+                origin: PROD,
+                localStorage: [{ name: 'cookieConsent', value: 'true' }],
+              },
+            ],
+          },
+        },
+      },
+    },
+  ],
 });

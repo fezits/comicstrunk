@@ -55,6 +55,27 @@ test.describe('SearchBar — unified search UX', () => {
       const isVisible = await lupaButton.isVisible();
       expect(isVisible).toBeFalsy();
     });
+
+    test('clear button (X) shows when value present, hidden when empty', async ({ page }) => {
+      await page.goto(`/${LOCALE}/catalog`);
+      await page.waitForLoadState('networkidle');
+
+      const searchInput = page.getByPlaceholder(/buscar quadrinhos/i);
+      const clearButton = page.getByRole('button', { name: 'Limpar', exact: true }).first();
+
+      // Initially empty: X not in DOM (or not visible)
+      expect(await page.locator('button[aria-label="Limpar"]').count()).toBe(0);
+
+      // Type something — X appears
+      await searchInput.fill('spi');
+      await expect(clearButton).toBeVisible();
+
+      // Click X — input clears AND URL clears
+      await clearButton.click();
+      await page.waitForTimeout(500);
+      expect(await searchInput.inputValue()).toBe('');
+      expect(page.url()).not.toContain('title=');
+    });
   });
 
   test.describe('Catalog — mobile (viewport 390x844)', () => {
