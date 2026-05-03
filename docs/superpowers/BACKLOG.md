@@ -26,8 +26,8 @@ Lista de itens que Fernando levantou em sessões mas que ainda não viraram spec
 
 ## 🎨 UX / pequenas correções
 
-- **2026-05-03** — `Não mostrar "Criar conta" na home quando usuário está logado`. Esconder/condicional no header e CTA. Origem: sessão noturna 2026-05-02.
-- **2026-05-03** — `Botão Ofertas/Deals na home como "em breve"` — provavelmente já tem badge mas precisa desabilitar click. Verificar. Origem: sessão noturna 2026-05-02.
+- **2026-05-03** — ~~`Não mostrar "Criar conta" na home quando usuário está logado`~~ — **FIXADO em 2026-05-03**, branch `fix/homepage-cta-and-deals-coming-soon`. `<CtaSection/>` agora condicionado a `!isAuthenticated`.
+- **2026-05-03** — ~~`Botão Ofertas/Deals na home como "em breve"`~~ — **FIXADO em 2026-05-03**, mesma branch. Botão "Ver Ofertas" do hero agora é `disabled` com badge "Em breve" inline.
 
 ## 📧 Email / notificações
 
