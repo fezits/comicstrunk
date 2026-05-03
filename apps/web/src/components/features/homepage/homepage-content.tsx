@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { HomepageSectionRenderer } from './homepage-section-renderer';
 import { getHomepageData, type HomepageSection } from '@/lib/api/homepage';
 import { searchCatalog } from '@/lib/api/catalog';
+import { useAuth } from '@/lib/auth/use-auth';
 
 function HeroSection() {
   const locale = useLocale();
@@ -44,11 +45,18 @@ function HeroSection() {
               Explorar Catalogo
             </Link>
           </Button>
-          <Button asChild variant="outline" size="lg" className="gap-2">
-            <Link href={`/${locale}/deals`}>
-              <Tag className="h-4 w-4" />
-              Ver Ofertas
-            </Link>
+          <Button
+            variant="outline"
+            size="lg"
+            className="gap-2 cursor-not-allowed opacity-60"
+            disabled
+            title="Em breve"
+          >
+            <Tag className="h-4 w-4" />
+            Ver Ofertas
+            <span className="ml-1 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider">
+              Em breve
+            </span>
           </Button>
         </div>
       </div>
@@ -253,6 +261,7 @@ function HomepageSkeleton() {
 export function HomepageContent() {
   const [sections, setSections] = useState<HomepageSection[]>([]);
   const [loading, setLoading] = useState(true);
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     let cancelled = false;
@@ -292,7 +301,7 @@ export function HomepageContent() {
     <div className="space-y-8 md:space-y-10">
       <HeroSection />
       <SearchStatsSection />
-      <CtaSection />
+      {!isAuthenticated && <CtaSection />}
 
       {/* Dynamic sections from API (excluding banner carousel) */}
       {filteredSections.length > 0 &&
