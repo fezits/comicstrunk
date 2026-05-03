@@ -52,6 +52,8 @@ export async function createBankAccount(userId: string, data: CreateBankAccountI
           holderName: data.holderName,
           accountType: data.accountType,
           isPrimary: true,
+          pixKey: data.pixKey ?? null,
+          pixKeyType: data.pixKeyType ?? null,
         },
       });
     });
@@ -67,6 +69,8 @@ export async function createBankAccount(userId: string, data: CreateBankAccountI
       holderName: data.holderName,
       accountType: data.accountType,
       isPrimary: false,
+      pixKey: data.pixKey ?? null,
+      pixKeyType: data.pixKeyType ?? null,
     },
   });
 }

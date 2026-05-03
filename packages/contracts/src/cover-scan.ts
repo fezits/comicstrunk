@@ -3,9 +3,13 @@ import { z } from 'zod';
 // === Request schema ===
 
 export const coverScanSearchSchema = z.object({
-  rawText: z.string().min(1, 'Texto OCR não pode ser vazio').max(5000),
-  ocrTokens: z.array(z.string().min(1).max(50)).min(1).max(50),
-  candidateNumber: z.number().int().positive().max(99999).optional(),
+  scanLogId: z.string().min(1, 'scanLogId é obrigatório'),
+  title: z.string().max(255).optional(),
+  issueNumber: z.number().int().nonnegative().max(99999).optional(),
+  publisher: z.string().max(100).optional(),
+  series: z.string().max(255).optional(),
+  ocrText: z.string().max(5000).optional(),
+  extraTerms: z.string().max(500).optional(),
   durationMs: z.number().int().nonnegative().max(600000).optional(),
 });
 export type CoverScanSearchInput = z.infer<typeof coverScanSearchSchema>;
@@ -27,19 +31,17 @@ export const coverScanCandidateSchema = z.object({
 export type CoverScanCandidate = z.infer<typeof coverScanCandidateSchema>;
 
 // Info de identificacao do VLM, exposta ao usuario para diagnostico ("Procurando por: X").
-// Os campos sao opcionais porque podem nao estar presentes em todos os scans (ex: VLM
-// nao identificou titulo), e a interface de busca textual da Fase 1 nao preenche.
-export const coverScanIdentifiedSchema = z
-  .object({
-    title: z.string().nullable().optional(),
-    issueNumber: z.number().int().nullable().optional(),
-    publisher: z.string().nullable().optional(),
-    series: z.string().nullable().optional(),
-    confidence: z.enum(['alta', 'media', 'baixa']).optional(),
-    /** Cores predominantes da capa em ingles, max 4 (ex: ["red","yellow","black"]). */
-    dominantColors: z.array(z.string()).optional(),
-  })
-  .optional();
+// Os campos textuais sao nullable (VLM pode nao detectar titulo etc.).
+export const coverScanIdentifiedSchema = z.object({
+  title: z.string().nullable(),
+  issueNumber: z.number().int().nullable(),
+  publisher: z.string().nullable(),
+  series: z.string().nullable(),
+  ocrText: z.string(),
+  confidence: z.enum(['alta', 'media', 'baixa']).nullable(),
+  /** Cores predominantes da capa em ingles, max 4 (ex: ["red","yellow","black"]). */
+  dominantColors: z.array(z.string()),
+});
 export type CoverScanIdentified = z.infer<typeof coverScanIdentifiedSchema>;
 
 export const coverScanSearchResponseSchema = z.object({
@@ -48,6 +50,12 @@ export const coverScanSearchResponseSchema = z.object({
   identified: coverScanIdentifiedSchema,
 });
 export type CoverScanSearchResponse = z.infer<typeof coverScanSearchResponseSchema>;
+
+export const coverScanRecognizeResponseSchema = z.object({
+  scanLogId: z.string(),
+  identified: coverScanIdentifiedSchema,
+});
+export type CoverScanRecognizeResponse = z.infer<typeof coverScanRecognizeResponseSchema>;
 
 // === Choose endpoint (informa qual candidato o usuário escolheu) ===
 
@@ -82,8 +90,6 @@ export const coverScanRecognizeSchema = z.object({
 });
 export type CoverScanRecognizeInput = z.infer<typeof coverScanRecognizeSchema>;
 
-// Response reaproveita o mesmo formato do /search (candidatos + scanLogId)
-export type CoverScanRecognizeResponse = CoverScanSearchResponse;
 
 // === Import endpoint (Fase 3) — cria CatalogEntry PENDING a partir de candidato externo ===
 

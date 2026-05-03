@@ -31,8 +31,8 @@ Lista de itens que Fernando levantou em sessões mas que ainda não viraram spec
 
 ## 📧 Email / notificações
 
-- **2026-05-03** — `Verificar envio de e-mails das notificações`: confirmar quais eventos disparam email, se a fila/Resend está OK em prod, se templates estão certos. Origem: sessão noturna 2026-05-02.
-- **2026-05-03** — `Instalar recebedor de e-mails local para testar` (Mailhog ou Mailpit + SMTP local). Atualizar `apps/api` para apontar pra ele em `NODE_ENV=development`. Origem: sessão noturna 2026-05-02.
+- **2026-05-03** — 🚨 **CRÍTICO: emails estão DESABILITADOS em produção** — confirmado via tail do `stdout-2.log` e signup teste real (2026-05-03 11:25). API loga `[EMAIL] DESABILITADO — RESEND_API_KEY não configurada` para todo evento (welcome, password-reset, payment-confirmed, etc.). Nem `RESEND_API_KEY` nem `SMTP_HOST` estão em `start.json` ou `.env` do servidor. **Para resolver, Fernando precisa:** (1) criar API key em <https://resend.com/api-keys>, (2) adicionar `"RESEND_API_KEY": "re_xxx"` em `apps/api/start.json` no `env`, (3) `pm2 delete api.comicstrunk.com && pm2 start start.json` (não basta `restart` — env precisa recarregar). Não dá pra fazer sozinho — sem acesso à key.
+- **2026-05-03** — ~~`Instalar recebedor de e-mails local para testar`~~ — **FEITO em 2026-05-03**, branch `feat/mail-transport-mailpit-dev`. Mailpit em `scripts/dev/mailpit.exe`, abstração `mail-transport.ts` com `MAIL_TRANSPORT=smtp|resend`, doc em [`scripts/dev/MAILPIT.md`](../../scripts/dev/MAILPIT.md). Smoke verificou que welcome + password-reset chegam.
 
 ## 🛠️ Operações / dados
 

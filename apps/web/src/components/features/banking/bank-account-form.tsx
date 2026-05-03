@@ -18,15 +18,31 @@ import {
 } from '@/components/ui/select';
 import type { BankAccount, CreateBankAccountInput } from '@/lib/api/banking';
 
-const bankAccountFormSchema = z.object({
-  bankName: z.string().min(1, 'Campo obrigatorio').max(100),
-  branchNumber: z.string().min(1, 'Campo obrigatorio').max(20),
-  accountNumber: z.string().min(1, 'Campo obrigatorio').max(30),
-  cpf: z.string().regex(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/, 'CPF invalido'),
-  holderName: z.string().min(1, 'Campo obrigatorio').max(200),
-  accountType: z.enum(['CHECKING', 'SAVINGS']),
-  isPrimary: z.boolean(),
-});
+const bankAccountFormSchema = z
+  .object({
+    bankName: z.string().min(1, 'Campo obrigatorio').max(100),
+    branchNumber: z.string().min(1, 'Campo obrigatorio').max(20),
+    accountNumber: z.string().min(1, 'Campo obrigatorio').max(30),
+    cpf: z.string().regex(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/, 'CPF invalido'),
+    holderName: z.string().min(1, 'Campo obrigatorio').max(200),
+    accountType: z.enum(['CHECKING', 'SAVINGS']),
+    isPrimary: z.boolean(),
+    pixKey: z.string().max(80).optional().or(z.literal('')),
+    pixKeyType: z
+      .union([z.enum(['CPF', 'CNPJ', 'EMAIL', 'PHONE', 'RANDOM']), z.literal('')])
+      .optional(),
+  })
+  .refine(
+    (v) => {
+      const hasKey = !!v.pixKey && v.pixKey.trim() !== '';
+      const hasType = !!v.pixKeyType && v.pixKeyType !== ('' as string);
+      return hasKey === hasType;
+    },
+    {
+      message: 'Preencha chave PIX e tipo da chave juntos, ou deixe ambos em branco',
+      path: ['pixKey'],
+    },
+  );
 
 type BankAccountFormValues = z.infer<typeof bankAccountFormSchema>;
 
@@ -73,13 +89,17 @@ export function BankAccountForm({ account, onSubmit, onCancel }: BankAccountForm
       holderName: account?.holderName ?? '',
       accountType: account?.accountType ?? 'CHECKING',
       isPrimary: account?.isPrimary ?? false,
+      pixKey: account?.pixKey ?? '',
+      pixKeyType: (account?.pixKeyType as BankAccountFormValues['pixKeyType']) ?? '',
     },
   });
 
   const accountTypeValue = watch('accountType');
   const isPrimaryValue = watch('isPrimary');
+  const pixKeyTypeValue = watch('pixKeyType');
 
   const handleFormSubmit = async (data: BankAccountFormValues) => {
+    const trimmedPix = data.pixKey?.trim() || '';
     const payload: CreateBankAccountInput = {
       bankName: data.bankName,
       branchNumber: data.branchNumber,
@@ -88,6 +108,8 @@ export function BankAccountForm({ account, onSubmit, onCancel }: BankAccountForm
       holderName: data.holderName,
       accountType: data.accountType,
       isPrimary: data.isPrimary,
+      pixKey: trimmedPix || null,
+      pixKeyType: trimmedPix && data.pixKeyType !== '' ? data.pixKeyType : null,
     };
     await onSubmit(payload);
   };
@@ -181,6 +203,42 @@ export function BankAccountForm({ account, onSubmit, onCancel }: BankAccountForm
         <Label htmlFor="isPrimary" className="cursor-pointer text-sm">
           {t('isPrimary')}
         </Label>
+      </div>
+
+      {/* PIX (opcional) */}
+      <div className="space-y-3 rounded-md border border-dashed p-3">
+        <p className="text-xs text-muted-foreground">
+          PIX (opcional) — preencha se quiser receber por chave PIX além da TED.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label htmlFor="pixKey">Chave PIX</Label>
+            <Input id="pixKey" placeholder="Ex: 00000000000 (CPF) ou email@dominio.com" {...register('pixKey')} />
+            {errors.pixKey && (
+              <p className="text-xs text-destructive">{errors.pixKey.message}</p>
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <Label>Tipo da chave</Label>
+            <Select
+              value={pixKeyTypeValue || ''}
+              onValueChange={(val) =>
+                setValue('pixKeyType', val as BankAccountFormValues['pixKeyType'], { shouldValidate: true })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="CPF">CPF</SelectItem>
+                <SelectItem value="CNPJ">CNPJ</SelectItem>
+                <SelectItem value="EMAIL">Email</SelectItem>
+                <SelectItem value="PHONE">Telefone</SelectItem>
+                <SelectItem value="RANDOM">Aleatoria</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
       {/* Actions */}
