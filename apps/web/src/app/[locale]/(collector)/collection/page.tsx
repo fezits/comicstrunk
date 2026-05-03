@@ -21,6 +21,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ViewToggle, type ViewMode } from '@/components/ui/view-toggle';
+import { SearchBar } from '@/components/ui/search-bar';
 import { CollectionItemCard } from '@/components/features/collection/collection-item-card';
 import { CollectionItemCompact } from '@/components/features/collection/collection-item-compact';
 import { CollectionItemList } from '@/components/features/collection/collection-item-list';
@@ -96,6 +97,12 @@ export default function CollectionPage() {
   const [exporting, setExporting] = useState(false);
 
   const filters = parseFiltersFromParams(searchParams);
+  const [searchInput, setSearchInput] = useState(filters.query ?? '');
+
+  // Sync local input with URL changes (e.g. clearing filters)
+  useEffect(() => {
+    setSearchInput(filters.query ?? '');
+  }, [filters.query]);
 
   // Load stats on mount
   useEffect(() => {
@@ -288,6 +295,19 @@ export default function CollectionPage() {
 
       {/* Stats */}
       <CollectionStats stats={stats} loading={statsLoading} />
+
+      {/* Search bar (matches catalog UX) */}
+      <div className="flex justify-end">
+        <SearchBar
+          value={searchInput}
+          onChange={setSearchInput}
+          onSubmit={(v) =>
+            handleFiltersChange({ ...filters, query: v || undefined, page: 1 })
+          }
+          placeholder={t('searchPlaceholder')}
+          className="w-full sm:max-w-lg"
+        />
+      </div>
 
       {/* Layout: sidebar + grid */}
       <div className="flex gap-8">
