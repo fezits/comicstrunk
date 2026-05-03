@@ -15,11 +15,39 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { recognize, recordChoice, confirmCandidate } from '@/lib/api/cover-scan';
+import { recognize, recordChoice, confirmCandidate, searchByText } from '@/lib/api/cover-scan';
 import { compressImageToDataUri } from '@/lib/utils/compress-image';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import type { CoverScanCandidate, CoverScanIdentified } from '@comicstrunk/contracts';
 
-type Stage = 'idle' | 'compressing' | 'analyzing' | 'searching' | 'results' | 'error';
+type Stage =
+  | 'idle'
+  | 'compressing'
+  | 'extracting'
+  | 'editing'
+  | 'searching'
+  | 'results'
+  | 'error';
+
+interface EditFields {
+  title: string;
+  issueNumber: string;
+  publisher: string;
+  series: string;
+  ocrText: string;
+  extraTerms: string;
+}
+
+const EMPTY_FIELDS: EditFields = {
+  title: '',
+  issueNumber: '',
+  publisher: '',
+  series: '',
+  ocrText: '',
+  extraTerms: '',
+};
 
 interface Props {
   onChoose?: (candidate: CoverScanCandidate) => void;
@@ -69,6 +97,11 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
   // Vision Web Detection direto. Custo extra ~R$ 0,0075/scan.
   const [forceVisualSearch, setForceVisualSearch] = useState(false);
 
+  // Edit-before-search (Phase 4): user can refine the VLM extraction before
+  // we hit the catalog/Metron/Rika.
+  const [editFields, setEditFields] = useState<EditFields>(EMPTY_FIELDS);
+  const [showMoreFields, setShowMoreFields] = useState(false);
+
   // Modal de confirmacao
   const [modalCandidate, setModalCandidate] = useState<CoverScanCandidate | null>(null);
   const [confirming, setConfirming] = useState(false);
@@ -84,7 +117,7 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
     try {
       const dataUri = await compressImageToDataUri(file);
       setPhotoDataUri(dataUri);
-      setStage('analyzing');
+      setStage('extracting');
 
       const result = await recognize({
         imageBase64: dataUri,
@@ -92,10 +125,23 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
         forceVisualSearch: forceVisualSearch || undefined,
       });
 
-      setCandidates(result.candidates);
       setScanLogId(result.scanLogId);
-      setIdentified(result.identified ?? null);
-      setStage('results');
+      setIdentified(result.identified);
+
+      // Pre-populate editable fields with VLM extraction. User can correct
+      // before hitting the catalog/Metron/Rika.
+      setEditFields({
+        title: result.identified.title ?? '',
+        issueNumber:
+          result.identified.issueNumber !== null
+            ? String(result.identified.issueNumber)
+            : '',
+        publisher: result.identified.publisher ?? '',
+        series: result.identified.series ?? '',
+        ocrText: result.identified.ocrText ?? '',
+        extraTerms: '',
+      });
+      setStage('editing');
     } catch (err) {
       const errAny = err as {
         response?: { status?: number; data?: { error?: { message?: string } } };
@@ -107,6 +153,40 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
       else if (status === 413) setErrorMsg(apiMsg || 'Imagem muito grande. Tente uma foto menor.');
       else if (apiMsg) setErrorMsg(apiMsg);
       else if (status && status >= 500) setErrorMsg(t('errorServer'));
+      else setErrorMsg(errAny.message || 'unknown');
+      setStage('error');
+    }
+  }
+
+  async function handleSearch() {
+    if (!scanLogId) return;
+    const issueNum = editFields.issueNumber.trim()
+      ? parseInt(editFields.issueNumber, 10)
+      : undefined;
+
+    setStage('searching');
+    startedAtRef.current = Date.now();
+    try {
+      const result = await searchByText({
+        scanLogId,
+        title: editFields.title.trim() || undefined,
+        issueNumber: Number.isFinite(issueNum) ? issueNum : undefined,
+        publisher: editFields.publisher.trim() || undefined,
+        series: editFields.series.trim() || undefined,
+        ocrText: editFields.ocrText.trim() || undefined,
+        extraTerms: editFields.extraTerms.trim() || undefined,
+        durationMs: Date.now() - startedAtRef.current,
+      });
+      setCandidates(result.candidates);
+      setIdentified(result.identified);
+      setStage('results');
+    } catch (err) {
+      const errAny = err as {
+        response?: { status?: number; data?: { error?: { message?: string } } };
+        message?: string;
+      };
+      const apiMsg = errAny.response?.data?.error?.message;
+      if (apiMsg) setErrorMsg(apiMsg);
       else setErrorMsg(errAny.message || 'unknown');
       setStage('error');
     }
@@ -169,7 +249,16 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
     setIdentified(null);
     setErrorMsg('');
     setScanLogId('');
+    setEditFields(EMPTY_FIELDS);
+    setShowMoreFields(false);
   }
+
+  const canSearch =
+    !!editFields.title.trim() ||
+    !!editFields.publisher.trim() ||
+    !!editFields.series.trim() ||
+    !!editFields.ocrText.trim() ||
+    !!editFields.extraTerms.trim();
 
   return (
     <div className="space-y-4">
@@ -205,7 +294,7 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
         </div>
       )}
 
-      {(stage === 'compressing' || stage === 'analyzing' || stage === 'searching') && (
+      {(stage === 'compressing' || stage === 'extracting' || stage === 'searching') && (
         <div className="flex flex-col items-center gap-4 py-4">
           {previewUrl && (
             <div className="relative">
@@ -229,10 +318,137 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
             <span>
               {stage === 'compressing'
                 ? t('compressing')
-                : stage === 'analyzing'
+                : stage === 'extracting'
                   ? t('analyzing')
                   : t('searching')}
             </span>
+          </div>
+        </div>
+      )}
+
+      {stage === 'editing' && (
+        <div className="space-y-3">
+          {(previewUrl || (identified && identified.title)) && (
+            <div className="flex items-stretch gap-3 rounded border border-primary/30 bg-primary/5 p-3">
+              {previewUrl && (
+                <img
+                  src={previewUrl}
+                  alt={t('preview')}
+                  className="h-24 w-16 flex-none rounded border object-cover"
+                />
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                  {t('editingTitle')}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground/80">{t('editingHint')}</p>
+                {identified?.dominantColors && identified.dominantColors.length > 0 && (
+                  <div className="mt-2 flex items-center gap-1.5">
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                      Cores
+                    </span>
+                    <div className="flex items-center gap-1">
+                      {identified.dominantColors.map((c) => (
+                        <span
+                          key={c}
+                          title={c}
+                          className="h-3.5 w-3.5 rounded-full border border-border/60"
+                          style={{ backgroundColor: COLOR_SWATCHES[c] ?? '#9ca3af' }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="scan-edit-title">
+                {t('fieldTitle')} <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="scan-edit-title"
+                value={editFields.title}
+                onChange={(e) => setEditFields({ ...editFields, title: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="scan-edit-issue">{t('fieldIssueNumber')}</Label>
+              <Input
+                id="scan-edit-issue"
+                type="number"
+                min={0}
+                className="w-32"
+                value={editFields.issueNumber}
+                onChange={(e) => setEditFields({ ...editFields, issueNumber: e.target.value })}
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowMoreFields((v) => !v)}
+              className="text-xs text-primary hover:underline"
+            >
+              {showMoreFields ? t('hideMoreFields') : t('showMoreFields')}
+            </button>
+
+            {showMoreFields && (
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="scan-edit-publisher">{t('fieldPublisher')}</Label>
+                  <Input
+                    id="scan-edit-publisher"
+                    value={editFields.publisher}
+                    onChange={(e) =>
+                      setEditFields({ ...editFields, publisher: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="scan-edit-series">{t('fieldSeries')}</Label>
+                  <Input
+                    id="scan-edit-series"
+                    value={editFields.series}
+                    onChange={(e) => setEditFields({ ...editFields, series: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="scan-edit-ocr">{t('fieldOcrText')}</Label>
+                  <Textarea
+                    id="scan-edit-ocr"
+                    rows={3}
+                    value={editFields.ocrText}
+                    onChange={(e) =>
+                      setEditFields({ ...editFields, ocrText: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="scan-edit-extra">{t('fieldExtraTerms')}</Label>
+                  <Textarea
+                    id="scan-edit-extra"
+                    rows={2}
+                    placeholder={t('fieldExtraTermsPlaceholder')}
+                    value={editFields.extraTerms}
+                    onChange={(e) =>
+                      setEditFields({ ...editFields, extraTerms: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+            )}
+
+            <Button
+              onClick={handleSearch}
+              disabled={!canSearch}
+              className="w-full"
+              size="lg"
+            >
+              {t('buttonSearch')}
+            </Button>
           </div>
         </div>
       )}
@@ -293,13 +509,18 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
             </div>
           )}
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
             <p className="text-sm text-muted-foreground">
               {t('foundCount', { count: candidates.length })}
             </p>
-            <Button variant="ghost" size="sm" onClick={reset}>
-              {t('tryAgain')}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setStage('editing')}>
+                {t('editAndSearchAgain')}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={reset}>
+                {t('tryAgain')}
+              </Button>
+            </div>
           </div>
 
           {candidates.length === 0 ? (
@@ -359,7 +580,7 @@ export function CoverPhotoScanner({ onChoose, onClose }: Props) {
 
       {onClose &&
         stage !== 'compressing' &&
-        stage !== 'analyzing' &&
+        stage !== 'extracting' &&
         stage !== 'searching' && (
           <Button variant="ghost" onClick={onClose} className="w-full">
             {t('close')}

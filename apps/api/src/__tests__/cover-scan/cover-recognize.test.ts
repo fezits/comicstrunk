@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, vi, beforeEach } from 'vitest';
 import { PrismaClient } from '@prisma/client';
-import { request, loginAs, TEST_USER } from '../setup';
+import { request, loginAs, TEST_ADMIN } from '../setup';
 
 // Mock do cliente Workers AI ANTES de importar qualquer coisa que dependa dele
 vi.mock('../../shared/lib/cloudflare-ai', () => ({
@@ -23,10 +23,11 @@ const createdLogIds: string[] = [];
 const mockedRecognize = vi.mocked(recognizeCoverImage);
 
 beforeAll(async () => {
-  const userLogin = await loginAs(TEST_USER.email, TEST_USER.password);
-  userToken = userLogin.accessToken;
-  const u = await prisma.user.findUnique({ where: { email: TEST_USER.email } });
-  if (!u) throw new Error('TEST_USER nao encontrado');
+  // /recognize requires ADMIN role
+  const adminLogin = await loginAs(TEST_ADMIN.email, TEST_ADMIN.password);
+  userToken = adminLogin.accessToken;
+  const u = await prisma.user.findUnique({ where: { email: TEST_ADMIN.email } });
+  if (!u) throw new Error('TEST_ADMIN nao encontrado');
   userId = u.id;
 });
 
@@ -62,18 +63,7 @@ describe('POST /api/v1/cover-scan/recognize', () => {
     expect(res.status).toBe(400);
   });
 
-  it('uses VLM output to find catalog candidates', async () => {
-    const entry = await prisma.catalogEntry.create({
-      data: {
-        title: 'Transmetropolitan',
-        publisher: 'Panini',
-        author: 'Warren Ellis',
-        editionNumber: 1,
-        approvalStatus: 'APPROVED',
-        createdById: userId,
-      },
-    });
-
+  it('extracts VLM identified fields and creates empty scanLog (no candidates)', async () => {
     mockedRecognize.mockResolvedValue({
       title: 'Transmetropolitan',
       issue_number: 1,
@@ -83,38 +73,7 @@ describe('POST /api/v1/cover-scan/recognize', () => {
       language: 'pt-BR',
       confidence: 'alta',
       ocr_text: 'TRANSMETROPOLITAN\nPanini\nWarren Ellis',
-      raw_response: '{}',
-    });
-
-    try {
-      const res = await request
-        .post('/api/v1/cover-scan/recognize')
-        .set('Authorization', `Bearer ${userToken}`)
-        .send({ imageBase64: TINY_DATA_URI });
-
-      expect(res.status).toBe(200);
-      expect(res.body.success).toBe(true);
-      expect(res.body.data.candidates).toBeInstanceOf(Array);
-      const found = res.body.data.candidates.find((c: { id: string }) => c.id === entry.id);
-      expect(found).toBeDefined();
-      expect(typeof res.body.data.scanLogId).toBe('string');
-      createdLogIds.push(res.body.data.scanLogId);
-      expect(mockedRecognize).toHaveBeenCalledTimes(1);
-    } finally {
-      await prisma.catalogEntry.delete({ where: { id: entry.id } });
-    }
-  });
-
-  it('returns empty candidates if VLM fails to identify', async () => {
-    mockedRecognize.mockResolvedValue({
-      title: null,
-      issue_number: null,
-      publisher: null,
-      authors: [],
-      series: null,
-      language: null,
-      confidence: 'baixa',
-      ocr_text: '',
+      dominant_colors: ['black', 'red'],
       raw_response: '{}',
     });
 
@@ -124,8 +83,28 @@ describe('POST /api/v1/cover-scan/recognize', () => {
       .send({ imageBase64: TINY_DATA_URI });
 
     expect(res.status).toBe(200);
-    expect(res.body.data.candidates).toEqual([]);
-    if (res.body.data.scanLogId) createdLogIds.push(res.body.data.scanLogId);
+    expect(res.body.success).toBe(true);
+    // Phase 4: /recognize só extrai, não busca
+    expect(res.body.data.candidates).toBeUndefined();
+    expect(typeof res.body.data.scanLogId).toBe('string');
+    expect(res.body.data.identified).toMatchObject({
+      title: 'Transmetropolitan',
+      issueNumber: 1,
+      publisher: 'Panini',
+      series: 'Transmetropolitan',
+      ocrText: 'TRANSMETROPOLITAN\nPanini\nWarren Ellis',
+      confidence: 'alta',
+    });
+    createdLogIds.push(res.body.data.scanLogId);
+
+    // Verifica scanLog vazio (searchAttempts=0, candidatesShown=[])
+    const log = await prisma.coverScanLog.findUnique({
+      where: { id: res.body.data.scanLogId },
+    });
+    expect(log).not.toBeNull();
+    expect(log!.searchAttempts).toBe(0);
+    expect(log!.candidatesShown).toEqual([]);
+    expect(mockedRecognize).toHaveBeenCalledTimes(1);
   });
 
   it('persists VLM raw response in cover_scan_logs.raw_text', async () => {
@@ -138,6 +117,7 @@ describe('POST /api/v1/cover-scan/recognize', () => {
       language: 'en',
       confidence: 'media',
       ocr_text: 'Test OCR text',
+      dominant_colors: [],
       raw_response: '{"title":"Test Title"}',
     });
 
