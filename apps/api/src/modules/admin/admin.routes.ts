@@ -263,8 +263,8 @@ router.get('/duplicates', async (req: Request, res: Response, next: NextFunction
 
       const total = Number(countResult[0].total);
       const pairs = duplicates.map((d) => ({
-        gcd: resolveCoverUrl({ id: d.gcd_id, title: d.gcd_title, publisher: d.gcd_publisher, sourceKey: d.gcd_source_key, coverImageUrl: d.gcd_cover, coverFileName: null }),
-        rika: resolveCoverUrl({ id: d.rika_id, title: d.rika_title, publisher: d.rika_publisher, sourceKey: d.rika_source_key, coverImageUrl: d.rika_cover, coverFileName: null }),
+        gcd: { ...resolveCoverUrl({ id: d.gcd_id, title: d.gcd_title, publisher: d.gcd_publisher, sourceKey: d.gcd_source_key, coverImageUrl: d.gcd_cover, coverFileName: null }), dedupKey: d.gcd_source_key },
+        rika: { ...resolveCoverUrl({ id: d.rika_id, title: d.rika_title, publisher: d.rika_publisher, sourceKey: d.rika_source_key, coverImageUrl: d.rika_cover, coverFileName: null }), dedupKey: d.rika_source_key },
       }));
       sendPaginated(res, pairs, { page, limit, total });
       return;
@@ -352,24 +352,30 @@ router.get('/duplicates', async (req: Request, res: Response, next: NextFunction
 
     const total = Number(countResult[0].total);
 
-    // Resolve cover URLs
+    // Resolve cover URLs (adiciona dedupKey p/ frontend chamar /dismiss — sourceKey é stripado pelo response middleware)
     const pairs = duplicates.map((d) => ({
-      gcd: resolveCoverUrl({
-        id: d.gcd_id,
-        title: d.gcd_title,
-        publisher: d.gcd_publisher,
-        sourceKey: d.gcd_source_key,
-        coverImageUrl: d.gcd_cover,
-        coverFileName: null,
-      }),
-      rika: resolveCoverUrl({
-        id: d.rika_id,
-        title: d.rika_title,
-        publisher: d.rika_publisher,
-        sourceKey: d.rika_source_key,
-        coverImageUrl: d.rika_cover,
-        coverFileName: null,
-      }),
+      gcd: {
+        ...resolveCoverUrl({
+          id: d.gcd_id,
+          title: d.gcd_title,
+          publisher: d.gcd_publisher,
+          sourceKey: d.gcd_source_key,
+          coverImageUrl: d.gcd_cover,
+          coverFileName: null,
+        }),
+        dedupKey: d.gcd_source_key,
+      },
+      rika: {
+        ...resolveCoverUrl({
+          id: d.rika_id,
+          title: d.rika_title,
+          publisher: d.rika_publisher,
+          sourceKey: d.rika_source_key,
+          coverImageUrl: d.rika_cover,
+          coverFileName: null,
+        }),
+        dedupKey: d.rika_source_key,
+      },
     }));
 
     sendPaginated(res, pairs, { page, limit, total });
