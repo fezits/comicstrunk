@@ -180,8 +180,10 @@ export default function CollectionItemDetailPage() {
       setItem(updated);
       setSaleDialogOpen(false);
       toast.success(t('markedForSale'));
-    } catch {
-      toast.error(tCommon('error'));
+    } catch (err) {
+      const apiMsg = (err as { response?: { data?: { error?: { message?: string } } } })
+        ?.response?.data?.error?.message;
+      toast.error(apiMsg || tCommon('error'));
     }
   };
 
