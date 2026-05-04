@@ -5,7 +5,7 @@ import { HomepageContent } from '@/components/features/homepage/homepage-content
 export const metadata: Metadata = {
   title: 'Comics Trunk — Gerencie sua Colecao de Quadrinhos, HQs e Mangas',
   description:
-    'A maior plataforma brasileira para colecionadores de quadrinhos. Gerencie sua colecao de gibis, HQs, mangas e comics. Compre e venda no marketplace. Cupons de desconto e ofertas exclusivas. Catalogo com mais de 114 mil titulos.',
+    'Plataforma brasileira para colecionadores de quadrinhos. Gerencie sua colecao de gibis, HQs, mangas e comics. Compre e venda no marketplace. Cupons de desconto e ofertas exclusivas. Catalogo com mais de 114 mil titulos.',
   keywords: [
     'colecao de quadrinhos',
     'gerenciar quadrinhos',
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: 'Comics Trunk — Gerencie sua Colecao de Quadrinhos',
-    description: 'A maior plataforma brasileira para colecionadores de quadrinhos. Catalogo com 114 mil+ titulos, marketplace, cupons de desconto e ofertas.',
+    description: 'Plataforma brasileira para colecionadores de quadrinhos. Catalogo com 114 mil+ titulos, marketplace, cupons de desconto e ofertas.',
     url: 'https://comicstrunk.com',
     siteName: 'Comics Trunk',
     type: 'website',

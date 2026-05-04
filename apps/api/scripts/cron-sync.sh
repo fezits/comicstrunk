@@ -2,17 +2,25 @@
 # =============================================================================
 # Comics Trunk - Cron Job: Sync catálogo Panini + Rika
 # =============================================================================
+# *** DESABILITADO 2026-05-03 *** — estava puxando muita memória no servidor
+# compartilhado e derrubando outros sites na hora do sync (4h da manhã).
+# Para reativar: remover o `exit 0` abaixo + reagendar no cPanel se preciso.
+#
 # Configurar no cPanel → Cron Jobs:
 #   Comando: /home/ferna5257/applications/api.comicstrunk.com/scripts/cron-sync.sh
 #   Horário: 0 4 * * * (4h da manhã, todo dia)
 #
-# O que faz:
+# O que faz (quando ativo):
 #   1. Sync incremental Panini + Rika (novos gibis + atualização de preços)
 #   2. Baixa capas faltantes
 #   3. Redimensiona capas > 500KB
 #
 # Log: /home/ferna5257/logs/sync-catalog.log (rotação: últimos 5 dias)
 # =============================================================================
+
+# Short-circuit: cron está desabilitado. Loga e sai.
+echo "[$(date)] cron-sync DESABILITADO — pulando execução" >> /home/ferna5257/logs/sync-catalog.log 2>/dev/null || true
+exit 0
 
 set -euo pipefail
 

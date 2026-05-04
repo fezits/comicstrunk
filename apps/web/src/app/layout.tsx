@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     default: 'Comics Trunk — Gerencie sua Colecao de Quadrinhos, HQs e Mangas',
     template: '%s | Comics Trunk',
   },
-  description: 'A maior plataforma brasileira para colecionadores de quadrinhos. Gerencie gibis, HQs, mangas e comics. Marketplace, cupons de desconto e ofertas.',
+  description: 'Plataforma brasileira para colecionadores de quadrinhos. Gerencie gibis, HQs, mangas e comics. Marketplace, cupons de desconto e ofertas.',
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',
